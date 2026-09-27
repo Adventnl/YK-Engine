@@ -49,6 +49,7 @@ class Renderer {
     Status beginFrame(Color clear, const Camera2D &camera);
     Status submit(const Sprite &sprite);
     Status debugRect(Rect rect, Color color, int layer = 1000);
+    Status debugLine(Vec2 first, Vec2 second, Color color, int layer = 1000);
     // Diagnostic readback saves the physical content viewport before present (excludes bars).
     Status present(const std::optional<std::filesystem::path> &capture = std::nullopt);
 

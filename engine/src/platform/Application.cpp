@@ -73,14 +73,14 @@ Result<std::unique_ptr<Application>> Application::create(const ApplicationConfig
     log(LogLevel::Info, "application", "Initialized SDL3 window and renderer");
     return app;
 }
-Status Application::run(Game &game, const RunOptions &options) {
+Status Application::run(ApplicationLayer &layer, const RunOptions &options) {
     assert(std::this_thread::get_id() == impl_->thread);
     if (options.captureLastFrame && options.frameLimit == 0)
         return Error{"Frame capture requires a bounded run"};
     if (impl_->used)
         return Error{"Application run is single-use"};
     impl_->used = true;
-    auto initialized = game.initialize(*impl_->renderer);
+    auto initialized = layer.initialize(*impl_->renderer);
     if (!initialized)
         return initialized;
     FrameClock clock;
@@ -129,12 +129,12 @@ Status Application::run(Game &game, const RunOptions &options) {
             break;
         const auto delta = clock.tick();
         const FrameContext context{focused && !minimized ? delta : FrameTime{}, impl_->keyboard};
-        if (!game.update(context))
+        if (!layer.update(context))
             break;
-        auto begun = impl_->renderer->beginFrame({24, 29, 40, 255}, game.camera());
+        auto begun = impl_->renderer->beginFrame({24, 29, 40, 255}, layer.camera());
         if (!begun)
             return begun;
-        auto rendered = game.render(*impl_->renderer);
+        auto rendered = layer.render(*impl_->renderer);
         if (!rendered)
             return rendered;
         auto presented = impl_->renderer->present(

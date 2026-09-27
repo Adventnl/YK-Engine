@@ -1,6 +1,6 @@
 # ADR 0001: SDL3 source pin, 2D backend and renderer-owned textures
 
-Date: 2026-09-27. Status: accepted.
+Date: 2026-09-27. Status: accepted; engine-only/runtime boundary updated by ADR 0002.
 
 ## Context
 
@@ -14,7 +14,7 @@ Build SDL3 3.2.28 statically from the official release archive with a SHA-256 pi
 CMake FetchContent. Use SDL's 2D Render API behind the proprietary Renderer; let SDL
 choose the native driver. Maintain a fixed logical viewport with letterboxing.
 
-Application owns SDL/window/renderer; renderer exclusively owns textures. Game-facing
+Application owns SDL/window/renderer; renderer exclusively owns textures. Client-facing
 handles contain a weak renderer identity and append-only slot index. Resource slots
 are not reused. BMP loading caches canonical absolute filenames. Explicit release
 invalidates all aliases and is forbidden during frame submission/presentation.

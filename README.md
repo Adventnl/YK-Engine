@@ -1,40 +1,37 @@
 # YK Engine
 
-A proprietary C++20, 2D-first engine above SDL3. Windows x64 is the primary target;
-macOS builds natively from the same tree. The current sandbox renders a procedural
-checker sprite through the real application loop.
+A proprietary C++20 **2D engine library** with a working rigid-body physics subsystem.
+This repository contains the engine itself. All headers, implementation, tests,
+documentation, license notices and generated builds live under `engine/`.
 
-Requires CMake 3.25+, Ninja, a C++20 compiler and internet access for the first SDL3
-source fetch. macOS requires Xcode Command Line Tools. On Windows, use an **x64
-Native Tools Command Prompt** with Visual Studio 2022's C++ workload and Ninja.
-Windows builds have not yet been verified on Windows hardware.
+Physics runs independently of SDL. It provides static/dynamic/kinematic bodies,
+circles, boxes, capsules, convex polygons, static/kinematic segments, collision
+filters, sensors, friction/restitution, sleeping, continuous collision, forces,
+impulses, distance/spring joints, motorized hinges, fixed stepping, contact events,
+ray/point/AABB queries, interpolation and debug outlines.
+
+Optional SDL3 support provides the application loop, input, sprite renderer and
+camera. There is no bundled game, sandbox or game executable.
+
+Requires CMake 3.25+, Ninja and a C++20 compiler. On Windows use Visual Studio 2022
+Build Tools with the C++ workload in an **x64 Native Tools Command Prompt**.
+The first configure downloads SHA-256-pinned Box2D 3.1.1 and SDL3 3.2.28.
 
 ```sh
 cmake --preset dev
 cmake --build --preset dev
 ctest --preset dev --output-on-failure
-cmake --build --preset dev --target run
 ```
 
-WASD or arrows move the sprite; Q/E pan the camera; Space resets; Escape or closing
-the window exits. Movement is 240 world units/second with normalized diagonals.
-The logical 960x540 viewport scales with letterboxing when resized, including on Retina displays.
+For physics without SDL, use the `headless` preset with the same configure/build/test
+commands. `release` and `asan` presets are also provided. The sanitizer preset uses
+AddressSanitizer with MSVC, or AddressSanitizer + UBSan with Clang/GCC.
+If clang-format is installed, `format` and `format-check` targets are available.
 
-For a bounded native launch and diagnostic frame capture on macOS:
+Consumers use `add_subdirectory(path/to/YK-Engine)` and link `yk::engine`.
+Set `BUILD_TESTING=OFF` for a library-only build. Set `YK_RUNTIME=OFF` to avoid
+downloading/linking SDL. Public physics headers contain no Box2D or SDL types.
 
-```sh
-build/dev/yk_sandbox.app/Contents/MacOS/yk_sandbox --frames 12 --capture build/dev/frame.bmp
-```
-
-On Windows, use `build/dev/yk_sandbox.exe` with the same arguments. Captures contain
-the physical content viewport, excluding letterbox bars. Headless CTest uses SDL's
-real dummy video/software rendering backend; it does not validate desktop interaction.
-
-`release` and `asan` configure/build/test presets are also available. `asan` requires
-Clang or GCC and instruments project code with AddressSanitizer and UBSan. If
-clang-format is found at configure time, `format` and `format-check` targets are enabled.
-
-Read [status](docs/status.md) for verified commands and limitations,
-[architecture](docs/architecture.md) for API/lifetime contracts, and
-[what's next](docs/whats-next.md) before continuing development.
-Dependency versions and license notices are in [THIRD_PARTY.md](THIRD_PARTY.md).
+Read [physics usage](engine/docs/physics.md), [architecture](engine/docs/architecture.md),
+[verified status](engine/docs/status.md), [build plan](engine/docs/build-plan.md),
+and [dependency notices](engine/THIRD_PARTY.md).

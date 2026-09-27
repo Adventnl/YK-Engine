@@ -1,4 +1,5 @@
 #include "yk/core/Application.hpp"
+#include "yk/graphics/PhysicsDebug.hpp"
 #include <SDL3/SDL.h>
 #include <array>
 #include <cstdio>
@@ -24,7 +25,7 @@ void key(SDL_WindowID window, Uint32 type, SDL_Scancode scancode) {
     event.key.scancode = scancode;
     check(SDL_PushEvent(&event), "push key event");
 }
-class TestGame final : public yk::Game {
+class TestApplicationLayer final : public yk::ApplicationLayer {
   public:
     yk::TextureHandle retained;
     yk::Status initialize(yk::Renderer &renderer) override {
@@ -115,9 +116,26 @@ class TestGame final : public yk::Game {
     SDL_WindowID window_{};
     unsigned frames_{};
 };
-class CaptureGame final : public yk::Game {
+class CaptureApplicationLayer final : public yk::ApplicationLayer {
   public:
     yk::Status initialize(yk::Renderer &renderer) override {
+        yk::physics::WorldConfig config;
+        config.gravity = {};
+        auto created = yk::physics::World::create(config);
+        if (!created)
+            return yk::Error{created.error()};
+        world_ = std::move(created.value());
+        yk::physics::BodyDef body;
+        body.pose.position = {0.4F, 0.2F};
+        const auto physicsBody = world_->createBody(body);
+        if (!physicsBody)
+            return yk::Error{physicsBody.error()};
+        const auto shape = world_->createShape(physicsBody.value(), yk::physics::Box{{0.1F, 0.1F}});
+        if (!shape)
+            return yk::Error{shape.error()};
+        check(!yk::drawPhysicsDebug(renderer, *world_),
+              "physics debug submission requires active frame");
+        check(!yk::drawPhysicsDebug(renderer, *world_, 0), "physics debug scale validated");
         std::array<yk::Color, 1> red{{{255, 0, 0, 255}}};
         auto texture = renderer.createTexture(1, 1, red);
         if (!texture)
@@ -201,11 +219,15 @@ class CaptureGame final : public yk::Game {
             return result;
         red = green;
         red.texture = red_; // Identical keys: last submission wins.
-        return renderer.submit(red);
+        result = renderer.submit(red);
+        if (!result)
+            return result;
+        return yk::drawPhysicsDebug(renderer, *world_, 100);
     }
 
   private:
     yk::TextureHandle red_, green_;
+    std::unique_ptr<yk::physics::World> world_;
 };
 void checkPixel(SDL_Surface *surface, int x, int y, yk::Color expected, const char *description) {
     Uint8 r{}, g{}, b{}, a{};
@@ -213,24 +235,40 @@ void checkPixel(SDL_Surface *surface, int x, int y, yk::Color expected, const ch
               g == expected.g && b == expected.b,
           description);
 }
-class FailureGame final : public yk::Game {
+class FailureApplicationLayer final : public yk::ApplicationLayer {
   public:
     yk::Status initialize(yk::Renderer &renderer) override {
         check(!renderer.valid(stale), "handle from destroyed renderer is foreign");
         return yk::Error{"expected initialization failure"};
     }
     bool update(const yk::FrameContext &) override {
-        check(false, "failed game must not update");
+        check(false, "failed layer must not update");
         return false;
     }
     yk::Status render(yk::Renderer &) override {
-        check(false, "failed game must not render");
+        check(false, "failed layer must not render");
         return yk::success();
     }
     yk::TextureHandle stale;
 };
 } // namespace
-int main() {
+int main(int argc, char **argv) {
+    if (argc == 2 && std::string(argv[1]) == "--native-smoke") {
+        auto app = yk::Application::create({});
+        if (!app) {
+            std::fprintf(stderr, "%s\n", app.error().c_str());
+            return 1;
+        }
+        CaptureApplicationLayer capture;
+        const auto result =
+            app.value()->run(capture, {12, std::filesystem::path("native-frame.bmp")});
+        std::filesystem::remove("runtime-source.bmp");
+        if (!result) {
+            std::fprintf(stderr, "%s\n", result.error().c_str());
+            return 1;
+        }
+        return failures == 0 ? 0 : 1;
+    }
     check(!yk::Application::create({"bad", 0}), "invalid application config rejected");
     check(SDL_SetHintWithPriority(SDL_HINT_VIDEO_DRIVER, "yk-nonexistent", SDL_HINT_OVERRIDE),
           "set failing video driver");
@@ -251,36 +289,36 @@ int main() {
         check(SDL_WasInit(0) == 0, "renderer failure destroys window and SDL");
     }
     SDL_ResetHint(SDL_HINT_RENDER_DRIVER);
-    TestGame game;
+    TestApplicationLayer layer;
     {
         auto app = yk::Application::create({});
         if (!app) {
             std::fprintf(stderr, "%s\n", app.error().c_str());
             return 1;
         }
-        const auto result = app.value()->run(game, {10, std::nullopt});
+        const auto result = app.value()->run(layer, {10, std::nullopt});
         if (!result)
             std::fprintf(stderr, "%s\n", result.error().c_str());
         check(static_cast<bool>(result), "real loop renders and exits");
-        check(game.frames() == 5, "quit is handled before another update");
-        check(!app.value()->run(game, {1, std::nullopt}), "single-use application contract");
+        check(layer.frames() == 5, "quit is handled before another update");
+        check(!app.value()->run(layer, {1, std::nullopt}), "single-use application contract");
     }
     check(SDL_WasInit(0) == 0, "shutdown releases SDL after resources");
     {
         auto app = yk::Application::create({});
         if (!app)
             return 1;
-        FailureGame failure;
-        failure.stale = game.retained;
+        FailureApplicationLayer failure;
+        failure.stale = layer.retained;
         check(!app.value()->run(failure, {1, std::nullopt}),
-              "game initialization failure propagated");
+              "layer initialization failure propagated");
     }
-    check(SDL_WasInit(0) == 0, "failed game shuts down cleanly");
+    check(SDL_WasInit(0) == 0, "failed layer shuts down cleanly");
     {
         auto app = yk::Application::create({});
         if (!app)
             return 1;
-        CaptureGame capture;
+        CaptureApplicationLayer capture;
         const auto result =
             app.value()->run(capture, {2, std::filesystem::path("runtime-frame.bmp")});
         if (!result)
@@ -301,6 +339,8 @@ int main() {
                    "explicit depth sorting overrides submission order");
         checkPixel(image, 950, 337, {255, 0, 0, 255}, "equal sort keys retain submission order");
         checkPixel(image, 30, 337, {24, 29, 40, 255}, "clear color outside sprites");
+        checkPixel(image, 575, 337, {90, 220, 110, 255},
+                   "physics debug outline agrees with meter conversion and camera projection");
         SDL_DestroySurface(image);
     }
     std::filesystem::remove("runtime-source.bmp");

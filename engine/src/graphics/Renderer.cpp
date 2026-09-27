@@ -33,11 +33,15 @@ struct DebugRect {
     Rect rect;
     Color color;
 };
+struct DebugLine {
+    Vec2 first, second;
+    Color color;
+};
 struct Command {
     int layer;
     float depth;
     std::size_t sequence;
-    std::variant<Sprite, DebugRect> data;
+    std::variant<Sprite, DebugRect, DebugLine> data;
 };
 bool positive(Vec2 value) {
     return finite(value) && value.x > 0 && value.y > 0;
@@ -188,6 +192,15 @@ Status Renderer::debugRect(Rect rect, Color color, int layer) {
     impl_->commands.push_back({layer, 0, impl_->commands.size(), DebugRect{rect, color}});
     return success();
 }
+Status Renderer::debugLine(Vec2 first, Vec2 second, Color color, int layer) {
+    assertThread();
+    if (!impl_->inFrame)
+        return Error{"Debug line outside frame"};
+    if (!finite(first) || !finite(second))
+        return Error{"Invalid debug line"};
+    impl_->commands.push_back({layer, 0, impl_->commands.size(), DebugLine{first, second, color}});
+    return success();
+}
 Status Renderer::present(const std::optional<std::filesystem::path> &capture) {
     assertThread();
     if (!impl_->inFrame)
@@ -218,6 +231,15 @@ Status Renderer::present(const std::optional<std::filesystem::path> &capture) {
                 !SDL_RenderTextureRotated(impl_->native.get(), texture, nullptr, &destination,
                                           sprite->transform.rotationDegrees, &pivot, SDL_FLIP_NONE))
                 return sdlError("Draw sprite");
+        } else if (const auto *line = std::get_if<DebugLine>(&command.data)) {
+            const auto first = impl_->camera.worldToScreen(line->first, impl_->viewport);
+            const auto second = impl_->camera.worldToScreen(line->second, impl_->viewport);
+            if (!finite(first) || !finite(second))
+                return Error{"Debug line projection overflow"};
+            const auto color = line->color;
+            if (!SDL_SetRenderDrawColor(impl_->native.get(), color.r, color.g, color.b, color.a) ||
+                !SDL_RenderLine(impl_->native.get(), first.x, first.y, second.x, second.y))
+                return sdlError("Draw debug line");
         } else {
             const auto &debug = std::get<DebugRect>(command.data);
             const auto position = impl_->camera.worldToScreen(debug.rect.position, impl_->viewport);

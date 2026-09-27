@@ -13,16 +13,16 @@ struct ApplicationConfig {
     int logicalWidth{960}, logicalHeight{540};
 };
 struct RunOptions {
-    unsigned frameLimit{}; // Zero runs until game/window requests exit.
+    unsigned frameLimit{}; // Zero runs until layer/window requests exit.
     std::optional<std::filesystem::path> captureLastFrame; // Requires a nonzero frame limit.
 };
 struct FrameContext {
     FrameTime delta;
     const Keyboard &keyboard;
 };
-class Game {
+class ApplicationLayer {
   public:
-    virtual ~Game() = default;
+    virtual ~ApplicationLayer() = default;
     virtual Status initialize(Renderer &renderer) = 0;
     virtual bool update(const FrameContext &frame) = 0; // false requests orderly exit
     virtual Camera2D camera() const {
@@ -37,8 +37,8 @@ class Application {
     ~Application();
     Application(const Application &) = delete;
     Application &operator=(const Application &) = delete;
-    // Game is borrowed synchronously; no callbacks or game references survive run().
-    Status run(Game &game, const RunOptions &options = {});
+    // ApplicationLayer is borrowed synchronously; no callbacks or layer references survive run().
+    Status run(ApplicationLayer &layer, const RunOptions &options = {});
 
   private:
     Application();
