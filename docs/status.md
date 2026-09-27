@@ -1,38 +1,45 @@
 # Project Status
 
-Last updated: 2026-09-27, Windows x64 engine-only physics pass.
+Last updated: 2026-09-27, native macOS arm64 root-layout continuation.
 
-## Implemented and verified
+## Completed milestone
 
-The engine-only physics milestone is complete on Windows x64. Root project directories
-are only engine/ and Git metadata. All source, public headers, tests, docs, license
-notices and generated build output are inside engine/. No game/sandbox/run target remains.
+The engine-only physics build plan is complete. Source, public headers, tests, docs
+and license notices use the current repository-root layout; generated output stays
+in ignored build/. No game, sandbox, bundled application or run target remains.
 
 - C++20 static yk::engine; CMake/Ninja Debug, Release, headless and sanitizer presets.
 - Private SHA-256-pinned Box2D 3.1.1 and optional SDL3 3.2.28.
-- SDL-free headless build. Its dependency directory contains only Box2D source/build state.
+- SDL-free headless build; dependency output contains only Box2D.
 - RAII physics worlds; opaque lifetime-token/64-bit-serial body/shape/joint handles.
-- Static/dynamic/kinematic bodies; multiple shapes per body; automatic mass/inertia.
-- Circle, box, capsule, convex polygon and static/kinematic two-sided segment geometry.
+- Static/dynamic/kinematic bodies, multiple shapes, automatic mass/inertia.
+- Circle, box, capsule, convex polygon and static/kinematic two-sided segments.
 - Gravity, damping, fixed rotation, sleeping, activation, forces, torque and impulses.
 - Friction, restitution, 64-bit collision categories/masks and signed collision groups.
-- Fixed stepping/substeps, bounded catch-up, dropped-time reporting and pose interpolation.
+- Fixed stepping/substeps, bounded catch-up, dropped-time reporting and interpolation.
 - Continuous collision and bullet-body configuration.
-- Copied contact begin/end/hit and sensor begin/end events across all catch-up ticks.
-- Current contacts/manifolds and sensor-overlap queries.
+- Copied contact begin/end/hit and sensor begin/end events across catch-up ticks.
+- Current contacts/manifolds and latest-tick sensor overlaps; disabled/destroyed
+  participants are immediately excluded from overlap queries.
 - Closest ray cast, exact point query and geometry-bounds AABB query.
-- Rigid/spring distance joints and revolute limits/motors; safe dependent destruction.
-- Actual collider debug outlines and explicit meters-to-render-units conversion.
-- Existing SDL application/window/renderer/input/camera/texture capabilities retained.
-  Generic ApplicationLayer replaces Game; no bundled application entry point.
+- Rigid/spring distance joints and revolute limits/motors; normalized reference angles.
+- Safe dependent destruction and historical event identity through native generation wrap.
+- Actual collider debug outlines with explicit meters-to-render-units conversion.
+- Optional SDL ApplicationLayer loop, window, input, camera, renderer and textures.
 
-## Toolchain and exact commands
+The continuation repaired missing CMake project/CTest initialization after f20e619,
+aligned presets/docs with root paths, removed native Clang handle-copy warnings,
+and fixed FrameClock reset and initial minimized-state handling. Six physics
+regressions fail against the original implementation and pass with these fixes.
 
-Verified host: Windows x64, MSVC 19.44.35229, Visual Studio 2022 Build Tools.
-CMake/Ninja/clang-format came from the installed Visual Studio tooling.
-Use an x64 Native Tools Command Prompt with CMake/Ninja on PATH, from the repo root.
+## Current verification
 
-For each preset dev, release, headless, asan:
+Host: macOS Darwin 25.6.0, arm64; AppleClang 21.0.0 (clang-2100.1.1.101),
+CMake 4.4.3, Ninja 1.13.2, clang-format 23.1.1.
+This session used existing tools in /private/tmp/yk-engine-tools/bin on PATH.
+No machine-wide tool installation was required.
+
+From the repository root, execute all three commands for each preset:
 
 ```sh
 cmake --preset dev
@@ -40,63 +47,74 @@ cmake --build --preset dev
 ctest --preset dev --output-on-failure
 ```
 
-Substitute the preset name in all three commands. Outputs live in engine/build/<preset>.
+Substitute release, headless or asan. Outputs live in build/<preset>.
 Additional verification:
 
 ```sh
 cmake --build --preset dev --target format-check
-cmake -E chdir engine/build/dev engine/yk_runtime_tests.exe --native-smoke
+cmake -E chdir build/dev ./yk_runtime_tests --native-smoke
 git diff --check
 ```
 
-The native smoke mode is an engine integration diagnostic, not a game target. It runs
-12 bounded frames, writes native-frame.bmp in the chosen build directory and exits.
-Runtime CTest uses SDL dummy/software drivers and removes its transient BMP files.
+On Windows the diagnostic executable is yk_runtime_tests.exe in that same directory.
+The native diagnostic runs 12 bounded frames, writes native-frame.bmp and exits.
+Runtime CTest uses SDL dummy/software drivers and removes transient BMP files.
 
-## Results
-
-| Gate | Result |
+| Gate | Current result |
 |---|---|
-| Windows MSVC Debug configure/build/CTest | Passed; 3/3 (core, physics, runtime) |
-| Windows MSVC Release configure/build/CTest | Passed; 3/3 |
-| Windows MSVC headless configure/build/CTest | Passed; 2/2 (core, physics) |
-| Windows MSVC AddressSanitizer configure/build/CTest | Passed; 3/3 |
+| macOS Debug configure/build/CTest | Passed; 3/3 (core, physics, runtime) |
+| macOS Release configure/build/CTest | Passed; 3/3 |
+| macOS headless configure/build/CTest | Passed; 2/2 (core, physics); no SDL dependency output |
+| macOS AddressSanitizer + UBSan configure/build/CTest | Passed; 3/3 |
 | clang-format format-check | Passed |
 | git diff --check | Passed |
-| Native SDL Direct3D 11 diagnostic | Exit 0; 12 frames; clean shutdown |
-| Native frame readback | Visually inspected; physics outline aligns with sprite/camera |
+| Native SDL Metal diagnostic | Exit 0; 12 frames; clean shutdown |
+| Native Retina readback | 2400x1350 BMP visually inspected; debug outline matches geometry/camera |
+| External add_subdirectory consumer | Configure/build/run passed; physics advances with BUILD_TESTING=OFF and YK_RUNTIME=OFF |
+| Consumer isolation | Zero CTest tests; no SDL/test build targets or SDL dynamic dependency |
 
-The physics executable performs 104 behavioral checks, including fixed-frame partitioning,
+Physics performs 110 behavioral checks covering fixed-frame partitioning,
 gravity/mass/forces, disable/re-enable, friction, restitution, sleeping, contact lifecycle,
-sensor enter/exit/nonblocking behavior, filtering, ray/point/AABB queries, geometry
-validation, foreign/stale handles, world recreation, spring convergence, motor/limit
-behavior, a thin-wall high-speed CCD case, a 12-body stack, 70,000 shape create/destroy
-cycles across native generation wrap, catch-up event retention and interpolation bounds.
+sensor entry/exit/nonblocking behavior, filtering, spatial queries, geometry validation,
+foreign/stale handles, world recreation, springs, hinge motors/limits/reference angles,
+high-speed thin-wall CCD, a 12-body stack, 70,000 shape recycling cycles, a separate
+65,536-cycle pending sensor-event generation-wrap case, catch-up events and interpolation.
 
-Runtime tests retain SDL failure cleanup, input/focus/quit transitions, renderer/texture
-lifetime, canonical BMP caching, resizing, camera/ordering pixel checks, and now verify
-physics debug pixels against actual meter conversion and camera projection.
+Runtime tests use real software-renderer BMP pixel checks for camera projection,
+layer/depth/submission ordering and physics debug meter conversion. They also verify
+failure cleanup, texture ownership/caching/release, resize, focus/input/quit transitions,
+first-frame/reset timing and minimized/restored input behavior.
 
-AddressSanitizer instruments project code **and Box2D**. SDL is not instrumented.
-MSVC has no UBSan in this configuration; Clang/GCC use ASan + UBSan, but those paths
-were not executed on this Windows host. No leak-checker result is claimed.
-Project builds pass warnings-as-errors. Upstream warnings are handled separately.
+ASan/UBSan instruments project code and Box2D; SDL is not instrumented. No separate
+leak-checker result is claimed. Project code passes warnings-as-errors; upstream SDL
+macOS SDK deprecation warnings are separate from project warnings.
 
-## Limits and platform status
+## Historical Windows evidence
 
-- This is the core engine library. Consumer applications supply their own executable and loop.
-- New physics work is verified on Windows x64; no new macOS/Linux build is claimed.
-- Native Direct3D rendering/readback and bounded launch verified; hands-on keyboard,
-  focus switching, minimize/restore and desktop resize were not manually exercised.
+The previous status record reports Windows x64 MSVC 19.44.35229/VS 2022 Build Tools:
+Debug, Release and AddressSanitizer CTest 3/3; headless 2/2; format/diff checks;
+12-frame native Direct3D 11 smoke and visually inspected readback. Those results
+precede the root-layout continuation and are retained as historical evidence.
+The current changes were not executed on MSVC. MSVC's preset uses ASan without UBSan.
+
+## Limits
+
+- Consumer applications supply their own executable and physics advance calls.
+- Current native verification is macOS arm64; current Windows revalidation and Linux
+  verification remain future platform work.
+- Minimize/restore, focus and key behavior are integration-tested through SDL events;
+  hands-on desktop keyboard/focus/minimize/resize behavior was not manually exercised.
 - Physics is single-threaded per world. Same-build fixed-tick repeatability is tested;
-  cross-platform bitwise determinism and arbitrary-speed/scale behavior are not claimed.
-- Continuous collision does not guarantee bullet-vs-bullet or swept sensor detection.
-- Forces are consumed per solver tick; sustained forces must be applied each fixed tick.
-- No shape casts, one-way-platform/controller policy, custom contact callbacks,
+  cross-platform bitwise determinism and arbitrary speed/scale correctness are not claimed.
+- CCD does not guarantee bullet-vs-bullet or swept sensor detection.
+- Forces are consumed per solver tick; sustained forces require application each tick.
+- No shape casts, controller/one-way-platform policy, custom contact callbacks,
   physics serialization, additional joint families or automatic sprite synchronization.
 - No scenes, tilemaps, sprite-sheet animation, PNG loader, controller input, UI or audio.
-- Renderer texture metadata remains append-only; asset sharing/unload policy is still caller-owned.
-- No standalone package installer or CI pipeline is supplied.
+- Texture metadata is append-only; asset sharing/unload policy remains caller-owned.
+- Runtime callers must use the OS main thread; creation-thread assertions alone cannot
+  establish that an application's first SDL initialization occurs on the OS main thread.
+- No standalone installer or CI pipeline is supplied.
 
-API contracts: physics.md and architecture.md. Durable decisions: decisions/0001 and
-decisions/0002. The completed audit/remediation record is cleanup-report.md.
+API contracts: physics.md and architecture.md. Durable decisions: decisions/0001,
+decisions/0002 and decisions/0003. Audit/remediation history: cleanup-report.md.

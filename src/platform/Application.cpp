@@ -84,8 +84,9 @@ Status Application::run(ApplicationLayer &layer, const RunOptions &options) {
     if (!initialized)
         return initialized;
     FrameClock clock;
-    bool focused = (SDL_GetWindowFlags(impl_->window.get()) & SDL_WINDOW_INPUT_FOCUS) != 0;
-    bool minimized = false;
+    const auto windowFlags = SDL_GetWindowFlags(impl_->window.get());
+    bool focused = (windowFlags & SDL_WINDOW_INPUT_FOCUS) != 0;
+    bool minimized = (windowFlags & SDL_WINDOW_MINIMIZED) != 0;
     unsigned frames = 0;
     bool running = true;
     while (running) {

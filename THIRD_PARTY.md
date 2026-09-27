@@ -15,7 +15,7 @@ Keep these with redistributed binaries. Upstream sources retain their own notice
 SDL's optional external HIDAPI libusb is disabled. Upstream tests/samples are not built.
 Development tools (CMake, Ninja, compilers, clang-format) are not runtime dependencies.
 
-The first configure downloads and verifies sources into engine/build/<preset>/_deps.
+The first configure downloads and verifies sources into build/<preset>/_deps.
 Offline same-release source overrides FETCHCONTENT_SOURCE_DIR_BOX2D and
 FETCHCONTENT_SOURCE_DIR_SDL3 are possible; callers must verify overridden checkouts,
 because CMake source overrides bypass archive hashing. YK_RUNTIME=OFF omits SDL entirely.

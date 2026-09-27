@@ -9,7 +9,7 @@
     {
       "name": "dev",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/engine/build/dev",
+      "binaryDir": "${sourceDir}/build/dev",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
@@ -19,7 +19,7 @@
     {
       "name": "release",
       "inherits": "dev",
-      "binaryDir": "${sourceDir}/engine/build/release",
+      "binaryDir": "${sourceDir}/build/release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
@@ -27,7 +27,7 @@
     {
       "name": "asan",
       "inherits": "dev",
-      "binaryDir": "${sourceDir}/engine/build/asan",
+      "binaryDir": "${sourceDir}/build/asan",
       "cacheVariables": {
         "YK_SANITIZERS": "ON"
       }
@@ -35,7 +35,7 @@
     {
       "name": "headless",
       "inherits": "dev",
-      "binaryDir": "${sourceDir}/engine/build/headless",
+      "binaryDir": "${sourceDir}/build/headless",
       "cacheVariables": {
         "YK_RUNTIME": "OFF"
       }

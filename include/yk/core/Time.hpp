@@ -9,6 +9,7 @@ FrameTime boundedDelta(double seconds);
 class FrameClock {
   public:
     using Clock = std::chrono::steady_clock;
+    // The next tick starts a new interval and returns zero, like the first tick.
     void reset();
     FrameTime tick();
 

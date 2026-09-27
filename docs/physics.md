@@ -93,7 +93,9 @@ solid response without a dynamic body).
 Sensors report overlap and apply no response. Their density contributes mass unless
 explicitly zero. Sensor events are enabled on all created shapes so sensors can see
 solid visitors. contacts(body) returns current manifold data, including points,
-separation and normal impulses; sensorOverlaps(sensor) returns current visitors.
+separation and normal impulses; sensorOverlaps(sensor) returns visitors from the latest
+solver tick, excluding destroyed shapes and disabled bodies immediately. A disabled
+sensor returns no overlaps. Teleports and filter changes are reflected after the next tick.
 
 events() exposes ContactBegin, ContactEnd, ContactHit, SensorBegin and SensorEnd for
 all ticks performed by the latest successful advance. Sensor is first in sensor
@@ -117,6 +119,7 @@ Disabled bodies are excluded. Segment point queries have no solid interior.
 
 Distance joints enforce a rest length, or use springHertz/dampingRatio for a spring.
 Revolute joints connect local anchors, with optional angle limits and motor speed/torque.
+Reference angles are normalized modulo 2pi to preserve equivalent rotations.
 Joint definitions require distinct bodies in this world and at least one dynamic body.
 Destroying either body invalidates its attached joint. More joint types are not exposed.
 

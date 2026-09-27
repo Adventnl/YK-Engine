@@ -56,6 +56,7 @@ struct World::Impl {
     struct Shape {
         b2ShapeId nativeId;
         BodyHandle body;
+        std::uint64_t creationTick;
     };
     struct Joint {
         b2JointId nativeId;
@@ -98,6 +99,14 @@ struct World::Impl {
     ShapeHandle shapeHandle(b2ShapeId id) const {
         const auto it = nativeShapes.find(b2StoreShapeId(id));
         return it == nativeShapes.end() ? ShapeHandle{} : it->second;
+    }
+    void retireShape(const Shape &shape) {
+        const auto id = b2StoreShapeId(shape.nativeId);
+        // Unstepped shapes have no native contacts or sensor history to preserve.
+        if (shape.creationTick == ticks)
+            nativeShapes.erase(id);
+        else
+            retiredShapes.push_back(id);
     }
     void collectEvents();
 };

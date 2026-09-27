@@ -8,8 +8,7 @@ FrameTime boundedDelta(double seconds) {
     return {static_cast<float>(std::min(seconds, 0.1))};
 }
 void FrameClock::reset() {
-    previous_ = Clock::now();
-    started_ = true;
+    started_ = false;
 }
 FrameTime FrameClock::tick() {
     const auto now = Clock::now();

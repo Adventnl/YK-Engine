@@ -2,7 +2,7 @@
 
 A proprietary C++20 **2D engine library** with a working rigid-body physics subsystem.
 This repository contains the engine itself. All headers, implementation, tests,
-documentation, license notices and generated builds live under `engine/`.
+documentation and license notices live in this repository; generated builds live in `build/`.
 
 Physics runs independently of SDL. It provides static/dynamic/kinematic bodies,
 circles, boxes, capsules, convex polygons, static/kinematic segments, collision
@@ -32,6 +32,6 @@ Consumers use `add_subdirectory(path/to/YK-Engine)` and link `yk::engine`.
 Set `BUILD_TESTING=OFF` for a library-only build. Set `YK_RUNTIME=OFF` to avoid
 downloading/linking SDL. Public physics headers contain no Box2D or SDL types.
 
-Read [physics usage](engine/docs/physics.md), [architecture](engine/docs/architecture.md),
-[verified status](engine/docs/status.md), [build plan](engine/docs/build-plan.md),
-and [dependency notices](engine/THIRD_PARTY.md).
+Read [physics usage](docs/physics.md), [architecture](docs/architecture.md),
+[verified status](docs/status.md), [build plan](docs/build-plan.md),
+and [dependency notices](THIRD_PARTY.md).

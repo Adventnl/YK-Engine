@@ -12,11 +12,11 @@ void check(bool passed, const char *description) {
         ++failures;
     }
 }
-void focus(SDL_WindowID window, Uint32 type) {
+void windowEvent(SDL_WindowID window, Uint32 type) {
     SDL_Event event{};
     event.type = type;
     event.window.windowID = window;
-    check(SDL_PushEvent(&event), "push focus event");
+    check(SDL_PushEvent(&event), "push window event");
 }
 void key(SDL_WindowID window, Uint32 type, SDL_Scancode scancode) {
     SDL_Event event{};
@@ -61,7 +61,7 @@ class TestApplicationLayer final : public yk::ApplicationLayer {
         }
         window_ = SDL_GetWindowID(windows[0]);
         SDL_free(windows);
-        focus(window_, SDL_EVENT_WINDOW_FOCUS_GAINED);
+        windowEvent(window_, SDL_EVENT_WINDOW_FOCUS_GAINED);
         key(window_, SDL_EVENT_KEY_DOWN, SDL_SCANCODE_D);
         return yk::success();
     }
@@ -69,21 +69,42 @@ class TestApplicationLayer final : public yk::ApplicationLayer {
         const auto state = frame.keyboard.state(yk::Key::D);
         if (frames_ == 0) {
             check(state.held && state.pressed, "platform key mapping and first press");
-            focus(window_, SDL_EVENT_WINDOW_FOCUS_LOST);
+            check(frame.delta.seconds == 0, "application first frame has zero delta");
+            windowEvent(window_, SDL_EVENT_WINDOW_FOCUS_LOST);
         } else if (frames_ == 1) {
             check(!state.held && state.released && frame.delta.seconds == 0,
                   "focus loss releases and pauses simulation");
             key(window_, SDL_EVENT_KEY_DOWN, SDL_SCANCODE_D); // Ignored while unfocused.
         } else if (frames_ == 2) {
             check(!state.held && !state.pressed, "unfocused key ignored");
-            focus(window_, SDL_EVENT_WINDOW_FOCUS_GAINED);
+            windowEvent(window_, SDL_EVENT_WINDOW_FOCUS_GAINED);
             key(window_, SDL_EVENT_KEY_DOWN, SDL_SCANCODE_D);
             key(window_, SDL_EVENT_KEY_UP, SDL_SCANCODE_D);
         } else if (frames_ == 3) {
             check(!state.held && state.pressed && state.released, "platform same-frame tap");
-            focus(window_, SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED);
+            check(frame.delta.seconds == 0, "focus gain resets frame clock");
+            windowEvent(window_, SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED);
         } else if (frames_ == 4) {
             check(!state.held && !state.pressed && !state.released, "edges cleared next frame");
+            key(window_, SDL_EVENT_KEY_DOWN, SDL_SCANCODE_D);
+        } else if (frames_ == 5) {
+            check(state.held && state.pressed, "focused key starts before minimization");
+            windowEvent(window_, SDL_EVENT_WINDOW_MINIMIZED);
+        } else if (frames_ == 6) {
+            check(!state.held && state.released && frame.delta.seconds == 0,
+                  "minimization releases keys and pauses simulation");
+            key(window_, SDL_EVENT_KEY_DOWN, SDL_SCANCODE_D);
+        } else if (frames_ == 7) {
+            check(!state.held && !state.pressed && !state.released && frame.delta.seconds == 0,
+                  "minimized input is ignored and simulation stays paused");
+            windowEvent(window_, SDL_EVENT_WINDOW_RESTORED);
+            key(window_, SDL_EVENT_KEY_DOWN, SDL_SCANCODE_D);
+        } else if (frames_ == 8) {
+            check(state.held && state.pressed && frame.delta.seconds == 0,
+                  "restore accepts input and resets frame clock");
+            key(window_, SDL_EVENT_KEY_UP, SDL_SCANCODE_D);
+        } else if (frames_ == 9) {
+            check(!state.held && state.released, "restored key release is observed");
             SDL_Event quit{};
             quit.type = SDL_EVENT_QUIT;
             check(SDL_PushEvent(&quit), "push quit");
@@ -296,11 +317,11 @@ int main(int argc, char **argv) {
             std::fprintf(stderr, "%s\n", app.error().c_str());
             return 1;
         }
-        const auto result = app.value()->run(layer, {10, std::nullopt});
+        const auto result = app.value()->run(layer, {12, std::nullopt});
         if (!result)
             std::fprintf(stderr, "%s\n", result.error().c_str());
         check(static_cast<bool>(result), "real loop renders and exits");
-        check(layer.frames() == 5, "quit is handled before another update");
+        check(layer.frames() == 10, "quit is handled before another update");
         check(!app.value()->run(layer, {1, std::nullopt}), "single-use application contract");
     }
     check(SDL_WasInit(0) == 0, "shutdown releases SDL after resources");

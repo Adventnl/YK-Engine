@@ -2,8 +2,8 @@
 
 ## Library and dependency direction
 
-`yk::engine` is a C++20 static library. Public headers live in engine/include/yk.
-The root CMake file delegates to engine/CMakeLists.txt. There is no game target.
+`yk::engine` is a C++20 static library. Public headers live in include/yk.
+The root CMake file defines the library and optional engine tests. There is no game target.
 
 ```text
 physics -> core math/results -> private Box2D
@@ -26,8 +26,11 @@ wrap cannot resurrect engine handles. No raw native IDs appear in the public API
 
 Bodies track attached shapes/joints. Destroying a body removes those records,
 invalidates their handles, and leaves the other attached body alive. Reverse native
-shape lookup retains retired identities until the next solver tick so end events
-can refer to destroyed shapes. Event consumers must call valid() before using a handle.
+shape lookup retains previously stepped identities until the next solver tick so end
+events can refer to destroyed shapes. Unstepped shape identities retire immediately.
+Creation skips a recycled native ID if its generation collides with a pending historical
+identity, keeping both overlap snapshots and end events safe through generation wrap.
+Event consumers must call valid() before using a handle.
 
 World calls must stay on its creation thread. Debug assertions enforce this contract;
 concurrent access is not supported. Distinct worlds may be used independently, within

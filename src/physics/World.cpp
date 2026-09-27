@@ -102,66 +102,79 @@ Result<ShapeHandle> World::createShape(BodyHandle body, const Geometry &geometry
     shape.enableContactEvents = true;
     shape.enableHitEvents = true;
     auto &record = impl_->bodies.at(body.serial_);
-    const auto id = std::visit(
-        [&](const auto &geometryValue) -> b2ShapeId {
-            using T = std::decay_t<decltype(geometryValue)>;
-            if constexpr (std::is_same_v<T, Circle>) {
-                if (!positiveDimension(geometryValue.radius) || !bounded(geometryValue.center))
-                    return {};
-                const b2Circle circle{physics::native(geometryValue.center), geometryValue.radius};
-                return b2CreateCircleShape(record.nativeId, &shape, &circle);
-            } else if constexpr (std::is_same_v<T, Box>) {
-                if (!positiveDimension(geometryValue.halfExtents.x) ||
-                    !positiveDimension(geometryValue.halfExtents.y) ||
-                    !bounded(geometryValue.center) || !bounded(geometryValue.angleRadians))
-                    return {};
-                const auto box = b2MakeOffsetBox(
-                    geometryValue.halfExtents.x, geometryValue.halfExtents.y,
-                    physics::native(geometryValue.center), b2MakeRot(geometryValue.angleRadians));
-                return b2CreatePolygonShape(record.nativeId, &shape, &box);
-            } else if constexpr (std::is_same_v<T, Capsule> || std::is_same_v<T, Segment>) {
-                if (!bounded(geometryValue.first) || !bounded(geometryValue.second) ||
-                    std::hypot(geometryValue.second.x - geometryValue.first.x,
-                               geometryValue.second.y - geometryValue.first.y) < minimumDimension)
-                    return {};
-                if constexpr (std::is_same_v<T, Capsule>) {
-                    if (!positiveDimension(geometryValue.radius))
+    const auto createNativeShape = [&] {
+        return std::visit(
+            [&](const auto &geometryValue) -> b2ShapeId {
+                using T = std::decay_t<decltype(geometryValue)>;
+                if constexpr (std::is_same_v<T, Circle>) {
+                    if (!positiveDimension(geometryValue.radius) || !bounded(geometryValue.center))
                         return {};
-                    const b2Capsule capsule{physics::native(geometryValue.first),
-                                            physics::native(geometryValue.second),
-                                            geometryValue.radius};
-                    return b2CreateCapsuleShape(record.nativeId, &shape, &capsule);
+                    const b2Circle circle{physics::native(geometryValue.center),
+                                          geometryValue.radius};
+                    return b2CreateCircleShape(record.nativeId, &shape, &circle);
+                } else if constexpr (std::is_same_v<T, Box>) {
+                    if (!positiveDimension(geometryValue.halfExtents.x) ||
+                        !positiveDimension(geometryValue.halfExtents.y) ||
+                        !bounded(geometryValue.center) || !bounded(geometryValue.angleRadians))
+                        return {};
+                    const auto box =
+                        b2MakeOffsetBox(geometryValue.halfExtents.x, geometryValue.halfExtents.y,
+                                        physics::native(geometryValue.center),
+                                        b2MakeRot(geometryValue.angleRadians));
+                    return b2CreatePolygonShape(record.nativeId, &shape, &box);
+                } else if constexpr (std::is_same_v<T, Capsule> || std::is_same_v<T, Segment>) {
+                    if (!bounded(geometryValue.first) || !bounded(geometryValue.second) ||
+                        std::hypot(geometryValue.second.x - geometryValue.first.x,
+                                   geometryValue.second.y - geometryValue.first.y) <
+                            minimumDimension)
+                        return {};
+                    if constexpr (std::is_same_v<T, Capsule>) {
+                        if (!positiveDimension(geometryValue.radius))
+                            return {};
+                        const b2Capsule capsule{physics::native(geometryValue.first),
+                                                physics::native(geometryValue.second),
+                                                geometryValue.radius};
+                        return b2CreateCapsuleShape(record.nativeId, &shape, &capsule);
+                    } else {
+                        if (definition.sensor || b2Body_GetType(record.nativeId) == b2_dynamicBody)
+                            return {};
+                        const b2Segment segment{physics::native(geometryValue.first),
+                                                physics::native(geometryValue.second)};
+                        return b2CreateSegmentShape(record.nativeId, &shape, &segment);
+                    }
                 } else {
-                    if (definition.sensor || b2Body_GetType(record.nativeId) == b2_dynamicBody)
+                    if (geometryValue.vertices.size() < 3 ||
+                        geometryValue.vertices.size() > B2_MAX_POLYGON_VERTICES)
                         return {};
-                    const b2Segment segment{physics::native(geometryValue.first),
-                                            physics::native(geometryValue.second)};
-                    return b2CreateSegmentShape(record.nativeId, &shape, &segment);
-                }
-            } else {
-                if (geometryValue.vertices.size() < 3 ||
-                    geometryValue.vertices.size() > B2_MAX_POLYGON_VERTICES)
-                    return {};
-                std::array<b2Vec2, B2_MAX_POLYGON_VERTICES> points{};
-                for (std::size_t i = 0; i < geometryValue.vertices.size(); ++i) {
-                    if (!bounded(geometryValue.vertices[i]))
+                    std::array<b2Vec2, B2_MAX_POLYGON_VERTICES> points{};
+                    for (std::size_t i = 0; i < geometryValue.vertices.size(); ++i) {
+                        if (!bounded(geometryValue.vertices[i]))
+                            return {};
+                        points[i] = physics::native(geometryValue.vertices[i]);
+                    }
+                    const auto hull = b2ComputeHull(
+                        points.data(), static_cast<int>(geometryValue.vertices.size()));
+                    if (hull.count != static_cast<int>(geometryValue.vertices.size()) ||
+                        !b2ValidateHull(&hull))
                         return {};
-                    points[i] = physics::native(geometryValue.vertices[i]);
+                    const auto polygon = b2MakePolygon(&hull, 0);
+                    return b2CreatePolygonShape(record.nativeId, &shape, &polygon);
                 }
-                const auto hull =
-                    b2ComputeHull(points.data(), static_cast<int>(geometryValue.vertices.size()));
-                if (hull.count != static_cast<int>(geometryValue.vertices.size()) ||
-                    !b2ValidateHull(&hull))
-                    return {};
-                const auto polygon = b2MakePolygon(&hull, 0);
-                return b2CreatePolygonShape(record.nativeId, &shape, &polygon);
-            }
-        },
-        geometry);
+            },
+            geometry);
+    };
+    auto id = createNativeShape();
     if (B2_IS_NULL(id))
         return Error{"Invalid shape geometry (minimum dimension 0.005 m; polygons must be convex)"};
+    if (impl_->nativeShapes.contains(b2StoreShapeId(id))) {
+        // A native 16-bit generation may wrap while an old end event is pending.
+        // Skip that identity before exposing it; the unstepped shape has no events.
+        b2DestroyShape(id, true);
+        id = createNativeShape();
+        assert(B2_IS_NON_NULL(id) && !impl_->nativeShapes.contains(b2StoreShapeId(id)));
+    }
     const auto handle = impl_->handle<ShapeTag>();
-    impl_->shapes.emplace(handle.serial_, Impl::Shape{id, body});
+    impl_->shapes.emplace(handle.serial_, Impl::Shape{id, body, impl_->ticks});
     impl_->nativeShapes.insert_or_assign(b2StoreShapeId(id), handle);
     record.shapes.push_back(handle);
     return handle;
@@ -170,7 +183,7 @@ Status World::destroy(ShapeHandle shape) {
     if (!valid(shape))
         return invalidHandle();
     const auto record = impl_->shapes.at(shape.serial_);
-    impl_->retiredShapes.push_back(b2StoreShapeId(record.nativeId));
+    impl_->retireShape(record);
     b2DestroyShape(record.nativeId, true);
     std::erase(impl_->bodies.at(record.body.serial_).shapes, shape);
     impl_->shapes.erase(shape.serial_);
@@ -195,9 +208,8 @@ Status World::destroy(BodyHandle body) {
         if (!status)
             return status;
     }
-    for (const auto shape : record.shapes) {
-        const auto nativeId = impl_->shapes.at(shape.serial_).nativeId;
-        impl_->retiredShapes.push_back(b2StoreShapeId(nativeId));
+    for (const auto &shape : record.shapes) {
+        impl_->retireShape(impl_->shapes.at(shape.serial_));
         impl_->shapes.erase(shape.serial_);
     }
     b2DestroyBody(record.nativeId);

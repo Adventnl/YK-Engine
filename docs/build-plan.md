@@ -8,6 +8,8 @@ Game vertical slices, castle systems, quests, inventory and platformer rules are
 
 ## Layout
 
+The latest repository reorganization places engine modules at the root:
+
 ```text
 /
   CMakeLists.txt
@@ -15,35 +17,35 @@ Game vertical slices, castle systems, quests, inventory and platformer rules are
   README.md
   .clang-format
   .gitignore
-  engine/
-    CMakeLists.txt
-    include/yk/{core,input,graphics,physics}/
-    src/{core,input,platform,graphics,physics}/
-    tests/{unit,integration}/
-    docs/decisions/
-    LICENSES/
-    THIRD_PARTY.md
-    build/                    # ignored generated output only
+  include/yk/{core,input,graphics,physics}/
+  src/{core,input,platform,graphics,physics}/
+  tests/{unit,integration}/
+  docs/decisions/
+  LICENSES/
+  THIRD_PARTY.md
+  build/                    # ignored generated output only
 ```
 
 Create only used modules. There is no games directory or game/run target.
 
-## Current implementation pass
+## Engine physics milestone
 
-- Remove sandbox source/targets and replace the Game runtime interface with ApplicationLayer.
-- Consolidate tests, docs, licenses and build output into engine/.
-- Integrate SHA-256-pinned Box2D privately, with a headless build path.
-- Implement world ownership; lifetime-safe bodies/shapes/joints; physical materials and filtering.
-- Support circles, boxes, capsules, convex polygons and static/kinematic segments.
-- Add fixed stepping, catch-up limits, interpolation, forces/impulses and configurable gravity.
-- Add copied contact/impact/sensor events, current contacts/overlaps and spatial queries.
-- Add distance/spring constraints and hinges with angular limits/motors.
-- Integrate actual shape outlines into the existing renderer with explicit meters-to-world conversion.
-- Verify Windows Debug/Release/headless/sanitizers, physical scenarios and renderer readback.
-- Rewrite docs around actual engine capability and boundaries.
+- [x] Remove sandbox source/targets and replace the Game runtime interface with ApplicationLayer.
+- [x] Consolidate source, tests, docs and licenses in the current root layout; keep build output ignored.
+- [x] Integrate SHA-256-pinned Box2D privately, with a headless build path.
+- [x] Implement world ownership; lifetime-safe bodies/shapes/joints; physical materials and filtering.
+- [x] Support circles, boxes, capsules, convex polygons and static/kinematic segments.
+- [x] Add fixed stepping, catch-up limits, interpolation, forces/impulses and configurable gravity.
+- [x] Add copied contact/impact/sensor events, current contacts/overlaps and spatial queries.
+- [x] Add distance/spring constraints and hinges with angular limits/motors.
+- [x] Integrate actual shape outlines into the renderer with explicit meters-to-world conversion.
+- [x] Verify current Debug/Release/headless/sanitizer builds, physical scenarios and renderer readback.
+- [x] Rewrite docs around actual engine capability, current layout and verified boundaries.
 
-Completion evidence and remaining limits are tracked in status.md. The next pass
+This milestone is complete. Completion evidence and remaining limits are tracked in status.md. The next pass
 must remain engine-focused; it must not reintroduce a game to demonstrate progress.
+The original Windows verification is retained as historical evidence; this continuation
+verifies the current root layout on native macOS.
 
 ## Subsequent work
 

@@ -53,7 +53,7 @@ Result<JointHandle> World::createRevoluteJoint(const RevoluteJointDef &definitio
     joint.bodyIdB = second.nativeId;
     joint.localAnchorA = physics::native(definition.localAnchorFirst);
     joint.localAnchorB = physics::native(definition.localAnchorSecond);
-    joint.referenceAngle = definition.referenceAngle;
+    joint.referenceAngle = std::remainder(definition.referenceAngle, 2 * std::numbers::pi_v<float>);
     joint.enableLimit = definition.enableLimit;
     joint.lowerAngle = definition.lowerAngle;
     joint.upperAngle = definition.upperAngle;

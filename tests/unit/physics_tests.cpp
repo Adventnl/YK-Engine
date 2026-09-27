@@ -224,7 +224,17 @@ void sensorsAndFilters() {
     ok(simulation->setVelocity(moving, {}));
     ticks(*simulation, 1);
     check(!take(simulation->sensorOverlaps(sensor)).empty(), "visitor overlaps before destruction");
+    ok(simulation->setEnabled(moving, false));
+    check(take(simulation->sensorOverlaps(sensor)).empty(),
+          "disabled visitor is immediately excluded from current sensor overlaps");
+    ok(simulation->setEnabled(moving, true));
+    ok(simulation->setEnabled(region, false));
+    check(take(simulation->sensorOverlaps(sensor)).empty(),
+          "disabled sensor immediately reports no current overlaps");
+    ok(simulation->setEnabled(region, true));
     ok(simulation->destroy(moving));
+    check(take(simulation->sensorOverlaps(sensor)).empty(),
+          "destroyed visitor is immediately excluded from current sensor overlaps");
     const auto replacement = body(*simulation, {0, 0});
     const auto replacementShape = take(simulation->createShape(replacement, Circle{}));
     ticks(*simulation, 1);
@@ -430,6 +440,25 @@ void jointsAndFastBodies() {
     check(limitedAngle > 0.35F && limitedAngle < 0.43F,
           "revolute angle limits constrain a powered motor");
 
+    auto angleWorld = world({});
+    const auto referencePivot = body(*angleWorld, {}, BodyType::Static);
+    BodyDef referenceBody;
+    referenceBody.pose.angleRadians = -std::numbers::pi_v<float> / 2;
+    const auto referenceRotor = take(angleWorld->createBody(referenceBody));
+    take(angleWorld->createShape(referenceRotor, Box{{1, 0.1F}}));
+    RevoluteJointDef referenceHinge;
+    referenceHinge.first = referencePivot;
+    referenceHinge.second = referenceRotor;
+    referenceHinge.referenceAngle = 3 * std::numbers::pi_v<float> / 2;
+    referenceHinge.enableLimit = true;
+    referenceHinge.lowerAngle = -0.05F;
+    referenceHinge.upperAngle = 0.05F;
+    take(angleWorld->createRevoluteJoint(referenceHinge));
+    ticks(*angleWorld, 60);
+    check(near(take(angleWorld->state(referenceRotor)).pose.angleRadians,
+               -std::numbers::pi_v<float> / 2, 0.01F),
+          "revolute reference angles preserve equivalent rotations beyond pi");
+
     auto fastWorld = world({});
     const auto wall = body(*fastWorld, {}, BodyType::Static);
     take(fastWorld->createShape(wall, Box{{0.02F, 10}}));
@@ -455,7 +484,7 @@ void stacksAndChurn() {
     }
     ticks(*simulation, 600);
     float previousY = 10;
-    for (const auto handle : stack) {
+    for (const auto &handle : stack) {
         const auto value = take(simulation->state(handle));
         check(finite(value.pose.position) && value.pose.position.y < previousY - 0.8F,
               "stacked boxes preserve ordering without penetration or numerical failure");
@@ -480,6 +509,31 @@ void stacksAndChurn() {
     const auto afterStep = take(churn->queryPoint({}));
     check(afterStep.size() == 1 && afterStep.front() == live && churn->stats().shapes == 1,
           "retired metadata cleanup preserves live replacement shape");
+
+    auto eventChurn = world({});
+    const auto eventRegion = body(*eventChurn, {}, BodyType::Static);
+    ShapeDef eventTrigger;
+    eventTrigger.sensor = true;
+    const auto eventSensor = take(eventChurn->createShape(eventRegion, Box{}, eventTrigger));
+    const auto eventVisitorBody = body(*eventChurn, {});
+    const auto eventVisitor = take(eventChurn->createShape(eventVisitorBody, Circle{0.1F}));
+    ticks(*eventChurn, 1);
+    ok(eventChurn->destroy(eventVisitor));
+    for (unsigned i = 0; i < 65535; ++i) {
+        const auto shape = take(eventChurn->createShape(eventVisitorBody, Circle{0.1F}));
+        ok(eventChurn->destroy(shape));
+    }
+    const auto eventReplacement =
+        take(eventChurn->createShape(eventVisitorBody, Circle{0.1F, {10, 0}}));
+    check(take(eventChurn->sensorOverlaps(eventSensor)).empty(),
+          "native generation wrap cannot alias a historical sensor visitor to a live shape");
+    ticks(*eventChurn, 1);
+    bool wrappedEnd{};
+    for (const auto &event : eventChurn->events())
+        wrappedEnd |= event.type == EventType::SensorEnd && event.first == eventSensor &&
+                      event.second == eventVisitor;
+    check(wrappedEnd && eventChurn->valid(eventReplacement) && !eventChurn->valid(eventVisitor),
+          "sensor end preserves destroyed identity across native generation wrap");
 
     auto batch = world({});
     const auto region = body(*batch, {}, BodyType::Static);

@@ -108,12 +108,18 @@ Result<std::vector<ShapeHandle>> World::sensorOverlaps(ShapeHandle sensor) const
     const auto id = impl_->shapes.at(sensor.serial_).nativeId;
     if (!b2Shape_IsSensor(id))
         return Error{"Overlap query requires a sensor shape"};
+    if (!b2Body_IsEnabled(b2Shape_GetBody(id)))
+        return std::vector<ShapeHandle>{};
     std::vector<b2ShapeId> data(static_cast<std::size_t>(b2Shape_GetSensorCapacity(id)));
     const int count = b2Shape_GetSensorOverlaps(id, data.data(), static_cast<int>(data.size()));
     std::vector<ShapeHandle> result;
     result.reserve(static_cast<std::size_t>(count));
-    for (int i = 0; i < count; ++i)
-        result.push_back(impl_->shapeHandle(data[static_cast<std::size_t>(i)]));
+    for (int i = 0; i < count; ++i) {
+        const auto shape = impl_->shapeHandle(data[static_cast<std::size_t>(i)]);
+        if (valid(shape) &&
+            b2Body_IsEnabled(b2Shape_GetBody(impl_->shapes.at(shape.serial_).nativeId)))
+            result.push_back(shape);
+    }
     std::sort(result.begin(), result.end(),
               [](ShapeHandle first, ShapeHandle second) { return first.serial_ < second.serial_; });
     return result;

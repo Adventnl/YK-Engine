@@ -2,7 +2,8 @@
 
 This repository is the core 2D engine library. Do not add games, gameplay rules,
 a sandbox, game-specific assets, or application executables. Engine tests are allowed.
-All project directories belong inside `engine/`; root files provide build entry points.
+Keep source in `src/`, public headers in `include/yk/`, tests in `tests/`, docs in
+`docs/`, notices in `LICENSES/` and generated output in ignored `build/`.
 
 Before coding read this file, build-plan.md, status.md, whats-next.md, architecture.md
 and the relevant subsystem documentation. Repository reality overrides old claims.
@@ -10,7 +11,7 @@ and the relevant subsystem documentation. Repository reality overrides old claim
 ## Architecture and ownership
 
 - C++20, CMake, Windows x64 primary, native macOS secondary.
-- Public headers: engine/include/yk; implementations: engine/src.
+- Public headers: include/yk; implementations: src.
 - Physics depends on core math/results and private Box2D. It must work without SDL.
 - Platform/graphics depend on SDL privately. Physics debug rendering is a graphics adapter.
 - No game dependencies, global service locators, mutable singleton worlds or circular dependencies.
@@ -37,7 +38,7 @@ and the relevant subsystem documentation. Repository reality overrides old claim
 
 - Treat project warnings as errors (/W4 /WX or equivalent).
 - Dependencies must earn their place, have compatible licenses, and use pinned releases and hashes.
-- Keep redistributed dependency notices in engine/LICENSES and engine/THIRD_PARTY.md.
+- Keep redistributed dependency notices in LICENSES and THIRD_PARTY.md.
 - Tests must verify physical behavior, lifecycle, invalid inputs and regression cases.
 - Required gates: configure, build and CTest for dev; Release and sanitizer gates for physics changes.
 - Verify headless builds when changing physics dependencies.

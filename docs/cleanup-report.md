@@ -70,8 +70,8 @@ This is the pre-remediation scorecard, not a claim about the final verified stat
 3. Integrate real collider debug rendering and test physical behavior/ownership.
 4. Run Windows build/test/format/sanitizer/headless/native checks and update persistent docs.
 
-Additional joint families, shape casts, controller policy, packaging and non-Windows
-verification are deferred because they exceed this engine physics pass.
+Additional joint families, shape casts, controller policy and packaging were deferred
+in the original pass. Native macOS verification is covered by the continuation below.
 Final commands/results and limitations are recorded in status.md.
 
 Finish: inspected the entire repository → found 0 P0, 3 P1, 5 P2 and 1 P3 findings
@@ -83,3 +83,18 @@ physics/graphics/runtime APIs and implementations, engine tests and consolidated
 → configure/build/ctest presets dev/release/asan passed 3/3 each; headless passed 2/2;
 format-check and git diff --check passed; native Direct3D 11 smoke/readback passed
 → limits documented in physics.md/status.md → no unrelated features added.
+
+
+## Root-layout continuation (2026-09-27)
+
+The original report above records the earlier Windows pass and its then-current
+engine/ layout. Commit f20e619 subsequently moved the engine to the root. ADR 0003
+records the current paths and supersedes the original directory-placement decision.
+
+The continuation restores CMake project initialization, CTest registration and the
+64-bit Windows guard; aligns presets/docs with root paths; fixes native Clang handle
+copy warnings; and adds regressions for sensor overlap lifetime, equivalent hinge
+reference angles, frame-clock reset and minimize/restore input handling. Native-ID
+generation wrapping during pending end events is covered separately from ordinary
+stale-handle checks. See status.md for final current-toolchain gates; earlier Windows
+results are historical, not a claim that this continuation ran MSVC.
