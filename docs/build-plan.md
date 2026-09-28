@@ -55,3 +55,11 @@ fixed-tick force/controller callback. These are not scaffolded or claimed implem
 
 Audio, UI, scene serialization, tilemaps, animation and an editor are separate
 engine milestones requiring their own scoped acceptance criteria.
+
+## Playable foundation continuation (2026-09-27)
+
+The repository owner explicitly superseded the earlier engine-only product boundary. The runtime
+now builds the Elemental Escape reference game and reusable level/controller/animation/save
+foundation. The implemented and remaining scope is recorded in `game-foundation.md`; a second
+elemental character, puzzle mechanics, music/settings UI, and
+non-Linux package verification are the next coherent work items.

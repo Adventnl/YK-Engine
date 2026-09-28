@@ -1,6 +1,15 @@
 #include "yk/graphics/Renderer.hpp"
 #include "yk/core/Log.hpp"
 #include <SDL3/SDL.h>
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 #include <algorithm>
 #include <cassert>
 #include <limits>
@@ -138,6 +147,32 @@ Result<TextureHandle> Renderer::loadBmp(const std::filesystem::path &path) {
     impl_->fileTextures.insert_or_assign(canonical, handle);
     return handle;
 }
+Result<TextureHandle> Renderer::loadPng(const std::filesystem::path &path) {
+    assertThread();
+    if (!path.is_absolute())
+        return Error{"PNG path must be absolute: " + path.string()};
+    std::error_code error;
+    const auto canonical = std::filesystem::weakly_canonical(path, error);
+    if (error)
+        return Error{"Resolve PNG '" + path.string() + "': " + error.message()};
+    const auto cached = impl_->fileTextures.find(canonical);
+    if (cached != impl_->fileTextures.end() && valid(cached->second))
+        return cached->second;
+    const auto utf8 = canonical.u8string();
+    const std::string filename(utf8.begin(), utf8.end());
+    int width = 0, height = 0, channels = 0;
+    std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> pixels(
+        stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha), stbi_image_free);
+    if (!pixels)
+        return Error{"Decode PNG '" + filename + "': " + stbi_failure_reason()};
+    const auto count = static_cast<std::size_t>(width) * static_cast<std::size_t>(height);
+    auto texture =
+        createTexture(width, height, {reinterpret_cast<const Color *>(pixels.get()), count});
+    if (!texture)
+        return Error{"Upload PNG '" + filename + "': " + texture.error()};
+    impl_->fileTextures.insert_or_assign(canonical, texture.value());
+    return texture;
+}
 bool Renderer::valid(TextureHandle texture) const {
     assertThread();
     return texture.owner_.lock() == impl_->identity && texture.index_ < impl_->textures.size() &&
@@ -226,10 +261,22 @@ Status Renderer::present(const std::optional<std::filesystem::path> &capture) {
             if (!finite(size) || !finite({destination.x, destination.y}))
                 return Error{"Sprite projection overflow"};
             auto *texture = impl_->textures[sprite->texture.index_].get();
+            SDL_FRect sourceStorage{};
+            const SDL_FRect *source = nullptr;
+            if (sprite->source) {
+                const auto &region = *sprite->source;
+                if (!finite(region.position) || !positive(region.size))
+                    return Error{"Sprite contains an invalid source region"};
+                sourceStorage = {region.position.x, region.position.y, region.size.x,
+                                 region.size.y};
+                source = &sourceStorage;
+            }
             if (!SDL_SetTextureColorMod(texture, sprite->tint.r, sprite->tint.g, sprite->tint.b) ||
                 !SDL_SetTextureAlphaMod(texture, sprite->tint.a) ||
-                !SDL_RenderTextureRotated(impl_->native.get(), texture, nullptr, &destination,
-                                          sprite->transform.rotationDegrees, &pivot, SDL_FLIP_NONE))
+                !SDL_RenderTextureRotated(impl_->native.get(), texture, source, &destination,
+                                          sprite->transform.rotationDegrees, &pivot,
+                                          sprite->flipHorizontal ? SDL_FLIP_HORIZONTAL
+                                                                 : SDL_FLIP_NONE))
                 return sdlError("Draw sprite");
         } else if (const auto *line = std::get_if<DebugLine>(&command.data)) {
             const auto first = impl_->camera.worldToScreen(line->first, impl_->viewport);

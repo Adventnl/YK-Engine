@@ -32,6 +32,9 @@ struct Sprite {
     Vec2 size;               // World units, independent of texture dimensions.
     Vec2 anchor{0.5F, 0.5F}; // Fractional pivot used for positioning and rotation.
     Color tint{255, 255, 255, 255};
+    // Pixel-space atlas region. Empty draws the complete texture.
+    std::optional<Rect> source;
+    bool flipHorizontal{};
     int layer{};
     float depth{}; // Ascending depth, then submission order within each layer.
 };
@@ -43,6 +46,8 @@ class Renderer {
     Result<TextureHandle> createTexture(int width, int height, std::span<const Color> pixels);
     // Absolute paths only; equivalent paths share a cached resource.
     Result<TextureHandle> loadBmp(const std::filesystem::path &path);
+    // Decodes PNG as RGBA, preserves alpha and caches by canonical absolute path.
+    Result<TextureHandle> loadPng(const std::filesystem::path &path);
     Status release(TextureHandle texture);
     bool valid(TextureHandle texture) const;
     Vec2 viewport() const;

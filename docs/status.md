@@ -118,3 +118,11 @@ The current changes were not executed on MSVC. MSVC's preset uses ASan without U
 
 API contracts: physics.md and architecture.md. Durable decisions: decisions/0001,
 decisions/0002 and decisions/0003. Audit/remediation history: cleanup-report.md.
+
+## Linux playable-foundation continuation (2026-09-27)
+
+Elemental Escape adds a production-path executable, two validated connected maps, fixed-tick input
+and movement, PNG atlas animation, bitmap UI, pause/menu flow, persistent key/door/checkpoint state,
+hazards/respawn, event tones, and an installable package. Exact current behavior and remaining
+limits (notably moving-platform carry and unverified Windows/macOS packaging) are documented in
+`game-foundation.md`. This section supersedes older statements above that no game target exists.

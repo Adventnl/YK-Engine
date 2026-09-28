@@ -49,14 +49,16 @@ function(yk_target target)
     yk_sanitize(${target})
 endfunction()
 
-add_library(yk_engine STATIC src/core/Log.cpp src/core/Time.cpp src/input/Input.cpp
+add_library(yk_engine STATIC src/core/Log.cpp src/core/Time.cpp src/core/GameFoundation.cpp src/input/Input.cpp
     src/physics/World.cpp src/physics/Queries.cpp src/physics/Joints.cpp)
 add_library(yk::engine ALIAS yk_engine)
-target_include_directories(yk_engine PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_include_directories(yk_engine PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/third_party")
 target_link_libraries(yk_engine PRIVATE box2d)
 yk_target(yk_engine)
 
 if(YK_RUNTIME)
+    find_package(Python3 REQUIRED COMPONENTS Interpreter)
     set(SDL_SHARED OFF CACHE BOOL "" FORCE)
     set(SDL_STATIC ON CACHE BOOL "" FORCE)
     set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)
@@ -72,6 +74,34 @@ if(YK_RUNTIME)
     target_sources(yk_engine PRIVATE src/platform/Application.cpp src/graphics/Renderer.cpp
         src/graphics/PhysicsDebug.cpp)
     target_link_libraries(yk_engine PRIVATE SDL3::SDL3)
+
+    add_executable(elemental_escape game/main.cpp)
+    target_link_libraries(elemental_escape PRIVATE yk::engine SDL3::SDL3)
+    yk_target(elemental_escape)
+    set(YK_GENERATED_PLAYER_PNG "${CMAKE_CURRENT_BINARY_DIR}/generated-assets/sprites/player.png")
+    add_custom_command(OUTPUT "${YK_GENERATED_PLAYER_PNG}"
+        COMMAND ${Python3_EXECUTABLE} "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_assets.py"
+                "${CMAKE_CURRENT_SOURCE_DIR}/assets/sprites/player.png.base64"
+                "${YK_GENERATED_PLAYER_PNG}"
+        DEPENDS assets/sprites/player.png.base64 scripts/generate_assets.py
+        COMMENT "Generating repository-safe PNG assets" VERBATIM)
+    add_custom_target(elemental_escape_assets DEPENDS "${YK_GENERATED_PLAYER_PNG}")
+    add_dependencies(elemental_escape elemental_escape_assets)
+    add_custom_command(TARGET elemental_escape POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+                "$<TARGET_FILE_DIR:elemental_escape>/assets/levels"
+                "$<TARGET_FILE_DIR:elemental_escape>/assets/sprites"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/assets/levels"
+                "$<TARGET_FILE_DIR:elemental_escape>/assets/levels"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${CMAKE_CURRENT_SOURCE_DIR}/assets/sprites/player.anim"
+                "${YK_GENERATED_PLAYER_PNG}"
+                "$<TARGET_FILE_DIR:elemental_escape>/assets/sprites")
+    install(TARGETS elemental_escape RUNTIME DESTINATION . BUNDLE DESTINATION .)
+    install(DIRECTORY assets/levels DESTINATION assets)
+    install(FILES assets/sprites/player.anim "${YK_GENERATED_PLAYER_PNG}"
+        DESTINATION assets/sprites)
+    install(FILES README.md THIRD_PARTY.md DESTINATION .)
 endif()
 target_compile_definitions(yk_engine PUBLIC YK_HAS_RUNTIME=$<BOOL:${YK_RUNTIME}>)
 
@@ -83,6 +113,10 @@ if(BUILD_TESTING)
         add_test(NAME ${suite} COMMAND yk_${suite}_tests)
         set_tests_properties(${suite} PROPERTIES TIMEOUT 30)
     endforeach()
+    add_executable(yk_game_foundation_tests tests/unit/game_foundation_tests.cpp)
+    target_link_libraries(yk_game_foundation_tests PRIVATE yk::engine)
+    yk_target(yk_game_foundation_tests)
+    add_test(NAME game_foundation COMMAND yk_game_foundation_tests)
     if(YK_RUNTIME)
         add_executable(yk_runtime_tests tests/integration/runtime_tests.cpp)
         target_link_libraries(yk_runtime_tests PRIVATE yk::engine SDL3::SDL3)
@@ -95,7 +129,8 @@ endif()
 
 find_program(YK_CLANG_FORMAT NAMES clang-format)
 if(YK_CLANG_FORMAT)
-    file(GLOB_RECURSE YK_FORMAT_FILES CONFIGURE_DEPENDS include/*.hpp src/*.hpp src/*.cpp tests/*.cpp)
+    file(GLOB_RECURSE YK_FORMAT_FILES CONFIGURE_DEPENDS include/*.hpp src/*.hpp src/*.cpp game/*.cpp
+        tests/*.cpp)
     add_custom_target(format COMMAND ${YK_CLANG_FORMAT} -i ${YK_FORMAT_FILES} VERBATIM)
     add_custom_target(format-check COMMAND ${YK_CLANG_FORMAT} --dry-run --Werror ${YK_FORMAT_FILES} VERBATIM)
 endif()

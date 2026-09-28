@@ -35,3 +35,19 @@ downloading/linking SDL. Public physics headers contain no Box2D or SDL types.
 Read [physics usage](docs/physics.md), [architecture](docs/architecture.md),
 [verified status](docs/status.md), [build plan](docs/build-plan.md),
 and [dependency notices](THIRD_PARTY.md).
+
+## Playable reference game
+
+Runtime builds now include **Elemental Escape**, a packaged two-area platforming foundation with
+validated tilemap levels, persistent keys/doors/checkpoints, fixed-tick character movement,
+PNG sprite animation, UI, event audio, pause, hazards, and save/continue. Build and run it with:
+
+```sh
+cmake --preset dev && cmake --build --preset dev
+./build/dev/elemental_escape
+```
+
+See [the game foundation guide](docs/game-foundation.md) for controls, level authoring, packaging,
+architecture, verified platforms, and current limitations.
+The build requires Python 3 to decode the repository-safe textual PNG payload; packaged builds do
+not require Python.
