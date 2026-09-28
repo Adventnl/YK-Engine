@@ -60,8 +60,12 @@ Result<std::unique_ptr<Application>> Application::create(const ApplicationConfig
     auto app = std::unique_ptr<Application>(new Application());
     auto &state = *app->impl_;
     state.sdl.initialized = true; // SDL_Quit also cleans up a partially failed SDL_Init.
-    if (!SDL_Init(SDL_INIT_VIDEO))
-        return sdlError("Initialize SDL video");
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
+        // Audio is optional: retain a playable application on machines without a device.
+        if (!SDL_Init(SDL_INIT_VIDEO))
+            return sdlError("Initialize SDL video");
+        log(LogLevel::Warning, "audio", "Audio unavailable; continuing silently");
+    }
     state.window.reset(SDL_CreateWindow(config.title.c_str(), config.width, config.height,
                                         SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY));
     if (!state.window)

@@ -19,3 +19,9 @@ The first configure downloads and verifies sources into build/<preset>/_deps.
 Offline same-release source overrides FETCHCONTENT_SOURCE_DIR_BOX2D and
 FETCHCONTENT_SOURCE_DIR_SDL3 are possible; callers must verify overridden checkouts,
 because CMake source overrides bypass archive hashing. YK_RUNTIME=OFF omits SDL entirely.
+
+## stb_image
+
+PNG decoding uses `stb_image.h` at commit `013ac3beddff3dbffafd5177e7972067cd2b5083`
+(SHA-256 `594c2fe35d49488b4382dbfaec8f98366defca819d916ac95becf3e75f4200b3`). It is
+used under the MIT alternative; see `LICENSES/stb_image-PD.txt`.

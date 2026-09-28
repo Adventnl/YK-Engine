@@ -22,3 +22,10 @@ tilemaps, scenes and UI need explicit scoped engine milestones and acceptance te
 Verification remains configure/build/CTest for dev, release, headless and asan,
 plus format-check, git diff --check and relevant native renderer readback.
 Record exact platform/toolchain/results and update these docs after meaningful work.
+
+## Playable foundation next work
+
+The repository owner authorized a reference game after the engine-only handoff above. Resume from
+`docs/game-foundation.md`: first add deeper moving-platform contact/carry tests, then add the second
+elemental character and data-driven switches/liquid hazards. Add music and a volume/
+rebinding settings screen before calling the full Fireboy-and-Watergirl target complete.
