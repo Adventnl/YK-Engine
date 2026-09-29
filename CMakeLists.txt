@@ -46,15 +46,10 @@ add_library(yk::gameplay ALIAS yk_gameplay)
 target_link_libraries(yk_gameplay PUBLIC yk_engine)
 yk_target(yk_gameplay)
 
-# The prototype game module: game-specific rules and entity templates, kept out of the engine.
-add_library(yk_prototype_game STATIC game/PrototypeGame.cpp game/Modules.cpp)
-add_library(yk::prototype_game ALIAS yk_prototype_game)
-target_link_libraries(yk_prototype_game PUBLIC yk_gameplay)
-target_include_directories(yk_prototype_game PUBLIC game)
-yk_target(yk_prototype_game)
-add_executable(yk_make_prototype game/tools/make_prototype.cpp)
-target_link_libraries(yk_make_prototype PRIVATE yk::prototype_game)
-yk_target(yk_make_prototype)
+# The `yk` command line: validate, format and inspect projects. Headless.
+add_executable(yk tools/yk/main.cpp)
+target_link_libraries(yk PRIVATE yk::gameplay)
+yk_target(yk)
 
 # Editor core: the open document with undo, picking and gizmo logic, project files and play sessions.
 # No window, no UI toolkit: everything the editor does to a scene is tested headlessly through this.
@@ -76,7 +71,7 @@ if(YK_RUNTIME)
     # The standalone player: runs any project with the linked game modules.
     add_executable(yk_player player/main.cpp player/KeyScript.cpp)
     target_include_directories(yk_player PRIVATE player)
-    target_link_libraries(yk_player PRIVATE yk::prototype_game SDL3::SDL3)
+    target_link_libraries(yk_player PRIVATE yk::gameplay SDL3::SDL3)
     yk_target(yk_player)
 
     # The editor: Dear ImGui panels over the editor core, the engine's renderer and a play session.
@@ -93,7 +88,7 @@ if(YK_RUNTIME)
         YK_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
     yk_target(yk_editor_ui)
     add_executable(yk_editor editor/main.cpp)
-    target_link_libraries(yk_editor PRIVATE yk::editor_ui yk::prototype_game)
+    target_link_libraries(yk_editor PRIVATE yk::editor_ui)
     yk_target(yk_editor)
 endif()
 target_compile_definitions(yk_engine PUBLIC YK_HAS_RUNTIME=$<BOOL:${YK_RUNTIME}>)
@@ -103,10 +98,11 @@ if(BUILD_TESTING)
         yk_add_test(${suite} tests/unit/${suite}_tests.cpp LIBS yk::engine TIMEOUT 30)
     endforeach()
     yk_add_test(gameplay tests/unit/gameplay_tests.cpp LIBS yk::gameplay TIMEOUT 120)
-    yk_add_test(prototype tests/unit/prototype_tests.cpp LIBS yk::prototype_game TIMEOUT 120
+    # The demo game is a separate project (YK-DemoGame) that only consumes the engine; this plays it.
+    yk_add_test(demo tests/unit/demo_tests.cpp LIBS yk::gameplay TIMEOUT 120
         DEFINITIONS YK_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-    yk_add_test(editor_core tests/unit/editor_core_tests.cpp LIBS yk::editor_core yk::prototype_game
-        TIMEOUT 120 DEFINITIONS YK_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+    yk_add_test(editor_core tests/unit/editor_core_tests.cpp LIBS yk::editor_core TIMEOUT 120
+        DEFINITIONS YK_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
     if(YK_RUNTIME)
         add_executable(yk_runtime_tests tests/integration/runtime_tests.cpp)
         target_link_libraries(yk_runtime_tests PRIVATE yk::engine SDL3::SDL3)
@@ -124,11 +120,11 @@ if(BUILD_TESTING)
         file(GLOB YK_EDITOR_SCRIPTS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/tests/editor/*.ykscript")
         foreach(script ${YK_EDITOR_SCRIPTS})
             get_filename_component(script_name "${script}" NAME_WE)
-            # Scripts named sample_* start with the Elemental Prototype project open; the others
-            # start from the welcome screen.
+            # Scripts named demo_* start with the demo game (YK-DemoGame) open; the others start
+            # from the welcome screen.
             set(script_project "")
-            if(script_name MATCHES "^sample_")
-                set(script_project -DPROJECT=${CMAKE_CURRENT_SOURCE_DIR}/projects/elemental-prototype)
+            if(script_name MATCHES "^demo_")
+                set(script_project -DPROJECT=${CMAKE_CURRENT_SOURCE_DIR}/YK-DemoGame)
             endif()
             add_test(NAME editor_${script_name}
                 COMMAND ${CMAKE_COMMAND} -DEDITOR=$<TARGET_FILE:yk_editor> -DSCRIPT=${script}
@@ -146,12 +142,13 @@ if(BUILD_TESTING)
     endif()
 endif()
 
-# Installation: the editor, the player, the sample project, documentation and license notices.
+# Installation: the editor, the player, the command line, the demo project, documentation and
+# license notices.
 if(YK_RUNTIME)
     include(GNUInstallDirs)
-    install(TARGETS yk_editor yk_player RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-    install(DIRECTORY projects/elemental-prototype
-        DESTINATION ${CMAKE_INSTALL_DATADIR}/yk-engine/projects)
+    install(TARGETS yk_editor yk_player yk RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(DIRECTORY YK-DemoGame DESTINATION ${CMAKE_INSTALL_DATADIR}/yk-engine
+        PATTERN "tools" EXCLUDE PATTERN "__pycache__" EXCLUDE)
     install(DIRECTORY docs/ DESTINATION ${CMAKE_INSTALL_DOCDIR})
     install(DIRECTORY LICENSES/ DESTINATION ${CMAKE_INSTALL_DOCDIR}/licenses)
     install(FILES README.md THIRD_PARTY.md DESTINATION ${CMAKE_INSTALL_DOCDIR})
@@ -168,7 +165,7 @@ endif()
 find_program(YK_CLANG_FORMAT NAMES clang-format)
 if(YK_CLANG_FORMAT)
     file(GLOB_RECURSE YK_FORMAT_FILES CONFIGURE_DEPENDS include/*.hpp src/*.hpp src/*.cpp tests/*.cpp
-        tests/*.hpp game/*.hpp game/*.cpp player/*.hpp player/*.cpp editor/*.hpp editor/*.cpp)
+        tests/*.hpp tools/*.cpp player/*.hpp player/*.cpp editor/*.hpp editor/*.cpp)
     add_custom_target(format COMMAND ${YK_CLANG_FORMAT} -i ${YK_FORMAT_FILES} VERBATIM)
     add_custom_target(format-check COMMAND ${YK_CLANG_FORMAT} --dry-run --Werror ${YK_FORMAT_FILES} VERBATIM)
 endif()

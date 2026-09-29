@@ -166,6 +166,9 @@ Result<Project> Project::load(const std::filesystem::path &fileOrDirectory) {
     return project;
 }
 Status Project::save() const {
+    return writeTextFileAtomic(file(), toJson().dump(2) + "\n");
+}
+Json Project::toJson() const {
     Json json = Json::object();
     json.set("format", "yk.project");
     json.set("version", formatVersion);
@@ -179,7 +182,7 @@ Status Project::save() const {
     json.set("layers", layers.toJson());
     json.set("textures", textures.toJson());
     json.set("input", input.toJson());
-    return writeTextFileAtomic(file(), json.dump(2) + "\n");
+    return json;
 }
 Result<std::filesystem::path> Project::resolve(std::string_view relative) const {
     if (relative.empty())

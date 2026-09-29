@@ -9,6 +9,12 @@ Scene &Component::scene() const {
 }
 Entity::~Entity() = default;
 
+bool Entity::lockedInHierarchy() const {
+    for (const Entity *entity = this; entity; entity = entity->parent())
+        if (entity->locked_)
+            return true;
+    return false;
+}
 bool Entity::activeInHierarchy() const {
     for (const Entity *node = this; node; node = node->parent())
         if (!node->active_)

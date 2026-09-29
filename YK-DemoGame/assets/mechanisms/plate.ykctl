@@ -39,7 +39,7 @@
     {
       "from": "Press",
       "to": "Down",
-      "exitTime": 1.0
+      "exitTime": 1
     },
     {
       "from": "Press",
@@ -64,7 +64,7 @@
     {
       "from": "Release",
       "to": "Up",
-      "exitTime": 1.0
+      "exitTime": 1
     },
     {
       "from": "Release",

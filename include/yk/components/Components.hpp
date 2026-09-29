@@ -98,6 +98,7 @@ class UiImage final : public Component {
     int columns{1};
     int rows{1};
     int frame{0};
+    bool fillScreen{false}; // Stretch over the whole viewport (size, anchor and offset unused).
     static void describe(TypeBuilder<UiImage> &type);
 };
 
@@ -129,7 +130,7 @@ class RigidBody final : public Component {
     static void describe(TypeBuilder<RigidBody> &type);
 };
 
-// A Wedge is a right triangle filling its size box, with the right angle at the bottom left, so it
+// A Wedge is a right triangle filling its size box, with the right angle at the bottom right, so it
 // rises to the right: a ramp. Mirror the entity (scale x = -1) for a ramp that rises to the left,
 // or scale y = -1 for a sloped ceiling. Its sprite mirrors the same way.
 enum class ColliderShape { Box, Circle, Capsule, Wedge };

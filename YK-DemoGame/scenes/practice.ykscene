@@ -1,0 +1,2111 @@
+{
+  "format": "yk.scene",
+  "version": 1,
+  "settings": {
+    "name": "Practice Room",
+    "gravity": [0, 9.81],
+    "background": "#08141aff"
+  },
+  "entities": [
+    {
+      "id": "d0c992a2af7f6364",
+      "name": "Camera",
+      "transform": {
+        "position": [13, 7],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Camera",
+          "properties": {
+            "primary": true,
+            "mode": "FitTargets",
+            "orthographicHeight": 14,
+            "targets": ["bb60b08b3b3597f9", "fd804eb2bfbbc1bd"],
+            "padding": 3,
+            "smoothTime": 0.3,
+            "minHeight": 9,
+            "maxHeight": 14,
+            "clampToBounds": true,
+            "boundsMin": [0, 0],
+            "boundsMax": [26, 14]
+          }
+        }
+      ]
+    },
+    {
+      "id": "a01fdae0ac3baaac",
+      "name": "Backdrop",
+      "locked": true,
+      "prefab": "prefabs/level/backdrop.ykprefab",
+      "transform": {
+        "position": [13, 7],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": []
+    },
+    {
+      "id": "0a4b110e390f60ec",
+      "name": "Far Wall",
+      "parent": "a01fdae0ac3baaac",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/backgrounds/bg_far.png",
+            "shape": "Rectangle",
+            "size": [72, 40.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": -100,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [0.15, 0.15]
+          }
+        }
+      ]
+    },
+    {
+      "id": "43444f845af9104f",
+      "name": "Columns",
+      "parent": "a01fdae0ac3baaac",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/backgrounds/bg_mid.png",
+            "shape": "Rectangle",
+            "size": [96, 22],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": -90,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [16, 22],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [0.45, 0.45]
+          }
+        }
+      ]
+    },
+    {
+      "id": "81c89ce8e1818dab",
+      "name": "Terrain",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": []
+    },
+    {
+      "id": "f353867682f92310",
+      "name": "Ceiling",
+      "parent": "81c89ce8e1818dab",
+      "prefab": "prefabs/terrain/wall.ykprefab",
+      "transform": {
+        "position": [13, 0.75],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/wall.png",
+            "shape": "Rectangle",
+            "size": [26, 1.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [26, 1.5],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.4,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "46fa75c452811937",
+      "name": "Left Wall",
+      "parent": "81c89ce8e1818dab",
+      "prefab": "prefabs/terrain/wall.ykprefab",
+      "transform": {
+        "position": [0.75, 7],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/wall.png",
+            "shape": "Rectangle",
+            "size": [1.5, 14],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.5, 14],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.4,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "a3cd711c4e016e61",
+      "name": "Right Wall",
+      "parent": "81c89ce8e1818dab",
+      "prefab": "prefabs/terrain/wall.ykprefab",
+      "transform": {
+        "position": [25.25, 7],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/wall.png",
+            "shape": "Rectangle",
+            "size": [1.5, 14],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.5, 14],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.4,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "946cadefcfe337f0",
+      "name": "Floor",
+      "parent": "81c89ce8e1818dab",
+      "prefab": "prefabs/terrain/platform.ykprefab",
+      "transform": {
+        "position": [13, 12.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/platform.png",
+            "shape": "Rectangle",
+            "size": [23, 3],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Sliced",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [23, 2.94],
+            "offset": [0, 0.03],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.8,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "4111878549d380e5",
+      "name": "Ramp Up",
+      "parent": "81c89ce8e1818dab",
+      "prefab": "prefabs/terrain/ramp.ykprefab",
+      "transform": {
+        "position": [6.2, 10.4],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/ramp.png",
+            "shape": "Rectangle",
+            "size": [2.4, 1.2],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Wedge",
+            "size": [2.4, 1.2],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.5,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "e368b5b775444aad",
+      "name": "Ramp Top",
+      "parent": "81c89ce8e1818dab",
+      "prefab": "prefabs/terrain/brick_block.ykprefab",
+      "transform": {
+        "position": [8.2, 10.4],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/brick.png",
+            "shape": "Rectangle",
+            "size": [1.6, 1.2],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.6, 1.2],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.4,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "dbceab54e593ecd1",
+      "name": "Ramp Down",
+      "parent": "81c89ce8e1818dab",
+      "prefab": "prefabs/terrain/ramp.ykprefab",
+      "transform": {
+        "position": [10.2, 10.4],
+        "rotation": 0,
+        "scale": [-1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/ramp.png",
+            "shape": "Rectangle",
+            "size": [2.4, 1.2],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Wedge",
+            "size": [2.4, 1.2],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.5,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "5addd1fa53f73d2d",
+      "name": "Ledge",
+      "parent": "81c89ce8e1818dab",
+      "prefab": "prefabs/terrain/ledge.ykprefab",
+      "transform": {
+        "position": [14, 9],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/ledge.png",
+            "shape": "Rectangle",
+            "size": [3, 0.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Sliced",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [3, 0.3],
+            "offset": [0, -0.05],
+            "oneWay": true,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.8,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "8e5921a2a1a1eb8c",
+      "name": "Shelf",
+      "parent": "81c89ce8e1818dab",
+      "prefab": "prefabs/terrain/platform.ykprefab",
+      "transform": {
+        "position": [20.75, 7.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/platform.png",
+            "shape": "Rectangle",
+            "size": [7.5, 1],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Sliced",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [7.5, 0.94],
+            "offset": [0, 0.03],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.8,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "a1af1f6ebcc98fcd",
+      "name": "Mechanisms",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": []
+    },
+    {
+      "id": "73ade9f08c87e33e",
+      "name": "Crate",
+      "parent": "a1af1f6ebcc98fcd",
+      "prefab": "prefabs/mechanisms/crate.ykprefab",
+      "tags": ["crate"],
+      "transform": {
+        "position": [16.2, 10.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/mechanisms/crate.png",
+            "shape": "Rectangle",
+            "size": [1, 1],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 35,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Dynamic",
+            "gravityScale": 1,
+            "linearDamping": 0,
+            "angularDamping": 0.05,
+            "fixedRotation": true,
+            "bullet": false,
+            "allowSleep": true
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.96, 0.96],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Prop",
+            "friction": 0.9,
+            "restitution": 0,
+            "density": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "92201a21ebb90502",
+      "name": "Plate",
+      "parent": "a1af1f6ebcc98fcd",
+      "prefab": "prefabs/mechanisms/plate.ykprefab",
+      "transform": {
+        "position": [18.5, 10.75],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/mechanisms/plate.png",
+            "shape": "Rectangle",
+            "size": [2, 0.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 3,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/mechanisms/plate.ykanim",
+            "controller": "assets/mechanisms/plate.ykctl",
+            "clip": "",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.7, 0.3],
+            "offset": [0, 0.1],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "PressurePlate",
+          "properties": {
+            "targets": ["02ac1edefd107b57"],
+            "activatorTags": [],
+            "latch": false,
+            "pressedColor": "#5adc6eff",
+            "pressDepth": 0.08,
+            "pressSound": "assets/audio/plate_down.wav",
+            "releaseSound": "assets/audio/plate_up.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02ac1edefd107b57",
+      "name": "Gate",
+      "parent": "a1af1f6ebcc98fcd",
+      "prefab": "prefabs/mechanisms/gate.ykprefab",
+      "transform": {
+        "position": [21, 9.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/mechanisms/gate.png",
+            "shape": "Rectangle",
+            "size": [1, 3],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 0,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 2,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/mechanisms/gate.ykanim",
+            "controller": "assets/mechanisms/gate.ykctl",
+            "clip": "",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Kinematic",
+            "gravityScale": 1,
+            "linearDamping": 0,
+            "angularDamping": 0.05,
+            "fixedRotation": false,
+            "bullet": false,
+            "allowSleep": true
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.9, 3],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.4,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Door",
+          "properties": {
+            "openOffset": [0, -3.2],
+            "speed": 4,
+            "startsOpen": false,
+            "logic": "Any",
+            "invert": false,
+            "openSound": "assets/audio/gate_open.wav",
+            "closeSound": "assets/audio/gate_close.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "1d53e07e22a70fad",
+      "name": "Checkpoint",
+      "parent": "a1af1f6ebcc98fcd",
+      "prefab": "prefabs/mechanisms/checkpoint.ykprefab",
+      "transform": {
+        "position": [12, 10.25],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/mechanisms/checkpoint.png",
+            "shape": "Rectangle",
+            "size": [1, 1.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 2,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/mechanisms/checkpoint.ykanim",
+            "controller": "assets/mechanisms/checkpoint.ykctl",
+            "clip": "",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.9, 1.3],
+            "offset": [0, 0.1],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Checkpoint",
+          "properties": {
+            "activatorTags": [],
+            "respawnOffset": [0, -0.3],
+            "activeColor": "#ffdc50ff",
+            "sound": "assets/audio/checkpoint.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "4131fe9e3c8001b0",
+      "name": "Exits",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": []
+    },
+    {
+      "id": "dae4e601e1c55541",
+      "name": "Ember Exit",
+      "parent": "4131fe9e3c8001b0",
+      "prefab": "prefabs/mechanisms/exit_ember.ykprefab",
+      "transform": {
+        "position": [22.4, 9.75],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/mechanisms/exit_ember.png",
+            "shape": "Rectangle",
+            "size": [2, 2.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 2,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/mechanisms/exit_ember.ykanim",
+            "controller": "assets/mechanisms/exit_ember.ykctl",
+            "clip": "",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.1, 1.9],
+            "offset": [0, 0.3],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Goal",
+          "properties": {
+            "requiredTag": "Ember",
+            "targets": [],
+            "satisfiedColor": "#5adc6eff",
+            "sound": "assets/audio/exit.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "c11bc4aa45fbcb0c",
+      "name": "Glow",
+      "parent": "dae4e601e1c55541",
+      "transform": {
+        "position": [0, 0.1],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ff963cff",
+            "intensity": 0.55,
+            "radius": 2.6,
+            "offset": [0, 0],
+            "flicker": 0.15,
+            "flickerSpeed": 3,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "03f0a32d74869854",
+      "name": "Motes",
+      "parent": "dae4e601e1c55541",
+      "transform": {
+        "position": [0, 0.8],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 6,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.8, 1.5],
+            "area": "Box",
+            "areaSize": [0.9, 0.2],
+            "direction": 0,
+            "spread": 20,
+            "speed": [0.4, 0.9],
+            "gravity": [0, -0.3],
+            "drag": 0,
+            "startSize": [0.05, 0.12],
+            "endScale": 0,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#ffdc78e6",
+            "endColor": "#ff781e00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "ef12b0ae57159e92",
+      "name": "Tide Exit",
+      "parent": "4131fe9e3c8001b0",
+      "prefab": "prefabs/mechanisms/exit_tide.ykprefab",
+      "transform": {
+        "position": [24, 9.75],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/mechanisms/exit_tide.png",
+            "shape": "Rectangle",
+            "size": [2, 2.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 2,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/mechanisms/exit_tide.ykanim",
+            "controller": "assets/mechanisms/exit_tide.ykctl",
+            "clip": "",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.1, 1.9],
+            "offset": [0, 0.3],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Goal",
+          "properties": {
+            "requiredTag": "Tide",
+            "targets": [],
+            "satisfiedColor": "#5adc6eff",
+            "sound": "assets/audio/exit.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "d4fa3de8bff2fd32",
+      "name": "Glow",
+      "parent": "ef12b0ae57159e92",
+      "transform": {
+        "position": [0, 0.1],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#64beffff",
+            "intensity": 0.55,
+            "radius": 2.6,
+            "offset": [0, 0],
+            "flicker": 0.15,
+            "flickerSpeed": 3,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "6b83ca3fad087a74",
+      "name": "Motes",
+      "parent": "ef12b0ae57159e92",
+      "transform": {
+        "position": [0, 0.8],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 6,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.8, 1.5],
+            "area": "Box",
+            "areaSize": [0.9, 0.2],
+            "direction": 0,
+            "spread": 20,
+            "speed": [0.4, 0.9],
+            "gravity": [0, -0.3],
+            "drag": 0,
+            "startSize": [0.05, 0.12],
+            "endScale": 0,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#d2f5ffe6",
+            "endColor": "#5aa0ff00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "75291797f8e5193d",
+      "name": "Gems",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": []
+    },
+    {
+      "id": "120b914a6bee52ff",
+      "name": "Red Gem 1",
+      "parent": "75291797f8e5193d",
+      "prefab": "prefabs/items/gem_red.ykprefab",
+      "tags": ["gem"],
+      "transform": {
+        "position": [8.2, 8.8],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/items/gem_red.png",
+            "shape": "Rectangle",
+            "size": [0.7, 0.7],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 55,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/items/gem_red.ykanim",
+            "controller": "",
+            "clip": "shine",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [0.55, 0.55],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": ["Ember"],
+            "variable": "ember_gems",
+            "value": 1,
+            "sound": "assets/audio/collect.wav",
+            "collectEffect": "prefabs/fx/spark_red.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0.1],
+            "rotation": 0,
+            "scale": [0, 0],
+            "frequency": 0.8,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "00937e3b4f25645a",
+      "name": "Glow",
+      "parent": "120b914a6bee52ff",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ff5a78ff",
+            "intensity": 0.45,
+            "radius": 1.3,
+            "offset": [0, 0],
+            "flicker": 0,
+            "flickerSpeed": 6,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "798a020281510ca7",
+      "name": "Blue Gem 1",
+      "parent": "75291797f8e5193d",
+      "prefab": "prefabs/items/gem_blue.ykprefab",
+      "tags": ["gem"],
+      "transform": {
+        "position": [14, 7.6],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/items/gem_blue.png",
+            "shape": "Rectangle",
+            "size": [0.7, 0.7],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 55,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/items/gem_blue.ykanim",
+            "controller": "",
+            "clip": "shine",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [0.55, 0.55],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": ["Tide"],
+            "variable": "tide_gems",
+            "value": 1,
+            "sound": "assets/audio/collect.wav",
+            "collectEffect": "prefabs/fx/spark_blue.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0.1],
+            "rotation": 0,
+            "scale": [0, 0],
+            "frequency": 0.8,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "55ef3adb6c640ac0",
+      "name": "Glow",
+      "parent": "798a020281510ca7",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#64b4ffff",
+            "intensity": 0.45,
+            "radius": 1.3,
+            "offset": [0, 0],
+            "flicker": 0,
+            "flickerSpeed": 6,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "a0470c1adc426cf5",
+      "name": "Characters",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": []
+    },
+    {
+      "id": "bb60b08b3b3597f9",
+      "name": "Ember",
+      "parent": "a0470c1adc426cf5",
+      "prefab": "prefabs/characters/ember.ykprefab",
+      "tags": ["Ember"],
+      "transform": {
+        "position": [2.8, 10.425],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/characters/ember.png",
+            "shape": "Rectangle",
+            "size": [1.5, 1.5],
+            "offset": [0, -0.09],
+            "color": "#ffffffff",
+            "layer": 40,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 8,
+            "rows": 4,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/characters/ember.ykanim",
+            "controller": "assets/characters/character.ykctl",
+            "clip": "",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "facing",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Dynamic",
+            "gravityScale": 1,
+            "linearDamping": 0,
+            "angularDamping": 0.05,
+            "fixedRotation": true,
+            "bullet": false,
+            "allowSleep": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Capsule",
+            "size": [0.6, 1.15],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Player",
+            "friction": 0,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "PlayerInput",
+          "properties": {
+            "actionSet": "Player1"
+          }
+        },
+        {
+          "type": "PlatformerController",
+          "properties": {
+            "moveLeftAction": "MoveLeft",
+            "moveRightAction": "MoveRight",
+            "jumpAction": "Jump",
+            "moveSpeed": 5.5,
+            "groundAcceleration": 70,
+            "groundDeceleration": 80,
+            "airAcceleration": 40,
+            "airDeceleration": 6,
+            "jumpHeight": 2.3,
+            "fallGravityMultiplier": 1.35,
+            "jumpCutMultiplier": 0.45,
+            "coyoteTime": 0.1,
+            "jumpBufferTime": 0.12,
+            "maxFallSpeed": 20,
+            "maxSlopeDegrees": 55,
+            "gripFriction": 1.2,
+            "slideFriction": 0,
+            "groundSnap": 0.3,
+            "landingSpeed": 4,
+            "jumpSound": "assets/audio/jump.wav",
+            "landSound": "assets/audio/land.wav",
+            "jumpEffect": "prefabs/fx/dust.ykprefab",
+            "landEffect": "prefabs/fx/dust.ykprefab"
+          }
+        },
+        {
+          "type": "Killable",
+          "properties": {
+            "respawn": true,
+            "respawnDelay": 1.4,
+            "deathDuration": 0.9,
+            "spawnPoint": null,
+            "deathSound": "assets/audio/death.wav",
+            "respawnSound": "assets/audio/respawn.wav",
+            "deathEffect": "prefabs/fx/death_ember.ykprefab",
+            "respawnEffect": "prefabs/fx/respawn.ykprefab"
+          }
+        }
+      ]
+    },
+    {
+      "id": "f7490fb9d5d2bbe9",
+      "name": "Aura",
+      "parent": "bb60b08b3b3597f9",
+      "transform": {
+        "position": [0, -0.1],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ff8c3cff",
+            "intensity": 0.35,
+            "radius": 2.2,
+            "offset": [0, 0],
+            "flicker": 0.15,
+            "flickerSpeed": 4,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "eec04dd7ec1c725b",
+      "name": "Trail",
+      "parent": "bb60b08b3b3597f9",
+      "transform": {
+        "position": [0, 0.1],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 14,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.4, 0.8],
+            "area": "Box",
+            "areaSize": [0.4, 0.5],
+            "direction": 0,
+            "spread": 40,
+            "speed": [0.4, 1],
+            "gravity": [0, -1.5],
+            "drag": 0,
+            "startSize": [0.08, 0.18],
+            "endScale": 0.1,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#ffaf46dc",
+            "endColor": "#ff3c1400",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "fd804eb2bfbbc1bd",
+      "name": "Tide",
+      "parent": "a0470c1adc426cf5",
+      "prefab": "prefabs/characters/tide.ykprefab",
+      "tags": ["Tide"],
+      "transform": {
+        "position": [3.8, 10.425],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/characters/tide.png",
+            "shape": "Rectangle",
+            "size": [1.5, 1.5],
+            "offset": [0, -0.09],
+            "color": "#ffffffff",
+            "layer": 40,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 8,
+            "rows": 4,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/characters/tide.ykanim",
+            "controller": "assets/characters/character.ykctl",
+            "clip": "",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "facing",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Dynamic",
+            "gravityScale": 1,
+            "linearDamping": 0,
+            "angularDamping": 0.05,
+            "fixedRotation": true,
+            "bullet": false,
+            "allowSleep": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Capsule",
+            "size": [0.6, 1.15],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Player",
+            "friction": 0,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "PlayerInput",
+          "properties": {
+            "actionSet": "Player2"
+          }
+        },
+        {
+          "type": "PlatformerController",
+          "properties": {
+            "moveLeftAction": "MoveLeft",
+            "moveRightAction": "MoveRight",
+            "jumpAction": "Jump",
+            "moveSpeed": 5.5,
+            "groundAcceleration": 70,
+            "groundDeceleration": 80,
+            "airAcceleration": 40,
+            "airDeceleration": 6,
+            "jumpHeight": 2.3,
+            "fallGravityMultiplier": 1.35,
+            "jumpCutMultiplier": 0.45,
+            "coyoteTime": 0.1,
+            "jumpBufferTime": 0.12,
+            "maxFallSpeed": 20,
+            "maxSlopeDegrees": 55,
+            "gripFriction": 1.2,
+            "slideFriction": 0,
+            "groundSnap": 0.3,
+            "landingSpeed": 4,
+            "jumpSound": "assets/audio/jump.wav",
+            "landSound": "assets/audio/land.wav",
+            "jumpEffect": "prefabs/fx/dust.ykprefab",
+            "landEffect": "prefabs/fx/dust.ykprefab"
+          }
+        },
+        {
+          "type": "Killable",
+          "properties": {
+            "respawn": true,
+            "respawnDelay": 1.4,
+            "deathDuration": 0.9,
+            "spawnPoint": null,
+            "deathSound": "assets/audio/death.wav",
+            "respawnSound": "assets/audio/respawn.wav",
+            "deathEffect": "prefabs/fx/death_tide.ykprefab",
+            "respawnEffect": "prefabs/fx/respawn.ykprefab"
+          }
+        }
+      ]
+    },
+    {
+      "id": "2ad43157eb2d65d9",
+      "name": "Aura",
+      "parent": "fd804eb2bfbbc1bd",
+      "transform": {
+        "position": [0, -0.1],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#5ab4ffff",
+            "intensity": 0.35,
+            "radius": 2.2,
+            "offset": [0, 0],
+            "flicker": 0.15,
+            "flickerSpeed": 4,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "0f5dd51af9dc7cb5",
+      "name": "Trail",
+      "parent": "fd804eb2bfbbc1bd",
+      "transform": {
+        "position": [0, 0.1],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 10,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.5, 0.9],
+            "area": "Box",
+            "areaSize": [0.4, 0.5],
+            "direction": 0,
+            "spread": 60,
+            "speed": [0.2, 0.7],
+            "gravity": [0, 3],
+            "drag": 0,
+            "startSize": [0.06, 0.12],
+            "endScale": 0.2,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#a0e1ffd2",
+            "endColor": "#50a0ff00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "81cbba8c51171e06",
+      "name": "Ember Spawn",
+      "parent": "a0470c1adc426cf5",
+      "prefab": "prefabs/level/spawn_point.ykprefab",
+      "transform": {
+        "position": [2.8, 10.425],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpawnPoint",
+          "properties": {
+            "character": "bb60b08b3b3597f9"
+          }
+        }
+      ]
+    },
+    {
+      "id": "421d4f3759448d83",
+      "name": "Tide Spawn",
+      "parent": "a0470c1adc426cf5",
+      "prefab": "prefabs/level/spawn_point.ykprefab",
+      "transform": {
+        "position": [3.8, 10.425],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpawnPoint",
+          "properties": {
+            "character": "fd804eb2bfbbc1bd"
+          }
+        }
+      ]
+    },
+    {
+      "id": "238c64f7fb26e670",
+      "name": "Level Flow",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "LevelFlow",
+          "properties": {
+            "goals": ["dae4e601e1c55541", "ef12b0ae57159e92"],
+            "restartOnDeath": false,
+            "restartDelay": 1.5,
+            "completeDelay": 2.5,
+            "nextScene": "",
+            "restartSet": "Global",
+            "restartAction": "Restart",
+            "completeMessage": "LEVEL COMPLETE!",
+            "failMessage": "TRY AGAIN",
+            "completeSound": "assets/audio/complete.wav",
+            "failSound": ""
+          }
+        }
+      ]
+    },
+    {
+      "id": "b5867479a2d41d60",
+      "name": "HUD",
+      "prefab": "prefabs/level/hud.ykprefab",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": []
+    },
+    {
+      "id": "626c6bb54c356567",
+      "name": "Vignette",
+      "parent": "b5867479a2d41d60",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/backgrounds/vignette.png",
+            "anchor": "TopLeft",
+            "size": [48, 48],
+            "offset": [16, 16],
+            "color": "#ffffffff",
+            "layer": -5,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "fillScreen": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "bfb42c1630552d2c",
+      "name": "Ember Score",
+      "parent": "b5867479a2d41d60",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "TopLeft",
+            "size": [236, 52],
+            "offset": [16, 16],
+            "color": "#060e12aa",
+            "layer": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "871f55aa07ea67f9",
+      "name": "Ember Gem Icon",
+      "parent": "b5867479a2d41d60",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/items/gem_red.png",
+            "anchor": "TopLeft",
+            "size": [40, 40],
+            "offset": [24, 22],
+            "color": "#ffffffff",
+            "layer": 2,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "fillScreen": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "013e7b36bfbff7a8",
+      "name": "Ember Gems",
+      "parent": "b5867479a2d41d60",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "EMBER  {ember_gems:0}/{ember_gems_total:0}",
+            "anchor": "TopLeft",
+            "offset": [74, 32],
+            "scale": 2,
+            "color": "#ffb06eff",
+            "shadow": true,
+            "layer": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "32a16de72d15120c",
+      "name": "Tide Score",
+      "parent": "b5867479a2d41d60",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "TopRight",
+            "size": [236, 52],
+            "offset": [16, 16],
+            "color": "#060e12aa",
+            "layer": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "129d94899c59e600",
+      "name": "Tide Gem Icon",
+      "parent": "b5867479a2d41d60",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/items/gem_blue.png",
+            "anchor": "TopRight",
+            "size": [40, 40],
+            "offset": [24, 22],
+            "color": "#ffffffff",
+            "layer": 2,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "fillScreen": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "53f9c411c5bb910a",
+      "name": "Tide Gems",
+      "parent": "b5867479a2d41d60",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "TIDE  {tide_gems:0}/{tide_gems_total:0}",
+            "anchor": "TopRight",
+            "offset": [74, 32],
+            "scale": 2,
+            "color": "#8ccdffff",
+            "shadow": true,
+            "layer": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "19c421d8462808d4",
+      "name": "Timer",
+      "parent": "b5867479a2d41d60",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "TIME {level_time}",
+            "anchor": "Top",
+            "offset": [0, 30],
+            "scale": 2,
+            "color": "#ebf0ebff",
+            "shadow": true,
+            "layer": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "43af3e165fe01db2",
+      "name": "Message",
+      "parent": "b5867479a2d41d60",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "{level_message}",
+            "anchor": "Center",
+            "offset": [0, 0],
+            "scale": 6,
+            "color": "#fff0aaff",
+            "shadow": true,
+            "layer": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "f1216559df544cc9",
+      "name": "Controls",
+      "parent": "b5867479a2d41d60",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "EMBER: A D MOVE  W JUMP  S USE      TIDE: ARROWS MOVE  UP JUMP  DOWN USE      R RESTART",
+            "anchor": "Bottom",
+            "offset": [0, 16],
+            "scale": 1,
+            "color": "#becdcdc8",
+            "shadow": true,
+            "layer": 3
+          }
+        }
+      ]
+    }
+  ]
+}

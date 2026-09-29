@@ -94,6 +94,8 @@ void UiImage::describe(TypeBuilder<UiImage> &type) {
     type.field("columns", &UiImage::columns).range(1, 256);
     type.field("rows", &UiImage::rows).range(1, 256);
     type.field("frame", &UiImage::frame).range(0, 65535);
+    type.field("fillScreen", &UiImage::fillScreen)
+        .tooltip("Stretch over the whole screen: vignettes, fades and backdrops.");
 }
 void UiPanel::describe(TypeBuilder<UiPanel> &type) {
     type.category("UI").screenSpace().description("Screen-space filled rectangle.");
@@ -119,7 +121,7 @@ void RigidBody::describe(TypeBuilder<RigidBody> &type) {
 std::array<Vec2, 3> wedgePoints(Vec2 halfExtents, Vec2 scaleSign) {
     const float sx = scaleSign.x < 0.0F ? -1.0F : 1.0F;
     const float sy = scaleSign.y < 0.0F ? -1.0F : 1.0F;
-    // Right angle at the bottom left; the hypotenuse rises to the right (y is down).
+    // Right angle at the bottom right; the hypotenuse rises to the right (y is down).
     return {Vec2{-halfExtents.x * sx, halfExtents.y * sy}, Vec2{halfExtents.x * sx, halfExtents.y * sy},
             Vec2{halfExtents.x * sx, -halfExtents.y * sy}};
 }

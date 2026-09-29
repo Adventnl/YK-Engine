@@ -31,11 +31,11 @@ set(exe "")
 if(WIN32)
     set(exe ".exe")
 endif()
-set(sample "${prefix}/share/yk-engine/projects/elemental-prototype")
+set(sample "${prefix}/share/yk-engine/YK-DemoGame")
 set(docs "${prefix}/share/doc/YKEngine")
 foreach(required
-        "${prefix}/bin/yk_editor${exe}" "${prefix}/bin/yk_player${exe}"
-        "${sample}/project.ykproj" "${sample}/scenes/test_level.ykscene"
+        "${prefix}/bin/yk_editor${exe}" "${prefix}/bin/yk_player${exe}" "${prefix}/bin/yk${exe}"
+        "${sample}/project.ykproj" "${sample}/scenes/level01.ykscene"
         "${docs}/README.md" "${docs}/THIRD_PARTY.md" "${docs}/editor.md"
         "${docs}/licenses/Box2D-MIT.txt" "${docs}/licenses/SDL3.txt" "${docs}/licenses/DearImGui-MIT.txt"
         "${docs}/licenses/ProggyForever-MIT.txt" "${docs}/licenses/stb_image-PD.txt")
@@ -53,7 +53,7 @@ if(NOT top STREQUAL "bin;share")
 endif()
 file(GLOB programs RELATIVE "${prefix}/bin" "${prefix}/bin/*")
 list(SORT programs)
-if(NOT programs STREQUAL "yk_editor${exe};yk_player${exe}")
+if(NOT programs STREQUAL "yk${exe};yk_editor${exe};yk_player${exe}")
     message(FATAL_ERROR "Unexpected programs installed: ${programs}")
 endif()
 file(GLOB_RECURSE headers "${prefix}/*.h" "${prefix}/*.hpp")
@@ -62,11 +62,11 @@ if(headers OR libraries)
     message(FATAL_ERROR "The installation contains headers or libraries: ${headers} ${libraries}")
 endif()
 
-# The installed player runs the installed sample project.
+# The installed command line validates, and the installed player runs, the installed demo project.
 set(ENV{SDL_VIDEODRIVER} dummy)
 set(ENV{SDL_RENDER_DRIVER} software)
 set(ENV{SDL_AUDIODRIVER} dummy)
-run("the installed player's --validate" "${prefix}/bin/yk_player${exe}" --validate "${sample}")
+run("the installed yk validate" "${prefix}/bin/yk${exe}" validate "${sample}")
 run("the installed player" "${prefix}/bin/yk_player${exe}" --frames 90 --fixed --no-audio
     --capture "${WORK}/player.bmp" "${sample}")
 if(NOT EXISTS "${WORK}/player.bmp")

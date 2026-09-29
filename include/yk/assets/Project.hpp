@@ -65,6 +65,7 @@ class Project {
     static Result<Project> load(const std::filesystem::path &fileOrDirectory);
     static Project create(const std::filesystem::path &root, std::string name);
     Status save() const;
+    Json toJson() const; // The project.ykproj document.
 
     std::filesystem::path file() const {
         return root / fileName;

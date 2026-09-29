@@ -1,0 +1,52 @@
+{
+  "format": "yk.prefab",
+  "version": 1,
+  "root": "4ce98708348b8be0",
+  "entities": [
+    {
+      "id": "4ce98708348b8be0",
+      "name": "Vines",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/vines.png",
+            "shape": "Rectangle",
+            "size": [1, 2.5],
+            "offset": [0, 1.25],
+            "color": "#ffffffff",
+            "layer": -20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 2,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2,
+            "scale": [0, 0],
+            "frequency": 0.3,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    }
+  ]
+}

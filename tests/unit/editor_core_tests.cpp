@@ -1,6 +1,5 @@
 // Everything the editor does to a scene, exercised without a window: undo, selection, picking,
 // gizmo drags, project files and play sessions.
-#include "Modules.hpp"
 #include "core/ConsoleLog.hpp"
 #include "core/EditorDocument.hpp"
 #include "core/EditorGeometry.hpp"
@@ -38,7 +37,7 @@ struct Fixture {
     ComponentRegistry registry;
     std::unique_ptr<EditorDocument> document;
     Fixture() {
-        registerAllModules(registry);
+        registerStandardComponents(registry);
         document = std::make_unique<EditorDocument>(registry, std::make_unique<Scene>(registry, 7));
     }
     EditorDocument &doc() {
@@ -461,6 +460,16 @@ void picking() {
                [&](Scene &scene) { scene.find(front)->get<SpriteRenderer>()->visible = false; });
     stack = pickAll(doc.scene(), {0, 0}, 0.02F);
     CHECK(stack.size() == 2 && stack[0] == back && stack[1] == front);
+
+    // A locked entity (a huge backdrop, say) is neither picked by a click nor swept up by a marquee.
+    doc.change("lock", [&](Scene &scene) { scene.find(back)->setLocked(true); });
+    stack = pickAll(doc.scene(), {0, 0}, 0.02F);
+    CHECK(stack.size() == 1 && stack[0] == front);
+    CHECK(pickAll(doc.scene(), {2.5F, 0}, 0.02F).empty());
+    const auto swept = pickInRect(doc.scene(), Rect{{-4, -4}, {8, 8}}, 0.02F);
+    CHECK(std::find(swept.begin(), swept.end(), back) == swept.end());
+    doc.change("unlock", [&](Scene &scene) { scene.find(back)->setLocked(false); });
+    CHECK(pickAll(doc.scene(), {2.5F, 0}, 0.02F).size() == 1);
 
     // Round shapes are not hit in their corners.
     const EntityId ball = f.box("Ball", {20, 0}, {2, 2});
@@ -931,7 +940,7 @@ struct TempDir {
 
 void projectFiles() {
     ComponentRegistry registry;
-    registerAllModules(registry);
+    registerStandardComponents(registry);
     TempDir dir("yk-editor-project-test");
     auto created = EditorProject::create(dir.path / "My Game", "My Game", registry);
     CHECK(created);
@@ -1070,30 +1079,30 @@ void projectFiles() {
 void sampleProject() {
     setLogStderrEnabled(false);
     ComponentRegistry registry;
-    registerAllModules(registry);
+    registerStandardComponents(registry);
     auto opened = EditorProject::open(
-        std::filesystem::path(YK_SOURCE_DIR) / "projects" / "elemental-prototype", registry);
+        std::filesystem::path(YK_SOURCE_DIR) / "YK-DemoGame", registry);
     CHECK(opened);
     if (!opened)
         return;
     EditorProject &project = *opened.value();
     CHECK(!hasErrors(project.validate()));
-    auto level = project.openScene("scenes/test_level.ykscene");
+    auto level = project.openScene("scenes/level01.ykscene");
     CHECK(level && level.value()->scene().size() > 40);
     CHECK(!level.value()->dirty() && !level.value()->canUndo());
     // Round trip through the editor's own save format changes nothing of substance.
     const Json original = sceneToJson(level.value()->scene());
     auto text = Json::parse(original.dump(2));
     CHECK(text && text.value().dump(2) == original.dump(2));
-    // Picking works on real content: the fire character is where its sprite is.
-    const Entity *fireCharacter = level.value()->scene().findByName("Fire Character");
-    CHECK(fireCharacter);
-    if (fireCharacter) {
-        const auto stack = pickAll(level.value()->scene(), fireCharacter->worldPosition(), 0.02F);
+    // Picking works on real content: the character is where its sprite is.
+    const Entity *emberCharacter = level.value()->scene().findByName("Ember");
+    CHECK(emberCharacter);
+    if (emberCharacter) {
+        const auto stack = pickAll(level.value()->scene(), emberCharacter->worldPosition(), 0.02F);
         CHECK(!stack.empty());
         bool found = false;
         for (const EntityId id : stack)
-            found = found || id == fireCharacter->id();
+            found = found || id == emberCharacter->id();
         CHECK(found);
     }
     // Links in the real level: the lever opens something.
@@ -1113,20 +1122,20 @@ Keyboard held(std::initializer_list<Key> keys) {
 void playing() {
     setLogStderrEnabled(false);
     ComponentRegistry registry;
-    registerAllModules(registry);
+    registerStandardComponents(registry);
     auto opened = EditorProject::open(
-        std::filesystem::path(YK_SOURCE_DIR) / "projects" / "elemental-prototype", registry);
+        std::filesystem::path(YK_SOURCE_DIR) / "YK-DemoGame", registry);
     CHECK(opened);
     if (!opened)
         return;
     EditorProject &project = *opened.value();
-    auto document = project.openScene("scenes/test_level.ykscene");
+    auto document = project.openScene("scenes/level01.ykscene");
     CHECK(document);
     if (!document)
         return;
     EditorDocument &doc = *document.value();
     // An edit that was never saved must still be in the game that Play starts.
-    const Entity *character = doc.scene().findByName("Fire Character");
+    const Entity *character = doc.scene().findByName("Ember");
     CHECK(character);
     const EntityId characterId = character->id();
     doc.rename(characterId, "Player One");
@@ -1168,13 +1177,13 @@ void playing() {
     CHECK_NEAR(play.runtime().scene().find(characterId)->worldPosition().x, startX, 0.05);
 
     // Scene changes requested by the game load that scene from the project.
-    play.runtime().requestSceneChange("scenes/playground.ykscene");
+    play.runtime().requestSceneChange("scenes/practice.ykscene");
     play.update(1.0 / 60.0, held({}));
-    CHECK(play.scenePath() == "scenes/playground.ykscene");
+    CHECK(play.scenePath() == "scenes/practice.ykscene");
     CHECK(!play.runtime().scene().findByName("Player One"));
     play.runtime().requestSceneChange("scenes/none.ykscene");
     play.update(1.0 / 60.0, held({})); // A bad request is reported, not fatal.
-    CHECK(play.scenePath() == "scenes/playground.ykscene");
+    CHECK(play.scenePath() == "scenes/practice.ykscene");
     play.setViewportSize({640, 360});
     CHECK(play.runtime().viewportSize() == Vec2({640.0F, 360.0F}));
 

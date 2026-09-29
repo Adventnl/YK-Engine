@@ -581,13 +581,16 @@ Status SceneRenderer::drawUi(Renderer &renderer, const Scene &scene, Vec2 viewpo
                 return submitted;
         }
         for (const UiImage *image : entity->getAll<UiImage>()) {
-            if (!image->enabled || image->color.a == 0 || !(image->size.x > 0) || !(image->size.y > 0))
+            if (!image->enabled || image->color.a == 0 ||
+                (!image->fillScreen && (!(image->size.x > 0) || !(image->size.y > 0))))
                 continue;
             Sprite sprite;
-            sprite.size = image->size;
+            sprite.size = image->fillScreen ? viewport : image->size;
             sprite.anchor = {0.0F, 0.0F};
             sprite.transform.position =
-                anchoredTopLeft(image->anchor, viewport, image->size, image->offset);
+                image->fillScreen
+                    ? Vec2{0.0F, 0.0F}
+                    : anchoredTopLeft(image->anchor, viewport, image->size, image->offset);
             sprite.tint = image->color;
             sprite.layer = image->layer;
             if (image->texture.path.empty()) {

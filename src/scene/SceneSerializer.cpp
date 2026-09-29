@@ -28,6 +28,8 @@ Json entityRecord(const Entity &entity) {
         json.set("parent", toString(entity.parentId()));
     if (!entity.active())
         json.set("active", false);
+    if (entity.locked())
+        json.set("locked", true);
     if (!entity.prefabSource().empty())
         json.set("prefab", entity.prefabSource());
     if (!entity.tags().empty()) {
@@ -71,6 +73,11 @@ Status applyEntityRecord(Entity &entity, const Json &record, const std::string &
         if (!active->isBool())
             return Error{context + ": 'active' must be a boolean"};
         entity.setActive(active->asBool());
+    }
+    if (const Json *locked = record.find("locked")) {
+        if (!locked->isBool())
+            return Error{context + ": 'locked' must be a boolean"};
+        entity.setLocked(locked->asBool());
     }
     if (const Json *prefab = record.find("prefab")) {
         if (!prefab->isString())
@@ -435,6 +442,31 @@ Result<EntityId> instantiateSubtree(Scene &scene, const Json &prefab, EntityId p
     if (worldPosition)
         scene.find(roots.value().front())->setWorldPosition(*worldPosition);
     return roots.value().front();
+}
+
+Result<Json> canonicalScene(const Json &document, const ComponentRegistry &registry) {
+    auto scene = sceneFromJson(document, registry);
+    if (!scene)
+        return Error{scene.error()};
+    return sceneToJson(*scene.value());
+}
+
+Result<Json> canonicalPrefab(const Json &document, const ComponentRegistry &registry) {
+    if (auto status = checkHeader(document, prefabFormatName); !status)
+        return Error{status.error()};
+    const auto rootId = document.get("root").isString()
+                            ? parseEntityId(document.get("root").asString())
+                            : std::nullopt;
+    if (!rootId || !*rootId)
+        return Error{"Prefab has no valid 'root'"};
+    Scene scratch(registry, 1);
+    std::unordered_map<EntityId, EntityId> remap;
+    auto created = populate(scratch, document.get("entities"), true, {}, remap);
+    if (!created)
+        return Error{created.error()};
+    if (!scratch.find(*rootId))
+        return Error{"Prefab root is not among its entities"};
+    return subtreeToJson(scratch, *rootId);
 }
 
 Result<Json> loadPrefabDocument(const std::filesystem::path &path) {

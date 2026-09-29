@@ -1,6 +1,7 @@
 #include "yk/gameplay/Gameplay.hpp"
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 
 namespace yk {
 namespace {
@@ -100,6 +101,11 @@ void PlatformerController::describe(TypeBuilder<PlatformerController> &type) {
     type.field("maxSlopeDegrees", &PlatformerController::maxSlopeDegrees).range(0, 89, 1);
     type.field("gripFriction", &PlatformerController::gripFriction).range(0, 10, 0.05);
     type.field("slideFriction", &PlatformerController::slideFriction).range(0, 10, 0.05);
+    type.field("groundSnap", &PlatformerController::groundSnap)
+        .range(0, 2, 0.05)
+        .tooltip("Keeps the feet on the ground over ramp crests, slopes and small steps down: after "
+                 "walking off the ground (without jumping), a walkable surface at most this far "
+                 "below pulls the character back. 0 turns it off.");
     type.field("landingSpeed", &PlatformerController::landingSpeed)
         .range(0, 100, 0.1)
         .tooltip("Downward speed at which touching down raises the animation trigger 'landed'.");
@@ -152,6 +158,27 @@ void PlatformerController::onFixedUpdate(GameContext &context, float seconds) {
         if (dot(velocity - reference, ground.normal) > std::clamp(0.5F * jumpSpeed, 1.0F, 2.5F))
             ground.found = false;
     }
+    // Just left the ground without jumping: over a ramp crest or down a slope the surface falls
+    // away faster than gravity pulls, so look for walkable ground a short way below and stay on it.
+    float snapDistance = 0.0F;
+    if (!ground.found && hadGround_ && !jumping_ && groundSnap > 0.0F) {
+        if (const auto *collider = entity().get<Collider>()) {
+            const physics::QueryFilter filter{context.layers().categoryBits(collider->layer),
+                                              UINT64_MAX};
+            const Vec2 feet = feetOf(entity());
+            const float reach = groundSnap + 0.05F;
+            const auto hit = world.rayCast(feet - Vec2{0.0F, 0.05F}, {0.0F, reach + 0.05F}, filter);
+            if (hit && hit.value() && -hit.value()->normal.y >= cosMaxSlope) {
+                snapDistance = std::max(0.0F, hit.value()->fraction * (reach + 0.05F) - 0.05F);
+                if (snapDistance <= groundSnap) {
+                    ground.found = true;
+                    ground.normal = hit.value()->normal;
+                    ground.velocity = {};
+                }
+            }
+        }
+    }
+    hadGround_ = ground.found;
     wasGrounded_ = ground.found;
     lastGroundVelocity_ = ground.found ? ground.velocity : Vec2{};
     grounded_ = ground.found;
@@ -166,6 +193,8 @@ void PlatformerController::onFixedUpdate(GameContext &context, float seconds) {
         const float along = dot(velocity - ground.velocity, tangent);
         const float rate = move != 0.0F ? groundAcceleration : groundDeceleration;
         next = ground.velocity + tangent * approach(along, target, rate * seconds);
+        if (snapDistance > 0.001F) // Close the gap to the surface within a tick or two.
+            next -= ground.normal * std::min(snapDistance / seconds, 8.0F);
         jumping_ = false;
     } else {
         // Right after losing the ground without jumping (a seam, a ledge), keep ground-style

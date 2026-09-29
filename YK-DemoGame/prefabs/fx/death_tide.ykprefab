@@ -1,0 +1,56 @@
+{
+  "format": "yk.prefab",
+  "version": 1,
+  "root": "8a529e4f34b31185",
+  "entities": [
+    {
+      "id": "8a529e4f34b31185",
+      "name": "Death Tide",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": false,
+            "duration": 0.05,
+            "rate": 0,
+            "burst": 40,
+            "maxParticles": 100,
+            "lifetime": [0.5, 1.2],
+            "area": "Point",
+            "areaSize": [1, 1],
+            "direction": 0,
+            "spread": 360,
+            "speed": [1.5, 5],
+            "gravity": [0, 7],
+            "drag": 0.6,
+            "startSize": [0.1, 0.26],
+            "endScale": 0.3,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#aae1ffff",
+            "endColor": "#3c82ff00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        },
+        {
+          "type": "Lifetime",
+          "properties": {
+            "seconds": 3,
+            "untilEmitterFinished": true
+          }
+        }
+      ]
+    }
+  ]
+}

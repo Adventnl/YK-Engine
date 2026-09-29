@@ -171,6 +171,8 @@ std::vector<EntityId> pickAll(const Scene &scene, Vec2 world, float metersPerPix
     std::size_t sequence = 0;
     for (const EntityId id : scene.hierarchyOrder()) {
         const Entity &entity = *scene.find(id);
+        if (entity.lockedInHierarchy())
+            continue; // Locked entities are not pickable in the scene view.
         const Transform2D transform = entity.worldTransform();
         std::optional<Candidate> best;
         const auto consider = [&](const Candidate &candidate) {
@@ -205,7 +207,8 @@ std::vector<EntityId> pickInRect(const Scene &scene, Rect area, float metersPerP
     const float markerHalf = std::max(0.3F, 10.0F * metersPerPixel);
     std::vector<EntityId> ids;
     for (const EntityId id : scene.hierarchyOrder())
-        if (overlaps(displayBox(*scene.find(id), markerHalf).bounds(), area))
+        if (!scene.find(id)->lockedInHierarchy() &&
+            overlaps(displayBox(*scene.find(id), markerHalf).bounds(), area))
             ids.push_back(id);
     return ids;
 }

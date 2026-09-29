@@ -1,0 +1,142 @@
+# Edits the demo game's level (a private copy) with the scene-view tools, the hierarchy and
+# the dialogs: selection, links, door target handles, marquee, copy/paste, reparenting, rotation,
+# prefabs, unsaved-changes prompts, project settings and validation.
+timeout 300
+expect entity-count 171
+expect clean
+
+log "== links and target handles"
+click "hierarchy/Lever"
+expect selected Lever
+expect links Lever Gate
+click "hierarchy/Gate"
+expect selected Gate
+expect widget scene/handle/Ghost0
+expect prop Gate Door.openOffset 0,-3.2
+drag scene/handle/Ghost0 world:19,11
+expect prop Gate Door.openOffset 0,-4.5
+expect undo "Move Target"
+capture ${SHOT_DIR}/edit-01-ghost.bmp
+key ctrl+z
+expect prop Gate Door.openOffset 0,-3.2
+expect clean
+
+log "== marquee selection"
+drag world:4.5,12 world:9.5,17.5
+expect selection-at-least 4
+expect clean
+key escape
+
+log "== resize a door, undo, redo"
+click "hierarchy/Gate"
+click toolbar/Resize
+expect widget scene/handle/Right
+drag scene/handle/Right world:20.5,15.5
+expect size Gate 2,3
+expect position Gate 19.5,15.5
+expect dirty
+key ctrl+z
+expect size Gate 1,3
+key ctrl+y
+expect size Gate 2,3
+key ctrl+z
+expect clean
+click toolbar/Move
+
+log "== rotate"
+click "hierarchy/Water Ledge A"
+click toolbar/Rotate
+expect widget scene/handle/Rotate
+drag scene/handle/Rotate world:28.55,15.4
+expect prop "Water Ledge A" Transform.rotation 90
+capture ${SHOT_DIR}/edit-02-rotated.bmp
+key ctrl+z
+expect prop "Water Ledge A" Transform.rotation 0
+click toolbar/Move
+
+log "== copy, paste, duplicate"
+click "hierarchy/Plate Near"
+key ctrl+c
+key ctrl+v
+expect entity "Plate Near (1)"
+expect entity-count 172
+key ctrl+z
+expect no-entity "Plate Near (1)"
+click "hierarchy/Plate Near"
+key ctrl+d
+expect entity "Plate Near (1)"
+key delete
+expect no-entity "Plate Near (1)"
+expect entity-count 171
+key ctrl+z
+key ctrl+z
+expect clean
+
+log "== reparent by dragging in the hierarchy"
+drag "hierarchy/Lever" "hierarchy/Checkpoint"
+expect parent Lever Checkpoint
+key ctrl+z
+expect parent Lever Mechanisms
+expect clean
+
+log "== rename in the hierarchy"
+click "hierarchy/Checkpoint"
+key f2
+wait 3
+type "Save Point"
+wait 1
+key enter
+expect entity "Save Point"
+expect no-entity Checkpoint
+key ctrl+z
+expect entity Checkpoint
+
+log "== prefab from the selection, then instantiate it from the assets panel"
+click "hierarchy/Lever"
+menu "Entity/Save as Prefab"
+expect dialog saveprefab
+key ctrl+a
+type prefabs/my_lever
+click dialog/SavePrefab/ok
+expect no-dialog
+expect file prefabs/my_lever.ykprefab exists
+expect widget asset/prefabs/my_lever.ykprefab
+doubleclick asset/prefabs/my_lever.ykprefab
+expect entity-count 172
+expect dirty
+
+log "== unsaved changes are never lost silently"
+menu "File|Open Scene|scenes/practice.ykscene"
+expect dialog unsaved
+click dialog/Unsaved/cancel
+expect no-dialog
+expect scene scenes/level01.ykscene
+menu "File|Open Scene|scenes/practice.ykscene"
+click dialog/Unsaved/save
+expect scene scenes/practice.ykscene
+expect clean
+
+log "== validation and project settings"
+menu "File/Validate Project"
+expect dialog validation
+click dialog/Validation/close
+expect no-dialog
+menu "File/Project Settings"
+expect dialog settings
+click dialog/Settings/save
+expect no-dialog
+capture ${SHOT_DIR}/edit-03-playground.bmp
+
+log "== closing the window with unsaved changes asks first"
+create Level/Platform
+expect dirty
+closewindow
+expect dialog unsaved
+click dialog/Unsaved/cancel
+expect no-dialog
+expect editing
+closewindow
+expect dialog unsaved
+click dialog/Unsaved/discard
+# The editor closes itself now.
+expect quitting

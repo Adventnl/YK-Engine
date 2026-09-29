@@ -39,7 +39,7 @@
     {
       "from": "SwitchOn",
       "to": "On",
-      "exitTime": 1.0
+      "exitTime": 1
     },
     {
       "from": "On",
@@ -54,7 +54,7 @@
     {
       "from": "SwitchOff",
       "to": "Off",
-      "exitTime": 1.0
+      "exitTime": 1
     }
   ]
 }

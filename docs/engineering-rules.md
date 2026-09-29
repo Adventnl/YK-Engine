@@ -38,7 +38,7 @@ claim that is no longer true, fix the document in the same change.
   only place a saved value could come from.
 - Scene files reference entities by id and assets by project-relative path. Loaders validate and
   name the failing entity/component/property; they never return partial data.
-- `docs/components.md` is generated (`yk_player --components`); a test fails when it is stale.
+- `docs/components.md` is generated (`yk components`); a test fails when it is stale.
 - Placeholder art policy: prototype and test content uses simple colored shapes and procedural
   tones so real assets can replace them later by assigning a texture or sound. Gameplay never
   depends on how something looks; visuals and gameplay logic stay separate.

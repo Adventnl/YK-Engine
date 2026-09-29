@@ -163,7 +163,7 @@
     {
       "from": "Land",
       "to": "Idle",
-      "exitTime": 1.0
+      "exitTime": 1
     },
     {
       "from": "Idle",
@@ -186,7 +186,7 @@
     {
       "from": "Interact",
       "to": "Idle",
-      "exitTime": 1.0
+      "exitTime": 1
     },
     {
       "from": "Idle",

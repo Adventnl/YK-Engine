@@ -47,6 +47,11 @@ struct PrefabPlacement {
 Result<std::vector<EntityId>> instantiateSubtrees(Scene &scene,
                                                   const std::vector<PrefabPlacement> &placements,
                                                   bool keepExternalReferences = false);
+// Loads `document` and writes it back the way the editor saves it (every property present, stable
+// order) while keeping entity ids, so files written by scripts or by hand diff cleanly against
+// editor-saved ones. Fail like the loaders do. `yk format` is built on these.
+Result<Json> canonicalScene(const Json &document, const ComponentRegistry &registry);
+Result<Json> canonicalPrefab(const Json &document, const ComponentRegistry &registry);
 Result<Json> loadPrefabDocument(const std::filesystem::path &path);
 Status savePrefab(const Scene &scene, EntityId root, const std::filesystem::path &path);
 } // namespace yk

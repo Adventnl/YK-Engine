@@ -41,6 +41,16 @@ class Entity {
         active_ = active;
     }
     bool activeInHierarchy() const;
+    // An editor hint saved with the scene: a locked entity (and everything below it) cannot be
+    // picked or moved in the scene view, so a huge backdrop does not swallow every click. The
+    // runtime ignores it.
+    bool locked() const {
+        return locked_;
+    }
+    void setLocked(bool locked) {
+        locked_ = locked;
+    }
+    bool lockedInHierarchy() const;
 
     // The project-relative prefab this entity was created from. It is set on the root of an
     // instance and empty everywhere else. The editor uses it to show, revert and apply an instance
@@ -126,6 +136,7 @@ class Entity {
     EntityId id_;
     std::string name_;
     bool active_{true};
+    bool locked_{false};
     std::string prefabSource_;
     std::vector<std::string> tags_;
     Transform2D local_;

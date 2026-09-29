@@ -7,16 +7,12 @@
   "clips": [
     {
       "name": "dormant",
-      "frames": [
-        0
-      ],
+      "frames": [0],
       "fps": 1
     },
     {
       "name": "lit",
-      "frames": [
-        1
-      ],
+      "frames": [1],
       "fps": 1
     }
   ]

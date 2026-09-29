@@ -1,0 +1,34 @@
+# Plays the demo game's level from the editor with both characters.
+timeout 300
+expect project "Cinder Vale"
+expect scene scenes/level01.ykscene
+expect entity Ember
+expect entity Tide
+expect clean
+capture ${SHOT_DIR}/sample-01-edit.bmp
+
+click toolbar/Play
+expect playing
+wait 25
+# Ember runs with A/D/W, Tide with the arrow keys.
+keydown d
+keydown right
+wait 30
+keyup d
+keyup right
+expect runtime-moved Ember x>=1
+expect runtime-moved Tide x>=1
+hold w 6
+hold up 6
+wait 4
+capture ${SHOT_DIR}/sample-02-play.bmp
+
+# The running copy can be inspected but not edited.
+click "hierarchy/Gate"
+expect selected Gate
+expect prop Gate Door.openOffset 0,-3.2
+click toolbar/Stop
+expect editing
+expect clean
+expect no-entity "Ember (1)"
+capture ${SHOT_DIR}/sample-03-stopped.bmp

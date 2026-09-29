@@ -128,6 +128,8 @@ class PlatformerController final : public Component {
     float gripFriction{1.2F};  // Friction when standing still on the ground.
     float slideFriction{0.0F}; // Friction when moving or airborne (no wall sticking).
     float landingSpeed{4.0F};  // Downward speed (m/s) at which touching down counts as a "landed".
+    float groundSnap{0.3F};    // Walking off a ramp crest or down a slope keeps the feet on the
+                               // ground when it is at most this far below; 0 turns that off.
     AssetRef jumpSound;
     AssetRef landSound;
     AssetRef jumpEffect; // Prefab spawned at the feet when a jump starts (dust, for example).
@@ -154,6 +156,7 @@ class PlatformerController final : public Component {
     bool frictionApplied_{};
     float fallSpeed_{}; // Fastest downward speed since leaving the ground.
     bool wasGroundedForAnimation_{true};
+    bool hadGround_{};
     float appliedGravityScale_{-1.0F};
 };
 
@@ -376,4 +379,8 @@ class LevelFlow final : public Component {
 
 // Registers every component above plus generic entity templates (Platform, Door, ...).
 void registerGameplayComponents(ComponentRegistry &registry);
+// Everything the stock tools know: the engine's standard components, effects and this library. The
+// editor, the player and the `yk` command line start from it; a game with its own C++ components
+// registers them after it (see docs/BUILDING.md, "Game modules").
+void registerStandardComponents(ComponentRegistry &registry);
 } // namespace yk

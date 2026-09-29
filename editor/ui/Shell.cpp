@@ -14,19 +14,21 @@ void openDialog(EditorState &state, DialogKind kind, EntityId entity = {}) {
     showDialog(state, kind, entity);
 }
 
+// The demo game that ships with the engine: beside the editor in an install or a build tree, or in
+// the source checkout.
 std::optional<std::filesystem::path> findSampleProject() {
     std::vector<std::filesystem::path> candidates;
     if (const char *base = SDL_GetBasePath()) {
         const std::filesystem::path here(base);
-        candidates.push_back(here / "projects" / "elemental-prototype");
-        candidates.push_back(here / ".." / "projects" / "elemental-prototype");
-        candidates.push_back(here / ".." / "share" / "yk-engine" / "projects" /
-                             "elemental-prototype");
+        candidates.push_back(here / "YK-DemoGame");
+        candidates.push_back(here / ".." / "YK-DemoGame");
+        candidates.push_back(here / ".." / ".." / "YK-DemoGame");
+        candidates.push_back(here / ".." / "share" / "yk-engine" / "YK-DemoGame");
     }
-    candidates.push_back("projects/elemental-prototype");
-    candidates.push_back("../projects/elemental-prototype");
+    candidates.push_back("YK-DemoGame");
+    candidates.push_back("../YK-DemoGame");
 #ifdef YK_SOURCE_DIR
-    candidates.push_back(std::filesystem::path(YK_SOURCE_DIR) / "projects" / "elemental-prototype");
+    candidates.push_back(std::filesystem::path(YK_SOURCE_DIR) / "YK-DemoGame");
 #endif
     for (const auto &candidate : candidates) {
         std::error_code error;
@@ -581,7 +583,7 @@ void drawWelcome(EditorState &state) {
                 state.openProject(*sample);
             markItem("welcome/Open Sample");
             tooltip(
-                "The Elemental Prototype: a two-player co-op puzzle level built from the engine's "
+                "Cinder Vale: the demo game, a two-player co-op puzzle level built from the engine's "
                 "reusable components.");
         }
         if (!state.recent.paths().empty()) {

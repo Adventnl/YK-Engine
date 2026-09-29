@@ -1,5 +1,5 @@
 // yk_editor: the YK Engine editor.
-#include "Modules.hpp"
+#include "yk/gameplay/Gameplay.hpp"
 #include "ui/EditorApp.hpp"
 #include "ui/EditorDriver.hpp"
 #include "yk/core/Application.hpp"
@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
         return 2;
     }
     ComponentRegistry registry;
-    registerAllModules(registry);
+    registerStandardComponents(registry);
     if (auto valid = registry.validate(); !valid) {
         std::fprintf(stderr, "Component registry is inconsistent: %s\n", valid.error().c_str());
         return 1;

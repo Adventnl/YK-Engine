@@ -1,0 +1,262 @@
+{
+  "format": "yk.prefab",
+  "version": 1,
+  "root": "17088c6256eff262",
+  "entities": [
+    {
+      "id": "17088c6256eff262",
+      "name": "HUD",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": []
+    },
+    {
+      "id": "a75681c5e8f0ffd3",
+      "name": "Vignette",
+      "parent": "17088c6256eff262",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/backgrounds/vignette.png",
+            "anchor": "TopLeft",
+            "size": [48, 48],
+            "offset": [16, 16],
+            "color": "#ffffffff",
+            "layer": -5,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "fillScreen": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "73d489fa8fb29774",
+      "name": "Ember Score",
+      "parent": "17088c6256eff262",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "TopLeft",
+            "size": [236, 52],
+            "offset": [16, 16],
+            "color": "#060e12aa",
+            "layer": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "750a7a8cb20fe6dc",
+      "name": "Ember Gem Icon",
+      "parent": "17088c6256eff262",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/items/gem_red.png",
+            "anchor": "TopLeft",
+            "size": [40, 40],
+            "offset": [24, 22],
+            "color": "#ffffffff",
+            "layer": 2,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "fillScreen": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "0328b910eb17ef60",
+      "name": "Ember Gems",
+      "parent": "17088c6256eff262",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "EMBER  {ember_gems:0}/{ember_gems_total:0}",
+            "anchor": "TopLeft",
+            "offset": [74, 32],
+            "scale": 2,
+            "color": "#ffb06eff",
+            "shadow": true,
+            "layer": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "ca82f9c9d1e30967",
+      "name": "Tide Score",
+      "parent": "17088c6256eff262",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "TopRight",
+            "size": [236, 52],
+            "offset": [16, 16],
+            "color": "#060e12aa",
+            "layer": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "e6bfaac90bfcb769",
+      "name": "Tide Gem Icon",
+      "parent": "17088c6256eff262",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/items/gem_blue.png",
+            "anchor": "TopRight",
+            "size": [40, 40],
+            "offset": [24, 22],
+            "color": "#ffffffff",
+            "layer": 2,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "fillScreen": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "130c5c93fd383424",
+      "name": "Tide Gems",
+      "parent": "17088c6256eff262",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "TIDE  {tide_gems:0}/{tide_gems_total:0}",
+            "anchor": "TopRight",
+            "offset": [74, 32],
+            "scale": 2,
+            "color": "#8ccdffff",
+            "shadow": true,
+            "layer": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "8e7fbefb68a46ff1",
+      "name": "Timer",
+      "parent": "17088c6256eff262",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "TIME {level_time}",
+            "anchor": "Top",
+            "offset": [0, 30],
+            "scale": 2,
+            "color": "#ebf0ebff",
+            "shadow": true,
+            "layer": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "cd018aa40e97de75",
+      "name": "Message",
+      "parent": "17088c6256eff262",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "{level_message}",
+            "anchor": "Center",
+            "offset": [0, 0],
+            "scale": 6,
+            "color": "#fff0aaff",
+            "shadow": true,
+            "layer": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "65974b68c2b4b959",
+      "name": "Controls",
+      "parent": "17088c6256eff262",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "EMBER: A D MOVE  W JUMP  S USE      TIDE: ARROWS MOVE  UP JUMP  DOWN USE      R RESTART",
+            "anchor": "Bottom",
+            "offset": [0, 16],
+            "scale": 1,
+            "color": "#becdcdc8",
+            "shadow": true,
+            "layer": 3
+          }
+        }
+      ]
+    }
+  ]
+}

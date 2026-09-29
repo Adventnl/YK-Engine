@@ -7,16 +7,12 @@
   "clips": [
     {
       "name": "shut",
-      "frames": [
-        0
-      ],
+      "frames": [0],
       "fps": 1
     },
     {
       "name": "open",
-      "frames": [
-        1
-      ],
+      "frames": [1],
       "fps": 1
     }
   ]

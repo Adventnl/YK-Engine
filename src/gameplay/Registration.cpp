@@ -157,3 +157,10 @@ void registerGameplayComponents(ComponentRegistry &registry) {
                           }});
 }
 } // namespace yk
+
+namespace yk {
+void registerStandardComponents(ComponentRegistry &registry) {
+    registerEngineComponents(registry);
+    registerGameplayComponents(registry);
+}
+} // namespace yk

@@ -609,6 +609,18 @@ void prefabSources() {
             broken.find("entities")->at(i).set("prefab", 5);
     CHECK(!sceneFromJson(broken, registry)); // A prefab reference must be a string.
 
+    // Locking is an editor hint saved with the scene; it covers everything below the entity.
+    Entity &locker = scene.createEntity("Locker");
+    Entity &locked = scene.createEntity("Locked Child", locker.id());
+    CHECK(!locked.lockedInHierarchy());
+    locker.setLocked(true);
+    CHECK(locked.lockedInHierarchy() && !locked.locked());
+    auto withLock = sceneFromJson(sceneToJson(scene), registry);
+    CHECK(withLock && withLock.value()->find(locker.id())->locked() &&
+          withLock.value()->find(locked.id())->lockedInHierarchy());
+    CHECK(!sceneToJson(scene).get("entities").at(0).contains("locked"));
+    locker.setLocked(false);
+
     // A copy of an instance stays an instance; a prefab saved from an instance names nothing.
     const Json copy = subtreeToJson(scene, placed.value());
     CHECK(copy.get("entities").at(0).get("prefab").asString() == path);

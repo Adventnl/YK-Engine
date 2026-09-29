@@ -7,35 +7,23 @@
   "clips": [
     {
       "name": "off",
-      "frames": [
-        0
-      ],
+      "frames": [0],
       "fps": 1
     },
     {
       "name": "on",
-      "frames": [
-        2
-      ],
+      "frames": [2],
       "fps": 1
     },
     {
       "name": "switch_on",
-      "frames": [
-        0,
-        1,
-        2
-      ],
+      "frames": [0, 1, 2],
       "fps": 24,
       "loop": false
     },
     {
       "name": "switch_off",
-      "frames": [
-        2,
-        1,
-        0
-      ],
+      "frames": [2, 1, 0],
       "fps": 24,
       "loop": false
     }

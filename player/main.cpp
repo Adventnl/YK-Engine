@@ -1,12 +1,10 @@
 // yk_player: runs a project's scene as a game.
 #include "KeyScript.hpp"
-#include "Modules.hpp"
-#include "yk/assets/Validation.hpp"
 #include "yk/audio/SdlAudio.hpp"
 #include "yk/core/Application.hpp"
 #include "yk/core/Log.hpp"
 #include "yk/graphics/GameView.hpp"
-#include "yk/scene/RegistryDocs.hpp"
+#include "yk/gameplay/Gameplay.hpp"
 #include "yk/scene/SceneSerializer.hpp"
 #include <SDL3/SDL.h>
 #include <cstdio>
@@ -24,8 +22,6 @@ struct Options {
     std::string keys;
     bool fixedStep{};
     bool audio{true};
-    bool validate{};
-    bool components{};
     bool help{};
 };
 
@@ -40,8 +36,6 @@ void usage() {
         "  --keys <script>        replay keys instead of the keyboard, e.g. D@0-120,W@60-62\n"
         "  --fixed                advance a fixed 1/60 s per frame (deterministic)\n"
         "  --no-audio             disable sound\n"
-        "  --validate             check every scene and prefab in the project, then exit\n"
-        "  --components           print the component reference (Markdown), then exit\n"
         "In game: F1 physics outlines, F2 collider outlines, F3 stats, Esc quits.");
 }
 
@@ -73,10 +67,6 @@ std::optional<Options> parse(int argc, char **argv) {
             options.fixedStep = true;
         } else if (arg == "--no-audio") {
             options.audio = false;
-        } else if (arg == "--validate") {
-            options.validate = true;
-        } else if (arg == "--components") {
-            options.components = true;
         } else if (!arg.empty() && arg[0] != '-' && options.project.empty()) {
             options.project = arg;
         } else {
@@ -209,28 +199,15 @@ int main(int argc, char **argv) {
         return 0;
     }
     ComponentRegistry registry;
-    registerAllModules(registry);
+    registerStandardComponents(registry);
     if (auto valid = registry.validate(); !valid) {
         std::fprintf(stderr, "Component registry is inconsistent: %s\n", valid.error().c_str());
         return 1;
-    }
-    if (options->components) {
-        std::fputs(describeRegistryMarkdown(registry).c_str(), stdout);
-        return 0;
     }
     auto project = Project::load(locateProject(*options));
     if (!project) {
         std::fprintf(stderr, "%s\n", project.error().c_str());
         return 1;
-    }
-    if (options->validate) {
-        const auto issues = validateProject(project.value(), registry);
-        for (const ProjectIssue &issue : issues)
-            std::printf("%s: %s: %s\n",
-                        issue.severity == ProjectIssue::Severity::Error ? "error" : "warning",
-                        issue.path.c_str(), issue.message.c_str());
-        std::printf("%s: %zu issue(s)\n", project.value().name.c_str(), issues.size());
-        return hasErrors(issues) ? 1 : 0;
     }
     if (!options->capture.empty() && options->frames == 0) {
         std::fprintf(stderr, "--capture needs --frames\n");
