@@ -23,8 +23,13 @@ void strip(EditorState &state, ImVec2 start) {
                            static_cast<unsigned long long>(state.play->runtime().tick()));
         ImGui::PopFont();
     } else {
-        ImGui::TextColored(imColor(palette::dim),
-                           "Preview of the game camera. Press Play (F5) to run.");
+        // The hint gives way to the buttons when the group is narrow (a split editor).
+        const float room = ImGui::GetWindowWidth() - 4.0F * 26.0F - 30.0F;
+        const char *hint = "Preview of the game camera. Press Play (F5) to run.";
+        if (ImGui::CalcTextSize(hint).x > room)
+            hint = "Game preview";
+        if (ImGui::CalcTextSize(hint).x <= room)
+            ImGui::TextColored(imColor(palette::dim), "%s", hint);
     }
     // Right-aligned toggles.
     const float button = 24.0F;

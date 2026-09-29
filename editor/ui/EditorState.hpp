@@ -92,7 +92,8 @@ enum class DialogKind {
     Validation,
     About,
     Shortcuts,
-    Message
+    Message,
+    Confirm
 };
 
 struct DialogState {
@@ -108,6 +109,7 @@ struct DialogState {
     std::vector<std::string> unsavedScenes; // What the Unsaved dialog offers to save.
     std::vector<ProjectIssue> issues;       // Validation results.
     std::optional<Project> draft;           // Project settings being edited; applied on Save.
+    std::string confirmLabel{"OK"};         // The Confirm dialog's accept button.
     // The Export dialog.
     BuildTarget exportTarget{hostTarget()};
     std::string exportPlayer; // Player program override; empty: the one found for the target.
@@ -245,6 +247,9 @@ class EditorState {
     // scenes; Unpack forgets the link. All of them tell the console what they did.
     Status revertPrefab(EntityId entity);
     Status applyPrefab(EntityId entity);
+    // Puts every other instance of the same prefab (in all open scenes) back to the prefab file's
+    // contents, after asking: their own changes other than name and placement are replaced.
+    void updateOtherInstances(EntityId entity);
     void unpackPrefab(EntityId entity);
     // Selects a project file: the Explorer opens its folders and scrolls to it, and the Inspector
     // shows it until something else is selected.

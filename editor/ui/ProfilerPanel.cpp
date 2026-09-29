@@ -62,7 +62,7 @@ void profilerPanel(EditorState &state) {
 
     ImGui::BeginChild("##profilerstats", {0.0F, 0.0F}, ImGuiChildFlags_None);
     if (ImGui::BeginTable("##stats", 2, ImGuiTableFlags_SizingStretchProp)) {
-        ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthFixed, 150.0F);
+        ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthFixed, 210.0F);
         ImGui::TableSetupColumn("value");
         std::snprintf(text, sizeof text, "%.0f fps", static_cast<double>(state.framesPerSecond));
         statRow("Editor", text);
@@ -71,9 +71,9 @@ void profilerPanel(EditorState &state) {
         statRow("Quads / particles", number(draw.quads) + " / " + number(draw.particles));
         if (state.renderer) {
             const auto frame = state.renderer->lastFrameStats();
-            statRow("Renderer sprites / lines / passes", number(frame.sprites) + " / " +
-                                                             number(frame.lines) + " / " +
-                                                             number(frame.passes));
+            statRow("Renderer sprites/lines/passes", number(frame.sprites) + " / " +
+                                                         number(frame.lines) + " / " +
+                                                         number(frame.passes));
         }
         if (const Scene *scene = state.visibleScene())
             statRow("Entities", number(scene->size()));

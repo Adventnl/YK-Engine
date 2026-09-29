@@ -257,7 +257,8 @@ void drawRow(Tree &tree, EntityId id, bool flat) {
         flags |= ImGuiTreeNodeFlags_Selected;
 
     ImGui::PushID(reinterpret_cast<const void *>(static_cast<std::uintptr_t>(id.value)));
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {4.0F, 2.5F});
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
+                        {4.0F, std::max(2.0F, (metrics::row - ImGui::GetFontSize()) * 0.5F)});
     const bool open = ImGui::TreeNodeEx("##row", flags);
     ImGui::PopStyleVar();
     // A row is selected when the mouse comes back up on it, so pressing it to drag it (onto an

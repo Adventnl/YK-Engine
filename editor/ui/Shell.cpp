@@ -118,8 +118,14 @@ void prefabMenuItems(EditorState &state, EntityId entity, const std::string &men
         state.applyPrefab(entity);
     if (!menuId.empty())
         markItem(id("Apply to Prefab"));
-    tooltip("Write this instance to the prefab file and update the other instances in the open "
-            "scenes.");
+    tooltip("Write this instance to the prefab file. The other instances keep their contents "
+            "until you update them.");
+    if (ImGui::MenuItem("Update Other Instances"))
+        state.updateOtherInstances(entity);
+    if (!menuId.empty())
+        markItem(id("Update Other Instances"));
+    tooltip("Put every other instance of this prefab in the open scenes back to the prefab file's "
+            "contents (asks first).");
     ImGui::Separator();
     if (ImGui::MenuItem("Unpack Prefab"))
         state.unpackPrefab(entity);

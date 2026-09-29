@@ -575,7 +575,7 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
         const Entity *entity = findNamed(scene, arg);
         return report(entity && !entity->findComponent(w[3]), "'" + arg + "' still has " + w[3]);
     }
-    if (what == "prop") { // expect prop ENTITY Component.property VALUE
+    if (what == "prop" || what == "prop-not") { // expect prop ENTITY Component.property VALUE
         if (!need(3))
             return -1;
         const Entity *entity = findNamed(scene, arg);
@@ -619,7 +619,9 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
             }
             actual = formatValue(*scene, *property, property->get(*component));
         }
-        return report(sameValue(actual, w[4]), "'" + arg + "." + path + "' is '" + actual + "'");
+        const bool same = sameValue(actual, w[4]);
+        return report(what == "prop" ? same : !same,
+                      "'" + arg + "." + path + "' is '" + actual + "'");
     }
     if (what == "position") { // expect position ENTITY x,y
         if (!need(2))
@@ -754,7 +756,8 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
             {"saveprefab", DialogKind::SavePrefab},    {"unsaved", DialogKind::Unsaved},
             {"settings", DialogKind::ProjectSettings}, {"export", DialogKind::Export},
             {"validation", DialogKind::Validation},    {"about", DialogKind::About},
-            {"shortcuts", DialogKind::Shortcuts},      {"message", DialogKind::Message}};
+            {"shortcuts", DialogKind::Shortcuts},      {"message", DialogKind::Message},
+            {"confirm", DialogKind::Confirm}};
         const auto found = kinds.find(lower(arg));
         if (found == kinds.end()) {
             detail = "unknown dialog '" + arg + "'";

@@ -113,6 +113,29 @@ key ctrl+z
 key ctrl+z
 expect prop Lever Lever.cooldown 0.4
 expect clean
+# Other instances only follow when asked, and the dialog says how many.
+click "hierarchy/Grass 1"
+expect widget inspector/prefab/update
+edit prop/color "#ff0000ff"
+click inspector/prefab/apply
+expect console "Applied 'Grass 1'"
+expect prop-not "Grass 2" SpriteRenderer.color "#ff0000ff"
+click inspector/prefab/update
+expect dialog confirm
+click dialog/Confirm/cancel
+expect no-dialog
+expect prop-not "Grass 2" SpriteRenderer.color "#ff0000ff"
+menu "Entity/Prefab/Update Other Instances"
+expect dialog confirm
+click dialog/Confirm/ok
+expect no-dialog
+expect prop "Grass 2" SpriteRenderer.color "#ff0000ff"
+expect undo "Update Prefab Instances"
+key ctrl+z
+expect prop-not "Grass 2" SpriteRenderer.color "#ff0000ff"
+key ctrl+z
+expect clean
+click "hierarchy/Lever"
 # A part of an instance points back at its instance.
 menu "Entity/Prefab/Unpack Prefab"
 expect dirty

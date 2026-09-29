@@ -288,6 +288,29 @@ void exportDialog(EditorState &state) {
     markItem("dialog/Export/cancel");
 }
 
+// A question with an accept button; the accepted action is the dialog's continuation.
+void confirmDialog(EditorState &state) {
+    DialogState &dialog = state.dialog;
+    ImGui::PushTextWrapPos(460.0F);
+    ImGui::TextWrapped("%s", dialog.message.c_str());
+    ImGui::PopTextWrapPos();
+    ImGui::Spacing();
+    const std::string label = dialog.confirmLabel;
+    const bool accepted = ImGui::Button(label.c_str(), {110.0F, 0.0F});
+    markItem("dialog/Confirm/ok");
+    ImGui::SameLine();
+    const bool cancelled = ImGui::Button("Cancel", {100.0F, 0.0F});
+    markItem("dialog/Confirm/cancel");
+    if (accepted) {
+        const auto continuation = dialog.continuation;
+        closeDialog(state);
+        if (continuation)
+            continuation();
+    } else if (cancelled) {
+        closeDialog(state);
+    }
+}
+
 void unsavedDialog(EditorState &state) {
     DialogState &dialog = state.dialog;
     ImGui::TextWrapped("%s", dialog.message.c_str());
@@ -705,6 +728,9 @@ void drawDialogs(EditorState &state) {
         break;
     case DialogKind::Message:
         messageDialog(state);
+        break;
+    case DialogKind::Confirm:
+        confirmDialog(state);
         break;
     case DialogKind::None:
         break;

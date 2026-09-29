@@ -616,7 +616,7 @@ void drawHeader(Inspect &inspect, const Entity &entity) {
     ImGui::SetNextItemWidth(-FLT_MIN);
     const bool tagsChanged = inputText("##tags", tags, 0, "Tags (comma separated)");
     markItem("inspector/tags");
-    tooltip("Tags let hazards, plates and exits tell entities apart, e.g. fire, water.");
+    tooltip("Tags let hazards, plates and exits tell entities apart, e.g. enemy, collectible.");
     if (doc)
         commitEdit(*doc, "Edit Tags", tagsChanged, [&] {
             std::vector<std::string> parsed;
@@ -673,8 +673,14 @@ void drawPrefabBar(Inspect &inspect, const Entity &entity) {
         if (ImGui::Button("Apply"))
             inspect.state.applyPrefab(inspect.entity);
         markItem("inspector/prefab/apply");
-        tooltip("Write this instance to the prefab file and update the other instances in the open "
-                "scenes.");
+        tooltip("Write this instance to the prefab file. The other instances keep their contents "
+                "until you update them.");
+        ImGui::SameLine();
+        if (ImGui::Button("Update Others"))
+            inspect.state.updateOtherInstances(inspect.entity);
+        markItem("inspector/prefab/update");
+        tooltip("Put every other instance of this prefab in the open scenes back to the prefab "
+                "file's contents (asks first).");
         ImGui::SameLine();
         if (ImGui::Button("Unpack"))
             inspect.state.unpackPrefab(inspect.entity);

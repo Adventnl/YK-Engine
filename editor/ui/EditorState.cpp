@@ -657,6 +657,25 @@ Status EditorState::revertPrefab(EntityId entity) {
     return success();
 }
 
+namespace {
+// How many other instances of `source` the open scenes hold (`except` is the one being acted on).
+std::size_t otherInstances(const EditorState &state, const std::string &source, EntityId except) {
+    std::size_t count = 0;
+    const auto scan = [&](const EditorDocument &document, EntityId skip) {
+        document.scene().forEach([&](const Entity &entity) {
+            if (entity.prefabSource() == source && entity.id() != skip)
+                ++count;
+        });
+    };
+    if (state.document)
+        scan(*state.document, except);
+    for (const auto &entry : state.background)
+        if (entry.second.document)
+            scan(*entry.second.document, {});
+    return count;
+}
+} // namespace
+
 Status EditorState::applyPrefab(EntityId entity) {
     if (!project || !document || playing())
         return Error{"There is no scene to edit"};
@@ -669,25 +688,58 @@ Status EditorState::applyPrefab(EntityId entity) {
         message("Cannot apply to the prefab", written.error());
         return written;
     }
-    auto prefab = project->loadPrefab(source);
-    if (!prefab)
-        return Error{prefab.error()};
-    std::size_t updated = 0;
-    const auto update = [&](EditorDocument &target, EntityId except) {
-        if (auto done = target.updatePrefabInstances(source, prefab.value(), except); done)
-            updated += done.value();
-        else
-            log(LogLevel::Error, "editor", done.error());
-    };
-    update(*document, root);
-    for (auto &entry : background)
-        if (entry.second.document)
-            update(*entry.second.document, {});
-    log(LogLevel::Info, "editor",
-        "Applied '" + document->scene().find(root)->name() + "' to " + source + "; " +
-            std::to_string(updated) + " other instance(s) in the open scenes were updated");
+    std::string text = "Applied '" + document->scene().find(root)->name() + "' to " + source;
+    if (const std::size_t others = otherInstances(*this, source, root); others > 0)
+        text += ". " + std::to_string(others) +
+                " other instance(s) in the open scenes still have the old contents (Entity > "
+                "Prefab > Update Other Instances brings them in line)";
+    log(LogLevel::Info, "editor", text);
     refreshProblems();
     return success();
+}
+
+void EditorState::updateOtherInstances(EntityId entity) {
+    if (!project || !document || playing())
+        return;
+    const EntityId root = document->prefabRootOf(entity);
+    if (!root)
+        return;
+    const std::string source = document->scene().find(root)->prefabSource();
+    const std::size_t others = otherInstances(*this, source, root);
+    if (others == 0) {
+        log(LogLevel::Info, "editor",
+            "There are no other instances of " + source + " in the open scenes");
+        return;
+    }
+    dialog = {};
+    dialog.kind = DialogKind::Confirm;
+    dialog.title = "Update Other Instances";
+    dialog.message = "This puts " + std::to_string(others) + " other instance(s) of\n" + source +
+                     "\nback to the prefab file's contents. Their names and placement stay; "
+                     "any other changes made to them are replaced.";
+    dialog.confirmLabel = "Update";
+    dialog.needsOpen = true;
+    dialog.continuation = [this, source, root] {
+        auto prefab = project ? project->loadPrefab(source) : Result<Json>(Error{"No project"});
+        if (!prefab) {
+            log(LogLevel::Error, "editor", prefab.error());
+            return;
+        }
+        std::size_t updated = 0;
+        const auto update = [&](EditorDocument &target, EntityId except) {
+            if (auto done = target.updatePrefabInstances(source, prefab.value(), except); done)
+                updated += done.value();
+            else
+                log(LogLevel::Error, "editor", done.error());
+        };
+        if (document)
+            update(*document, root);
+        for (auto &entry : background)
+            if (entry.second.document)
+                update(*entry.second.document, {});
+        log(LogLevel::Info, "editor",
+            "Updated " + std::to_string(updated) + " other instance(s) of " + source);
+    };
 }
 
 void EditorState::unpackPrefab(EntityId entity) {

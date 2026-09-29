@@ -26,12 +26,15 @@ void searchBox(const char *id, std::string &value, const char *hint) {
 }
 
 // A section title with a chevron, like VS Code's collapsible view sections.
-bool section(const std::string &title, const std::string &id, bool openByDefault = true) {
+// `capitals` writes the title in capitals (view sections); folder names keep their case.
+bool section(const std::string &title, const std::string &id, bool openByDefault = true,
+             bool capitals = true) {
     ImGui::SetNextItemOpen(openByDefault, ImGuiCond_Once);
     ImGui::PushStyleColor(ImGuiCol_Header, imColor(Color{0, 0, 0, 0}));
-    ImGui::PushFont(fonts().semibold, 12.0F);
-    const bool open = ImGui::CollapsingHeader((headerText(title) + "###" + id).c_str(),
-                                              ImGuiTreeNodeFlags_DefaultOpen);
+    ImGui::PushFont(fonts().semibold, capitals ? 12.0F : 13.0F);
+    const bool open =
+        ImGui::CollapsingHeader(((capitals ? headerText(title) : title) + "###" + id).c_str(),
+                                ImGuiTreeNodeFlags_DefaultOpen);
     ImGui::PopFont();
     ImGui::PopStyleColor();
     markItem("section/" + id);
@@ -60,7 +63,12 @@ void prefabsPanel(EditorState &state) {
                                   "Entity > Save as Prefab."
                                 : "Nothing matches.");
     for (const auto &[folder, paths] : folders) {
-        if (!section(folder.empty() ? "(project root)" : folder, "prefabs/" + folder))
+        std::string title = folder.empty() ? "(project root)" : folder;
+        if (title.starts_with("prefabs/"))
+            title.erase(0, 8); // Everything here is a prefab; the folder inside is what matters.
+        else if (title == "prefabs")
+            title = "prefabs (top level)";
+        if (!section(title, "prefabs/" + folder, true, false))
             continue;
         for (const std::string &path : paths) {
             const std::string name = std::filesystem::path(path).stem().string();

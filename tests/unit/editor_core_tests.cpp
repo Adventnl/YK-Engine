@@ -600,6 +600,21 @@ void viewCamera() {
     view.doc().select(view.doc().scene().roots().front());
     view.ui.frameSelection();
     CHECK_NEAR(view.ui.camera.center.x, 100.0, 0.5);
+
+    // Frame All looks at what can be worked on: a huge locked backdrop does not count, unless it
+    // is all there is.
+    View backdrop;
+    const EntityId wall = backdrop.f.box("Backdrop", {0, 0}, {300, 200});
+    backdrop.f.box("Level", {50, 20}, {4, 2});
+    backdrop.doc().setLocked({wall}, true);
+    backdrop.ui.frameAll();
+    CHECK_NEAR(backdrop.ui.camera.center.x, 50.0, 1.0);
+    CHECK(backdrop.ui.camera.zoom > 10.0F); // Framing a few meters, not the whole 300 m wall.
+    View onlyBackdrop;
+    const EntityId only = onlyBackdrop.f.box("Backdrop", {0, 0}, {300, 200});
+    onlyBackdrop.doc().setLocked({only}, true);
+    onlyBackdrop.ui.frameAll();
+    CHECK_NEAR(onlyBackdrop.ui.camera.center.x, 0.0, 1.0);
 }
 
 void clickAndMarquee() {

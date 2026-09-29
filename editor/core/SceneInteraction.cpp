@@ -87,7 +87,16 @@ void SceneInteraction::frameAll() {
     if (!document_)
         return;
     const Scene &scene = document_->scene();
-    auto area = boundsOf(scene, scene.hierarchyOrder(), metersPerPixel());
+    // Frame what can be worked on: a huge locked backdrop should not push the level into a corner.
+    // When everything is locked or hidden there is nothing else to look at, so all of it counts.
+    std::vector<EntityId> workable;
+    for (const EntityId id : scene.hierarchyOrder()) {
+        const Entity *entity = scene.find(id);
+        if (entity && !entity->lockedInHierarchy() && !entity->hiddenInHierarchy())
+            workable.push_back(id);
+    }
+    auto area =
+        boundsOf(scene, workable.empty() ? scene.hierarchyOrder() : workable, metersPerPixel());
     if (!area) {
         camera.center = {};
         return;
