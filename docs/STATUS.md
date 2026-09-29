@@ -20,18 +20,22 @@ not be run there is under "Not verified". The starting point of this pass is rec
 
 ## Verified
 
-Run from a clean state of the last commit on this branch.
+Run from the last commit that changed code on this branch (documentation changed after it), by
+`scripts/verify.sh dev release asan headless clang` and `scripts/verify-windows.sh`.
 
 | Check | Result |
 |---|---|
-| `ctest` on `dev` (Debug, GCC 13) | (re-run pending) |
-| `ctest` on `release` | (re-run pending) |
-| `ctest` on `asan` (address + undefined behavior sanitizers, including the editor UI scripts) | (re-run pending) |
-| `ctest` on `headless` (`YK_RUNTIME=OFF`: no SDL, no window) | (re-run pending) |
+| `ctest` on `dev` (Debug, GCC 13) | 34 of 34 passed (about 6 minutes) |
+| `ctest` on `release` | 34 of 34 passed (about 1.5 minutes) |
+| `ctest` on `asan` (address + undefined behavior sanitizers, including the editor UI scripts) | 34 of 34 passed |
+| `ctest` on `headless` (`YK_RUNTIME=OFF`: no SDL, no window; the tests that need none) | 17 of 17 passed |
+| `ctest` on `clang` (Clang 18 and libc++, what a Mac uses; sign conversions count as errors) | 34 of 34 passed, including the demo playthrough |
 | `format-check` (clang-format over the tree), `git diff --check` | clean |
-| Windows: cross-compiled with MinGW-w64, every test executable run under Wine (including the demo playthrough, which reaches the same result as on Linux), the demo exported for Windows by the Windows `yk.exe`, the exported `.exe` started and a frame captured | `scripts/verify-windows.sh`: everything passed |
+| Windows: cross-compiled with MinGW-w64, every test executable run under Wine (20 of 20, including the demo playthrough, which reaches the same result as on Linux, the editor core's file operations and the game module), the demo exported for Windows by the Windows `yk.exe`, the exported `.exe` started and a frame captured | `scripts/verify-windows.sh`: everything passed |
 | The installed programs work where they were put: the installed editor opens and plays the installed sample, the installed `yk` exports it with the notices found in the installation, the exported game runs | part of the `install` test |
-| Performance of a 41,500-entity scene (40,000 sprites, 1,500 falling boxes) | (re-run pending) |
+| A game with C++ of its own: its command line validates it (the stock one refuses it), its player runs it, its export runs on its own, its editor edits and plays it | `game_module*`, `editor_game_module` |
+| The engine added as a subdirectory of another project, with `yk_add_game_hosts`: validate, run, export (done once by hand, not part of the suite) | worked |
+| A 41,500-entity scene (40,000 sprites in a 200 x 200 grid, 1,500 falling boxes) | Release, one 2.1 GHz Xeon core for simulation: building it takes about 20 ms, drawing a frame with the software renderer about 8 ms (39,411 of 40,000 sprites are skipped by view culling), and one physics step with 1,500 active bodies about 22 ms, so a scene that must hold 60 Hz should keep its simultaneously active bodies to a few hundred. Debug is about five times slower. |
 
 What the test suites cover, in the order of the audit's findings:
 
@@ -43,25 +47,32 @@ What the test suites cover, in the order of the audit's findings:
   (`editor_workflow`: from an empty project to an exported game; `editor_demo_edit`: links,
   marquee, resize, rotate, copy/paste, reparent, prefab save/revert/apply/update, scene tabs,
   validation; `editor_demo_play`, `editor_demo_settings`: input map and export,
-  `editor_demo_assets`: Explorer, import, texture settings, animation timing, sounds;
+  `editor_demo_assets`: Explorer, import, texture settings, animation timing, sounds, rename,
+  move and delete with reference rewriting; `editor_bad_project`: a start-up project that is not
+  there;
   `editor_demo_workbench`: activity bar, panel tabs, sashes, split groups, hide and lock,
   status bar; `editor_layout_*`: the layout survives a restart; `editor_game_module`: a game's
   own editor).
 - **Non-visual systems have unit tests**: input maps and action evaluation, animation clips and
   controllers, scene serialization and prefab reapplication, project files and validation,
-  export and zip, editor documents, selection, gizmos, layout arithmetic, physics, runtime,
-  gameplay, effects, audio.
+  export and zip, editor documents, selection, gizmos, layout arithmetic, asset file operations
+  (moves that rewrite references, rollback, delete), physics, runtime, gameplay, effects, audio.
 - **Rendering is checked against real pixels** (scene, target and render-mode tests read the
   software renderer's output).
 
 ## Not verified
 
 - **MSVC / a native Windows build** and the editor's UI scripts on Windows: only the MinGW
-  cross-build under Wine was run (tests, the exported player). The Windows executables have no
-  icon or version resource and are not signed.
+  cross-build under Wine was run (tests, the exported player). MSVC builds with `/W4` but its
+  warnings do not fail the build until a clean run is confirmed. The Windows executables have no
+  icon or version resource and are not signed; file names outside the system's ANSI code page
+  were not tried.
+- **The CI workflow** (`.github/workflows/ci.yml`: Linux, Windows with MSVC, macOS) was written
+  without access to those runners and has not run. It is the way to close the two items above and
+  the macOS one below.
 - **macOS**: the bundle export is implemented and its layout is unit-tested, but nothing was
-  built or run on a Mac (no hardware; the player needs Apple's SDK). No icon, signing or
-  notarization.
+  built or run on a Mac (no hardware; the player needs Apple's SDK). The closest check available
+  is the `clang` preset (Clang and libc++ on Linux). No icon, signing or notarization.
 - **High-DPI displays**: scaling is implemented from SDL's display scale but was not seen on one.
 - **Real windows and GPUs**: all UI runs here used SDL's dummy video driver with the software
   renderer. Layout and behavior are exercised and screenshots reviewed, but hardware-accelerated

@@ -25,7 +25,7 @@ export YK_DEPS_DIR=/path/to/deps             # or -DYK_DEPS_DIR=... on the cmake
 ```sh
 cmake --preset dev                            # Debug, tests on: build/dev
 cmake --build --preset dev
-ctest --preset dev                            # 27 tests, about two minutes
+ctest --preset dev                            # 34 tests, about six minutes (Debug)
 ```
 
 | Preset | What it is |
@@ -63,6 +63,12 @@ Programs, in the build folder:
   input, animation, assets, effects, audio, the runtime, the gameplay library, the export
   pipeline, the editor core (documents, selection, gizmos, projects, prefabs, layout), the
   renderer and audio backends (software renderer and dummy audio, no window needed).
+- **`stress`** runs a 41,500-entity scene (40,000 sprites, 1,500 falling bodies) through the real
+  runtime and renderer: nothing may be lost, nearly everything off screen must be culled, and the
+  time budgets are loose enough to catch only a cost that grows with the square of the scene.
+- **`game_module*`** build a small example game module (`tests/game_module`) with
+  `yk_add_game_hosts` and check its own command line, player, export and editor (see
+  [Game modules](#game-modules-custom-c-components)).
 - **`demo`** plays the demo game's level with a bot that presses the real actions through the
   real runtime, from the first step to the last exit, and fails when the level cannot be
   completed. It also checks the generated component reference (`docs/components.md`) and that
@@ -71,7 +77,8 @@ Programs, in the build folder:
   video driver: a complete workflow from an empty project to an exported game
   (`editor_workflow`), the demo level being edited, played, restyled and exported
   (`editor_demo_edit`, `editor_demo_play`, `editor_demo_settings`, `editor_demo_assets`,
-  `editor_demo_workbench`) and the layout surviving a restart (`editor_layout_*`). Screenshots of
+  `editor_demo_workbench`), the layout surviving a restart (`editor_layout_*`) and a start-up
+  project that is not there (`editor_bad_project`). Screenshots of
   failures are saved next to the test's working folder (`build/<preset>/editor-tests/<name>/shots`).
 - **`install`** installs the build into a scratch folder, packs it with CPack and checks the
   contents, the absence of the private dependencies' headers, and that the installed programs
