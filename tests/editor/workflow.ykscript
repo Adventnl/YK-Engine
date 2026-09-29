@@ -1,0 +1,228 @@
+# The editor workflow, end to end, through the real UI:
+#   create project > place entities > configure them > link a plate to a door > resize and move
+#   > save > Play with two characters > Stop > keep editing (undo, delete).
+# Run by ctest as `editor_workflow` (see CMakeLists.txt); needs YK_TEST_TMP and SHOT_DIR.
+timeout 300
+
+log "== 1. Create a project"
+wait 5
+expect widget "welcome/New Project"
+click "welcome/New Project"
+expect dialog newproject
+click dialog/NewProject/name
+key ctrl+a
+type Platformer
+click dialog/NewProject/path
+key ctrl+a
+type ${YK_TEST_TMP}
+key enter
+click dialog/NewProject/create
+expect project Platformer
+expect scene scenes/main.ykscene
+expect file project.ykproj exists
+expect file scenes/main.ykscene exists
+expect entity "Main Camera"
+expect clean
+capture ${SHOT_DIR}/01-new-project.bmp
+
+log "== 2. Place entities from templates"
+create Level/Platform
+expect entity Platform
+expect selected Platform
+expect dirty
+edit inspector/position/x 0
+edit inspector/position/y 8.25
+expect position Platform 0,8.25
+
+create Mechanisms/Door
+expect selected Door
+edit inspector/position/x 6
+edit inspector/position/y 6.5
+
+create "Mechanisms/Pressure Plate"
+expect selected "Pressure Plate"
+edit inspector/position/x -6
+edit inspector/position/y 7.9
+
+create Gameplay/Character
+expect selected Character
+edit inspector/name "Player One"
+edit inspector/tags fire
+edit inspector/position/x -8
+edit inspector/position/y 7.4
+
+create Gameplay/Character
+edit inspector/name "Player Two"
+edit inspector/tags water
+edit inspector/position/x -4
+edit inspector/position/y 7.4
+capture ${SHOT_DIR}/02-placed.bmp
+
+log "== 3. Resize and move in the scene view"
+click "hierarchy/Platform"
+expect selected Platform
+click toolbar/Resize
+expect tool resize
+drag world:2,8.25 world:10,8.25
+expect size Platform 12,0.5
+expect position Platform 4,8.25
+drag world:-2,8.25 world:-10,8.25
+expect size Platform 20,0.5
+expect position Platform 0,8.25
+click toolbar/Move
+expect tool move
+drag world:6,6.5 world:8,6.5
+expect selected Door
+expect position Door 8,6.5
+capture ${SHOT_DIR}/03-resized.bmp
+
+log "== 4. Link the plate to the door and configure the characters"
+click "hierarchy/Pressure Plate"
+expect selected "Pressure Plate"
+click prop/targets/add
+click picker/Door
+expect links "Pressure Plate" Door
+capture ${SHOT_DIR}/04-linked.bmp
+click "hierarchy/Player Two"
+click prop/leftKey
+click prop/leftKey/Left
+click prop/rightKey
+click prop/rightKey/Right
+click prop/jumpKey
+click prop/jumpKey/Up
+expect prop "Player Two" PlatformerController.leftKey Left
+expect prop "Player Two" PlatformerController.jumpKey Up
+
+create Gameplay/Goal
+edit inspector/position/x 9
+edit inspector/position/y 7.1
+edit prop/requiredTag fire
+expect prop Goal Goal.requiredTag fire
+create Gameplay/Hazard
+edit inspector/position/x 2
+edit inspector/position/y 7.7
+
+click "hierarchy/Main Camera"
+click prop/mode
+click prop/mode/FitTargets
+click prop/targets/pick
+expect pick
+click world:-8,7.4
+expect no-pick
+click prop/targets/pick
+click world:-4,7.4
+expect prop "Main Camera" Camera.mode FitTargets
+expect prop "Main Camera" Camera.targets "Player One,Player Two"
+capture ${SHOT_DIR}/05-configured.bmp
+
+log "== 4b. Add and remove components on a scratch entity, re-link by drag and drop"
+create "Empty Entity"
+expect selected Entity
+click inspector/add-component
+click add-category/Rendering
+click add/SpriteRenderer
+expect has-component Entity SpriteRenderer
+click component/SpriteRenderer/menu
+click component/SpriteRenderer/remove
+expect no-component Entity SpriteRenderer
+key ctrl+z
+expect has-component Entity SpriteRenderer
+# Adding a Door brings the body and collider it needs, and they cannot be removed under it.
+click inspector/add-component
+click add-category/Gameplay
+click add/Door
+expect has-component Entity RigidBody
+expect has-component Entity Collider
+click component/Collider/menu
+click component/Collider/remove
+expect has-component Entity Collider
+key escape
+click "hierarchy/Entity"
+key delete
+expect no-entity Entity
+click "hierarchy/Pressure Plate"
+click prop/targets/remove/0
+expect no-links "Pressure Plate" Door
+drag "hierarchy/Door" prop/targets/add
+expect links "Pressure Plate" Door
+capture ${SHOT_DIR}/05b-relinked.bmp
+
+log "== 5. Save"
+expect dirty
+key ctrl+s
+expect clean
+expect file scenes/main.ykscene exists
+expect undo "Edit Targets"
+
+log "== 6. Press Play: two characters, two key sets"
+click toolbar/Play
+expect playing
+wait 30
+capture ${SHOT_DIR}/06-play-start.bmp
+# Player One runs with D (and jumps with W); Player Two with the arrow keys.
+keydown d
+keydown right
+wait 45
+keyup d
+keyup right
+report "Player One"
+report "Player Two"
+report Hazard
+expect runtime-moved "Player One" x>=1.5
+expect runtime-moved "Player Two" x>=1.5
+capture ${SHOT_DIR}/07-play-running.bmp
+# A jump: W lifts Player One off the ground.
+keydown w
+wait 5
+expect runtime-moved "Player One" y<=-0.3
+keyup w
+wait 20
+click toolbar/Pause
+expect paused
+click toolbar/Play
+click toolbar/Pause
+click toolbar/Step
+click toolbar/Restart
+wait 4
+expect runtime-moved "Player One" x~0
+
+log "== 7. Stop and keep editing"
+click toolbar/Stop
+expect editing
+expect clean
+expect position "Player One" -8,7.4
+expect position "Player Two" -4,7.4
+capture ${SHOT_DIR}/08-stopped.bmp
+
+click "hierarchy/Hazard"
+expect selected Hazard
+key delete
+expect no-entity Hazard
+expect dirty
+key ctrl+z
+expect entity Hazard
+key ctrl+y
+expect no-entity Hazard
+key ctrl+z
+click "hierarchy/Door"
+key ctrl+d
+expect entity "Door (1)"
+key ctrl+z
+expect no-entity "Door (1)"
+key ctrl+s
+expect clean
+
+log "== 8. Export the game (needs the player next to the editor)"
+menu "File/Export Game"
+expect dialog export
+click dialog/Export/path
+key ctrl+a
+type ${YK_TEST_TMP}
+key enter
+click dialog/Export/export
+expect dialog message
+click dialog/Message/ok
+expect no-dialog
+expect file ${YK_TEST_TMP}/Platformer-game/README.txt exists
+expect file ${YK_TEST_TMP}/Platformer-game/project/scenes/main.ykscene exists
+log "workflow finished"

@@ -5,11 +5,14 @@
 #include "yk/input/Input.hpp"
 #include <memory>
 #include <string>
+union SDL_Event;
 namespace yk {
 class Renderer;
 struct ApplicationConfig {
     std::string title{"YK Engine"};
     int width{960}, height{540};
+    // A fixed, letterboxed logical resolution. Both zero selects native resolution instead: drawing
+    // coordinates are output pixels and Renderer::viewport() follows the window (used by tools).
     int logicalWidth{960}, logicalHeight{540};
 };
 struct RunOptions {
@@ -19,12 +22,21 @@ struct RunOptions {
 struct FrameContext {
     FrameTime delta;
     const Keyboard &keyboard;
+    bool focused{true}; // False while unfocused or minimized (delta is then zero).
 };
 class ApplicationLayer {
   public:
     virtual ~ApplicationLayer() = default;
     virtual Status initialize(Renderer &renderer) = 0;
     virtual bool update(const FrameContext &frame) = 0; // false requests orderly exit
+    // Every platform event, before the application interprets it. Tools with their own input
+    // handling (the editor's UI) consume events here.
+    virtual void onNativeEvent(const SDL_Event &) {}
+    // The window's close button or a quit request. Return false to keep running (a tool asking
+    // about unsaved work first, then ending the run itself by returning false from update).
+    virtual bool onCloseRequested() {
+        return true;
+    }
     virtual Camera2D camera() const {
         return {};
     }
@@ -39,6 +51,8 @@ class Application {
     Application &operator=(const Application &) = delete;
     // ApplicationLayer is borrowed synchronously; no callbacks or layer references survive run().
     Status run(ApplicationLayer &layer, const RunOptions &options = {});
+    // The platform window, for tools that configure it or query display scale. Not for game code.
+    SDL_Window *nativeWindow() const;
 
   private:
     Application();

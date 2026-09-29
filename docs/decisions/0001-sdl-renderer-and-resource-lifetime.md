@@ -1,6 +1,7 @@
 # ADR 0001: SDL3 source pin, 2D backend and renderer-owned textures
 
-Date: 2026-09-27. Status: accepted; engine-only/runtime boundary updated by ADR 0002.
+Date: 2026-09-27. Status: accepted; engine-only/runtime boundary updated by ADR 0002 and ADR 0004.
+Render-target passes (ADR 0007) extend the renderer without changing its ownership rules.
 
 ## Context
 

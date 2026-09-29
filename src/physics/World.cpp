@@ -287,6 +287,30 @@ Status World::setGravity(Vec2 gravity) {
     impl_->config.gravity = gravity;
     return success();
 }
+Status World::setGravityScale(BodyHandle body, float scale) {
+    if (!valid(body))
+        return invalidHandle();
+    if (!bounded(scale))
+        return Error{"Invalid gravity scale"};
+    b2Body_SetGravityScale(impl_->bodies.at(body.serial_).nativeId, scale);
+    return success();
+}
+Status World::setFriction(ShapeHandle shape, float friction) {
+    if (!valid(shape))
+        return invalidHandle();
+    if (!nonnegative(friction))
+        return Error{"Friction must be finite and nonnegative"};
+    b2Shape_SetFriction(impl_->shapes.at(shape.serial_).nativeId, friction);
+    return success();
+}
+Status World::setRestitution(ShapeHandle shape, float restitution) {
+    if (!valid(shape))
+        return invalidHandle();
+    if (!nonnegative(restitution) || restitution > 1)
+        return Error{"Restitution must be within [0, 1]"};
+    b2Shape_SetRestitution(impl_->shapes.at(shape.serial_).nativeId, restitution);
+    return success();
+}
 Status World::applyForce(BodyHandle body, Vec2 force, std::optional<Vec2> worldPoint) {
     if (!valid(body))
         return invalidHandle();

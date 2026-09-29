@@ -34,8 +34,9 @@ if (!state) { /* report error */ return; }
 // state.value().pose is the current physical transform.
 ```
 
-No executable or main loop is supplied by the engine. Host applications own calls
-to advance; the SDL application loop is optional.
+The physics library has no main loop of its own. Scenes are simulated by `GameRuntime`
+(architecture.md), which owns the `World`, calls `advance` each frame and writes the resulting
+poses back to entity transforms; an application that uses physics without scenes owns those calls.
 
 ## Units, shapes and body types
 
@@ -126,17 +127,21 @@ Destroying either body invalidates its attached joint. More joint types are not 
 debugLines returns transformed shape outlines in meters. Graphics builds expose
 drawPhysicsDebug(renderer, world, unitsPerMeter, layer), called inside a render frame.
 Static/kinematic/dynamic/sleeping/sensor geometry uses distinct colors.
-The adapter draws collider outlines; it does not drive sprite transforms or simulate.
+The adapter draws collider outlines; it does not drive sprite transforms or simulate. (In a scene,
+`GameRuntime` does the transform write-back and `SceneRenderer` draws the sprites.)
 
 ## Limits
 
 Continuous collision is enabled by default; bullet bodies add fast-body handling
 against dynamic/kinematic bodies. Bullet-vs-bullet CCD and continuously swept sensors
 are not guaranteed. Sensors are evaluated at discrete ticks; fast visitors may skip
-thin triggers. Ray casts can help for explicit fast-path detection; shape casts,
-character controllers and one-way-platform policy are not exposed.
+thin triggers. Ray casts can help for explicit fast-path detection; shape casts and
+one-way-platform policy are not exposed. Character movement is not part of this API: the gameplay
+library's `PlatformerController` drives a dynamic capsule by velocity and detects ground from the
+body's current contacts, on top of it.
 
 The API currently offers two joint families, no serialization, no shape casts, no
-custom contact/pre-solve callbacks, and no automatic renderer synchronization.
+custom contact/pre-solve callbacks, and does not synchronize poses with a renderer itself (scene
+runtimes write poses back to transforms once per frame, the latest tick without interpolation).
 World access is single-threaded. Same-build fixed-step repeatability is tested;
 cross-platform bitwise determinism and arbitrary speed/scale correctness are not claimed.

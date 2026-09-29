@@ -1,0 +1,16 @@
+# Run by check_install.cmake against the *installed* editor, from its welcome screen: the sample
+# project must be found in the installation's data folder, opened, and played.
+# ${SAMPLE_DIR} is the sample project inside the installation.
+expect widget "welcome/Open Sample"
+click "welcome/Open Sample"
+expect project "Elemental Prototype"
+expect project-root "${SAMPLE_DIR}"
+expect scene scenes/test_level.ykscene
+
+key f5
+expect playing
+hold d 30
+key shift+f5
+expect editing
+expect clean
+log "installed editor opened and played the sample"

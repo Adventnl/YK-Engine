@@ -1,6 +1,23 @@
 #include "yk/input/Input.hpp"
 #include <stdexcept>
 namespace yk {
+namespace {
+constexpr std::array<std::string_view, keyCount> keyNames = {
+#define YK_KEY_NAME(name, display, sdl) std::string_view(#name),
+    YK_KEY_LIST(YK_KEY_NAME)
+#undef YK_KEY_NAME
+};
+} // namespace
+std::string_view keyName(Key key) {
+    const auto index = static_cast<std::size_t>(key);
+    return index < keyNames.size() ? keyNames[index] : std::string_view{};
+}
+Key keyFromName(std::string_view name) {
+    for (std::size_t i = 0; i < keyNames.size(); ++i)
+        if (keyNames[i] == name)
+            return static_cast<Key>(i);
+    return Key::Count;
+}
 void Keyboard::beginFrame() {
     for (auto &key : keys_) {
         key.pressed = false;
@@ -23,6 +40,11 @@ void Keyboard::set(Key key, bool down) {
 void Keyboard::releaseAll() {
     for (std::size_t i = 0; i < keys_.size(); ++i)
         set(static_cast<Key>(i), false);
+}
+void Keyboard::assign(Key key, ButtonState state) {
+    const auto index = static_cast<std::size_t>(key);
+    if (index < keys_.size())
+        keys_[index] = state;
 }
 ButtonState Keyboard::state(Key key) const {
     const auto index = static_cast<std::size_t>(key);

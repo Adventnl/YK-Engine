@@ -1,5 +1,11 @@
 # Code Cleanup Report — entire project
 
+> **Historical record.** This audit describes the repository as it was before the engine-only
+> physics remediation (paths like `engine/` and `games/sandbox/` are from that state). The product
+> has since grown into an engine, gameplay library, editor, player and prototype game (see
+> architecture.md and status.md); the "engine-only" scope and the "no game" findings below no longer
+> apply. Current results and limits are in status.md, not here.
+
 ## Scorecard
 
 | Category | Rating |

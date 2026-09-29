@@ -1,0 +1,28 @@
+# Runs the editor headlessly with a UI script and fails when the script reports a problem.
+#   cmake -DEDITOR=<yk_editor> -DSCRIPT=<file.ykscript> -DWORK=<scratch dir> [-DPROJECT=<dir>] -P run_script.cmake
+# The editor draws with SDL's software renderer on the dummy video driver, so no display is needed.
+if(NOT EDITOR OR NOT SCRIPT OR NOT WORK)
+    message(FATAL_ERROR "EDITOR, SCRIPT and WORK are required")
+endif()
+file(REMOVE_RECURSE "${WORK}")
+file(MAKE_DIRECTORY "${WORK}/tmp" "${WORK}/shots" "${WORK}/settings")
+set(ENV{YK_TEST_TMP} "${WORK}/tmp")
+set(ENV{SHOT_DIR} "${WORK}/shots")
+set(ENV{SDL_VIDEODRIVER} dummy)
+set(ENV{SDL_RENDER_DRIVER} software)
+set(ENV{SDL_AUDIODRIVER} dummy)
+set(arguments --fresh-layout --no-audio --size 1440x810 --settings-dir "${WORK}/settings" --script "${SCRIPT}"
+    --failure-dir "${WORK}/shots")
+if(PROJECT)
+    # Scripts edit and save; give them a private copy of the project.
+    get_filename_component(project_name "${PROJECT}" NAME)
+    file(COPY "${PROJECT}" DESTINATION "${WORK}/project")
+    list(APPEND arguments "${WORK}/project/${project_name}")
+endif()
+execute_process(COMMAND "${EDITOR}" ${arguments}
+    RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE errors TIMEOUT 240)
+if(NOT result EQUAL 0)
+    message("${output}")
+    message("${errors}")
+    message(FATAL_ERROR "The editor script ${SCRIPT} failed (exit code ${result}); screenshots are in ${WORK}/shots")
+endif()

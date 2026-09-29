@@ -1,6 +1,7 @@
 #pragma once
 #include "yk/core/Math.hpp"
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <variant>
 #include <vector>
@@ -13,6 +14,11 @@ template <class Tag> class Handle {
     bool operator==(const Handle &other) const {
         return serial_ == other.serial_ && !owner_.owner_before(other.owner_) &&
                !other.owner_.owner_before(owner_);
+    }
+    // Creation serial, unique within the owning world and never reused; zero is the null handle.
+    // Suitable as a hash key for per-world tables (handles of different worlds may share serials).
+    std::uint64_t serial() const {
+        return serial_;
     }
 
   private:
@@ -170,3 +176,9 @@ struct WorldStats {
     std::uint64_t ticks{};
 };
 } // namespace yk::physics
+
+template <class Tag> struct std::hash<yk::physics::Handle<Tag>> {
+    std::size_t operator()(const yk::physics::Handle<Tag> &handle) const noexcept {
+        return std::hash<std::uint64_t>{}(handle.serial());
+    }
+};

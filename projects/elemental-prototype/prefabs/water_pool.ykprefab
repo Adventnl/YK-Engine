@@ -1,0 +1,55 @@
+{
+  "format": "yk.prefab",
+  "version": 1,
+  "root": "2245bd5fbb686f68",
+  "entities": [
+    {
+      "id": "2245bd5fbb686f68",
+      "name": "Water Pool",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "",
+            "shape": "Rectangle",
+            "size": [3, 0.6],
+            "offset": [0, 0],
+            "color": "#3278e6ff",
+            "layer": 1,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [3, 0.6],
+            "offset": [0, 0],
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Hazard",
+          "properties": {
+            "affectsTags": ["fire"]
+          }
+        }
+      ]
+    }
+  ]
+}

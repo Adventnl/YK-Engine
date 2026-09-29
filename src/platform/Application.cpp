@@ -21,10 +21,11 @@ struct SdlLifetime {
             SDL_Quit();
     }
 };
-constexpr std::array<SDL_Scancode, static_cast<std::size_t>(Key::Count)> scancodes = {
-    SDL_SCANCODE_A,      SDL_SCANCODE_D,     SDL_SCANCODE_W,  SDL_SCANCODE_S,
-    SDL_SCANCODE_LEFT,   SDL_SCANCODE_RIGHT, SDL_SCANCODE_UP, SDL_SCANCODE_DOWN,
-    SDL_SCANCODE_ESCAPE, SDL_SCANCODE_SPACE, SDL_SCANCODE_Q,  SDL_SCANCODE_E};
+constexpr std::array<SDL_Scancode, keyCount> scancodes = {
+#define YK_KEY_SCANCODE(name, display, sdl) SDL_SCANCODE_##sdl,
+    YK_KEY_LIST(YK_KEY_SCANCODE)
+#undef YK_KEY_SCANCODE
+};
 std::optional<Key> mapKey(SDL_Scancode scancode) {
     for (std::size_t i = 0; i < scancodes.size(); ++i)
         if (scancodes[i] == scancode)
@@ -50,9 +51,11 @@ Application::~Application() {
     log(LogLevel::Info, "application", "Shutdown complete");
 }
 Result<std::unique_ptr<Application>> Application::create(const ApplicationConfig &config) {
-    if (config.width <= 0 || config.height <= 0 || config.logicalWidth <= 0 ||
-        config.logicalHeight <= 0)
-        return Error{"Window and logical viewport dimensions must be positive"};
+    const bool nativeResolution = config.logicalWidth == 0 && config.logicalHeight == 0;
+    if (config.width <= 0 || config.height <= 0 ||
+        (!nativeResolution && (config.logicalWidth <= 0 || config.logicalHeight <= 0)))
+        return Error{"Window dimensions must be positive; the logical viewport must be positive or "
+                     "both zero for native resolution"};
     // SDL owns process-wide platform state. One application owns the entire lifecycle.
     if (SDL_WasInit(0) != 0)
         return Error{"SDL already initialized; only one owning application is supported"};
@@ -77,6 +80,9 @@ Result<std::unique_ptr<Application>> Application::create(const ApplicationConfig
     log(LogLevel::Info, "application", "Initialized SDL3 window and renderer");
     return app;
 }
+SDL_Window *Application::nativeWindow() const {
+    return impl_->window.get();
+}
 Status Application::run(ApplicationLayer &layer, const RunOptions &options) {
     assert(std::this_thread::get_id() == impl_->thread);
     if (options.captureLastFrame && options.frameLimit == 0)
@@ -98,11 +104,12 @@ Status Application::run(ApplicationLayer &layer, const RunOptions &options) {
         impl_->keyboard.beginFrame();
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_EVENT_QUIT)
+            layer.onNativeEvent(event);
+            if (event.type == SDL_EVENT_QUIT && layer.onCloseRequested())
                 running = false;
             if (event.type >= SDL_EVENT_WINDOW_FIRST && event.type <= SDL_EVENT_WINDOW_LAST &&
                 event.window.windowID == SDL_GetWindowID(impl_->window.get())) {
-                if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED)
+                if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && layer.onCloseRequested())
                     running = false;
                 if (event.type == SDL_EVENT_WINDOW_FOCUS_LOST) {
                     focused = false;
@@ -133,7 +140,8 @@ Status Application::run(ApplicationLayer &layer, const RunOptions &options) {
         if (!running)
             break;
         const auto delta = clock.tick();
-        const FrameContext context{focused && !minimized ? delta : FrameTime{}, impl_->keyboard};
+        const FrameContext context{focused && !minimized ? delta : FrameTime{}, impl_->keyboard,
+                                   focused && !minimized};
         if (!layer.update(context))
             break;
         auto begun = impl_->renderer->beginFrame({24, 29, 40, 255}, layer.camera());
