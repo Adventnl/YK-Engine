@@ -31,6 +31,7 @@ struct ComponentType {
     std::function<void(Entity &, Component &)> onAdded;
     bool allowMultiple{};
     bool hiddenInMenus{}; // Not offered by the editor's Add Component menu.
+    bool screenSpace{};   // Positioned in screen pixels, not the world (UI); no world gizmo.
 
     const PropertyInfo *find(std::string_view propertyName) const {
         for (const PropertyInfo &property : properties)
@@ -163,6 +164,12 @@ class FieldBuilder {
         info_->isLayer = true;
         return *this;
     }
+    // A world-space shift of the entity (a door's open offset, a platform's travel). The editor
+    // shows where the entity would end up and lets the user drag it.
+    FieldBuilder &displacement() {
+        info_->isDisplacement = true;
+        return *this;
+    }
     FieldBuilder &multiline() {
         info_->multiline = true;
         return *this;
@@ -207,6 +214,10 @@ template <class T> class TypeBuilder {
     }
     TypeBuilder &hiddenInMenus() {
         type_->hiddenInMenus = true;
+        return *this;
+    }
+    TypeBuilder &screenSpace() {
+        type_->screenSpace = true;
         return *this;
     }
     // Declares an editable field. Members of base classes are accepted.

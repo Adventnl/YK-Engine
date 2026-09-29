@@ -52,6 +52,7 @@ struct PropertyInfo {
     bool isSize{};                    // Extents the resize gizmo scales proportionally.
     bool isOffset{};                  // Local offsets the resize gizmo scales with sizes.
     bool isLayer{};                   // Integer index into the project's collision layers.
+    bool isDisplacement{};            // Vec2 world-space shift the editor previews as a ghost.
     bool multiline{};
     PropertyValue defaultValue;
     std::function<PropertyValue(const Component &)> get;

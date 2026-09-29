@@ -224,12 +224,15 @@ Result<std::vector<EntityId>> populate(Scene &scene, const Json &entities, bool 
     return created;
 }
 
-// Rewrites entity references inside the created entities through `remap` (unknown targets clear).
+// Rewrites entity references inside the created entities through `remap`. Targets outside the
+// copied set clear, unless `keepExternal` and the scene has such an entity.
 void remapReferences(Scene &scene, const std::vector<EntityId> &created,
-                     const std::unordered_map<EntityId, EntityId> &remap) {
+                     const std::unordered_map<EntityId, EntityId> &remap, bool keepExternal) {
     const auto translate = [&](EntityId old) {
         const auto found = remap.find(old);
-        return found == remap.end() ? EntityId{} : found->second;
+        if (found != remap.end())
+            return found->second;
+        return keepExternal && scene.find(old) ? old : EntityId{};
     };
     for (const EntityId id : created) {
         Entity *entity = scene.find(id);
@@ -370,32 +373,59 @@ Json subtreeToJson(const Scene &scene, EntityId root) {
     return document;
 }
 
-Result<EntityId> instantiateSubtree(Scene &scene, const Json &prefab, EntityId parent,
-                                    std::optional<Vec2> worldPosition) {
-    if (auto status = checkHeader(prefab, prefabFormatName); !status)
-        return Error{status.error()};
-    const auto rootId =
-        prefab.get("root").isString() ? parseEntityId(prefab.get("root").asString()) : std::nullopt;
-    if (!rootId || !*rootId)
-        return Error{"Prefab has no valid 'root'"};
+Result<std::vector<EntityId>> instantiateSubtrees(Scene &scene,
+                                                  const std::vector<PrefabPlacement> &placements,
+                                                  bool keepExternalReferences) {
+    std::vector<EntityId> roots, created;
     std::unordered_map<EntityId, EntityId> remap;
-    auto created = populate(scene, prefab.get("entities"), false, parent, remap);
-    if (!created)
-        return Error{created.error()};
-    const auto root = remap.find(*rootId);
-    if (root == remap.end()) {
-        for (const EntityId id : created.value())
+    const auto rollback = [&] {
+        for (const EntityId id : created)
             scene.destroy(id);
-        return Error{"Prefab root is not among its entities"};
+    };
+    for (const PrefabPlacement &placement : placements) {
+        const Json &prefab = *placement.prefab;
+        if (auto status = checkHeader(prefab, prefabFormatName); !status) {
+            rollback();
+            return Error{status.error()};
+        }
+        const auto rootId = prefab.get("root").isString()
+                                ? parseEntityId(prefab.get("root").asString())
+                                : std::nullopt;
+        if (!rootId || !*rootId) {
+            rollback();
+            return Error{"Prefab has no valid 'root'"};
+        }
+        std::unordered_map<EntityId, EntityId> local;
+        auto made = populate(scene, prefab.get("entities"), false, placement.parent, local);
+        if (!made) {
+            rollback();
+            return Error{made.error()};
+        }
+        created.insert(created.end(), made.value().begin(), made.value().end());
+        remap.insert(local.begin(), local.end());
+        const auto root = local.find(*rootId);
+        if (root == local.end()) {
+            rollback();
+            return Error{"Prefab root is not among its entities"};
+        }
+        roots.push_back(root->second);
     }
-    remapReferences(scene, created.value(), remap);
-    Entity *rootEntity = scene.find(root->second);
-    if (rootEntity->parentId() != parent &&
-        parent) // Root records never name a parent; attach explicitly.
-        scene.setParent(root->second, parent);
+    remapReferences(scene, created, remap, keepExternalReferences);
+    for (std::size_t i = 0; i < roots.size(); ++i)
+        if (placements[i].parent && scene.find(roots[i])->parentId() != placements[i].parent)
+            scene.setParent(roots[i], placements[i].parent); // Root records never name a parent.
+    return roots;
+}
+
+Result<EntityId> instantiateSubtree(Scene &scene, const Json &prefab, EntityId parent,
+                                    std::optional<Vec2> worldPosition,
+                                    bool keepExternalReferences) {
+    auto roots = instantiateSubtrees(scene, {{&prefab, parent}}, keepExternalReferences);
+    if (!roots)
+        return Error{roots.error()};
     if (worldPosition)
-        rootEntity->setWorldPosition(*worldPosition);
-    return root->second;
+        scene.find(roots.value().front())->setWorldPosition(*worldPosition);
+    return roots.value().front();
 }
 
 Result<Json> loadPrefabDocument(const std::filesystem::path &path) {

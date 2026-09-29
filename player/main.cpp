@@ -30,17 +30,19 @@ struct Options {
 };
 
 void usage() {
-    std::puts("usage: yk_player [options] [project]\n"
-              "  --project <dir|file>   project to run (default: ./project beside the executable, else here)\n"
-              "  --scene <path>         project-relative scene to start with (default: the start scene)\n"
-              "  --frames <n>           exit after n frames\n"
-              "  --capture <file.bmp>   save the last frame (needs --frames)\n"
-              "  --keys <script>        replay keys instead of the keyboard, e.g. D@0-120,W@60-62\n"
-              "  --fixed                advance a fixed 1/60 s per frame (deterministic)\n"
-              "  --no-audio             disable sound\n"
-              "  --validate             check every scene and prefab in the project, then exit\n"
-              "  --components           print the component reference (Markdown), then exit\n"
-              "In game: F1 physics outlines, F2 collider outlines, F3 stats, Esc quits.");
+    std::puts(
+        "usage: yk_player [options] [project]\n"
+        "  --project <dir|file>   project to run (default: ./project beside the executable, else "
+        "here)\n"
+        "  --scene <path>         project-relative scene to start with (default: the start scene)\n"
+        "  --frames <n>           exit after n frames\n"
+        "  --capture <file.bmp>   save the last frame (needs --frames)\n"
+        "  --keys <script>        replay keys instead of the keyboard, e.g. D@0-120,W@60-62\n"
+        "  --fixed                advance a fixed 1/60 s per frame (deterministic)\n"
+        "  --no-audio             disable sound\n"
+        "  --validate             check every scene and prefab in the project, then exit\n"
+        "  --components           print the component reference (Markdown), then exit\n"
+        "In game: F1 physics outlines, F2 collider outlines, F3 stats, Esc quits.");
 }
 
 std::optional<Options> parse(int argc, char **argv) {
@@ -50,7 +52,8 @@ std::optional<Options> parse(int argc, char **argv) {
         const auto value = [&]() -> const char * { return i + 1 < argc ? argv[++i] : nullptr; };
         if (arg == "--help" || arg == "-h") {
             options.help = true;
-        } else if (arg == "--project" || arg == "--scene" || arg == "--frames" || arg == "--capture" || arg == "--keys") {
+        } else if (arg == "--project" || arg == "--scene" || arg == "--frames" ||
+                   arg == "--capture" || arg == "--keys") {
             const char *text = value();
             if (!text) {
                 std::fprintf(stderr, "%s needs a value\n", arg.c_str());
@@ -125,7 +128,8 @@ class PlayerLayer final : public ApplicationLayer {
             colliders_ = !colliders_;
         if (input.state(Key::F3).pressed)
             stats_ = !stats_;
-        const double seconds = options_.fixedStep ? 1.0 / 60.0 : static_cast<double>(frame.delta.seconds);
+        const double seconds =
+            options_.fixedStep ? 1.0 / 60.0 : static_cast<double>(frame.delta.seconds);
         runtime_->update(seconds, input);
         ++frameIndex_;
         if (audio_)
@@ -147,8 +151,10 @@ class PlayerLayer final : public ApplicationLayer {
         view.physicsDebug = physicsDebug_;
         view.colliders = colliders_;
         if (stats_)
-            view.overlay = "TICK " + std::to_string(runtime_->tick()) + "  BODIES " + std::to_string(runtime_->physics().stats().bodies);
-        return drawGameView(renderer, *sceneRenderer_, *runtime_, {{0, 0}, renderer.viewport()}, view);
+            view.overlay = "TICK " + std::to_string(runtime_->tick()) + "  BODIES " +
+                           std::to_string(runtime_->physics().stats().bodies);
+        return drawGameView(renderer, *sceneRenderer_, *runtime_, {{0, 0}, renderer.viewport()},
+                            view);
     }
 
   private:
@@ -217,7 +223,8 @@ int main(int argc, char **argv) {
     if (options->validate) {
         const auto issues = validateProject(project.value(), registry);
         for (const ProjectIssue &issue : issues)
-            std::printf("%s: %s: %s\n", issue.severity == ProjectIssue::Severity::Error ? "error" : "warning",
+            std::printf("%s: %s: %s\n",
+                        issue.severity == ProjectIssue::Severity::Error ? "error" : "warning",
                         issue.path.c_str(), issue.message.c_str());
         std::printf("%s: %zu issue(s)\n", project.value().name.c_str(), issues.size());
         return hasErrors(issues) ? 1 : 0;

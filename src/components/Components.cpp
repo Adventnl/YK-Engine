@@ -40,7 +40,8 @@ void SpriteRenderer::describe(TypeBuilder<SpriteRenderer> &type) {
         .tooltip("Sprite sheet cell to draw.");
 }
 void UiText::describe(TypeBuilder<UiText> &type) {
-    type.category("UI").description("Screen-space text. Use {variable} to show game variables.");
+    type.category("UI").screenSpace().description(
+        "Screen-space text. Use {variable} to show game variables.");
     type.field("text", &UiText::text).multiline();
     type.field("anchor", &UiText::anchor).options(uiAnchorNames());
     type.field("offset", &UiText::offset)
@@ -52,7 +53,7 @@ void UiText::describe(TypeBuilder<UiText> &type) {
     type.field("layer", &UiText::layer).range(-1000, 1000);
 }
 void UiPanel::describe(TypeBuilder<UiPanel> &type) {
-    type.category("UI").description("Screen-space filled rectangle.");
+    type.category("UI").screenSpace().description("Screen-space filled rectangle.");
     type.field("anchor", &UiPanel::anchor).options(uiAnchorNames());
     type.field("size", &UiPanel::size).range(0, 8000).size().tooltip("Pixels.");
     type.field("offset", &UiPanel::offset).range(-4000, 4000);

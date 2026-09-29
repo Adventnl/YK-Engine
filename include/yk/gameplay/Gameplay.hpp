@@ -16,6 +16,10 @@ inline constexpr const char *solid = "Solid";   // Level geometry.
 inline constexpr const char *player = "Player"; // Characters.
 inline constexpr const char *sensor = "Sensor"; // Triggers, hazards, pickups, goals.
 inline constexpr const char *prop = "Prop";     // Pushable objects.
+// The layer set the entity templates expect: Default plus the four above, with characters, props
+// and sensors interacting sensibly. Characters pass through each other (no Player <-> Player),
+// which keeps two-player puzzles from jamming; enable it in the layer matrix to let them collide.
+LayerConfig standard();
 } // namespace layers
 
 // ----- Signals -----------------------------------------------------------------------------

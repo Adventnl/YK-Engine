@@ -2,9 +2,9 @@
 #include "yk/gameplay/Gameplay.hpp"
 
 // The Elemental Prototype: a two-character cooperative platformer used to validate the engine. This
-// is a game module: it depends on the engine and gameplay libraries, never the other way around. The
-// editor and the player link it so its components and entity templates appear in the Add Component
-// and Create menus.
+// is a game module: it depends on the engine and gameplay libraries, never the other way around.
+// The editor and the player link it so its components and entity templates appear in the Add
+// Component and Create menus.
 namespace yk::prototype {
 // Tags that give characters their elements. Hazards and exits filter on them.
 inline constexpr const char *fireTag = "fire";

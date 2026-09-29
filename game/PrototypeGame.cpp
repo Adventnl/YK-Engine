@@ -12,7 +12,8 @@ Entity &place(Scene &scene, const char *name, Vec2 at) {
     entity.setWorldPosition(at);
     return entity;
 }
-Entity &character(Scene &scene, const char *name, Vec2 at, const char *tag, Color color, Key left, Key right, Key jump) {
+Entity &character(Scene &scene, const char *name, Vec2 at, const char *tag, Color color, Key left,
+                  Key right, Key jump) {
     Entity &entity = place(scene, name, at);
     auto &sprite = entity.add<SpriteRenderer>();
     sprite.size = {0.6F, 0.95F};
@@ -38,12 +39,14 @@ Entity &zone(Scene &scene, const char *name, Vec2 at, Vec2 size, Color color, in
     collider.layer = layers::sensor;
     return entity;
 }
-Entity &pool(Scene &scene, const char *name, Vec2 at, Vec2 size, Color color, std::vector<std::string> kills) {
+Entity &pool(Scene &scene, const char *name, Vec2 at, Vec2 size, Color color,
+             std::vector<std::string> kills) {
     Entity &entity = zone(scene, name, at, size, color, 1);
     entity.add<Hazard>().affectsTags = std::move(kills);
     return entity;
 }
-Entity &gem(Scene &scene, const char *name, Vec2 at, const char *collector, const char *variable, Color color) {
+Entity &gem(Scene &scene, const char *name, Vec2 at, const char *collector, const char *variable,
+            Color color) {
     Entity &entity = zone(scene, name, at, {0.5F, 0.5F}, color, 2);
     entity.get<SpriteRenderer>()->shape = SpriteShape::Ellipse;
     auto &item = entity.add<Collectible>();
@@ -66,7 +69,9 @@ EntityId createFireCharacter(Scene &scene, Vec2 at) {
     return character(scene, "Fire Character", at, fireTag, fireColor, Key::A, Key::D, Key::W).id();
 }
 EntityId createWaterCharacter(Scene &scene, Vec2 at) {
-    return character(scene, "Water Character", at, waterTag, waterColor, Key::Left, Key::Right, Key::Up).id();
+    return character(scene, "Water Character", at, waterTag, waterColor, Key::Left, Key::Right,
+                     Key::Up)
+        .id();
 }
 EntityId createFireExit(Scene &scene, Vec2 at) {
     return exit(scene, "Fire Exit", at, fireTag, {150, 55, 35, 255}).id();
@@ -97,12 +102,16 @@ EntityId createLevelFlow(Scene &scene) {
 
 void LevelFlow::describe(TypeBuilder<LevelFlow> &type) {
     type.category("Prototype")
-        .description("Level rules: complete when every goal is satisfied; optionally restart when anyone dies.");
-    type.field("goals", &LevelFlow::goals).tooltip("Goal entities that must all be satisfied at once.");
-    type.field("restartOnDeath", &LevelFlow::restartOnDeath).tooltip("Restart the whole level when anyone dies.");
+        .description("Level rules: complete when every goal is satisfied; optionally restart when "
+                     "anyone dies.");
+    type.field("goals", &LevelFlow::goals)
+        .tooltip("Goal entities that must all be satisfied at once.");
+    type.field("restartOnDeath", &LevelFlow::restartOnDeath)
+        .tooltip("Restart the whole level when anyone dies.");
     type.field("restartDelay", &LevelFlow::restartDelay).range(0, 30, 0.1);
     type.field("completeDelay", &LevelFlow::completeDelay).range(0, 30, 0.1);
-    type.field("nextScene", &LevelFlow::nextScene).tooltip("Project-relative scene to load after completion.");
+    type.field("nextScene", &LevelFlow::nextScene)
+        .tooltip("Project-relative scene to load after completion.");
     type.field("restartKey", &LevelFlow::restartKey).keyOptions();
     type.field("completeMessage", &LevelFlow::completeMessage);
     type.field("failMessage", &LevelFlow::failMessage);
@@ -117,16 +126,17 @@ void LevelFlow::onStart(GameContext &context) {
     context.blackboard().set("level_state", std::string("playing"));
     context.blackboard().set("level_message", std::string());
     context.blackboard().set("level_time", 0.0);
-    deathSubscription_ = context.events().subscribe("entity_died", [this, &context](const GameEvent &) {
-        if (!restartOnDeath || state_ != State::Playing)
-            return;
-        state_ = State::Failed;
-        timer_ = restartDelay;
-        context.blackboard().set("level_state", std::string("failed"));
-        context.blackboard().set("level_message", failMessage);
-        if (!failSound.path.empty())
-            context.audio().play(failSound.path);
-    });
+    deathSubscription_ =
+        context.events().subscribe("entity_died", [this, &context](const GameEvent &) {
+            if (!restartOnDeath || state_ != State::Playing)
+                return;
+            state_ = State::Failed;
+            timer_ = restartDelay;
+            context.blackboard().set("level_state", std::string("failed"));
+            context.blackboard().set("level_message", failMessage);
+            if (!failSound.path.empty())
+                context.audio().play(failSound.path);
+        });
 }
 
 void LevelFlow::onFixedUpdate(GameContext &context, float seconds) {
@@ -170,15 +180,28 @@ void LevelFlow::onDestroy(GameContext &context) {
 
 void registerPrototypeGame(ComponentRegistry &registry) {
     registry.add<LevelFlow>("LevelFlow");
-    registry.addTemplate({"Fire Character", "Prototype", [](Scene &scene, Vec2 at) { return createFireCharacter(scene, at); }});
-    registry.addTemplate({"Water Character", "Prototype", [](Scene &scene, Vec2 at) { return createWaterCharacter(scene, at); }});
-    registry.addTemplate({"Fire Exit", "Prototype", [](Scene &scene, Vec2 at) { return createFireExit(scene, at); }});
-    registry.addTemplate({"Water Exit", "Prototype", [](Scene &scene, Vec2 at) { return createWaterExit(scene, at); }});
-    registry.addTemplate({"Lava Pool", "Prototype", [](Scene &scene, Vec2 at) { return createLavaPool(scene, at, {3.0F, 0.6F}); }});
-    registry.addTemplate({"Water Pool", "Prototype", [](Scene &scene, Vec2 at) { return createWaterPool(scene, at, {3.0F, 0.6F}); }});
-    registry.addTemplate({"Goo Pool", "Prototype", [](Scene &scene, Vec2 at) { return createGooPool(scene, at, {3.0F, 0.6F}); }});
-    registry.addTemplate({"Fire Gem", "Prototype", [](Scene &scene, Vec2 at) { return createFireGem(scene, at); }});
-    registry.addTemplate({"Water Gem", "Prototype", [](Scene &scene, Vec2 at) { return createWaterGem(scene, at); }});
-    registry.addTemplate({"Level Flow", "Prototype", [](Scene &scene, Vec2) { return createLevelFlow(scene); }});
+    registry.addTemplate({"Fire Character", "Prototype",
+                          [](Scene &scene, Vec2 at) { return createFireCharacter(scene, at); }});
+    registry.addTemplate({"Water Character", "Prototype",
+                          [](Scene &scene, Vec2 at) { return createWaterCharacter(scene, at); }});
+    registry.addTemplate({"Fire Exit", "Prototype",
+                          [](Scene &scene, Vec2 at) { return createFireExit(scene, at); }});
+    registry.addTemplate({"Water Exit", "Prototype",
+                          [](Scene &scene, Vec2 at) { return createWaterExit(scene, at); }});
+    registry.addTemplate({"Lava Pool", "Prototype", [](Scene &scene, Vec2 at) {
+                              return createLavaPool(scene, at, {3.0F, 0.6F});
+                          }});
+    registry.addTemplate({"Water Pool", "Prototype", [](Scene &scene, Vec2 at) {
+                              return createWaterPool(scene, at, {3.0F, 0.6F});
+                          }});
+    registry.addTemplate({"Goo Pool", "Prototype", [](Scene &scene, Vec2 at) {
+                              return createGooPool(scene, at, {3.0F, 0.6F});
+                          }});
+    registry.addTemplate(
+        {"Fire Gem", "Prototype", [](Scene &scene, Vec2 at) { return createFireGem(scene, at); }});
+    registry.addTemplate({"Water Gem", "Prototype",
+                          [](Scene &scene, Vec2 at) { return createWaterGem(scene, at); }});
+    registry.addTemplate(
+        {"Level Flow", "Prototype", [](Scene &scene, Vec2) { return createLevelFlow(scene); }});
 }
 } // namespace yk::prototype

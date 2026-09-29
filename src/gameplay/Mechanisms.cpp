@@ -129,6 +129,7 @@ void Door::describe(TypeBuilder<Door> &type) {
         });
     type.field("openOffset", &Door::openOffset)
         .range(-1000, 1000)
+        .displacement()
         .tooltip("How far the door moves when open, in world units (negative Y is up).");
     type.field("speed", &Door::speed).range(0.01, 100, 0.1);
     type.field("startsOpen", &Door::startsOpen).tooltip("Open until signalled, then closes.");
@@ -179,6 +180,7 @@ void MovingPlatform::describe(TypeBuilder<MovingPlatform> &type) {
         });
     type.field("travel", &MovingPlatform::travel)
         .range(-1000, 1000)
+        .displacement()
         .tooltip("Offset of the far end, world units.");
     type.field("speed", &MovingPlatform::speed).range(0.01, 100, 0.1);
     type.field("pause", &MovingPlatform::pause)

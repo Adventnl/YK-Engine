@@ -505,6 +505,35 @@ void prefabs() {
     CHECK(other &&
           other->get<Widget>()->target != copyWidget->target); // Instances are independent.
 
+    // Duplicating inside one scene keeps references to entities that are not being copied.
+    auto duplicate = instantiateSubtree(scene, prefab, {}, std::nullopt, true);
+    CHECK(duplicate);
+    Entity *duplicated = scene.find(duplicate.value());
+    CHECK(duplicated && duplicated->get<Widget>()->targets.size() == 2);
+    CHECK(duplicated &&
+          duplicated->get<Widget>()->targets[0] == scene.find(duplicated->childIds()[0])->id());
+    CHECK(duplicated && duplicated->get<Widget>()->targets[1] == outside.id()); // Kept.
+    CHECK(scene.find(duplicated->childIds()[0])->get<Widget>()->target == outside.id());
+    // ...but a reference to an entity the destination lacks is still cleared.
+    Scene elsewhere(registry, 900);
+    auto stranger = instantiateSubtree(elsewhere, prefab, {}, std::nullopt, true);
+    CHECK(stranger && elsewhere.find(stranger.value())->get<Widget>()->targets.size() == 1);
+    // Several documents at once: references between them are remapped to the new copies.
+    Entity &second_root = scene.createEntity("SecondRoot");
+    second_root.add<Widget>().target = root.id(); // Points at the first prefab's root.
+    const Json secondPrefab = subtreeToJson(scene, second_root.id());
+    const auto pair =
+        instantiateSubtrees(scene, {{&prefab, {}}, {&secondPrefab, holder.id()}}, true);
+    CHECK(pair && pair.value().size() == 2);
+    Entity *pairFirst = scene.find(pair.value()[0]);
+    Entity *pairSecond = scene.find(pair.value()[1]);
+    CHECK(pairFirst && pairSecond && pairSecond->parentId() == holder.id());
+    CHECK(pairSecond->get<Widget>()->target == pairFirst->id()); // Not the original root.
+    CHECK(pairFirst->get<Widget>()->targets[1] == outside.id()); // External kept.
+    const auto sizeBeforePair = scene.size();
+    Json invalid = Json::object();
+    CHECK(!instantiateSubtrees(scene, {{&prefab, {}}, {&invalid, {}}}));
+    CHECK(scene.size() == sizeBeforePair); // The first document was rolled back too.
     CHECK(!instantiateSubtree(scene, Json::object()));
     Json broken = prefab;
     broken.set("root", "00000000000000bb");

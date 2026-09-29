@@ -52,6 +52,16 @@ add_executable(yk_make_prototype game/tools/make_prototype.cpp)
 target_link_libraries(yk_make_prototype PRIVATE yk::prototype_game)
 yk_target(yk_make_prototype)
 
+# Editor core: the open document with undo, picking and gizmo logic, project files and play sessions.
+# No window, no UI toolkit: everything the editor does to a scene is tested headlessly through this.
+add_library(yk_editor_core STATIC editor/core/EditorDocument.cpp editor/core/EditorGeometry.cpp
+    editor/core/SceneInteraction.cpp editor/core/EditorProject.cpp editor/core/PlaySession.cpp
+    editor/core/ConsoleLog.cpp)
+add_library(yk::editor_core ALIAS yk_editor_core)
+target_link_libraries(yk_editor_core PUBLIC yk_gameplay)
+target_include_directories(yk_editor_core PUBLIC editor)
+yk_target(yk_editor_core)
+
 if(YK_RUNTIME)
     yk_fetch_sdl3()
     target_sources(yk_engine PRIVATE src/platform/Application.cpp src/graphics/Renderer.cpp
@@ -74,6 +84,8 @@ if(BUILD_TESTING)
     yk_add_test(gameplay tests/unit/gameplay_tests.cpp LIBS yk::gameplay TIMEOUT 120)
     yk_add_test(prototype tests/unit/prototype_tests.cpp LIBS yk::prototype_game TIMEOUT 120
         DEFINITIONS YK_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+    yk_add_test(editor_core tests/unit/editor_core_tests.cpp LIBS yk::editor_core yk::prototype_game
+        TIMEOUT 120 DEFINITIONS YK_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
     if(YK_RUNTIME)
         add_executable(yk_runtime_tests tests/integration/runtime_tests.cpp)
         target_link_libraries(yk_runtime_tests PRIVATE yk::engine SDL3::SDL3)
@@ -91,7 +103,7 @@ endif()
 find_program(YK_CLANG_FORMAT NAMES clang-format)
 if(YK_CLANG_FORMAT)
     file(GLOB_RECURSE YK_FORMAT_FILES CONFIGURE_DEPENDS include/*.hpp src/*.hpp src/*.cpp tests/*.cpp
-        tests/*.hpp)
+        tests/*.hpp game/*.hpp game/*.cpp player/*.hpp player/*.cpp editor/*.hpp editor/*.cpp)
     add_custom_target(format COMMAND ${YK_CLANG_FORMAT} -i ${YK_FORMAT_FILES} VERBATIM)
     add_custom_target(format-check COMMAND ${YK_CLANG_FORMAT} --dry-run --Werror ${YK_FORMAT_FILES} VERBATIM)
 endif()

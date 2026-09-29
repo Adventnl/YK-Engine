@@ -3,7 +3,8 @@
 //   yk_make_prototype <project-directory>
 //
 // This is a bootstrap tool: it recreates the initial content. Once designers edit the scenes in the
-// editor, the checked-in files are the source of truth and this tool should not be re-run over them.
+// editor, the checked-in files are the source of truth and this tool should not be re-run over
+// them.
 #include "PrototypeGame.hpp"
 #include "yk/assets/Project.hpp"
 #include "yk/core/Log.hpp"
@@ -16,22 +17,6 @@ using namespace yk::prototype;
 namespace {
 constexpr Color groundColor{86, 96, 116, 255};
 constexpr Color wallColor{52, 58, 76, 255};
-
-LayerConfig projectLayers() {
-    LayerConfig layers = LayerConfig::defaults();
-    for (const char *name : {layers::solid, layers::player, layers::sensor, layers::prop})
-        layers.addLayer(name);
-    const auto index = [&](const char *name) { return static_cast<std::size_t>(layers.indexOf(name)); };
-    layers.setInteraction(index(layers::player), index(layers::solid), true);
-    // Characters pass through each other (no Player <-> Player), which keeps two-player puzzles from
-    // jamming. Enable it in the project's layer matrix to let them block or stand on each other.
-    layers.setInteraction(index(layers::player), index(layers::sensor), true);
-    layers.setInteraction(index(layers::prop), index(layers::solid), true);
-    layers.setInteraction(index(layers::prop), index(layers::player), true);
-    layers.setInteraction(index(layers::prop), index(layers::sensor), true);
-    layers.setInteraction(index(layers::prop), index(layers::prop), true);
-    return layers;
-}
 
 struct Builder {
     ComponentRegistry &registry;
@@ -59,7 +44,8 @@ struct Builder {
         entity.get<SpriteRenderer>()->size = size;
         entity.get<Collider>()->size = size;
     }
-    Entity &text(const char *name, const char *content, UiAnchor anchor, Vec2 offset, float scale, Color color, EntityId parent) {
+    Entity &text(const char *name, const char *content, UiAnchor anchor, Vec2 offset, float scale,
+                 Color color, EntityId parent) {
         Entity &entity = scene.createEntity(name, parent);
         auto &label = entity.add<UiText>();
         label.text = content;
@@ -78,9 +64,12 @@ Status writePrefabs(const Project &project, ComponentRegistry &registry) {
         EntityId (*build)(Scene &, Vec2);
     };
     const Item items[] = {
-        {"fire_character", createFireCharacter}, {"water_character", createWaterCharacter},
-        {"fire_exit", createFireExit},           {"water_exit", createWaterExit},
-        {"fire_gem", createFireGem},             {"water_gem", createWaterGem},
+        {"fire_character", createFireCharacter},
+        {"water_character", createWaterCharacter},
+        {"fire_exit", createFireExit},
+        {"water_exit", createWaterExit},
+        {"fire_gem", createFireGem},
+        {"water_gem", createWaterGem},
         {"lava_pool", [](Scene &s, Vec2 at) { return createLavaPool(s, at, {3.0F, 0.6F}); }},
         {"water_pool", [](Scene &s, Vec2 at) { return createWaterPool(s, at, {3.0F, 0.6F}); }},
         {"goo_pool", [](Scene &s, Vec2 at) { return createGooPool(s, at, {3.0F, 0.6F}); }},
@@ -98,8 +87,10 @@ Status writePrefabs(const Project &project, ComponentRegistry &registry) {
 }
 
 // Instantiates a saved prefab, so the level really is built from the project's reusable entities.
-EntityId instance(const Project &project, Scene &scene, const char *file, Vec2 at, EntityId parent) {
-    auto document = loadPrefabDocument(project.resolve(std::string("prefabs/") + file + prefabExtension).value());
+EntityId instance(const Project &project, Scene &scene, const char *file, Vec2 at,
+                  EntityId parent) {
+    auto document = loadPrefabDocument(
+        project.resolve(std::string("prefabs/") + file + prefabExtension).value());
     if (!document) {
         std::fprintf(stderr, "%s\n", document.error().c_str());
         std::exit(1);
@@ -132,22 +123,27 @@ std::unique_ptr<Scene> buildTestLevel(const Project &project, ComponentRegistry 
     b.solid("Ground B2", {28.25F, 22.0F}, {3.5F, 2.0F}, groundColor, level.id());
     b.solid("Water Basin", {32.0F, 22.5F}, {4.0F, 1.0F}, wallColor, level.id());
     b.solid("Ground C", {37.0F, 22.0F}, {6.0F, 2.0F}, groundColor, level.id());
-    b.solid("Ledge", {33.25F, 10.5F}, {13.5F, 1.0F}, {96, 106, 130, 255}, level.id()); // Starts flush with the elevator (x = 26.5).
+    b.solid("Ledge", {33.25F, 10.5F}, {13.5F, 1.0F}, {96, 106, 130, 255},
+            level.id()); // Starts flush with the elevator (x = 26.5).
     b.solid("Left Wall", {-0.5F, 11.25F}, {1.0F, 24.0F}, wallColor, level.id());
     b.solid("Right Wall", {40.5F, 11.25F}, {1.0F, 24.0F}, wallColor, level.id());
     b.solid("Ceiling", {20.0F, -0.5F}, {42.0F, 1.0F}, wallColor, level.id());
 
     Entity &hazards = b.group("Hazards");
-    b.resize(b.adopt(instance(project, *scene, "lava_pool", {16.0F, 21.5F}, {}), hazards.id()), {4.0F, 1.0F});
-    b.resize(b.adopt(instance(project, *scene, "water_pool", {32.0F, 21.5F}, {}), hazards.id()), {4.0F, 1.0F});
-    b.resize(b.adopt(instance(project, *scene, "goo_pool", {31.0F, 9.6F}, {}), hazards.id()), {1.4F, 0.8F});
+    b.resize(b.adopt(instance(project, *scene, "lava_pool", {16.0F, 21.5F}, {}), hazards.id()),
+             {4.0F, 1.0F});
+    b.resize(b.adopt(instance(project, *scene, "water_pool", {32.0F, 21.5F}, {}), hazards.id()),
+             {4.0F, 1.0F});
+    b.resize(b.adopt(instance(project, *scene, "goo_pool", {31.0F, 9.6F}, {}), hazards.id()),
+             {1.4F, 0.8F});
 
     Entity &pickups = b.group("Pickups");
     instance(project, *scene, "fire_gem", {4.5F, 20.4F}, pickups.id());
     instance(project, *scene, "water_gem", {8.5F, 20.4F}, pickups.id());
     instance(project, *scene, "fire_gem", {27.6F, 9.4F}, pickups.id());
     instance(project, *scene, "water_gem", {29.05F, 9.4F}, pickups.id());
-    instance(project, *scene, "water_gem", {32.0F, 21.55F}, pickups.id()); // Bonus: only water can fetch it.
+    instance(project, *scene, "water_gem", {32.0F, 21.55F},
+             pickups.id()); // Bonus: only water can fetch it.
 
     Entity &exits = b.group("Exits");
     const EntityId fireExit = instance(project, *scene, "fire_exit", {34.5F, 9.1F}, exits.id());
@@ -155,7 +151,8 @@ std::unique_ptr<Scene> buildTestLevel(const Project &project, ComponentRegistry 
 
     Entity &mechanisms = b.group("Mechanisms");
     // Lever (water character) -> Door blocking the way to the lava pit.
-    Entity &leverDoor = b.solid("Lever Door", {11.5F, 19.0F}, {0.6F, 4.0F}, {200, 160, 60, 255}, mechanisms.id());
+    Entity &leverDoor =
+        b.solid("Lever Door", {11.5F, 19.0F}, {0.6F, 4.0F}, {200, 160, 60, 255}, mechanisms.id());
     leverDoor.add<RigidBody>().type = RigidBodyType::Kinematic;
     auto &leverDoorParts = leverDoor.add<Door>();
     leverDoorParts.openOffset = {0.0F, -4.4F};
@@ -174,10 +171,11 @@ std::unique_ptr<Scene> buildTestLevel(const Project &project, ComponentRegistry 
     leverParts.activatorTags = {waterTag};
     leverParts.targets = {leverDoor.id()};
     leverParts.sound.path = "tone:520,0.08,square";
-    // Two plates raise the elevator while either is held. One character boards the elevator while the
-    // other crosses it to the ground plate beyond; once up, the rider holds the ledge plate so the
-    // partner can be lifted in turn.
-    Entity &elevator = b.solid("Elevator", {25.0F, 21.2F}, {3.0F, 0.4F}, {120, 150, 190, 255}, mechanisms.id());
+    // Two plates raise the elevator while either is held. One character boards the elevator while
+    // the other crosses it to the ground plate beyond; once up, the rider holds the ledge plate so
+    // the partner can be lifted in turn.
+    Entity &elevator =
+        b.solid("Elevator", {25.0F, 21.2F}, {3.0F, 0.4F}, {120, 150, 190, 255}, mechanisms.id());
     elevator.add<RigidBody>().type = RigidBodyType::Kinematic;
     auto &elevatorParts = elevator.add<Door>();
     elevatorParts.openOffset = {0.0F, -11.0F};
@@ -212,8 +210,12 @@ std::unique_ptr<Scene> buildTestLevel(const Project &project, ComponentRegistry 
     checkpoint.add<Checkpoint>().sound.path = "tone:784,0.12,sine";
 
     Entity &characters = b.group("Characters");
-    const EntityId fire = b.adopt(instance(project, *scene, "fire_character", {2.0F, 20.5F}, {}), characters.id()).id();
-    const EntityId water = b.adopt(instance(project, *scene, "water_character", {3.6F, 20.5F}, {}), characters.id()).id();
+    const EntityId fire =
+        b.adopt(instance(project, *scene, "fire_character", {2.0F, 20.5F}, {}), characters.id())
+            .id();
+    const EntityId water =
+        b.adopt(instance(project, *scene, "water_character", {3.6F, 20.5F}, {}), characters.id())
+            .id();
     for (const EntityId id : {fire, water}) {
         auto *killable = scene->find(id)->get<Killable>();
         killable->deathSound.path = "tone:110,0.35,saw";
@@ -221,7 +223,8 @@ std::unique_ptr<Scene> buildTestLevel(const Project &project, ComponentRegistry 
         scene->find(id)->get<PlatformerController>()->jumpSound.path = "tone:330,0.08,square";
     }
     Entity &spawns = b.group("Spawn Points");
-    for (const auto &[name, at, who] : {std::tuple{"Fire Spawn", Vec2{2.0F, 20.5F}, fire}, std::tuple{"Water Spawn", Vec2{3.6F, 20.5F}, water}}) {
+    for (const auto &[name, at, who] : {std::tuple{"Fire Spawn", Vec2{2.0F, 20.5F}, fire},
+                                        std::tuple{"Water Spawn", Vec2{3.6F, 20.5F}, water}}) {
         Entity &spawn = scene->createEntity(name, spawns.id());
         spawn.transform().position = at;
         auto &marker = spawn.add<SpriteRenderer>();
@@ -239,12 +242,16 @@ std::unique_ptr<Scene> buildTestLevel(const Project &project, ComponentRegistry 
     barPanel.size = {1280.0F, 44.0F};
     barPanel.offset = {0.0F, 0.0F};
     barPanel.color = {0, 0, 0, 120};
-    b.text("Fire Gems", "FIRE GEMS {fire_gems:0}/2", UiAnchor::TopLeft, {16.0F, 12.0F}, 3.0F, {255, 150, 70, 255}, ui.id());
-    b.text("Water Gems", "WATER GEMS {water_gems:0}/3", UiAnchor::TopRight, {16.0F, 12.0F}, 3.0F, {120, 190, 255, 255}, ui.id());
-    b.text("Time", "TIME {level_time:0}", UiAnchor::Top, {0.0F, 12.0F}, 3.0F, {235, 235, 245, 255}, ui.id());
-    b.text("Message", "{level_message}", UiAnchor::Center, {0.0F, -60.0F}, 6.0F, {255, 240, 150, 255}, ui.id());
-    b.text("Controls", "P1: WASD   P2: ARROWS   R: RESTART   F1: DEBUG", UiAnchor::BottomLeft, {16.0F, 10.0F}, 2.0F,
-           {190, 195, 215, 255}, ui.id());
+    b.text("Fire Gems", "FIRE GEMS {fire_gems:0}/2", UiAnchor::TopLeft, {16.0F, 12.0F}, 3.0F,
+           {255, 150, 70, 255}, ui.id());
+    b.text("Water Gems", "WATER GEMS {water_gems:0}/3", UiAnchor::TopRight, {16.0F, 12.0F}, 3.0F,
+           {120, 190, 255, 255}, ui.id());
+    b.text("Time", "TIME {level_time:0}", UiAnchor::Top, {0.0F, 12.0F}, 3.0F, {235, 235, 245, 255},
+           ui.id());
+    b.text("Message", "{level_message}", UiAnchor::Center, {0.0F, -60.0F}, 6.0F,
+           {255, 240, 150, 255}, ui.id());
+    b.text("Controls", "P1: WASD   P2: ARROWS   R: RESTART   F1: DEBUG", UiAnchor::BottomLeft,
+           {16.0F, 10.0F}, 2.0F, {190, 195, 215, 255}, ui.id());
 
     Entity &flow = scene->createEntity("Level Flow");
     auto &rules = flow.add<LevelFlow>();
@@ -278,8 +285,9 @@ std::unique_ptr<Scene> buildPlayground(const Project &project, ComponentRegistry
 
     Entity &props = b.group("Props");
     for (int i = 0; i < 3; ++i) {
-        Entity &crate = b.solid("Crate", {28.0F + 0.05F * static_cast<float>(i), 20.0F - 1.05F * static_cast<float>(i)}, {1.0F, 1.0F},
-                                {176, 124, 72, 255}, props.id());
+        Entity &crate = b.solid(
+            "Crate", {28.0F + 0.05F * static_cast<float>(i), 20.0F - 1.05F * static_cast<float>(i)},
+            {1.0F, 1.0F}, {176, 124, 72, 255}, props.id());
         crate.get<Collider>()->layer = layers::prop;
         crate.get<Collider>()->friction = 0.5F;
         crate.get<SpriteRenderer>()->layer = 1;
@@ -293,13 +301,15 @@ std::unique_ptr<Scene> buildPlayground(const Project &project, ComponentRegistry
     ball.add<RigidBody>();
 
     Entity &mech = b.group("Mechanisms");
-    Entity &shuttle = b.solid("Shuttle", {12.0F, 13.0F}, {3.0F, 0.4F}, {120, 150, 190, 255}, mech.id());
+    Entity &shuttle =
+        b.solid("Shuttle", {12.0F, 13.0F}, {3.0F, 0.4F}, {120, 150, 190, 255}, mech.id());
     shuttle.add<RigidBody>().type = RigidBodyType::Kinematic;
     auto &move = shuttle.add<MovingPlatform>();
     move.travel = {8.0F, 0.0F};
     move.speed = 2.5F;
     // A plate that a crate (or a character) can hold down, opening a door to the high ledge.
-    Entity &door = b.solid("Ledge Door", {32.0F, 12.0F}, {0.6F, 3.0F}, {200, 160, 60, 255}, mech.id());
+    Entity &door =
+        b.solid("Ledge Door", {32.0F, 12.0F}, {0.6F, 3.0F}, {200, 160, 60, 255}, mech.id());
     door.add<RigidBody>().type = RigidBodyType::Kinematic;
     door.add<Door>().openOffset = {0.0F, -3.2F};
     Entity &plate = scene->createEntity("Crate Plate", mech.id());
@@ -318,7 +328,8 @@ std::unique_ptr<Scene> buildPlayground(const Project &project, ComponentRegistry
     b.adopt(instance(project, *scene, "fire_character", {2.0F, 20.5F}, {}), characters.id());
     b.adopt(instance(project, *scene, "water_character", {4.0F, 20.5F}, {}), characters.id());
     Entity &ui = b.group("HUD");
-    b.text("Help", "PLAYGROUND  P1: WASD  P2: ARROWS  R: RESTART", UiAnchor::TopLeft, {16.0F, 12.0F}, 2.0F, {235, 235, 245, 255}, ui.id());
+    b.text("Help", "PLAYGROUND  P1: WASD  P2: ARROWS  R: RESTART", UiAnchor::TopLeft,
+           {16.0F, 12.0F}, 2.0F, {235, 235, 245, 255}, ui.id());
     Entity &flow = scene->createEntity("Level Flow");
     flow.add<LevelFlow>();
     return scene;
@@ -336,7 +347,7 @@ int main(int argc, char **argv) {
     registerPrototypeGame(registry);
 
     Project project = Project::create(argv[1], "Elemental Prototype");
-    project.layers = projectLayers();
+    project.layers = layers::standard();
     project.startScene = "scenes/test_level.ykscene";
     project.window = {"Elemental Prototype", 1280, 720};
     const auto check = [](const Status &status) {
@@ -347,10 +358,13 @@ int main(int argc, char **argv) {
     };
     check(project.save());
     check(writePrefabs(project, registry));
-    for (const auto &[file, build] : {std::pair<const char *, std::unique_ptr<Scene> (*)(const Project &, ComponentRegistry &)>{"test_level", buildTestLevel},
-                                      {"playground", buildPlayground}}) {
+    for (const auto &[file, build] :
+         {std::pair<const char *, std::unique_ptr<Scene> (*)(const Project &, ComponentRegistry &)>{
+              "test_level", buildTestLevel},
+          {"playground", buildPlayground}}) {
         const auto scene = build(project, registry);
-        check(saveScene(*scene, project.resolve(std::string("scenes/") + file + sceneExtension).value()));
+        check(saveScene(*scene,
+                        project.resolve(std::string("scenes/") + file + sceneExtension).value()));
         std::printf("wrote scenes/%s%s (%zu entities)\n", file, sceneExtension, scene->size());
     }
     return 0;

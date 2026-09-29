@@ -24,9 +24,22 @@ Status saveScene(const Scene &scene, const std::filesystem::path &path);
 // Reusable entities ("prefabs"): an entity subtree that can be instantiated any number of times.
 // Instantiation assigns fresh ids and remaps references between the copied entities; references to
 // entities outside the subtree are cleared because they mean nothing in the destination.
+// Duplicating inside the same scene passes keepExternalReferences so a copied plate still opens its
+// door; references to entities the destination scene does not have are cleared either way.
 Json subtreeToJson(const Scene &scene, EntityId root);
 Result<EntityId> instantiateSubtree(Scene &scene, const Json &prefab, EntityId parent = {},
-                                    std::optional<Vec2> worldPosition = std::nullopt);
+                                    std::optional<Vec2> worldPosition = std::nullopt,
+                                    bool keepExternalReferences = false);
+// Instantiates several prefab documents in one step, each under its own parent, and remaps
+// references across all of them: copies of a plate and a door refer to each other, not to the
+// originals. Nothing is created when any document is invalid. Returns the new roots in order.
+struct PrefabPlacement {
+    const Json *prefab;
+    EntityId parent;
+};
+Result<std::vector<EntityId>> instantiateSubtrees(Scene &scene,
+                                                  const std::vector<PrefabPlacement> &placements,
+                                                  bool keepExternalReferences = false);
 Result<Json> loadPrefabDocument(const std::filesystem::path &path);
 Status savePrefab(const Scene &scene, EntityId root, const std::filesystem::path &path);
 } // namespace yk

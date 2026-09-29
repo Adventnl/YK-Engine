@@ -1,6 +1,22 @@
 #include "yk/gameplay/Gameplay.hpp"
 
 namespace yk {
+LayerConfig layers::standard() {
+    LayerConfig config = LayerConfig::defaults();
+    for (const char *name : {solid, player, sensor, prop})
+        config.addLayer(name);
+    const auto index = [&](const char *name) {
+        return static_cast<std::size_t>(config.indexOf(name));
+    };
+    config.setInteraction(index(player), index(solid), true);
+    config.setInteraction(index(player), index(sensor), true);
+    config.setInteraction(index(prop), index(solid), true);
+    config.setInteraction(index(prop), index(player), true);
+    config.setInteraction(index(prop), index(sensor), true);
+    config.setInteraction(index(prop), index(prop), true);
+    return config;
+}
+
 namespace {
 constexpr Color groundColor{86, 96, 116, 255};
 
