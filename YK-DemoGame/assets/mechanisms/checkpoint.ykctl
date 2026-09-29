@@ -1,0 +1,32 @@
+{
+  "format": "yk.animator",
+  "version": 1,
+  "parameters": [
+    {
+      "name": "reached",
+      "type": "bool"
+    }
+  ],
+  "entry": "Dormant",
+  "states": [
+    {
+      "name": "Dormant",
+      "clip": "dormant"
+    },
+    {
+      "name": "Lit",
+      "clip": "lit"
+    }
+  ],
+  "transitions": [
+    {
+      "from": "Dormant",
+      "to": "Lit",
+      "when": [
+        {
+          "parameter": "reached"
+        }
+      ]
+    }
+  ]
+}

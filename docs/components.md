@@ -435,6 +435,24 @@ Screen space: placed in pixels on the screen, not in the world.
 | `color` | color | "#0000008c" |  |
 | `layer` | int | -1 | (range -1000 to 1000) |
 
+### UiImage
+
+Screen-space image (HUD icon, frame).
+
+Screen space: placed in pixels on the screen, not in the world.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `texture` | asset | "" |  |
+| `anchor` | enum | "TopLeft" | Options: TopLeft Top TopRight Left Center Right BottomLeft Bottom BottomRight |
+| `size` | vec2 | [48,48] | Pixels. (range 0 to 8000) |
+| `offset` | vec2 | [16,16] | (range -4000 to 4000) |
+| `color` | color | "#ffffffff" |  |
+| `layer` | int | 0 | (range -1000 to 1000) |
+| `columns` | int | 1 | (range 1 to 256) |
+| `rows` | int | 1 | (range 1 to 256) |
+| `frame` | int | 0 | (range 0 to 65535) |
+
 ## Entity templates
 
 Offered by the editor's Create menu.
@@ -451,4 +469,4 @@ Offered by the editor's Create menu.
 
 - **Prototype**: Fire Character; Water Character; Fire Exit; Water Exit; Lava Pool; Water Pool; Goo Pool; Fire Gem; Water Gem;
 
-- **UI**: UI Text; UI Panel;
+- **UI**: UI Text; UI Image; UI Panel;

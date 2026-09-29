@@ -83,6 +83,18 @@ void UiText::describe(TypeBuilder<UiText> &type) {
     type.field("shadow", &UiText::shadow);
     type.field("layer", &UiText::layer).range(-1000, 1000);
 }
+void UiImage::describe(TypeBuilder<UiImage> &type) {
+    type.category("UI").screenSpace().description("Screen-space image (HUD icon, frame).");
+    type.field("texture", &UiImage::texture).asset("texture");
+    type.field("anchor", &UiImage::anchor).options(uiAnchorNames());
+    type.field("size", &UiImage::size).range(0, 8000).size().tooltip("Pixels.");
+    type.field("offset", &UiImage::offset).range(-4000, 4000);
+    type.field("color", &UiImage::color);
+    type.field("layer", &UiImage::layer).range(-1000, 1000);
+    type.field("columns", &UiImage::columns).range(1, 256);
+    type.field("rows", &UiImage::rows).range(1, 256);
+    type.field("frame", &UiImage::frame).range(0, 65535);
+}
 void UiPanel::describe(TypeBuilder<UiPanel> &type) {
     type.category("UI").screenSpace().description("Screen-space filled rectangle.");
     type.field("anchor", &UiPanel::anchor).options(uiAnchorNames());
@@ -299,6 +311,7 @@ void registerEngineComponents(ComponentRegistry &registry) {
     registry.add<SpriteRenderer>("SpriteRenderer");
     registry.add<UiText>("UiText");
     registry.add<UiPanel>("UiPanel");
+    registry.add<UiImage>("UiImage");
     registry.add<PlayerInput>("PlayerInput");
     registry.add<RigidBody>("RigidBody");
     registry.add<Collider>("Collider").allowMultiple();
@@ -327,6 +340,11 @@ void registerEngineComponents(ComponentRegistry &registry) {
     registry.addTemplate({"UI Text", "UI", [place](Scene &scene, Vec2 at) {
                               Entity &entity = place(scene, at, "UI Text");
                               entity.add<UiText>();
+                              return entity.id();
+                          }});
+    registry.addTemplate({"UI Image", "UI", [place](Scene &scene, Vec2 at) {
+                              Entity &entity = place(scene, at, "UI Image");
+                              entity.add<UiImage>();
                               return entity.id();
                           }});
     registry.addTemplate({"UI Panel", "UI", [place](Scene &scene, Vec2 at) {

@@ -233,7 +233,7 @@ Status EditorState::instantiatePrefab(const std::string &path, Vec2 world) {
         log(LogLevel::Error, "editor", prefab.error());
         return Error{prefab.error()};
     }
-    auto placed = document->instantiatePrefab(prefab.value(), world);
+    auto placed = document->instantiatePrefab(prefab.value(), world, {}, path);
     if (!placed) {
         log(LogLevel::Error, "editor", placed.error());
         return Error{placed.error()};

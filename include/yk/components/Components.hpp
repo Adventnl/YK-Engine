@@ -85,6 +85,22 @@ class UiText final : public Component {
     static void describe(TypeBuilder<UiText> &type);
 };
 
+// Screen-space textured rectangle (HUD icons, frames, logos). A sprite sheet cell can be picked
+// with columns/rows/frame, like SpriteRenderer.
+class UiImage final : public Component {
+  public:
+    AssetRef texture; // Empty draws a solid rectangle in `color`.
+    UiAnchor anchor{UiAnchor::TopLeft};
+    Vec2 size{48.0F, 48.0F}; // Pixels.
+    Vec2 offset{16.0F, 16.0F};
+    Color color{255, 255, 255, 255};
+    int layer{0};
+    int columns{1};
+    int rows{1};
+    int frame{0};
+    static void describe(TypeBuilder<UiImage> &type);
+};
+
 // Screen-space filled rectangle (HUD backgrounds, overlays).
 class UiPanel final : public Component {
   public:

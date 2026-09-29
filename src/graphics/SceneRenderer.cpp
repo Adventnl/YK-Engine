@@ -580,6 +580,40 @@ Status SceneRenderer::drawUi(Renderer &renderer, const Scene &scene, Vec2 viewpo
             if (auto submitted = renderer.submit(sprite); !submitted)
                 return submitted;
         }
+        for (const UiImage *image : entity->getAll<UiImage>()) {
+            if (!image->enabled || image->color.a == 0 || !(image->size.x > 0) || !(image->size.y > 0))
+                continue;
+            Sprite sprite;
+            sprite.size = image->size;
+            sprite.anchor = {0.0F, 0.0F};
+            sprite.transform.position =
+                anchoredTopLeft(image->anchor, viewport, image->size, image->offset);
+            sprite.tint = image->color;
+            sprite.layer = image->layer;
+            if (image->texture.path.empty()) {
+                sprite.texture = white.value();
+            } else {
+                const TextureInfo &info = textureFor(renderer, image->texture.path);
+                if (!info.handle) {
+                    sprite.texture = white.value();
+                    sprite.tint = missingTextureColor;
+                } else {
+                    sprite.texture = *info.handle;
+                    const int columns = image->columns > 1 ? image->columns : info.settings.columns;
+                    const int rows = image->rows > 1 ? image->rows : info.settings.rows;
+                    if (columns > 1 || rows > 1) {
+                        const float cellWidth = info.pixels.x / static_cast<float>(columns);
+                        const float cellHeight = info.pixels.y / static_cast<float>(rows);
+                        const int frame = std::clamp(image->frame, 0, columns * rows - 1);
+                        sprite.source = Rect{{static_cast<float>(frame % columns) * cellWidth,
+                                              static_cast<float>(frame / columns) * cellHeight},
+                                             {cellWidth, cellHeight}};
+                    }
+                }
+            }
+            if (auto submitted = renderer.submit(sprite); !submitted)
+                return submitted;
+        }
         for (const UiText *label : entity->getAll<UiText>()) {
             if (!label->enabled || label->color.a == 0)
                 continue;

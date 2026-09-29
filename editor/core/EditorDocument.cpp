@@ -277,10 +277,10 @@ Result<EntityId> EditorDocument::createFromTemplate(const EntityTemplate &entity
 }
 
 Result<EntityId> EditorDocument::instantiatePrefab(const Json &prefab, Vec2 worldPosition,
-                                                   EntityId parent) {
+                                                   EntityId parent, const std::string &source) {
     std::optional<Result<EntityId>> outcome;
     change("Add Prefab", [&](Scene &scene) {
-        outcome = instantiateSubtree(scene, prefab, parent, worldPosition);
+        outcome = instantiateSubtree(scene, prefab, parent, worldPosition, false, source);
         if (!*outcome)
             return;
         Entity &root = *scene.find(outcome->value());

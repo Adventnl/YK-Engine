@@ -28,6 +28,8 @@ Json entityRecord(const Entity &entity) {
         json.set("parent", toString(entity.parentId()));
     if (!entity.active())
         json.set("active", false);
+    if (!entity.prefabSource().empty())
+        json.set("prefab", entity.prefabSource());
     if (!entity.tags().empty()) {
         Json tags = Json::array();
         for (const std::string &tag : entity.tags())
@@ -69,6 +71,11 @@ Status applyEntityRecord(Entity &entity, const Json &record, const std::string &
         if (!active->isBool())
             return Error{context + ": 'active' must be a boolean"};
         entity.setActive(active->asBool());
+    }
+    if (const Json *prefab = record.find("prefab")) {
+        if (!prefab->isString())
+            return Error{context + ": 'prefab' must be a string"};
+        entity.setPrefabSource(prefab->asString());
     }
     if (const Json *tags = record.find("tags")) {
         if (!tags->isArray())
@@ -409,6 +416,8 @@ Result<std::vector<EntityId>> instantiateSubtrees(Scene &scene,
             return Error{"Prefab root is not among its entities"};
         }
         roots.push_back(root->second);
+        if (!placement.source.empty())
+            scene.find(root->second)->setPrefabSource(placement.source);
     }
     remapReferences(scene, created, remap, keepExternalReferences);
     for (std::size_t i = 0; i < roots.size(); ++i)
@@ -419,8 +428,8 @@ Result<std::vector<EntityId>> instantiateSubtrees(Scene &scene,
 
 Result<EntityId> instantiateSubtree(Scene &scene, const Json &prefab, EntityId parent,
                                     std::optional<Vec2> worldPosition,
-                                    bool keepExternalReferences) {
-    auto roots = instantiateSubtrees(scene, {{&prefab, parent}}, keepExternalReferences);
+                                    bool keepExternalReferences, const std::string &source) {
+    auto roots = instantiateSubtrees(scene, {{&prefab, parent, source}}, keepExternalReferences);
     if (!roots)
         return Error{roots.error()};
     if (worldPosition)
@@ -443,6 +452,12 @@ Result<Json> loadPrefabDocument(const std::filesystem::path &path) {
 Status savePrefab(const Scene &scene, EntityId root, const std::filesystem::path &path) {
     if (!scene.find(root))
         return Error{"Unknown entity " + toString(root)};
-    return writeTextFileAtomic(path, subtreeToJson(scene, root).dump(2) + "\n");
+    Json document = subtreeToJson(scene, root);
+    // The prefab's root is the prefab itself, whatever it was an instance of before.
+    if (Json *entities = document.find("entities"))
+        for (std::size_t i = 0; i < entities->size(); ++i)
+            if (entities->at(i).get("id").asString() == toString(root))
+                entities->at(i).erase("prefab");
+    return writeTextFileAtomic(path, document.dump(2) + "\n");
 }
 } // namespace yk

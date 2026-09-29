@@ -1,0 +1,23 @@
+{
+  "format": "yk.animation",
+  "version": 2,
+  "texture": "assets/mechanisms/checkpoint.png",
+  "columns": 2,
+  "rows": 1,
+  "clips": [
+    {
+      "name": "dormant",
+      "frames": [
+        0
+      ],
+      "fps": 1
+    },
+    {
+      "name": "lit",
+      "frames": [
+        1
+      ],
+      "fps": 1
+    }
+  ]
+}

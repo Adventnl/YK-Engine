@@ -42,6 +42,16 @@ class Entity {
     }
     bool activeInHierarchy() const;
 
+    // The project-relative prefab this entity was created from. It is set on the root of an
+    // instance and empty everywhere else. The editor uses it to show, revert and apply an instance
+    // and the validator checks it; the runtime ignores it.
+    const std::string &prefabSource() const {
+        return prefabSource_;
+    }
+    void setPrefabSource(std::string path) {
+        prefabSource_ = std::move(path);
+    }
+
     const std::vector<std::string> &tags() const {
         return tags_;
     }
@@ -116,6 +126,7 @@ class Entity {
     EntityId id_;
     std::string name_;
     bool active_{true};
+    std::string prefabSource_;
     std::vector<std::string> tags_;
     Transform2D local_;
     EntityId parent_{};

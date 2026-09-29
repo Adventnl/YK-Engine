@@ -115,9 +115,10 @@ class EditorDocument {
                           std::optional<Vec2> worldPosition = std::nullopt);
     Result<EntityId> createFromTemplate(const EntityTemplate &entityTemplate, Vec2 worldPosition,
                                         EntityId parent = {});
-    // `prefab` is a subtreeToJson document. References to entities outside it are cleared.
-    Result<EntityId> instantiatePrefab(const Json &prefab, Vec2 worldPosition,
-                                       EntityId parent = {});
+    // `prefab` is a subtreeToJson document. References to entities outside it are cleared. `source`
+    // is the prefab's project-relative path; the new root remembers it as its prefab.
+    Result<EntityId> instantiatePrefab(const Json &prefab, Vec2 worldPosition, EntityId parent = {},
+                                       const std::string &source = {});
     // Copies each selected root next to its original (offset in world units) and selects the
     // copies.
     std::vector<EntityId> duplicateSelection(Vec2 offset = {0.5F, 0.5F});

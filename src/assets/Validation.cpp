@@ -66,6 +66,18 @@ void checkScene(const Project &project, const Scene &scene, const std::string &f
                 std::vector<ProjectIssue> &issues) {
     scene.forEach([&](const Entity &entity) {
         const std::string owner = "'" + entity.name() + "'";
+        if (const std::string &source = entity.prefabSource(); !source.empty()) {
+            // The scene holds the instance's whole data, so a missing prefab only breaks
+            // Revert/Apply in the editor; still worth knowing about.
+            if (!fileExists(project, source))
+                issues.push_back({Severity::Warning, file,
+                                  owner + " is an instance of prefab '" + source +
+                                      "', which does not exist"});
+            else if (source.size() < 9 || source.compare(source.size() - 9, 9, ".ykprefab") != 0)
+                issues.push_back({Severity::Warning, file,
+                                  owner + " names '" + source + "' as its prefab, which is not a " +
+                                      prefabExtension + " file"});
+        }
         for (const auto &component : entity.components()) {
             const std::string where = owner + " " + component->type().name;
             if (const auto *animated = dynamic_cast<const AnimatedSprite *>(component.get()))

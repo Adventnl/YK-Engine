@@ -580,6 +580,47 @@ void prefabs() {
           !loadPrefabDocument(file.parent_path() / "none.ykprefab"));
     std::filesystem::remove_all(file.parent_path());
 }
+
+void prefabSources() {
+    auto registry = makeRegistry();
+    Scene scene(registry, 300);
+    Entity &root = scene.createEntity("Thing");
+    scene.createEntity("Part", root.id()).add<Widget>();
+    const Json prefab = subtreeToJson(scene, root.id());
+    CHECK(!prefab.get("entities").at(0).contains("prefab")); // An ordinary entity is no instance.
+
+    const std::string path = "prefabs/thing.ykprefab";
+    auto placed = instantiateSubtree(scene, prefab, {}, Vec2{3, 4}, false, path);
+    CHECK(placed);
+    Entity *instance = scene.find(placed.value());
+    CHECK(instance && instance->prefabSource() == path);
+    CHECK(instance && scene.find(instance->childIds()[0])->prefabSource().empty()); // Root only.
+    CHECK(root.prefabSource().empty());
+
+    // The scene file keeps the link and loads it back.
+    const Json document = sceneToJson(scene);
+    auto reloaded = sceneFromJson(document, registry);
+    CHECK(reloaded && reloaded.value()->find(placed.value()) &&
+          reloaded.value()->find(placed.value())->prefabSource() == path);
+    CHECK(reloaded && reloaded.value()->find(root.id())->prefabSource().empty());
+    Json broken = document;
+    for (std::size_t i = 0; i < broken.get("entities").size(); ++i)
+        if (broken.get("entities").at(i).get("id").asString() == toString(placed.value()))
+            broken.find("entities")->at(i).set("prefab", 5);
+    CHECK(!sceneFromJson(broken, registry)); // A prefab reference must be a string.
+
+    // A copy of an instance stays an instance; a prefab saved from an instance names nothing.
+    const Json copy = subtreeToJson(scene, placed.value());
+    CHECK(copy.get("entities").at(0).get("prefab").asString() == path);
+    auto duplicate = instantiateSubtree(scene, copy, {}, std::nullopt, true);
+    CHECK(duplicate && scene.find(duplicate.value())->prefabSource() == path);
+    const auto file =
+        std::filesystem::temp_directory_path() / "yk-prefab-source-test" / "again.ykprefab";
+    CHECK(savePrefab(scene, placed.value(), file));
+    auto saved = loadPrefabDocument(file);
+    CHECK(saved && !saved.value().get("entities").at(0).contains("prefab"));
+    std::filesystem::remove_all(file.parent_path());
+}
 } // namespace
 
 int main() {
@@ -593,5 +634,6 @@ int main() {
     serialization();
     malformedScenes();
     prefabs();
+    prefabSources();
     return yk::test::finish("scene");
 }

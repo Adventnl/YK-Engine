@@ -5,3 +5,5 @@
 .DS_Store
 *.user
 /.deps/
+__pycache__/
+*.pyc

@@ -1,0 +1,60 @@
+{
+  "format": "yk.animator",
+  "version": 1,
+  "parameters": [
+    {
+      "name": "on",
+      "type": "bool"
+    }
+  ],
+  "entry": "Off",
+  "states": [
+    {
+      "name": "Off",
+      "clip": "off"
+    },
+    {
+      "name": "SwitchOn",
+      "clip": "switch_on"
+    },
+    {
+      "name": "On",
+      "clip": "on"
+    },
+    {
+      "name": "SwitchOff",
+      "clip": "switch_off"
+    }
+  ],
+  "transitions": [
+    {
+      "from": "Off",
+      "to": "SwitchOn",
+      "when": [
+        {
+          "parameter": "on"
+        }
+      ]
+    },
+    {
+      "from": "SwitchOn",
+      "to": "On",
+      "exitTime": 1.0
+    },
+    {
+      "from": "On",
+      "to": "SwitchOff",
+      "when": [
+        {
+          "parameter": "on",
+          "value": false
+        }
+      ]
+    },
+    {
+      "from": "SwitchOff",
+      "to": "Off",
+      "exitTime": 1.0
+    }
+  ]
+}
