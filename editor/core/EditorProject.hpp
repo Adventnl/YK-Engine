@@ -62,6 +62,34 @@ class EditorProject {
     Result<ImportResult> importFiles(const std::vector<std::filesystem::path> &files,
                                      const std::string &folder);
 
+    // File operations. Paths are project-relative ('/' or '\\' separators are accepted); a file or
+    // a folder. Data files (scenes, prefabs, animations, controllers) and the start scene in
+    // project.ykproj refer to assets by these paths, so a move rewrites every reference and a
+    // delete can say what it would leave dangling.
+    struct AssetUsage {
+        std::size_t references{0};
+        std::vector<std::string> files; // The data files that name it, sorted.
+    };
+    // Who names `path` (a folder: anything inside it).
+    AssetUsage usageOf(const std::string &path) const;
+    // Says why `from` cannot become `to` (nothing to move, the destination exists, it would leave
+    // the project, ...), or succeeds. Changes nothing.
+    Status checkMove(const std::string &from, const std::string &to) const;
+    struct MoveResult {
+        std::string from, to;               // Normalized.
+        std::size_t references{0};          // Rewritten.
+        std::vector<std::string> rewritten; // Data files whose text changed (paths after the move).
+    };
+    // Moves or renames a file or folder inside the project (a texture's import settings go with
+    // it) and rewrites every reference to it. All or nothing: when something cannot be written,
+    // what was done is undone. Scenes open in an editor must be reloaded by the caller.
+    Result<MoveResult> moveAsset(const std::string &from, const std::string &to);
+    // Deletes a file (and a texture's import settings) or a folder with everything in it.
+    // References to it stay as they are: validation reports them.
+    Status deleteAsset(const std::string &path);
+    // The number of files a delete of `path` would remove (1 for a file).
+    std::size_t filesUnder(const std::string &path) const;
+
     // A new, empty scene (with a camera) saved at `path`. Fails if the file exists.
     Result<std::unique_ptr<EditorDocument>> newScene(const std::string &path);
     Result<std::unique_ptr<EditorDocument>> openScene(const std::string &path) const;

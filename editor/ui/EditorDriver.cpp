@@ -757,7 +757,7 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
             {"settings", DialogKind::ProjectSettings}, {"export", DialogKind::Export},
             {"validation", DialogKind::Validation},    {"about", DialogKind::About},
             {"shortcuts", DialogKind::Shortcuts},      {"message", DialogKind::Message},
-            {"confirm", DialogKind::Confirm}};
+            {"confirm", DialogKind::Confirm},          {"moveasset", DialogKind::MoveAsset}};
         const auto found = kinds.find(lower(arg));
         if (found == kinds.end()) {
             detail = "unknown dialog '" + arg + "'";
@@ -765,6 +765,10 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
         }
         return report(state.dialog.kind == found->second, "that dialog is not open");
     }
+    if (what == "dialog-text") // expect dialog-text TEXT: the open dialog's message contains it
+        return report(state.dialog.kind != DialogKind::None &&
+                          state.dialog.message.find(arg) != std::string::npos,
+                      "the dialog says '" + state.dialog.message + "'");
     if (what == "console") {
         for (const auto &entry : state.console.snapshot())
             if (entry.message.find(arg) != std::string::npos)
@@ -894,6 +898,9 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
         return report(state.problems.size() == static_cast<std::size_t>(number(arg).value_or(-1)),
                       std::to_string(state.problems.size()) + " problems are listed");
     }
+    if (what == "problems-at-least")
+        return report(state.problems.size() >= static_cast<std::size_t>(number(arg).value_or(1e9)),
+                      std::to_string(state.problems.size()) + " problems are listed");
     if (what == "locked" || what == "unlocked") { // expect locked ENTITY
         const Entity *entity = findNamed(scene, arg);
         if (!entity) {

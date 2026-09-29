@@ -93,7 +93,8 @@ enum class DialogKind {
     About,
     Shortcuts,
     Message,
-    Confirm
+    Confirm,
+    MoveAsset
 };
 
 struct DialogState {
@@ -117,6 +118,8 @@ struct DialogState {
     bool exportReplace{};
     // A folder the Message dialog offers to show in the file manager.
     std::filesystem::path revealPath;
+    // The Rename or Move dialog: the file or folder being moved (`text` holds the new path).
+    std::string assetPath;
 };
 
 // Something the user asked for that the entity-reference field is waiting on ("click the door").
@@ -185,6 +188,8 @@ class EditorState {
     // Inspector goes back to showing entities.
     std::vector<EntityId> assetSelectionMark;
     std::string explorerReveal; // File the Explorer should open its folders for and scroll to.
+    std::string explorerTarget; // The row F2 and Delete act on (a file or a folder); empty: none.
+    bool explorerFocused{};     // The Explorer has the keyboard (so Delete is not an entity's).
     bool frameRequested{};      // Frame the whole scene once the scene view knows its size.
     bool quit{};
     float framesPerSecond{};
@@ -219,6 +224,11 @@ class EditorState {
     Status activateScene(const std::string &path);
     // Closes a scene's tab, asking about unsaved changes first.
     void closeScene(const std::string &path);
+    // Closes a scene's tab without asking (its file is gone, or it is being reloaded).
+    void dropScene(const std::string &path);
+    // Closes every scene tab and opens them again from disk, in the same order and with the same
+    // one active. `remap` gives a scene's path after a change of files (empty: it is gone).
+    void reloadScenes(const std::function<std::string(const std::string &)> &remap);
     // True when any open scene has changes that are not saved.
     bool anyDirty() const;
     std::vector<std::string> dirtyScenes() const;
@@ -254,6 +264,15 @@ class EditorState {
     // Selects a project file: the Explorer opens its folders and scrolls to it, and the Inspector
     // shows it until something else is selected.
     void showAssetInExplorer(const std::string &path);
+    // Explorer file operations (the Explorer's menu and F2 / Delete). Both first ask about unsaved
+    // scenes, because open scenes are reloaded from the rewritten files. Renaming or moving asks
+    // for the new path in a dialog; deleting says what would be left dangling and asks first.
+    void askToMoveAsset(const std::string &path);
+    void askToDeleteAsset(const std::string &path);
+    // What those dialogs do once accepted; both tell the console what they did. Moving rewrites
+    // every reference to the file or folder (EditorProject::moveAsset) and reloads the open scenes.
+    Status moveAsset(const std::string &from, const std::string &to);
+    Status deleteAsset(const std::string &path);
     // Opens the system's file dialog to pick files to import.
     void chooseAssetsToImport(SDL_Window *window);
     // The folder the Explorer last selected or opened (imports go there); project-relative.

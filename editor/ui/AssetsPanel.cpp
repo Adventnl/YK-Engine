@@ -188,6 +188,16 @@ void fileRow(EditorState &state, const Node &node) {
                 const std::string url = toFileUrl(absolute.parent_path());
                 SDL_OpenURL(url.c_str());
             }
+            ImGui::Separator();
+            state.explorerTarget = entry.path;
+            // Import settings belong to their picture: they are renamed with it.
+            if (ImGui::MenuItem("Rename or Move...", "F2", false,
+                                !state.playing() && entry.kind != AssetKind::TextureMeta))
+                state.askToMoveAsset(entry.path);
+            markItem("assets/menu/rename");
+            if (ImGui::MenuItem("Delete", "Del", false, !state.playing()))
+                state.askToDeleteAsset(entry.path);
+            markItem("assets/menu/delete");
         }
         ImGui::EndPopup();
     }
@@ -229,8 +239,10 @@ void folderRow(EditorState &state, const Node &node, bool filtering) {
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {4.0F, rowPadding()});
     const bool open = ImGui::TreeNodeEx("##folder", flags);
     ImGui::PopStyleVar();
-    if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+    if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
         state.explorerFolder = node.path;
+        state.explorerTarget = node.path;
+    }
     markItem("assets/folder/" + node.path);
     tooltip(node.path);
     if (ImGui::BeginPopupContextItem("folder_menu")) {
@@ -243,6 +255,14 @@ void folderRow(EditorState &state, const Node &node, bool filtering) {
                 state.chooseAssetsToImport(nullptr);
             if (ImGui::MenuItem("Copy Path"))
                 ImGui::SetClipboardText(node.path.c_str());
+            ImGui::Separator();
+            state.explorerTarget = node.path;
+            if (ImGui::MenuItem("Rename or Move...", "F2", false, !state.playing()))
+                state.askToMoveAsset(node.path);
+            markItem("assets/menu/rename");
+            if (ImGui::MenuItem("Delete Folder", "Del", false, !state.playing()))
+                state.askToDeleteAsset(node.path);
+            markItem("assets/menu/delete");
         }
         ImGui::EndPopup();
     }
@@ -304,8 +324,10 @@ void assetsPanel(EditorState &state) {
             ImGuiTreeNodeFlags_FramePadding |
             (state.explorerFolder.empty() ? ImGuiTreeNodeFlags_Selected : ImGuiTreeNodeFlags_None));
     ImGui::PopStyleVar();
-    if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+    if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
         state.explorerFolder.clear();
+        state.explorerTarget.clear();
+    }
     markItem("assets/folder/");
     ImGui::SameLine(0.0F, 2.0F);
     ImGui::PushStyleColor(ImGuiCol_Text, imColor(vs::textBright));
@@ -319,5 +341,20 @@ void assetsPanel(EditorState &state) {
     ImGui::PopID();
     ImGui::EndChild();
     state.explorerReveal.clear(); // Whatever was asked for has been shown (or does not exist).
+
+    // F2 and Delete act on the row that was clicked last, when the Explorer has the keyboard.
+    state.explorerFocused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+    if (state.explorerFocused && !state.playing() && state.dialog.kind == DialogKind::None &&
+        !ImGui::GetIO().WantTextInput && !state.explorerTarget.empty()) {
+        const auto found = std::find_if(
+            state.project->files().begin(), state.project->files().end(),
+            [&](const AssetEntry &entry) { return entry.path == state.explorerTarget; });
+        const bool isFile = found != state.project->files().end();
+        const bool movable = !isFile || found->kind != AssetKind::TextureMeta;
+        if (ImGui::IsKeyPressed(ImGuiKey_F2, false) && movable)
+            state.askToMoveAsset(state.explorerTarget);
+        else if (ImGui::IsKeyPressed(ImGuiKey_Delete, false))
+            state.askToDeleteAsset(state.explorerTarget);
+    }
 }
 } // namespace yk::editor::ui

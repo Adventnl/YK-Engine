@@ -187,6 +187,52 @@ void nameDialog(EditorState &state, const char *kind, const char *prompt, const 
     }
 }
 
+// Rename or move a file or folder of the project: a path field that says at once why a path will
+// not do, and what the change will rewrite.
+void moveAssetDialog(EditorState &state) {
+    DialogState &dialog = state.dialog;
+    if (!state.project) {
+        closeDialog(state);
+        return;
+    }
+    ImGui::TextUnformatted("New name or path (inside the project)");
+    ImGui::SetNextItemWidth(460.0F);
+    if (ImGui::IsWindowAppearing())
+        ImGui::SetKeyboardFocusHere();
+    inputText("##name", dialog.text);
+    const bool entered = enterPressedInField();
+    markItem("dialog/MoveAsset/name");
+    const bool changed = dialog.text != dialog.assetPath;
+    std::string problem;
+    if (changed)
+        if (const auto checked = state.project->checkMove(dialog.assetPath, dialog.text); !checked)
+            problem = checked.error();
+    ImGui::PushTextWrapPos(560.0F);
+    ImGui::TextColored(imColor(palette::dim), "%s", dialog.message.c_str());
+    if (!problem.empty())
+        ImGui::TextColored(imColor(palette::error), "%s", problem.c_str());
+    if (!dialog.error.empty())
+        ImGui::TextColored(imColor(palette::error), "%s", dialog.error.c_str());
+    ImGui::PopTextWrapPos();
+    ImGui::Spacing();
+    const bool ready = changed && problem.empty();
+    ImGui::BeginDisabled(!ready);
+    const bool ok = ImGui::Button("Rename", {120.0F, 0.0F});
+    markItem("dialog/MoveAsset/ok");
+    ImGui::EndDisabled();
+    ImGui::SameLine();
+    const bool cancel = ImGui::Button("Cancel", {100.0F, 0.0F});
+    markItem("dialog/MoveAsset/cancel");
+    if ((ok || entered) && ready) {
+        if (auto moved = state.moveAsset(dialog.assetPath, dialog.text); moved)
+            closeDialog(state);
+        else
+            dialog.error = moved.error();
+    } else if (cancel) {
+        closeDialog(state);
+    }
+}
+
 // Picks the player program that goes with the chosen target: the one found next to the editor, or
 // the path typed into the field.
 std::filesystem::path chosenPlayer(EditorState &state) {
@@ -536,7 +582,8 @@ void shortcutsDialog(EditorState &state) {
         {"Ctrl+Shift+E H K X B", "Explorer, Scene, Prefabs, Components, Build view"},
         {"Ctrl+Shift+Y M U", "Console, Problems, Build Output panel"},
         {"Ctrl+\\", "Split the editor area"},
-        {"F2", "Rename the selected entity (in the Hierarchy)"},
+        {"F2", "Rename an entity (Hierarchy) or a file (Explorer)"},
+        {"Delete (in the Explorer)", "Delete the selected file or folder, after asking"},
         {"Escape", "Cancel a drag or a pending pick"},
     };
     if (ImGui::BeginTable("##keys", 2, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_RowBg)) {
@@ -738,6 +785,9 @@ void drawDialogs(EditorState &state) {
         break;
     case DialogKind::Confirm:
         confirmDialog(state);
+        break;
+    case DialogKind::MoveAsset:
+        moveAssetDialog(state);
         break;
     case DialogKind::None:
         break;

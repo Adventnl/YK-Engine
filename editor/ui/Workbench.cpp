@@ -880,6 +880,7 @@ void saveLayoutIfChanged(EditorState &state) {
 } // namespace
 
 void drawWorkbench(EditorState &state) {
+    state.explorerFocused = false; // The Explorer sets it while it is drawn.
     const ImGuiViewport *viewport = ImGui::GetMainViewport();
     WorkbenchMetrics scaled;
     scaled.scale = scaleOf();

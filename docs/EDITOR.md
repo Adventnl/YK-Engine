@@ -163,8 +163,18 @@ Level, Mechanisms, UI) or from your prefabs.
 
 The **Explorer** lists the project's files as a folder tree with an icon per kind. Click a file to
 inspect it, double-click a scene to open it or a prefab to add it, right-click for the context menu
-(Open, Set as Start Scene, Add to Scene, Copy Path, Show in File Manager). The search box opens the
-folders that contain matches.
+(Open, Set as Start Scene, Add to Scene, Copy Path, Show in File Manager, Rename or Move, Delete).
+The search box opens the folders that contain matches.
+
+**Rename or Move** (**F2** on the selected row) asks for the new path inside the project; typing a
+path with folders moves the file there, and moving a folder moves everything in it. Scenes,
+prefabs, animations and the project's start scene refer to files by path, so the dialog says how
+many references will be rewritten and in which files, and the rewrite is all or nothing: a file that
+cannot be written undoes the rest. A picture's import settings (`.ykmeta`) move with it, and the
+open scenes are reloaded from the rewritten files (unsaved scenes are dealt with first; the undo
+history of the reloaded scenes starts again). **Delete** (**Del**) asks first, listing what would be
+left dangling; those references then show up in the Problems panel. Neither operation can be
+undone, and neither is offered while the game is playing.
 
 To bring pictures and sounds in, use **Import** (the button above the tree) or drop files on the
 window. PNG and BMP images and WAV sounds are copied into the project (`assets/textures`,
@@ -243,7 +253,7 @@ steps go to **Build Output**, and the finished dialog can show the folder.
 | W, R, E | Move, Resize, Rotate tool |
 | F, Home | frame the selection, frame everything |
 | Arrow keys, Shift+arrows | nudge the selection |
-| F2 | rename the selected entity |
+| F2 | rename the selected entity (in the Hierarchy) or rename or move the selected file (in the Explorer) |
 | Alt+Up, Alt+Down | move among siblings |
 | F5, Shift+F5, F6, F10, Ctrl+Shift+F5 | play, stop, pause, step, restart |
 | Ctrl+F5 | run in the standalone player |

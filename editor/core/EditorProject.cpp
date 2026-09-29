@@ -1,4 +1,5 @@
 #include "core/EditorProject.hpp"
+#include "yk/assets/TextureMeta.hpp"
 #include "yk/core/FileIO.hpp"
 #include "yk/core/Log.hpp"
 #include "yk/gameplay/Gameplay.hpp"
@@ -19,6 +20,120 @@ std::unique_ptr<Scene> startingScene(const ComponentRegistry &registry, const st
 
 std::string sceneNameFor(const std::string &path) {
     return std::filesystem::path(path).stem().string();
+}
+
+// "assets\\a.png " -> "assets/a.png"; refuses what cannot be a name inside the project.
+Result<std::string> cleanAssetPath(std::string text) {
+    std::replace(text.begin(), text.end(), '\\', '/');
+    const auto first = text.find_first_not_of(" \t");
+    if (first == std::string::npos)
+        return Error{"Enter a path inside the project"};
+    text = text.substr(first, text.find_last_not_of(" \t") - first + 1);
+    while (text.starts_with("./"))
+        text.erase(0, 2);
+    while (!text.empty() && text.back() == '/')
+        text.pop_back();
+    if (text.empty())
+        return Error{"Enter a path inside the project"};
+    if (text.front() == '/')
+        return Error{"Use a path inside the project, without a leading slash"};
+    std::string clean;
+    std::size_t start = 0;
+    while (true) {
+        const auto slash = text.find('/', start);
+        const std::string part =
+            text.substr(start, slash == std::string::npos ? std::string::npos : slash - start);
+        if (part.empty())
+            return Error{"'" + text + "' has an empty folder name"};
+        if (part == "." || part == "..")
+            return Error{"'" + text + "' must stay inside the project"};
+        if (part.front() == '.')
+            return Error{"Names cannot start with a dot: the project hides those files"};
+        if (part.find_first_of(":*?\"<>|") != std::string::npos ||
+            std::any_of(part.begin(), part.end(),
+                        [](char c) { return static_cast<unsigned char>(c) < 0x20; }))
+            return Error{"Names cannot contain : * ? \" < > |"};
+        if (part.back() == ' ' || part.back() == '.')
+            return Error{"Names cannot end with a space or a dot"};
+        if (!clean.empty())
+            clean += '/';
+        clean += part;
+        if (slash == std::string::npos)
+            break;
+        start = slash + 1;
+    }
+    return clean;
+}
+
+// The files that name other files: everything a scene, prefab or animation can point at.
+bool isDataFile(AssetKind kind) {
+    return kind == AssetKind::Scene || kind == AssetKind::Prefab || kind == AssetKind::Animation ||
+           kind == AssetKind::Controller;
+}
+
+// Does `value` name `from` (a file), or something inside it (a folder)?
+bool names(const std::string &value, const std::string &from, bool folder) {
+    return value == from || (folder && value.size() > from.size() && value.starts_with(from) &&
+                             value[from.size()] == '/');
+}
+
+// What `value` becomes when `from` moves to `to`.
+std::optional<std::string> remapped(const std::string &value, const std::string &from,
+                                    const std::string &to, bool folder) {
+    if (!names(value, from, folder))
+        return std::nullopt;
+    return to + value.substr(from.size());
+}
+
+std::size_t countReferences(const Json &node, const std::string &from, bool folder) {
+    if (node.isString())
+        return names(node.asString(), from, folder) ? 1 : 0;
+    std::size_t count = 0;
+    if (node.isArray()) {
+        for (const Json &item : node.items())
+            count += countReferences(item, from, folder);
+    } else if (node.isObject()) {
+        for (std::size_t i = 0; i < node.size(); ++i)
+            count += countReferences(node.valueAt(i), from, folder);
+    }
+    return count;
+}
+
+std::size_t rewriteReferences(Json &node, const std::string &from, const std::string &to,
+                              bool folder) {
+    if (node.isString()) {
+        if (const auto replaced = remapped(node.asString(), from, to, folder)) {
+            node = Json(*replaced);
+            return 1;
+        }
+        return 0;
+    }
+    std::size_t count = 0;
+    if (node.isArray()) {
+        for (std::size_t i = 0; i < node.size(); ++i)
+            count += rewriteReferences(node.at(i), from, to, folder);
+    } else if (node.isObject()) {
+        for (std::size_t i = 0; i < node.size(); ++i) {
+            const std::string key = node.keyAt(i);
+            if (Json *child = node.find(key))
+                count += rewriteReferences(*child, from, to, folder);
+        }
+    }
+    return count;
+}
+
+// A parsed data file of the project, or nothing when it cannot be read (validation reports those).
+std::optional<Json> readData(const Project &project, const std::string &path) {
+    const auto resolved = project.resolve(path);
+    if (!resolved)
+        return std::nullopt;
+    auto text = readTextFile(resolved.value());
+    if (!text)
+        return std::nullopt;
+    auto json = Json::parse(text.value());
+    if (!json)
+        return std::nullopt;
+    return std::move(json.value());
 }
 } // namespace
 
@@ -248,6 +363,239 @@ EditorProject::importFiles(const std::vector<std::filesystem::path> &files,
     }
     refresh();
     return result;
+}
+
+EditorProject::AssetUsage EditorProject::usageOf(const std::string &pathInput) const {
+    AssetUsage usage;
+    const auto cleaned = cleanAssetPath(pathInput);
+    if (!cleaned)
+        return usage;
+    const std::string &path = cleaned.value();
+    std::error_code error;
+    const auto absolute = project_.resolve(path);
+    const bool folder = absolute && std::filesystem::is_directory(absolute.value(), error);
+    for (const AssetEntry &entry : scanAssets(project_)) {
+        if (!isDataFile(entry.kind))
+            continue;
+        if (const auto json = readData(project_, entry.path))
+            if (const std::size_t count = countReferences(*json, path, folder); count > 0) {
+                usage.references += count;
+                usage.files.push_back(entry.path);
+            }
+    }
+    if (names(project_.startScene, path, folder)) {
+        ++usage.references;
+        usage.files.push_back(Project::fileName);
+    }
+    std::sort(usage.files.begin(), usage.files.end());
+    return usage;
+}
+
+Status EditorProject::checkMove(const std::string &fromInput, const std::string &toInput) const {
+    const auto cleanFrom = cleanAssetPath(fromInput);
+    if (!cleanFrom)
+        return Error{cleanFrom.error()};
+    const auto cleanTo = cleanAssetPath(toInput);
+    if (!cleanTo)
+        return Error{cleanTo.error()};
+    const std::string &from = cleanFrom.value();
+    const std::string &to = cleanTo.value();
+    if (from == to)
+        return Error{"That is where it already is"};
+    if (from == Project::fileName || to == Project::fileName)
+        return Error{std::string(Project::fileName) +
+                     " is the project itself: it cannot be renamed, moved or replaced"};
+    const auto fromAbsolute = project_.resolve(from);
+    const auto toAbsolute = project_.resolve(to);
+    if (!fromAbsolute)
+        return Error{fromAbsolute.error()};
+    if (!toAbsolute)
+        return Error{toAbsolute.error()};
+    std::error_code error;
+    if (!std::filesystem::exists(fromAbsolute.value(), error))
+        return Error{"'" + from + "' does not exist"};
+    const bool folder = std::filesystem::is_directory(fromAbsolute.value(), error);
+    if (!folder && classifyAsset(from) == AssetKind::TextureMeta)
+        return Error{"Import settings belong to their picture: rename the picture and they follow"};
+    if (folder && (to + "/").starts_with(from + "/"))
+        return Error{"A folder cannot be moved into itself"};
+    // Every folder on the way must be a folder (or not exist yet).
+    for (std::filesystem::path parent = toAbsolute.value().parent_path();
+         parent != project_.root && parent.has_relative_path(); parent = parent.parent_path())
+        if (std::filesystem::is_regular_file(parent, error))
+            return Error{"'" + project_.relativize(parent).value_or(parent.string()) +
+                         "' is a file, not a folder"};
+    // A picture's import settings travel with it and must not land on other settings.
+    const bool exists = std::filesystem::exists(toAbsolute.value(), error);
+    const bool sameFile =
+        exists && std::filesystem::equivalent(fromAbsolute.value(), toAbsolute.value(), error);
+    if (exists && !sameFile)
+        return Error{"'" + to + "' already exists"};
+    if (!folder && classifyAsset(from) == AssetKind::Texture) {
+        const auto sidecarFrom = project_.resolve(TextureMeta::sidecarPath(from));
+        const auto sidecarTo = project_.resolve(TextureMeta::sidecarPath(to));
+        if (sidecarFrom && sidecarTo && std::filesystem::exists(sidecarFrom.value(), error) &&
+            std::filesystem::exists(sidecarTo.value(), error) &&
+            !std::filesystem::equivalent(sidecarFrom.value(), sidecarTo.value(), error))
+            return Error{"'" + TextureMeta::sidecarPath(to) + "' already exists"};
+    }
+    return success();
+}
+
+Result<EditorProject::MoveResult> EditorProject::moveAsset(const std::string &fromInput,
+                                                           const std::string &toInput) {
+    if (auto checked = checkMove(fromInput, toInput); !checked)
+        return Error{checked.error()};
+    MoveResult result;
+    result.from = cleanAssetPath(fromInput).value();
+    result.to = cleanAssetPath(toInput).value();
+    const std::string &from = result.from;
+    const std::string &to = result.to;
+    const std::filesystem::path fromAbsolute = project_.resolve(from).value();
+    const std::filesystem::path toAbsolute = project_.resolve(to).value();
+    std::error_code error;
+    const bool folder = std::filesystem::is_directory(fromAbsolute, error);
+    std::filesystem::path sidecarFrom, sidecarTo;
+    if (!folder && classifyAsset(from) == AssetKind::Texture) {
+        sidecarFrom = project_.resolve(TextureMeta::sidecarPath(from)).value();
+        sidecarTo = project_.resolve(TextureMeta::sidecarPath(to)).value();
+        if (!std::filesystem::exists(sidecarFrom, error))
+            sidecarFrom.clear();
+    }
+
+    // First work out every rewrite, so that nothing is touched unless all of it can be done.
+    struct Rewrite {
+        std::string path; // Where the data file is once the move is done.
+        std::string text; // What it becomes.
+        std::string original;
+    };
+    std::vector<Rewrite> rewrites;
+    for (const AssetEntry &entry : scanAssets(project_)) {
+        if (!isDataFile(entry.kind))
+            continue;
+        const auto resolved = project_.resolve(entry.path);
+        auto text = resolved ? readTextFile(resolved.value()) : Result<std::string>(Error{"path"});
+        if (!text)
+            continue;
+        auto json = Json::parse(text.value());
+        if (!json)
+            continue;
+        const std::size_t changed = rewriteReferences(json.value(), from, to, folder);
+        if (changed == 0)
+            continue;
+        result.references += changed;
+        rewrites.push_back({remapped(entry.path, from, to, folder).value_or(entry.path),
+                            json.value().dump(2) + "\n", std::move(text.value())});
+    }
+
+    // Then move. A name that differs only by case is the same file on some systems: go through a
+    // temporary name there.
+    std::filesystem::create_directories(toAbsolute.parent_path(), error);
+    if (error)
+        return Error{"Cannot create the folder for '" + to + "': " + error.message()};
+    const auto rename = [](const std::filesystem::path &a, const std::filesystem::path &b) {
+        std::error_code failure;
+        std::filesystem::rename(a, b, failure);
+        return failure;
+    };
+    const bool sameFile = std::filesystem::exists(toAbsolute, error) &&
+                          std::filesystem::equivalent(fromAbsolute, toAbsolute, error);
+    const auto moveFile = [&](const std::filesystem::path &a, const std::filesystem::path &b,
+                              bool caseOnly) {
+        if (!caseOnly)
+            return rename(a, b);
+        std::filesystem::path temporary = a;
+        temporary += ".yk-moving";
+        if (const auto failure = rename(a, temporary))
+            return failure;
+        return rename(temporary, b);
+    };
+    if (const auto failure = moveFile(fromAbsolute, toAbsolute, sameFile))
+        return Error{"Cannot move '" + from + "': " + failure.message()};
+    if (!sidecarFrom.empty())
+        if (const auto failure = moveFile(sidecarFrom, sidecarTo, sameFile)) {
+            rename(toAbsolute, fromAbsolute);
+            return Error{"Cannot move the import settings of '" + from + "': " + failure.message()};
+        }
+    std::vector<const Rewrite *> written;
+    const std::string previousStart = project_.startScene;
+    const auto undo = [&] {
+        for (const Rewrite *rewrite : written)
+            if (const auto path = project_.resolve(rewrite->path))
+                (void)writeTextFileAtomic(path.value(), rewrite->original);
+        project_.startScene = previousStart;
+        if (!sidecarFrom.empty())
+            rename(sidecarTo, sidecarFrom);
+        rename(toAbsolute, fromAbsolute);
+    };
+
+    // Finally rewrite the references, each file replaced whole.
+    for (const Rewrite &rewrite : rewrites) {
+        const auto path = project_.resolve(rewrite.path).value();
+        if (auto status = writeTextFileAtomic(path, rewrite.text); !status) {
+            undo();
+            return Error{"Cannot update '" + rewrite.path + "': " + status.error() +
+                         ". Nothing was moved."};
+        }
+        written.push_back(&rewrite);
+        result.rewritten.push_back(rewrite.path);
+    }
+    if (const auto start = remapped(previousStart, from, to, folder)) {
+        project_.startScene = *start;
+        if (auto saved = project_.save(); !saved) {
+            undo();
+            return Error{"Cannot update the start scene: " + saved.error() +
+                         ". Nothing was moved."};
+        }
+        ++result.references;
+        result.rewritten.push_back(Project::fileName);
+    }
+    refresh();
+    return result;
+}
+
+std::size_t EditorProject::filesUnder(const std::string &pathInput) const {
+    const auto path = cleanAssetPath(pathInput);
+    const auto absolute =
+        path ? project_.resolve(path.value()) : Result<std::filesystem::path>(Error{""});
+    std::error_code error;
+    if (!absolute || !std::filesystem::exists(absolute.value(), error))
+        return 0;
+    if (!std::filesystem::is_directory(absolute.value(), error))
+        return 1;
+    std::size_t count = 0;
+    for (std::filesystem::recursive_directory_iterator it(absolute.value(), error), end;
+         !error && it != end; it.increment(error))
+        count += it->is_regular_file(error) ? 1 : 0;
+    return count;
+}
+
+Status EditorProject::deleteAsset(const std::string &pathInput) {
+    const auto cleaned = cleanAssetPath(pathInput);
+    if (!cleaned)
+        return Error{cleaned.error()};
+    const std::string &path = cleaned.value();
+    if (path == Project::fileName)
+        return Error{std::string(Project::fileName) +
+                     " is the project itself and cannot be deleted"};
+    const auto absolute = project_.resolve(path);
+    if (!absolute)
+        return Error{absolute.error()};
+    std::error_code error;
+    if (!std::filesystem::exists(absolute.value(), error))
+        return Error{"'" + path + "' does not exist"};
+    if (std::filesystem::is_directory(absolute.value(), error)) {
+        std::filesystem::remove_all(absolute.value(), error);
+    } else {
+        std::filesystem::remove(absolute.value(), error);
+        if (!error && classifyAsset(path) == AssetKind::Texture)
+            if (const auto sidecar = project_.resolve(TextureMeta::sidecarPath(path)))
+                std::filesystem::remove(sidecar.value(), error);
+    }
+    if (error)
+        return Error{"Cannot delete '" + path + "': " + error.message()};
+    refresh();
+    return success();
 }
 
 Result<ExportReport> EditorProject::exportGame(const ExportOptions &options) const {

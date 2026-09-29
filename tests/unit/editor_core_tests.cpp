@@ -1447,6 +1447,195 @@ void prefabWorkflow() {
     CHECK(none && none.value() == 0);
 }
 
+std::string readAll(const std::filesystem::path &file) {
+    auto text = readTextFile(file);
+    return text ? text.value() : std::string("<unreadable>");
+}
+
+std::string replaceAll(std::string text, const std::string &from, const std::string &to) {
+    for (std::size_t at = text.find(from); at != std::string::npos;
+         at = text.find(from, at + to.size()))
+        text.replace(at, from.size(), to);
+    return text;
+}
+
+// A file goes by its path in the data of a project (scenes, prefabs, animations, the start scene):
+// moving it must not leave any of those behind, and a move that cannot be completed must leave
+// everything as it was.
+void assetOperations() {
+    ComponentRegistry registry;
+    registerStandardComponents(registry);
+    TempDir dir("yk-editor-asset-ops-test");
+    auto created = EditorProject::create(dir.path / "A", "A", registry);
+    CHECK(created);
+    if (!created)
+        return;
+    EditorProject &project = *created.value();
+    const auto root = project.project().root;
+    const auto put = [&](const std::string &relative, const std::string &text) {
+        CHECK(writeTextFileAtomic(root / relative, text));
+    };
+    const std::string picture = "assets/tiles/a.png";
+    put(picture, "not really a png");
+    put(picture + ".ykmeta", "{\"format\":\"yk.texture\",\"version\":1,\"pixelsPerUnit\":32}\n");
+    put("assets/anim/walk.ykanim",
+        R"({"format":"yk.animations","version":2,"texture":"assets/tiles/a.png"})");
+
+    // A scene with a sprite that uses the picture and an instance of a prefab made from it.
+    auto opened = project.newScene("scenes/level");
+    CHECK(opened);
+    if (!opened)
+        return;
+    EditorDocument &doc = *opened.value();
+    const auto tile = doc.createFromTemplate(templateNamed(registry, "Platform"), {0, 0});
+    CHECK(tile);
+    if (!tile)
+        return;
+    doc.change("texture", [&](Scene &scene) {
+        scene.find(tile.value())->get<SpriteRenderer>()->texture.path = picture;
+    });
+    CHECK(project.savePrefab(doc, tile.value(), "prefabs/tile"));
+    const auto prefab = project.loadPrefab("prefabs/tile.ykprefab");
+    CHECK(prefab);
+    if (!prefab)
+        return;
+    const auto instance =
+        doc.instantiatePrefab(prefab.value(), {5, 0}, {}, "prefabs/tile.ykprefab");
+    CHECK(instance);
+    CHECK(project.saveScene(doc));
+    project.refresh();
+
+    // Who names what.
+    const auto usage = project.usageOf(picture);
+    CHECK(usage.references == 4); // Two sprites in the scene, the prefab, the animation.
+    CHECK(usage.files ==
+          (std::vector<std::string>{"assets/anim/walk.ykanim", "prefabs/tile.ykprefab",
+                                    "scenes/level.ykscene"}));
+    CHECK(project.usageOf("prefabs/tile.ykprefab").references == 1); // The instance's link.
+    CHECK(project.usageOf("assets").references == 4);                // Anything inside a folder.
+    CHECK(project.usageOf("assets/tiles").references == 4);
+    CHECK(project.usageOf("assets/tile").references == 0);         // Not a prefix of a name.
+    CHECK(project.usageOf("scenes/main.ykscene").references == 1); // The start scene.
+    CHECK(project.usageOf("scenes/main.ykscene").files ==
+          std::vector<std::string>{"project.ykproj"});
+
+    // Renaming into another folder: the picture, its import settings and every reference follow.
+    const std::string sceneBefore = readAll(root / "scenes/level.ykscene");
+    const std::string prefabBefore = readAll(root / "prefabs/tile.ykprefab");
+    CHECK(project.checkMove(picture, "assets/props/b.png"));
+    const auto moved = project.moveAsset(picture, "assets/props/b.png");
+    CHECK(moved);
+    if (!moved)
+        return;
+    CHECK(moved.value().references == 4 && moved.value().rewritten.size() == 3);
+    CHECK(!std::filesystem::exists(root / picture) &&
+          !std::filesystem::exists(root / (picture + ".ykmeta")));
+    CHECK(std::filesystem::exists(root / "assets/props/b.png") &&
+          std::filesystem::exists(root / "assets/props/b.png.ykmeta"));
+    CHECK(project.usageOf(picture).references == 0);
+    CHECK(project.usageOf("assets/props/b.png").references == 4);
+    // Only the path changed in files the editor wrote: the diff is that name and nothing else.
+    CHECK(readAll(root / "scenes/level.ykscene") ==
+          replaceAll(sceneBefore, picture, "assets/props/b.png"));
+    CHECK(readAll(root / "prefabs/tile.ykprefab") ==
+          replaceAll(prefabBefore, picture, "assets/props/b.png"));
+    CHECK(readAll(root / "assets/anim/walk.ykanim").find("assets/props/b.png") !=
+          std::string::npos);
+    auto reopened = project.openScene("scenes/level.ykscene");
+    CHECK(reopened);
+    if (reopened)
+        CHECK(reopened.value()->scene().find(tile.value())->get<SpriteRenderer>()->texture.path ==
+              "assets/props/b.png");
+    CHECK(project.files().size() > 0);
+
+    // A folder moves with everything in it; references are rewritten by prefix.
+    const auto folderMove = project.moveAsset("assets/props", "assets/things/deep");
+    CHECK(folderMove && folderMove.value().references == 4);
+    CHECK(std::filesystem::exists(root / "assets/things/deep/b.png.ykmeta"));
+    CHECK(project.usageOf("assets/things/deep/b.png").references == 4);
+    // Names that differ only by case are allowed.
+    CHECK(project.moveAsset("assets/things/deep/b.png", "assets/things/deep/B.png"));
+    CHECK(std::filesystem::exists(root / "assets/things/deep/B.png"));
+    CHECK(project.usageOf("assets/things/deep/B.png").references == 4);
+
+    // A prefab: the instance's link follows. A scene: the start scene follows.
+    CHECK(project.moveAsset("prefabs/tile.ykprefab", "prefabs/props/tile.ykprefab"));
+    reopened = project.openScene("scenes/level.ykscene");
+    CHECK(reopened && reopened.value()->scene().find(instance.value())->prefabSource() ==
+                          "prefabs/props/tile.ykprefab");
+    const auto sceneMove = project.moveAsset("scenes/main.ykscene", "scenes/start/first.ykscene");
+    CHECK(sceneMove && sceneMove.value().rewritten == std::vector<std::string>{"project.ykproj"});
+    CHECK(project.project().startScene == "scenes/start/first.ykscene");
+    const auto onDisk = Project::load(root);
+    CHECK(onDisk && onDisk.value().startScene == "scenes/start/first.ykscene");
+
+    // What cannot be moved says why, and nothing changes.
+    const auto refused = [&](const std::string &from, const std::string &to, const char *why) {
+        const auto checked = project.checkMove(from, to);
+        if (checked || checked.error().find(why) == std::string::npos)
+            std::fprintf(stderr, "'%s' -> '%s' should be refused with '%s', got '%s'\n",
+                         from.c_str(), to.c_str(), why,
+                         checked ? "no error" : checked.error().c_str());
+        CHECK(!checked && checked.error().find(why) != std::string::npos);
+        CHECK(!project.moveAsset(from, to));
+    };
+    refused("scenes/level.ykscene", "scenes/start/first.ykscene", "already exists");
+    refused("scenes/level.ykscene", "scenes/level.ykscene", "where it already is");
+    refused("scenes/level.ykscene", "../level.ykscene", "inside the project");
+    refused("scenes/level.ykscene", "/level.ykscene", "leading slash");
+    refused("scenes/level.ykscene", "scenes/.hidden.ykscene", "start with a dot");
+    refused("scenes/level.ykscene", "scenes/a:b.ykscene", "cannot contain");
+    refused("scenes/level.ykscene", "scenes/level.ykscene.", "end with");
+    refused("scenes/level.ykscene", "  ", "Enter a path");
+    refused("scenes/nothing.ykscene", "scenes/other.ykscene", "does not exist");
+    refused("project.ykproj", "project2.ykproj", "the project itself");
+    refused("scenes/level.ykscene", "project.ykproj", "the project itself");
+    refused("assets", "assets/inner", "into itself");
+    refused("assets/things/deep/B.png.ykmeta", "assets/x.ykmeta", "belong to their picture");
+    refused("scenes/level.ykscene", "assets/things/deep/B.png/x.ykscene", "is a file");
+    put("assets/x.png.ykmeta", "{}");
+    refused("assets/things/deep/B.png", "assets/x.png",
+            "already exists"); // Its settings would clash.
+    CHECK(std::filesystem::exists(root / "assets/things/deep/B.png"));
+
+    // All or nothing: when a file cannot be rewritten (a directory sits where its temporary file
+    // would go), the earlier rewrites are undone and the picture stays where it was.
+    put("scenes/zz.ykscene",
+        replaceAll(readAll(root / "scenes/level.ykscene"), "prefabs/props/tile.ykprefab",
+                   "prefabs/props/tile.ykprefab"));
+    std::filesystem::create_directories(root / "scenes/zz.ykscene.tmp");
+    project.refresh();
+    const std::string levelBefore = readAll(root / "scenes/level.ykscene");
+    const std::string walkBefore = readAll(root / "assets/anim/walk.ykanim");
+    const auto failed = project.moveAsset("assets/things/deep/B.png", "assets/back.png");
+    CHECK(!failed && failed.error().find("Nothing was moved") != std::string::npos);
+    CHECK(std::filesystem::exists(root / "assets/things/deep/B.png") &&
+          std::filesystem::exists(root / "assets/things/deep/B.png.ykmeta") &&
+          !std::filesystem::exists(root / "assets/back.png"));
+    CHECK(readAll(root / "scenes/level.ykscene") == levelBefore &&
+          readAll(root / "assets/anim/walk.ykanim") == walkBefore);
+    std::filesystem::remove_all(root / "scenes/zz.ykscene.tmp");
+    std::filesystem::remove(root / "scenes/zz.ykscene");
+
+    // Deleting: a picture takes its import settings along, a folder everything inside.
+    CHECK(project.filesUnder("assets/things") == 2 &&
+          project.filesUnder("assets/things/deep/B.png") == 1 &&
+          project.filesUnder("assets/none") == 0);
+    CHECK(!project.deleteAsset("project.ykproj") && !project.deleteAsset("assets/none") &&
+          !project.deleteAsset("../outside"));
+    CHECK(project.deleteAsset("assets/things/deep/B.png"));
+    CHECK(!std::filesystem::exists(root / "assets/things/deep/B.png") &&
+          !std::filesystem::exists(root / "assets/things/deep/B.png.ykmeta"));
+    CHECK(project.deleteAsset("assets/things"));
+    CHECK(!std::filesystem::exists(root / "assets/things"));
+    // The references it leaves are still reported, by validation.
+    CHECK(project.usageOf("assets/things/deep/B.png").references == 4);
+    bool missing = false;
+    for (const ProjectIssue &issue : project.validate())
+        missing = missing || issue.message.find("B.png") != std::string::npos;
+    CHECK(missing);
+}
+
 int main() {
     workbenchLayout();
     undoAndRedo();
@@ -1470,6 +1659,7 @@ int main() {
     projectFiles();
     sampleProject();
     prefabWorkflow();
+    assetOperations();
     playing();
     console();
     return yk::test::finish("editor_core");

@@ -234,23 +234,62 @@ Status EditorState::activateScene(const std::string &path) {
     return success();
 }
 
-void EditorState::closeScene(const std::string &path) {
-    const auto removeNow = [this, path] {
-        const auto tab = std::find(sceneTabs.begin(), sceneTabs.end(), path);
-        const std::size_t index =
-            tab == sceneTabs.end() ? 0 : static_cast<std::size_t>(tab - sceneTabs.begin());
-        if (tab != sceneTabs.end())
-            sceneTabs.erase(tab);
-        if (document && document->path() == path) {
-            stopPlay();
-            interaction.bind(nullptr);
-            document.reset();
-            if (!sceneTabs.empty())
-                activateScene(sceneTabs[std::min(index, sceneTabs.size() - 1)]);
-        } else {
-            background.erase(path);
+void EditorState::dropScene(const std::string &path) {
+    const auto tab = std::find(sceneTabs.begin(), sceneTabs.end(), path);
+    const std::size_t index =
+        tab == sceneTabs.end() ? 0 : static_cast<std::size_t>(tab - sceneTabs.begin());
+    if (tab != sceneTabs.end())
+        sceneTabs.erase(tab);
+    if (document && document->path() == path) {
+        stopPlay();
+        interaction.bind(nullptr);
+        document.reset();
+        if (!sceneTabs.empty())
+            activateScene(sceneTabs[std::min(index, sceneTabs.size() - 1)]);
+    } else {
+        background.erase(path);
+    }
+}
+
+void EditorState::reloadScenes(const std::function<std::string(const std::string &)> &remap) {
+    const std::vector<std::string> tabs = sceneTabs;
+    const std::string active = document ? document->path() : std::string();
+    // Every tab keeps the view it had.
+    std::map<std::string, ViewCamera> views;
+    for (const auto &entry : background)
+        views[entry.first] = entry.second.camera;
+    if (document)
+        views[active] = interaction.camera;
+    stopPlay();
+    interaction.bind(nullptr);
+    document.reset();
+    background.clear();
+    sceneTabs.clear();
+    for (const std::string &tab : tabs) {
+        const std::string path = remap(tab);
+        if (path.empty())
+            continue;
+        if (!openScene(path))
+            continue;
+        if (const auto saved = views.find(tab); saved != views.end()) {
+            if (document && document->path() == path) {
+                interaction.camera = saved->second;
+                frameRequested = false;
+            }
         }
-    };
+    }
+    // The scenes that went to the background while the others opened get their views back too.
+    for (auto &entry : background)
+        for (const std::string &tab : tabs)
+            if (remap(tab) == entry.first)
+                if (const auto saved = views.find(tab); saved != views.end())
+                    entry.second.camera = saved->second;
+    if (const std::string wanted = active.empty() ? std::string() : remap(active); !wanted.empty())
+        activateScene(wanted);
+}
+
+void EditorState::closeScene(const std::string &path) {
+    const auto removeNow = [this, path] { dropScene(path); };
     const EditorDocument *target = nullptr;
     if (document && document->path() == path)
         target = document.get();
@@ -755,8 +794,138 @@ void EditorState::unpackPrefab(EntityId entity) {
     }
 }
 
+namespace {
+bool isFolder(const EditorProject &project, const std::string &path) {
+    std::error_code error;
+    return std::filesystem::is_directory(project.project().root / std::filesystem::path(path),
+                                         error);
+}
+
+// "a, b and 3 more" for the dialogs that list files.
+std::string fileList(const std::vector<std::string> &files) {
+    constexpr std::size_t shown = 6;
+    std::string text;
+    for (std::size_t i = 0; i < files.size() && i < shown; ++i)
+        text += "\n   " + files[i];
+    if (files.size() > shown)
+        text += "\n   ... and " + std::to_string(files.size() - shown) + " more";
+    return text;
+}
+} // namespace
+
+void EditorState::askToMoveAsset(const std::string &path) {
+    if (!project || playing())
+        return;
+    guarded([this, path] {
+        const auto usage = project->usageOf(path);
+        dialog = {};
+        dialog.kind = DialogKind::MoveAsset;
+        dialog.title = "Rename or Move";
+        dialog.assetPath = path;
+        dialog.text = path;
+        dialog.message = usage.references == 0
+                             ? "Nothing in the project refers to it."
+                             : std::to_string(usage.references) + " reference(s) in " +
+                                   std::to_string(usage.files.size()) +
+                                   " file(s) will be updated, and the open scenes reloaded:" +
+                                   fileList(usage.files);
+        dialog.needsOpen = true;
+    });
+}
+
+void EditorState::askToDeleteAsset(const std::string &path) {
+    if (!project || playing())
+        return;
+    guarded([this, path] {
+        const auto usage = project->usageOf(path);
+        const std::size_t count = project->filesUnder(path);
+        std::string text;
+        if (isFolder(*project, path))
+            text = "Delete the folder '" + path + "' and the " + std::to_string(count) +
+                   " file(s) in it?";
+        else
+            text = "Delete '" + path + "'?";
+        text += "\nThis cannot be undone.";
+        if (usage.references > 0)
+            text += "\n\n" + std::to_string(usage.references) + " reference(s) in " +
+                    std::to_string(usage.files.size()) +
+                    " file(s) name it and will be reported as problems:" + fileList(usage.files);
+        dialog = {};
+        dialog.kind = DialogKind::Confirm;
+        dialog.title = "Delete";
+        dialog.message = text;
+        dialog.confirmLabel = "Delete";
+        dialog.continuation = [this, path] { (void)deleteAsset(path); };
+        dialog.needsOpen = true;
+    });
+}
+
+Status EditorState::moveAsset(const std::string &from, const std::string &to) {
+    if (!project)
+        return Error{"No project is open"};
+    stopPlay();
+    const bool folder = isFolder(*project, from);
+    auto moved = project->moveAsset(from, to);
+    if (!moved) {
+        log(LogLevel::Error, "editor", moved.error());
+        return Error{moved.error()};
+    }
+    const EditorProject::MoveResult &result = moved.value();
+    // Open scenes hold the old paths in memory: load them again from the rewritten files.
+    reloadScenes([&](const std::string &path) {
+        if (path == result.from)
+            return result.to;
+        if (folder && path.starts_with(result.from + "/"))
+            return result.to + path.substr(result.from.size());
+        return path;
+    });
+    selectedAsset.clear();
+    assetSelectionMark.clear();
+    if (folder) {
+        explorerFolder = result.to;
+        explorerTarget = result.to;
+        explorerReveal = result.to;
+    } else {
+        showAssetInExplorer(result.to);
+    }
+    std::string text = "Moved '" + result.from + "' to '" + result.to + "'";
+    if (result.references > 0)
+        text += "; " + std::to_string(result.references) + " reference(s) in " +
+                std::to_string(result.rewritten.size()) + " file(s) updated";
+    log(LogLevel::Info, "editor", text);
+    refreshProblems();
+    return success();
+}
+
+Status EditorState::deleteAsset(const std::string &path) {
+    if (!project)
+        return Error{"No project is open"};
+    stopPlay();
+    if (auto deleted = project->deleteAsset(path); !deleted) {
+        log(LogLevel::Error, "editor", deleted.error());
+        message("Cannot delete", deleted.error());
+        return deleted;
+    }
+    const auto inside = [&](const std::string &other) {
+        return other == path || other.starts_with(path + "/");
+    };
+    for (const std::string &tab : std::vector<std::string>(sceneTabs))
+        if (inside(tab))
+            dropScene(tab);
+    if (inside(selectedAsset))
+        selectedAsset.clear();
+    if (inside(explorerTarget))
+        explorerTarget.clear();
+    if (inside(explorerFolder))
+        explorerFolder = std::filesystem::path(path).parent_path().generic_string();
+    log(LogLevel::Info, "editor", "Deleted '" + path + "'");
+    refreshProblems();
+    return success();
+}
+
 void EditorState::showAssetInExplorer(const std::string &path) {
     selectedAsset = path;
+    explorerTarget = path;
     explorerReveal = path;
     explorerFolder = std::filesystem::path(path).parent_path().generic_string();
     assetSelectionMark.clear();

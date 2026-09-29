@@ -270,7 +270,7 @@ void handleShortcuts(EditorState &state) {
         doc.duplicateSelection();
     if (pressed(ImGuiMod_Ctrl | ImGuiKey_A))
         doc.selectAll();
-    if (pressed(ImGuiKey_Delete))
+    if (pressed(ImGuiKey_Delete) && !state.explorerFocused) // In the Explorer it deletes a file.
         doc.deleteSelection();
     if (pressed(ImGuiKey_Escape)) {
         if (state.pick)
