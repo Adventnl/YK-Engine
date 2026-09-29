@@ -21,10 +21,11 @@ struct SdlLifetime {
             SDL_Quit();
     }
 };
-constexpr std::array<SDL_Scancode, static_cast<std::size_t>(Key::Count)> scancodes = {
-    SDL_SCANCODE_A,      SDL_SCANCODE_D,     SDL_SCANCODE_W,  SDL_SCANCODE_S,
-    SDL_SCANCODE_LEFT,   SDL_SCANCODE_RIGHT, SDL_SCANCODE_UP, SDL_SCANCODE_DOWN,
-    SDL_SCANCODE_ESCAPE, SDL_SCANCODE_SPACE, SDL_SCANCODE_Q,  SDL_SCANCODE_E};
+constexpr std::array<SDL_Scancode, keyCount> scancodes = {
+#define YK_KEY_SCANCODE(name, display, sdl) SDL_SCANCODE_##sdl,
+    YK_KEY_LIST(YK_KEY_SCANCODE)
+#undef YK_KEY_SCANCODE
+};
 std::optional<Key> mapKey(SDL_Scancode scancode) {
     for (std::size_t i = 0; i < scancodes.size(); ++i)
         if (scancodes[i] == scancode)

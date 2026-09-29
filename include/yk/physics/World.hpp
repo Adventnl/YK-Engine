@@ -33,6 +33,10 @@ class World {
     Status setAwake(BodyHandle body, bool awake);
     Status setFilter(ShapeHandle shape, CollisionFilter filter);
     Status setGravity(Vec2 gravity);
+    Status setGravityScale(BodyHandle body, float scale);
+    // Live material edits; friction/restitution combine with the touching shape as at creation.
+    Status setFriction(ShapeHandle shape, float friction);
+    Status setRestitution(ShapeHandle shape, float restitution);
     Status applyForce(BodyHandle body, Vec2 force, std::optional<Vec2> worldPoint = {});
     Status applyImpulse(BodyHandle body, Vec2 impulse, std::optional<Vec2> worldPoint = {});
     Status applyTorque(BodyHandle body, float torque);

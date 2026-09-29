@@ -1,0 +1,522 @@
+#include "support/check.hpp"
+#include "yk/core/FileIO.hpp"
+#include "yk/core/Log.hpp"
+#include "yk/scene/SceneSerializer.hpp"
+#include <filesystem>
+#include <limits>
+#include <stdexcept>
+
+using namespace yk;
+
+namespace {
+enum class Mode { Alpha, Beta, Gamma };
+
+struct Widget final : Component {
+    bool flag{true};
+    int count{3};
+    float speed{1.5F};
+    std::string label{"widget"};
+    Vec2 size{2, 1};
+    Color tint{1, 2, 3, 4};
+    Mode mode{Mode::Beta};
+    EntityRef target;
+    std::vector<EntityRef> targets;
+    std::vector<std::string> names{"a"};
+    AssetRef sound;
+    int runtimeOnly{7};
+    static void describe(TypeBuilder<Widget> &t) {
+        t.category("Test").description("Every field kind");
+        t.field("flag", &Widget::flag);
+        t.field("count", &Widget::count).range(0, 10);
+        t.field("speed", &Widget::speed).range(0, 5, 0.1).tooltip("units per second");
+        t.field("label", &Widget::label);
+        t.field("size", &Widget::size).range(0.1, 100).size();
+        t.field("tint", &Widget::tint);
+        t.field("mode", &Widget::mode).options({"Alpha", "Beta", "Gamma"});
+        t.field("target", &Widget::target);
+        t.field("targets", &Widget::targets);
+        t.field("names", &Widget::names);
+        t.field("sound", &Widget::sound).asset("sound");
+        t.field("runtimeOnly", &Widget::runtimeOnly).readOnly();
+    }
+};
+struct Pingable {
+    virtual ~Pingable() = default;
+    virtual int ping() const = 0;
+};
+struct Follower final : Component, Pingable {
+    float offset{0.25F};
+    int ping() const override {
+        return 42;
+    }
+    static void describe(TypeBuilder<Follower> &t) {
+        t.category("Test").dependsOn("Widget");
+        t.field("offset", &Follower::offset);
+    }
+};
+struct Stackable final : Component {
+    int level{1};
+    static void describe(TypeBuilder<Stackable> &t) {
+        t.allowMultiple();
+        t.field("level", &Stackable::level);
+    }
+};
+
+ComponentRegistry makeRegistry() {
+    ComponentRegistry registry;
+    registry.add<Widget>("Widget");
+    registry.add<Follower>("Follower");
+    registry.add<Stackable>("Stackable");
+    return registry;
+}
+
+void entityIds() {
+    const EntityId id{0x0123456789abcdefULL};
+    CHECK(toString(id) == "0123456789abcdef");
+    CHECK(parseEntityId("0123456789abcdef").value() == id);
+    CHECK(toString(EntityId{}).empty() && !*parseEntityId("") && !EntityId{});
+    CHECK(!parseEntityId("123") && !parseEntityId("0123456789ABCDEF") &&
+          !parseEntityId("zzzzzzzzzzzzzzzz") && !parseEntityId("0000000000000000"));
+    CHECK(toString(EntityId{1}) == "0000000000000001" &&
+          parseEntityId(toString(EntityId{1})).value() == EntityId{1});
+}
+
+void registration() {
+    auto registry = makeRegistry();
+    CHECK(registry.find("Widget") && registry.find<Widget>() == registry.find("Widget"));
+    CHECK(!registry.find("Nope") && registry.types().size() == 3);
+    CHECK(registry.validate());
+    bool threw = false;
+    try {
+        registry.add<Widget>("Widget");
+    } catch (const std::logic_error &) {
+        threw = true;
+    }
+    CHECK(threw); // Duplicate registration is a programming error.
+    struct BadEnum final : Component {
+        Mode mode{};
+        static void describe(TypeBuilder<BadEnum> &t) {
+            t.field("mode", &BadEnum::mode); // Missing options().
+        }
+    };
+    threw = false;
+    try {
+        registry.add<BadEnum>("BadEnum");
+    } catch (const std::logic_error &) {
+        threw = true;
+    }
+    CHECK(threw);
+    ComponentRegistry cyclic;
+    struct A final : Component {
+        static void describe(TypeBuilder<A> &t) {
+            t.dependsOn("B");
+        }
+    };
+    struct B final : Component {
+        static void describe(TypeBuilder<B> &t) {
+            t.dependsOn("A");
+        }
+    };
+    cyclic.add<A>("A");
+    CHECK(!cyclic.validate()); // "B" is not registered yet.
+    cyclic.add<B>("B");
+    CHECK(!cyclic.validate()); // Registered, but the dependencies loop.
+    registry.addTemplate({"Thing", "Test", [](Scene &scene, Vec2 at) {
+                              Entity &entity = scene.createEntity("Thing");
+                              entity.setWorldPosition(at);
+                              return entity.id();
+                          }});
+    CHECK(registry.templates().size() == 1);
+    threw = false;
+    try {
+        registry.addTemplate({"Thing", "Test", nullptr});
+    } catch (const std::logic_error &) {
+        threw = true;
+    }
+    CHECK(threw);
+}
+
+void reflection() {
+    auto registry = makeRegistry();
+    Scene scene(registry, 1);
+    Entity &entity = scene.createEntity("E");
+    auto &widget = entity.add<Widget>();
+    const ComponentType &type = widget.type();
+    const auto property = [&](const char *name) -> const PropertyInfo & {
+        return *type.find(name);
+    };
+    CHECK(type.properties.size() == 12 && type.find("count")->defaultValue.index() == 1);
+    CHECK(std::get<std::int64_t>(property("count").defaultValue) == 3);
+    CHECK(std::get<bool>(property("flag").read(widget)));
+    CHECK(property("count").assign(widget, std::int64_t{7}) && widget.count == 7);
+    CHECK(property("count").assign(widget, std::int64_t{99}) &&
+          widget.count == 10); // Clamped to range.
+    CHECK(property("count").assign(widget, -5.0) &&
+          widget.count == 0); // Doubles accepted, clamped.
+    CHECK(!property("count").assign(widget, std::string("x")) &&
+          widget.count == 0); // Wrong type rejected.
+    CHECK(!property("count").assign(widget, std::numeric_limits<double>::quiet_NaN()));
+    CHECK(property("speed").assign(widget, 9.0) && widget.speed == 5.0F);
+    CHECK(!property("speed").assign(widget, std::numeric_limits<double>::infinity()) &&
+          widget.speed == 5.0F);
+    CHECK(property("size").assign(widget, Vec2{500, -3}) &&
+          widget.size == Vec2(100, 0.1F)); // Per-axis clamp.
+    CHECK(!property("size").assign(widget, Vec2{std::numeric_limits<float>::infinity(), 1}));
+    CHECK(property("mode").assign(widget, std::int64_t{2}) && widget.mode == Mode::Gamma);
+    CHECK(!property("mode").assign(widget, std::int64_t{3}) &&
+          !property("mode").assign(widget, std::int64_t{-1}) && widget.mode == Mode::Gamma);
+    CHECK(property("label").assign(widget, std::string("hi")) && widget.label == "hi");
+    CHECK(property("tint").assign(widget, Color{9, 8, 7, 6}) && widget.tint == Color(9, 8, 7, 6));
+    CHECK(property("target").assign(widget, EntityId{5}) && widget.target == EntityId{5});
+    CHECK(property("targets").assign(widget, std::vector<EntityId>{{1}, {2}}) &&
+          widget.targets.size() == 2);
+    CHECK(property("names").assign(widget, std::vector<std::string>{"x", "y"}) &&
+          widget.names.size() == 2);
+    CHECK(property("sound").assign(widget, AssetRef{"a.wav"}) && widget.sound.path == "a.wav");
+    CHECK(!property("runtimeOnly").assign(widget, std::int64_t{1}) &&
+          widget.runtimeOnly == 7); // Read-only.
+    CHECK(prettifyName("moveSpeed") == "Move Speed" && prettifyName("is_trigger") == "Is Trigger" &&
+          prettifyName("size") == "Size" && prettifyName("aBC") == "A BC");
+}
+
+void hierarchy() {
+    auto registry = makeRegistry();
+    Scene scene(registry, 2);
+    Entity &a = scene.createEntity("A");
+    Entity &b = scene.createEntity("B");
+    Entity &a1 = scene.createEntity("A1", a.id());
+    Entity &a2 = scene.createEntity("A2", a.id());
+    Entity &a1x = scene.createEntity("A1x", a1.id());
+    CHECK(scene.size() == 5 && scene.roots().size() == 2 && scene.roots()[0] == a.id());
+    const auto order = scene.hierarchyOrder();
+    CHECK(order.size() == 5 && order[0] == a.id() && order[1] == a1.id() && order[2] == a1x.id() &&
+          order[3] == a2.id() && order[4] == b.id());
+    CHECK(scene.findByName("A2") == &a2 && !scene.findByName("nope"));
+    CHECK(scene.isAncestor(a.id(), a1x.id()) && !scene.isAncestor(a1x.id(), a.id()) &&
+          !scene.isAncestor(b.id(), a.id()));
+    CHECK(!scene.setParent(a.id(), a1x.id()) &&
+          !scene.setParent(a.id(), a.id())); // Cycles rejected.
+    CHECK(!scene.setParent(EntityId{999}, a.id()) && !scene.setParent(a.id(), EntityId{999}));
+    CHECK(scene.setParent(a2.id(), b.id()) && a2.parentId() == b.id() && a.childIds().size() == 1);
+    CHECK(scene.setParent(a2.id(), a.id(), 0) && a.childIds()[0] == a2.id() &&
+          a.childIds()[1] == a1.id());
+    CHECK(scene.setSiblingIndex(a2.id(), 5) && a.childIds().back() == a2.id());
+    CHECK(scene.setParent(a1.id(), EntityId{}) && a1.parentId() == EntityId{} &&
+          scene.roots().back() == a1.id());
+    const EntityId doomed = a.id();
+    CHECK(scene.destroy(doomed) && !scene.find(doomed) && !scene.find(a2.id()) &&
+          scene.size() == 3 && !scene.destroy(doomed));
+    CHECK(scene.find(a1x.id()) != nullptr &&
+          scene.find(a1x.id())->parentId() == a1.id()); // Unrelated subtree survives.
+    Entity &unknownParent = scene.createEntity("Orphan", EntityId{12345});
+    CHECK(unknownParent.parentId() == EntityId{} && scene.roots().back() == unknownParent.id());
+    CHECK(!scene.createEntityWithId(EntityId{}, "x") && !scene.createEntityWithId(b.id(), "dup"));
+    Entity &fixed = *scene.createEntityWithId(EntityId{77}, "Fixed").value();
+    CHECK(fixed.id() == EntityId{77});
+}
+
+void transforms() {
+    auto registry = makeRegistry();
+    Scene scene(registry, 3);
+    Entity &parent = scene.createEntity("P");
+    parent.transform().position = {10, 5};
+    parent.transform().rotationDegrees = 90;
+    parent.transform().scale = {2, 2};
+    Entity &child = scene.createEntity("C", parent.id());
+    child.transform().position = {1, 0};
+    const Vec2 world = child.worldPosition();
+    CHECK_NEAR(world.x, 10.0, 1e-4);
+    CHECK_NEAR(world.y, 7.0,
+               1e-4); // (1,0) scaled x2, rotated 90deg -> (0,2), plus the parent offset.
+    child.setWorldPosition({10, 9});
+    CHECK_NEAR(child.transform().position.x, 2.0, 1e-4);
+    CHECK_NEAR(child.transform().position.y, 0.0, 1e-4);
+    CHECK_NEAR(child.worldTransform().rotationDegrees, 90.0, 1e-4);
+    CHECK_NEAR(child.worldTransform().scale.x, 2.0, 1e-4);
+    Entity &free = scene.createEntity("Free");
+    free.transform().position = {3, 3};
+    CHECK(
+        scene.setParent(free.id(), parent.id(), std::nullopt, true)); // Keeps its world placement.
+    CHECK_NEAR(free.worldPosition().x, 3.0, 1e-3);
+    CHECK_NEAR(free.worldPosition().y, 3.0, 1e-3);
+    CHECK(scene.setParent(free.id(), EntityId{}, std::nullopt, false));
+    CHECK_NEAR(free.worldPosition().x, free.transform().position.x,
+               1e-6); // Detached: local == world.
+    parent.setActive(false);
+    CHECK(!child.activeInHierarchy() && child.active() && free.activeInHierarchy());
+    child.addTag("x");
+    child.addTag("x");
+    child.addTag("");
+    CHECK(child.tags().size() == 1 && child.hasTag("x") && !child.hasTag("y"));
+    child.removeTag("x");
+    CHECK(child.tags().empty());
+}
+
+void components() {
+    auto registry = makeRegistry();
+    Scene scene(registry, 4);
+    Entity &entity = scene.createEntity("E");
+    setLogStderrEnabled(false); // The unknown type is reported through the log by design.
+    CHECK(!entity.addComponent("Missing"));
+    setLogStderrEnabled(true);
+    auto &follower = entity.add<Follower>(); // Adds its Widget dependency first.
+    CHECK(entity.components().size() == 2 && entity.components()[0]->type().name == "Widget");
+    CHECK(entity.has<Widget>() && entity.has<Follower>() && !entity.has<Stackable>());
+    CHECK(entity.get<Pingable>() == &follower &&
+          entity.get<Pingable>()->ping() == 42); // Interface lookup.
+    CHECK(&entity.add<Widget>() == entity.get<Widget>() &&
+          entity.components().size() == 2); // No duplicates.
+    entity.add<Stackable>().level = 1;
+    entity.add<Stackable>().level = 2;
+    CHECK(entity.getAll<Stackable>().size() == 2 && entity.components().size() == 4);
+    CHECK(entity.removalBlocker(*entity.get<Widget>()) == "Follower");
+    CHECK(!entity.removeComponent(entity.get<Widget>()));
+    CHECK(entity.removeComponent(&follower) && entity.removeComponent(entity.get<Widget>()));
+    CHECK(entity.components().size() == 2 && !entity.removeComponent(&follower));
+    ComponentRegistry empty;
+    Scene bare(empty, 5);
+    bool threw = false;
+    try {
+        bare.createEntity("x").add<Widget>();
+    } catch (const std::logic_error &) {
+        threw = true;
+    }
+    CHECK(threw);
+    const auto before = scene.revision();
+    entity.add<Widget>();
+    CHECK(scene.revision() > before);
+}
+
+std::unique_ptr<Scene> buildSample(const ComponentRegistry &registry) {
+    auto scene = std::make_unique<Scene>(registry, 100);
+    scene->settings.name = "Sample";
+    scene->settings.gravity = {0, 20.5F};
+    scene->settings.background = {10, 20, 30, 255};
+    Entity &root = scene->createEntity("Root");
+    root.transform().position = {1.5F, -2.25F};
+    root.transform().rotationDegrees = 33.5F;
+    root.transform().scale = {2, 0.5F};
+    root.addTag("solid");
+    root.addTag("blue");
+    Entity &kid = scene->createEntity("Kid", root.id());
+    auto &widget = kid.add<Widget>();
+    widget.flag = false;
+    widget.count = 9;
+    widget.speed = 0.1F;
+    widget.label = "quote\"and\nnewline\xC3\xA9";
+    widget.size = {3.5F, 0.25F};
+    widget.tint = {200, 100, 50, 25};
+    widget.mode = Mode::Gamma;
+    widget.target = root.id();
+    widget.targets = {root.id(), kid.id()};
+    widget.names = {"one", "two"};
+    widget.sound = {"assets/door.wav"};
+    kid.add<Follower>().offset = -1.75F;
+    kid.add<Stackable>().level = 5;
+    kid.add<Stackable>().level = 6;
+    kid.get<Stackable>()->enabled = false;
+    kid.setActive(false);
+    scene->createEntity("Sibling", root.id());
+    scene->createEntity("Other");
+    return scene;
+}
+
+void serialization() {
+    auto registry = makeRegistry();
+    auto scene = buildSample(registry);
+    const Json document = sceneToJson(*scene);
+    auto loaded = sceneFromJson(document, registry);
+    CHECK(loaded);
+    if (!loaded)
+        return;
+    Scene &copy = *loaded.value();
+    CHECK(copy.size() == scene->size() && copy.settings.name == "Sample" &&
+          copy.settings.gravity == Vec2(0, 20.5F) &&
+          copy.settings.background == Color(10, 20, 30, 255));
+    CHECK(sceneToJson(copy) == document); // Lossless, including ids and order.
+    CHECK(sceneToJson(copy).dump(2) == document.dump(2));
+    Entity *kid = copy.findByName("Kid");
+    CHECK(kid && !kid->active() && kid->parent() && kid->parent()->name() == "Root");
+    CHECK(kid && kid->get<Widget>()->label == "quote\"and\nnewline\xC3\xA9" &&
+          kid->get<Widget>()->mode == Mode::Gamma);
+    CHECK(kid && kid->get<Widget>()->speed == 0.1F &&
+          kid->get<Widget>()->size == Vec2(3.5F, 0.25F));
+    CHECK(kid && kid->get<Widget>()->target == kid->parentId() &&
+          kid->get<Widget>()->targets.size() == 2);
+    CHECK(kid && kid->getAll<Stackable>().size() == 2 && !kid->getAll<Stackable>()[0]->enabled &&
+          kid->getAll<Stackable>()[1]->enabled && kid->getAll<Stackable>()[1]->level == 6);
+    CHECK(kid && kid->get<Widget>()->runtimeOnly == 7);
+    Entity *root = copy.findByName("Root");
+    CHECK(root && root->hasTag("solid") && root->hasTag("blue") && root->childIds().size() == 2);
+    CHECK(root && root->transform().rotationDegrees == 33.5F &&
+          root->transform().scale == Vec2(2, 0.5F));
+    CHECK(document.dump().find("runtimeOnly") ==
+          std::string::npos); // Read-only state is not saved.
+    CHECK(document.dump(2).find("\"position\": [1.5, -2.25]") != std::string::npos);
+
+    const auto file =
+        std::filesystem::temp_directory_path() / "yk-scene-test" / "nested" / "a.ykscene";
+    std::filesystem::remove_all(file.parent_path().parent_path());
+    CHECK(saveScene(*scene, file));
+    auto fromFile = loadScene(file, registry);
+    CHECK(fromFile && sceneToJson(*fromFile.value()) == document);
+    CHECK(!loadScene(file.parent_path() / "missing.ykscene", registry));
+    std::filesystem::remove_all(file.parent_path().parent_path());
+}
+
+std::string loadError(const std::string &text, const ComponentRegistry &registry) {
+    auto document = Json::parse(text);
+    if (!document)
+        return "unparseable: " + document.error();
+    auto scene = sceneFromJson(document.value(), registry);
+    return scene ? std::string() : scene.error();
+}
+
+Result<std::unique_ptr<Scene>> loadText(const std::string &text,
+                                        const ComponentRegistry &registry) {
+    auto document = Json::parse(text);
+    if (!document)
+        return Error{document.error()};
+    return sceneFromJson(document.value(), registry);
+}
+
+void malformedScenes() {
+    auto registry = makeRegistry();
+    const auto scene = [](const std::string &entities) {
+        return R"({"format":"yk.scene","version":1,"entities":)" + entities + "}";
+    };
+    CHECK(loadError(scene("[]"), registry).empty());
+    CHECK(loadError(R"({"format":"other","version":1,"entities":[]})", registry)
+              .find("Not a yk.scene") != std::string::npos);
+    CHECK(
+        loadError(R"({"format":"yk.scene","version":99,"entities":[]})", registry).find("newer") !=
+        std::string::npos);
+    CHECK(!loadError(R"({"format":"yk.scene","entities":[]})", registry).empty()); // No version.
+    CHECK(!loadError("[]", registry).empty());
+    CHECK(!loadError(scene(R"({"a":1})"), registry).empty()); // 'entities' not an array.
+    CHECK(!loadError(scene(R"([{"name":"no id"}])"), registry).empty());
+    CHECK(!loadError(scene(R"([{"id":"0000000000000001"},{"id":"0000000000000001"}])"), registry)
+               .empty());
+    CHECK(!loadError(scene(R"([{"id":"0000000000000001","parent":"0000000000000009"}])"), registry)
+               .empty());
+    CHECK(loadError(scene(R"([{"id":"0000000000000001","parent":"0000000000000002"},)"
+                          R"({"id":"0000000000000002","parent":"0000000000000001"}])"),
+                    registry)
+              .find("descendant") != std::string::npos); // Parent cycle.
+    const std::string base = R"([{"id":"0000000000000001","name":"E","components":[)";
+    const std::string bad = loadError(scene(base + R"({"type":"Nope"}]}])"), registry);
+    CHECK(bad.find("unknown component type 'Nope'") != std::string::npos &&
+          bad.find("'E'") != std::string::npos);
+    const std::string wrongType =
+        loadError(scene(base + R"({"type":"Widget","properties":{"count":"x"}}]}])"), registry);
+    CHECK(wrongType.find("count") != std::string::npos &&
+          wrongType.find("Widget") != std::string::npos);
+    CHECK(
+        !loadError(scene(base + R"({"type":"Widget","properties":{"mode":"Delta"}}]}])"), registry)
+             .empty());
+    CHECK(!loadError(scene(base + R"({"type":"Widget","properties":{"size":[1]}}]}])"), registry)
+               .empty());
+    CHECK(!loadError(scene(base + R"({"type":"Widget","properties":{"tint":"red"}}]}])"), registry)
+               .empty());
+    CHECK(
+        !loadError(scene(base + R"({"type":"Widget","properties":{"target":"bad"}}]}])"), registry)
+             .empty());
+    // Unknown properties are skipped with a warning; known ones still load.
+    std::vector<std::string> warnings;
+    setLogStderrEnabled(false);
+    setLogSink([&](LogLevel level, std::string_view, std::string_view message) {
+        if (level == LogLevel::Warning)
+            warnings.emplace_back(message);
+    });
+    auto tolerant = loadText(
+        scene(base + R"({"type":"Widget","properties":{"future":1,"count":4}}]}])"), registry);
+    CHECK(tolerant && tolerant.value()->findByName("E")->get<Widget>()->count == 4);
+    CHECK(warnings.size() == 1 && warnings[0].find("future") != std::string::npos);
+    warnings.clear();
+    auto dangling =
+        loadText(scene(base + R"({"type":"Widget","properties":{"target":"00000000000000aa"}}]}])"),
+                 registry);
+    CHECK(dangling && warnings.size() == 1 &&
+          warnings[0].find("missing entity") != std::string::npos);
+    setLogSink({});
+    setLogStderrEnabled(true);
+    // Out-of-range values are clamped rather than trusted.
+    auto clamped =
+        loadText(scene(base + R"({"type":"Widget","properties":{"count":500}}]}])"), registry);
+    CHECK(clamped && clamped.value()->findByName("E")->get<Widget>()->count == 10);
+    // Dependencies listed after their dependents still load with their saved values.
+    auto ordered = loadText(
+        scene(base + R"({"type":"Follower"},{"type":"Widget","properties":{"count":8}}]}])"),
+        registry);
+    CHECK(ordered && ordered.value()->findByName("E")->get<Widget>()->count == 8 &&
+          ordered.value()->findByName("E")->components().size() == 2);
+}
+
+void prefabs() {
+    auto registry = makeRegistry();
+    Scene scene(registry, 200);
+    Entity &outside = scene.createEntity("Outside");
+    Entity &root = scene.createEntity("PrefabRoot");
+    root.transform().position = {4, 4};
+    Entity &leaf = scene.createEntity("Leaf", root.id());
+    leaf.transform().position = {1, 1};
+    auto &rootWidget = root.add<Widget>();
+    rootWidget.target = leaf.id();                  // Internal reference: must be remapped.
+    rootWidget.targets = {leaf.id(), outside.id()}; // One internal, one external.
+    leaf.add<Widget>().target = outside.id();       // External: must be cleared.
+    const Json prefab = subtreeToJson(scene, root.id());
+    CHECK(prefab.get("format").asString() == "yk.prefab" && prefab.get("entities").size() == 2);
+    CHECK(!prefab.get("entities").at(0).contains("parent")); // Root carries no parent.
+
+    Entity &holder = scene.createEntity("Holder");
+    holder.transform().position = {100, 0};
+    auto first = instantiateSubtree(scene, prefab, holder.id(), Vec2{110, 20});
+    auto second = instantiateSubtree(scene, prefab, {});
+    CHECK(first && second && first.value() != second.value() && first.value() != root.id());
+    CHECK(scene.size() == 3 + 1 + 2 + 2);
+    Entity *copy = scene.find(first.value());
+    CHECK(copy && copy->name() == "PrefabRoot" && copy->parentId() == holder.id());
+    CHECK_NEAR(copy->worldPosition().x, 110.0, 1e-3);
+    CHECK_NEAR(copy->worldPosition().y, 20.0, 1e-3);
+    CHECK(copy->childIds().size() == 1);
+    Entity *copyLeaf = scene.find(copy->childIds()[0]);
+    CHECK(copyLeaf && copyLeaf->id() != leaf.id());
+    auto *copyWidget = copy->get<Widget>();
+    CHECK(copyWidget && copyWidget->target == copyLeaf->id());
+    CHECK(copyWidget && copyWidget->targets.size() == 1 &&
+          copyWidget->targets[0] == copyLeaf->id()); // External dropped.
+    CHECK(copyLeaf->get<Widget>()->target == EntityId{});
+    CHECK(rootWidget.target == leaf.id() &&
+          leaf.get<Widget>()->target == outside.id()); // Source untouched.
+    Entity *other = scene.find(second.value());
+    CHECK(other &&
+          other->get<Widget>()->target != copyWidget->target); // Instances are independent.
+
+    CHECK(!instantiateSubtree(scene, Json::object()));
+    Json broken = prefab;
+    broken.set("root", "00000000000000bb");
+    const auto sizeBefore = scene.size();
+    CHECK(!instantiateSubtree(scene, broken) &&
+          scene.size() == sizeBefore); // Failure leaves no debris.
+    const auto file = std::filesystem::temp_directory_path() / "yk-prefab-test" / "thing.ykprefab";
+    CHECK(savePrefab(scene, root.id(), file));
+    auto document = loadPrefabDocument(file);
+    CHECK(document && document.value() == prefab);
+    CHECK(!savePrefab(scene, EntityId{31337}, file) &&
+          !loadPrefabDocument(file.parent_path() / "none.ykprefab"));
+    std::filesystem::remove_all(file.parent_path());
+}
+} // namespace
+
+int main() {
+    entityIds();
+    registration();
+    reflection();
+    hierarchy();
+    transforms();
+    components();
+    serialization();
+    malformedScenes();
+    prefabs();
+    return yk::test::finish("scene");
+}

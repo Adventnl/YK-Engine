@@ -1,6 +1,0 @@
-frame 16 24
-idle 0 1 0.20 loop
-run 1 2 0.10 loop
-rise 3 1 0.10 hold
-fall 4 1 0.10 hold
-land 0 1 0.08 hold
