@@ -100,7 +100,7 @@ Requires: `RigidBody` `Collider`
 
 | Property | Type | Default | Notes |
 |---|---|---|---|
-| `openOffset` | vec2 | [0,-3] | How far the door moves when open, in world units (negative Y is up). (range -1000 to 1000) |
+| `openOffset` | vec2 | [0,-3] | How far the door moves when open, in world units (negative Y is up). (range -1000 to 1000) The editor shows the result as a ghost you can drag. |
 | `speed` | float | 3 | (range 0.01 to 100) |
 | `startsOpen` | bool | false | Open until signalled, then closes. |
 | `logic` | enum | "Any" | How several sources combine. Options: Any All |
@@ -117,7 +117,7 @@ Requires: `RigidBody` `Collider`
 
 | Property | Type | Default | Notes |
 |---|---|---|---|
-| `travel` | vec2 | [4,0] | Offset of the far end, world units. (range -1000 to 1000) |
+| `travel` | vec2 | [4,0] | Offset of the far end, world units. (range -1000 to 1000) The editor shows the result as a ghost you can drag. |
 | `speed` | float | 2 | (range 0.01 to 100) |
 | `pause` | float | 0.5 | Seconds to wait at each end. (range 0 to 60) |
 | `requireSignal` | bool | false | Only move while signalled. |
@@ -309,6 +309,8 @@ Requires: `SpriteRenderer`
 
 Screen-space text. Use {variable} to show game variables.
 
+Screen space: placed in pixels on the screen, not in the world.
+
 | Property | Type | Default | Notes |
 |---|---|---|---|
 | `text` | string | "Text" |  |
@@ -322,6 +324,8 @@ Screen-space text. Use {variable} to show game variables.
 ### UiPanel
 
 Screen-space filled rectangle.
+
+Screen space: placed in pixels on the screen, not in the world.
 
 | Property | Type | Default | Notes |
 |---|---|---|---|

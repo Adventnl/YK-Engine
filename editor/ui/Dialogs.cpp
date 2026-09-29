@@ -186,6 +186,34 @@ void nameDialog(EditorState &state, const char *kind, const char *prompt, const 
     }
 }
 
+void exportDialog(EditorState &state) {
+    DialogState &dialog = state.dialog;
+    ImGui::TextWrapped(
+        "Exports the game as a folder holding the player and this project's data, ready to "
+        "run or share. Choose where the folder goes:");
+    folderBrowser(dialog.browser, "dialog/Export");
+    if (state.project) {
+        ImGui::TextColored(
+            imColor(palette::dim), "%s",
+            (dialog.browser.current / state.project->project().name).string().c_str());
+    }
+    if (!dialog.error.empty())
+        ImGui::TextColored(imColor(palette::error), "%s", dialog.error.c_str());
+    ImGui::Spacing();
+    ImGui::BeginDisabled(dialog.browser.current.empty());
+    if (ImGui::Button("Export", {120.0F, 0.0F})) {
+        if (auto exported = state.exportGame(dialog.browser.current); !exported)
+            dialog.error = exported.error();
+        // On success exportGame replaced this dialog with its result message.
+    }
+    markItem("dialog/Export/export");
+    ImGui::EndDisabled();
+    ImGui::SameLine();
+    if (ImGui::Button("Cancel", {100.0F, 0.0F}))
+        closeDialog(state);
+    markItem("dialog/Export/cancel");
+}
+
 void unsavedDialog(EditorState &state) {
     DialogState &dialog = state.dialog;
     ImGui::TextWrapped("%s", dialog.message.c_str());
@@ -470,6 +498,14 @@ void showDialog(EditorState &state, DialogKind kind, EntityId entity) {
         if (state.project)
             state.dialog.draft = state.project->project();
         break;
+    case DialogKind::Export: {
+        state.dialog.title = "Export Game";
+        std::filesystem::path start = startingFolder();
+        if (state.project && state.project->project().root.has_parent_path())
+            start = state.project->project().root.parent_path();
+        state.dialog.browser.go(start);
+        break;
+    }
     case DialogKind::Validation:
         state.dialog.title = "Project Validation";
         break;
@@ -496,9 +532,10 @@ void drawDialogs(EditorState &state) {
     const ImGuiViewport *viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos({viewport->GetCenter().x, viewport->GetCenter().y * 0.9F},
                             ImGuiCond_Appearing, {0.5F, 0.5F});
-    const bool wide =
-        dialog.kind == DialogKind::ProjectSettings || dialog.kind == DialogKind::Validation ||
-        dialog.kind == DialogKind::NewProject || dialog.kind == DialogKind::OpenProject;
+    const bool wide = dialog.kind == DialogKind::ProjectSettings ||
+                      dialog.kind == DialogKind::Validation ||
+                      dialog.kind == DialogKind::NewProject ||
+                      dialog.kind == DialogKind::OpenProject || dialog.kind == DialogKind::Export;
     ImGui::SetNextWindowSize({wide ? 600.0F : 0.0F, 0.0F});
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoSavedSettings;
     if (!wide)
@@ -548,6 +585,9 @@ void drawDialogs(EditorState &state) {
         break;
     case DialogKind::ProjectSettings:
         settingsDialog(state);
+        break;
+    case DialogKind::Export:
+        exportDialog(state);
         break;
     case DialogKind::Validation:
         validationDialog(state);

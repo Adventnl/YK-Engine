@@ -4,6 +4,7 @@
 #include "yk/gameplay/Gameplay.hpp"
 #include "yk/scene/SceneSerializer.hpp"
 #include <algorithm>
+#include <cctype>
 
 namespace yk::editor {
 namespace {
@@ -164,6 +165,69 @@ Result<Json> EditorProject::loadPrefab(const std::string &path) const {
 
 std::vector<ProjectIssue> EditorProject::validate() const {
     return validateProject(project_, *registry_);
+}
+
+Result<std::filesystem::path> EditorProject::exportGame(const std::filesystem::path &destination,
+                                                        const std::filesystem::path &player) const {
+    std::error_code error;
+    if (!std::filesystem::is_regular_file(player, error))
+        return Error{"The player program was not found (" + player.string() +
+                     "). Build the yk_player target next to the editor."};
+    const auto issues = validate();
+    if (hasErrors(issues)) {
+        std::size_t errors = 0;
+        for (const ProjectIssue &issue : issues)
+            errors += issue.severity == ProjectIssue::Severity::Error ? 1 : 0;
+        return Error{"The project has " + std::to_string(errors) +
+                     " error(s); fix them first (File > Validate Project). First: " +
+                     issues.front().path + ": " + issues.front().message};
+    }
+    std::string folderName;
+    for (const char c : project_.name)
+        folderName +=
+            (std::isalnum(static_cast<unsigned char>(c)) || c == '-' || c == '_' || c == ' ') ? c
+                                                                                              : '_';
+    if (folderName.empty())
+        folderName = "game";
+    folderName +=
+        "-game"; // Never collides with the project's own folder, which usually shares its name.
+    const std::filesystem::path folder = destination / folderName;
+    if (std::filesystem::exists(folder, error))
+        return Error{"'" + folder.string() +
+                     "' already exists; choose another folder or remove it"};
+    std::filesystem::create_directories(folder / "project", error);
+    if (error)
+        return Error{"Cannot create '" + folder.string() + "': " + error.message()};
+    const auto copy = [&](const std::filesystem::path &from,
+                          const std::filesystem::path &to) -> Status {
+        std::filesystem::create_directories(to.parent_path(), error);
+        std::filesystem::copy_file(from, to, std::filesystem::copy_options::overwrite_existing,
+                                   error);
+        if (error)
+            return Error{"Cannot copy '" + from.string() + "': " + error.message()};
+        return success();
+    };
+    const std::filesystem::path playerCopy = folder / player.filename();
+    if (auto status = copy(player, playerCopy); !status)
+        return Error{status.error()};
+    std::filesystem::permissions(playerCopy,
+                                 std::filesystem::perms::owner_exec |
+                                     std::filesystem::perms::group_exec |
+                                     std::filesystem::perms::others_exec,
+                                 std::filesystem::perm_options::add, error);
+    for (const AssetEntry &entry : scanAssets(project_))
+        if (auto status = copy(project_.root / entry.path, folder / "project" / entry.path);
+            !status)
+            return Error{status.error()};
+    const std::string readme =
+        project_.name + "\n\nRun " + player.filename().string() +
+        " from this folder to play. The game data is in the project folder;\n" +
+        "the player finds it next to itself, or run: " + player.filename().string() +
+        " <path to project>\n";
+    if (auto status = writeTextFileAtomic(folder / "README.txt", readme); !status)
+        return Error{status.error()};
+    log(LogLevel::Info, "editor", "Exported the game to " + folder.string());
+    return folder;
 }
 
 void RecentProjects::load() {

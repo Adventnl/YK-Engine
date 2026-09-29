@@ -169,4 +169,7 @@ std::string label(const std::string &identifier);
 void tooltip(const std::string &text);
 // True when the last item is hovered for a moment; lets tooltips avoid flickering on drags.
 bool hoveredForTooltip();
+// A property's name in a table cell: shortened with "..." when it does not fit, in which case the
+// tooltip spells the whole name out before `description`.
+void nameCell(const std::string &text, const std::string &description);
 } // namespace yk::editor::ui

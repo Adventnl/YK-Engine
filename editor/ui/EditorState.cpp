@@ -252,6 +252,30 @@ void EditorState::validateProject() {
         "Validated project: " + std::to_string(dialog.issues.size()) + " issue(s)");
 }
 
+std::filesystem::path EditorState::playerExecutable() const {
+    std::filesystem::path base = ".";
+    if (const char *path = SDL_GetBasePath())
+        base = path;
+#ifdef _WIN32
+    return base / "yk_player.exe";
+#else
+    return base / "yk_player";
+#endif
+}
+
+Status EditorState::exportGame(const std::filesystem::path &destination) {
+    if (!project)
+        return Error{"No project is open"};
+    auto exported = project->exportGame(destination, playerExecutable());
+    if (!exported) {
+        log(LogLevel::Error, "editor", exported.error());
+        return Error{exported.error()};
+    }
+    message("Game exported", "The game is in:\n" + exported.value().string() +
+                                 "\n\nRun yk_player from that folder to play it.");
+    return success();
+}
+
 void EditorState::guarded(std::function<void()> action) {
     if (document && document->dirty() && !playing()) {
         dialog = {};

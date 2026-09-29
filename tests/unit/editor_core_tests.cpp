@@ -1006,13 +1006,37 @@ void projectFiles() {
     }
     CHECK(scenes == 4 && prefabs == 1);
 
-    // Validation flags a scene that points at a missing entity or layer.
+    // Exporting the game: the player beside a copy of the project.
+    const auto fakePlayer = dir.path / "yk_player";
+    CHECK(writeTextFileAtomic(fakePlayer, "not really a program"));
+    CHECK(!project.exportGame(dir.path / "out",
+                              dir.path / "missing_player")); // No player, no export.
+    const auto exported = project.exportGame(dir.path / "out", fakePlayer);
+    CHECK(exported && exported.value().filename() == "My Game-game");
+    if (exported) {
+        CHECK(std::filesystem::exists(exported.value() / "yk_player") &&
+              std::filesystem::exists(exported.value() / "README.txt") &&
+              std::filesystem::exists(exported.value() / "project" / "project.ykproj") &&
+              std::filesystem::exists(exported.value() / "project" / "scenes" / "main.ykscene") &&
+              std::filesystem::exists(exported.value() / "project" / "prefabs" / "floor.ykprefab"));
+        CHECK(Project::load(exported.value() / "project"));       // The copy is a complete project.
+        CHECK(!project.exportGame(dir.path / "out", fakePlayer)); // Never overwrites.
+    }
+
+    // Validation flags a scene that points at a missing asset; such a project cannot be exported.
     doc.change("break", [&](Scene &scene) {
-        scene.find(platform.value())->get<Collider>()->layer = "Nowhere";
+        scene.find(platform.value())->get<SpriteRenderer>()->texture.path = "assets/missing.png";
     });
     CHECK(project.saveScene(doc));
     const auto issues = project.validate();
-    CHECK(!issues.empty());
+    CHECK(!issues.empty() && hasErrors(issues));
+    const auto refused = project.exportGame(dir.path / "out2", fakePlayer);
+    CHECK(!refused && refused.error().find("error") != std::string::npos);
+    CHECK(!std::filesystem::exists(dir.path / "out2"));
+    doc.change("repair", [&](Scene &scene) {
+        scene.find(platform.value())->get<SpriteRenderer>()->texture.path.clear();
+    });
+    CHECK(project.saveScene(doc));
 
     // Project settings persist.
     project.project().name = "Renamed";

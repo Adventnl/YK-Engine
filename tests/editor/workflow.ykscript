@@ -211,4 +211,18 @@ key ctrl+z
 expect no-entity "Door (1)"
 key ctrl+s
 expect clean
+
+log "== 8. Export the game (needs the player next to the editor)"
+menu "File/Export Game"
+expect dialog export
+click dialog/Export/path
+key ctrl+a
+type ${YK_TEST_TMP}
+key enter
+click dialog/Export/export
+expect dialog message
+click dialog/Message/ok
+expect no-dialog
+expect file ${YK_TEST_TMP}/Platformer-game/README.txt exists
+expect file ${YK_TEST_TMP}/Platformer-game/project/scenes/main.ykscene exists
 log "workflow finished"

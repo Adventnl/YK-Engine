@@ -61,6 +61,12 @@ class EditorProject {
     // Loads every scene and prefab and reports what a game would trip over.
     std::vector<ProjectIssue> validate() const;
 
+    // Copies the project and the player executable into <destination>/<project name>-game/, the
+    // player beside a project/ folder: everything needed to run the game. Refuses a project with
+    // errors and never overwrites an existing folder. Returns the folder that was created.
+    Result<std::filesystem::path> exportGame(const std::filesystem::path &destination,
+                                             const std::filesystem::path &player) const;
+
     // "scenes/level 1" or "level.txt" -> a path with the wanted extension, or an error when the
     // result would leave the project.
     Result<std::string> withExtension(const std::string &path, const char *extension) const;

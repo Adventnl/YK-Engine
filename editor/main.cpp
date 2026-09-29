@@ -38,6 +38,9 @@ void usage() {
               "                         any expectation fails\n"
               "  --test-hooks           record widget positions so scripts can find them (implied "
               "by --script)\n"
+              "  --fixed-step           Play advances one 1/60 s tick per frame whatever the frame "
+              "takes\n"
+              "                         (deterministic; implied by --script)\n"
               "  --failure-dir <dir>    save a screenshot for each failed expectation\n"
               "  --frames <n>           exit after n frames\n"
               "  --capture <file.bmp>   save the last frame (needs --frames)");
@@ -56,6 +59,8 @@ std::optional<Options> parse(int argc, char **argv) {
             options.editor.persistLayout = false;
         } else if (arg == "--test-hooks") {
             options.editor.testHooks = true;
+        } else if (arg == "--fixed-step") {
+            options.editor.fixedStep = true;
         } else if (arg == "--scene" || arg == "--size" || arg == "--settings-dir" ||
                    arg == "--script" || arg == "--failure-dir" || arg == "--frames" ||
                    arg == "--capture") {
@@ -124,6 +129,7 @@ int main(int argc, char **argv) {
         driver = std::move(loaded.value());
         driver->setFailureDirectory(options->failureDirectory);
         options->editor.testHooks = true;
+        options->editor.fixedStep = true;
     }
 
     ApplicationConfig config;

@@ -732,17 +732,12 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
         return report(!ui::widgets().find(arg).has_value(), "widget '" + arg + "' is on screen");
     if (what == "dialog") {
         static const std::map<std::string, DialogKind> kinds = {
-            {"newproject", DialogKind::NewProject},
-            {"openproject", DialogKind::OpenProject},
-            {"newscene", DialogKind::NewScene},
-            {"savesceneas", DialogKind::SaveSceneAs},
-            {"saveprefab", DialogKind::SavePrefab},
-            {"unsaved", DialogKind::Unsaved},
-            {"settings", DialogKind::ProjectSettings},
-            {"validation", DialogKind::Validation},
-            {"about", DialogKind::About},
-            {"shortcuts", DialogKind::Shortcuts},
-            {"message", DialogKind::Message}};
+            {"newproject", DialogKind::NewProject},    {"openproject", DialogKind::OpenProject},
+            {"newscene", DialogKind::NewScene},        {"savesceneas", DialogKind::SaveSceneAs},
+            {"saveprefab", DialogKind::SavePrefab},    {"unsaved", DialogKind::Unsaved},
+            {"settings", DialogKind::ProjectSettings}, {"export", DialogKind::Export},
+            {"validation", DialogKind::Validation},    {"about", DialogKind::About},
+            {"shortcuts", DialogKind::Shortcuts},      {"message", DialogKind::Message}};
         const auto found = kinds.find(lower(arg));
         if (found == kinds.end()) {
             detail = "unknown dialog '" + arg + "'";
@@ -776,6 +771,17 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
                       "the open project is '" +
                           (state.project ? state.project->project().name : std::string("none")) +
                           "'");
+    if (what == "project-root") { // expect project-root DIRECTORY
+        if (!need(1))
+            return -1;
+        std::error_code error;
+        const auto wanted = std::filesystem::weakly_canonical(arg, error);
+        const auto actual =
+            state.project ? std::filesystem::weakly_canonical(state.project->project().root, error)
+                          : std::filesystem::path();
+        return report(state.project && actual == wanted,
+                      "the open project is in '" + actual.string() + "'");
+    }
     if (what == "file") { // expect file PATH exists|missing
         if (!need(2))
             return -1;

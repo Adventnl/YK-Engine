@@ -239,6 +239,10 @@ void mainMenu(EditorState &state) {
         markItem("menu/File/Validate Project");
         if (clicked)
             state.validateProject();
+        clicked = ImGui::MenuItem("Export Game...", nullptr, false, hasProject && !state.playing());
+        markItem("menu/File/Export Game");
+        if (clicked)
+            openDialog(state, DialogKind::Export);
         clicked = ImGui::MenuItem("Close Project", nullptr, false, hasProject);
         markItem("menu/File/Close Project");
         if (clicked)

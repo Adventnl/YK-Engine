@@ -23,6 +23,9 @@ struct EditorOptions {
     bool audio{true};
     bool testHooks{false}; // Record widget rectangles so a scripted driver can find them.
     bool persistLayout{true};
+    // Play advances exactly one 1/60 s tick per editor frame, however long the frame took, so a
+    // scripted run is deterministic (a script's "hold d 45" is 0.75 s of game time on any machine).
+    bool fixedStep{false};
 };
 
 // A panel that shows a render target: the scene view or the game view.
@@ -77,6 +80,7 @@ enum class DialogKind {
     SavePrefab,
     Unsaved,
     ProjectSettings,
+    Export,
     Validation,
     About,
     Shortcuts,
@@ -166,6 +170,10 @@ class EditorState {
     Status savePrefab(EntityId entity, const std::string &path);
     Status instantiatePrefab(const std::string &path, Vec2 world);
     void validateProject();
+    // Copies the project and the player next to it into a new folder (see
+    // EditorProject::exportGame).
+    Status exportGame(const std::filesystem::path &destination);
+    std::filesystem::path playerExecutable() const;
     // Runs `action` now, or after the user decides what to do with unsaved changes.
     void guarded(std::function<void()> action);
 

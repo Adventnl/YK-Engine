@@ -11,7 +11,9 @@ namespace yk::editor {
 // Drives the real editor UI from a script, by sending it the same SDL mouse and keyboard events a
 // person would. It finds buttons and menu items through the widget registry ("toolbar/Play",
 // "hierarchy/Door"), so scripts survive layout changes, and checks results against the editor's
-// state. Used by the automated UI tests and to take screenshots of a workflow.
+// state. Used by the automated UI tests and to take screenshots of a workflow. A scripted run uses
+// fixed time steps (EditorOptions::fixedStep), so what a script sees does not depend on how fast the
+// machine draws frames.
 //
 // One command per line; '#' starts a comment; words may be "quoted"; ${NAME} expands an environment
 // variable. Targets are widget ids, world:X,Y (a point in the scene view) or px:X,Y (window

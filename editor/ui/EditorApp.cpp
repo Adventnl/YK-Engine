@@ -79,10 +79,13 @@ bool EditorApp::update(const FrameContext &frame) {
         (state_.gameView.focused || state_.gameView.hovered) &&
         state_.dialog.kind == DialogKind::None)
         gameInput = frame.keyboard;
-    state_.tick(seconds, gameInput);
+    state_.tick(state_.options.fixedStep ? 1.0 / 60.0 : seconds, gameInput);
 
     ImGui_ImplSDLRenderer3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
+    if (state_.options.fixedStep)
+        io.DeltaTime =
+            1.0F / 60.0F; // The UI's clock (double-click windows, delays) is deterministic too.
     ImGui::NewFrame();
 
     if (state_.document)

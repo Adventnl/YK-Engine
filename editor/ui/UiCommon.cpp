@@ -473,4 +473,14 @@ void tooltip(const std::string &text) {
     if (!text.empty() && hoveredForTooltip())
         ImGui::SetTooltip("%s", text.c_str());
 }
+
+void nameCell(const std::string &text, const std::string &description) {
+    const float available = ImGui::GetContentRegionAvail().x;
+    std::string shown = text;
+    const bool cut = ImGui::CalcTextSize(text.c_str()).x > available;
+    while (cut && shown.size() > 1 && ImGui::CalcTextSize((shown + "...").c_str()).x > available)
+        shown.pop_back();
+    ImGui::TextUnformatted((cut ? shown + "..." : shown).c_str());
+    tooltip(cut ? (description.empty() ? text : text + "\n" + description) : description);
+}
 } // namespace yk::editor::ui

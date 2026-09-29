@@ -573,8 +573,7 @@ void drawComponent(Inspect &inspect, std::size_t index, std::optional<std::size_
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::AlignTextToFramePadding();
-                ImGui::TextUnformatted(label(property.name).c_str());
-                tooltip(property.tooltip);
+                nameCell(label(property.name), property.tooltip);
                 ImGui::TableSetColumnIndex(1);
                 ImGui::PushID(property.name.c_str());
                 const PropertyView view{inspect, index, property, "Edit " + label(property.name)};
