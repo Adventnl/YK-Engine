@@ -105,11 +105,11 @@ Status Application::run(ApplicationLayer &layer, const RunOptions &options) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             layer.onNativeEvent(event);
-            if (event.type == SDL_EVENT_QUIT)
+            if (event.type == SDL_EVENT_QUIT && layer.onCloseRequested())
                 running = false;
             if (event.type >= SDL_EVENT_WINDOW_FIRST && event.type <= SDL_EVENT_WINDOW_LAST &&
                 event.window.windowID == SDL_GetWindowID(impl_->window.get())) {
-                if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED)
+                if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && layer.onCloseRequested())
                     running = false;
                 if (event.type == SDL_EVENT_WINDOW_FOCUS_LOST) {
                     focused = false;

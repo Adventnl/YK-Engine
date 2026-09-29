@@ -66,9 +66,13 @@ struct Handle {
 // cancelDrag() puts everything back.
 class SceneInteraction {
   public:
-    explicit SceneInteraction(EditorDocument &document) : document_(&document) {}
-    // Points the interaction at another document (a scene was opened); the view stays.
-    void bind(EditorDocument &document);
+    // With no document (null) every operation is a no-op, so the view can outlive scenes.
+    explicit SceneInteraction(EditorDocument *document = nullptr) : document_(document) {}
+    // Points the interaction at another document (a scene was opened) or none; the view stays.
+    void bind(EditorDocument *document);
+    bool bound() const {
+        return document_ != nullptr;
+    }
 
     Tool tool{Tool::Move};
     SnapSettings snap;

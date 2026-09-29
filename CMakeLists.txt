@@ -74,6 +74,23 @@ if(YK_RUNTIME)
     target_include_directories(yk_player PRIVATE player)
     target_link_libraries(yk_player PRIVATE yk::prototype_game SDL3::SDL3)
     yk_target(yk_player)
+
+    # The editor: Dear ImGui panels over the editor core, the engine's renderer and a play session.
+    yk_fetch_imgui()
+    add_library(yk_editor_ui STATIC
+        editor/ui/UiCommon.cpp editor/ui/EditorState.cpp editor/ui/Shell.cpp
+        editor/ui/HierarchyPanel.cpp editor/ui/InspectorPanel.cpp editor/ui/SceneViewPanel.cpp
+        editor/ui/GameViewPanel.cpp editor/ui/AssetsPanel.cpp editor/ui/ConsolePanel.cpp
+        editor/ui/Dialogs.cpp editor/ui/EditorApp.cpp editor/ui/EditorDriver.cpp)
+    add_library(yk::editor_ui ALIAS yk_editor_ui)
+    target_link_libraries(yk_editor_ui PUBLIC yk::editor_core imgui SDL3::SDL3)
+    target_include_directories(yk_editor_ui PUBLIC editor)
+    target_compile_definitions(yk_editor_ui PRIVATE YK_VERSION="${PROJECT_VERSION}"
+        YK_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+    yk_target(yk_editor_ui)
+    add_executable(yk_editor editor/main.cpp)
+    target_link_libraries(yk_editor PRIVATE yk::editor_ui yk::prototype_game)
+    yk_target(yk_editor)
 endif()
 target_compile_definitions(yk_engine PUBLIC YK_HAS_RUNTIME=$<BOOL:${YK_RUNTIME}>)
 

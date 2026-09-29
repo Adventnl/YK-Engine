@@ -32,6 +32,11 @@ class ApplicationLayer {
     // Every platform event, before the application interprets it. Tools with their own input
     // handling (the editor's UI) consume events here.
     virtual void onNativeEvent(const SDL_Event &) {}
+    // The window's close button or a quit request. Return false to keep running (a tool asking
+    // about unsaved work first, then ending the run itself by returning false from update).
+    virtual bool onCloseRequested() {
+        return true;
+    }
     virtual Camera2D camera() const {
         return {};
     }

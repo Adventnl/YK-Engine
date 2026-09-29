@@ -2,21 +2,22 @@
 #include "yk/graphics/PhysicsDebug.hpp"
 
 namespace yk {
-Status drawGameView(Renderer &renderer, SceneRenderer &sceneRenderer, GameRuntime &runtime,
-                    Rect viewport, const GameViewOptions &options) {
-    const Scene &scene = runtime.scene();
+namespace {
+Status drawAsPlayed(Renderer &renderer, SceneRenderer &sceneRenderer, const Scene &scene,
+                    const physics::World *physics, const Blackboard *variables, Rect viewport,
+                    const GameViewOptions &options) {
     CameraView view{{0.0F, 0.0F}, 18.0F};
     if (const Camera *camera = SceneRenderer::primaryCamera(scene))
         view = camera->view();
     RenderPass world{SceneRenderer::cameraFor(view, viewport.size), viewport,
-                     scene.settings.background};
+                     scene.settings.background, options.target};
     if (auto status = renderer.beginPass(world); !status)
         return status;
     Status drawn = sceneRenderer.drawWorld(renderer, scene);
     if (drawn && options.colliders)
         drawn = sceneRenderer.drawColliders(renderer, scene);
-    if (drawn && options.physicsDebug)
-        drawn = drawPhysicsDebug(renderer, runtime.physics(), 1.0F, 950);
+    if (drawn && options.physicsDebug && physics)
+        drawn = drawPhysicsDebug(renderer, *physics, 1.0F, 950);
     if (auto ended = renderer.endPass(); drawn && !ended)
         drawn = ended;
     if (!drawn)
@@ -24,9 +25,9 @@ Status drawGameView(Renderer &renderer, SceneRenderer &sceneRenderer, GameRuntim
 
     Camera2D screen;
     screen.position = viewport.size * 0.5F;
-    if (auto status = renderer.beginPass({screen, viewport, std::nullopt}); !status)
+    if (auto status = renderer.beginPass({screen, viewport, std::nullopt, options.target}); !status)
         return status;
-    drawn = sceneRenderer.drawUi(renderer, scene, viewport.size, &runtime.blackboard());
+    drawn = sceneRenderer.drawUi(renderer, scene, viewport.size, variables);
     if (drawn && !options.overlay.empty()) {
         constexpr float scale = 2.0F;
         const Vec2 size = BitmapFont::measure(options.overlay, scale);
@@ -41,5 +42,18 @@ Status drawGameView(Renderer &renderer, SceneRenderer &sceneRenderer, GameRuntim
     if (auto ended = renderer.endPass(); drawn && !ended)
         drawn = ended;
     return drawn;
+}
+} // namespace
+
+Status drawGameView(Renderer &renderer, SceneRenderer &sceneRenderer, GameRuntime &runtime,
+                    Rect viewport, const GameViewOptions &options) {
+    return drawAsPlayed(renderer, sceneRenderer, runtime.scene(), &runtime.physics(),
+                        &runtime.blackboard(), viewport, options);
+}
+
+Status drawScenePreview(Renderer &renderer, SceneRenderer &sceneRenderer, const Scene &scene,
+                        Rect viewport, const GameViewOptions &options,
+                        const Blackboard *variables) {
+    return drawAsPlayed(renderer, sceneRenderer, scene, nullptr, variables, viewport, options);
 }
 } // namespace yk

@@ -85,6 +85,9 @@ class Renderer {
     Status debugLine(Vec2 first, Vec2 second, Color color, int layer = 1000);
     // Diagnostic readback saves the physical content viewport before present (excludes bars).
     Status present(const std::optional<std::filesystem::path> &capture = std::nullopt);
+    // Saves what has been drawn so far this frame as a BMP. Call after every pass has ended and
+    // before present (tools that draw their own UI capture screenshots this way).
+    Status capture(const std::filesystem::path &path);
     // The SDL backend, for tools that draw directly between passes and present (the editor's UI
     // layer). Game code must not use it.
     SDL_Renderer *nativeRenderer() const;

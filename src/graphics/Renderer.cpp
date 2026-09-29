@@ -40,6 +40,17 @@ using NativeTexture = std::unique_ptr<SDL_Texture, TextureDeleter>;
 Error sdlError(const std::string &operation) {
     return {operation + ": " + SDL_GetError()};
 }
+// Reads back everything drawn to the current output and writes it as a BMP.
+Status readbackAndSave(SDL_Renderer *native, const std::filesystem::path &path) {
+    std::unique_ptr<SDL_Surface, SurfaceDeleter> surface(SDL_RenderReadPixels(native, nullptr));
+    if (!surface)
+        return sdlError("Read rendered frame");
+    const auto utf8 = path.u8string();
+    const std::string filename(utf8.begin(), utf8.end());
+    if (!SDL_SaveBMP(surface.get(), filename.c_str()))
+        return sdlError("Save frame '" + filename + "'");
+    return success();
+}
 struct DebugRect {
     Rect rect;
     Color color;
@@ -457,6 +468,16 @@ Status Renderer::endPass() {
     impl_->passSize = impl_->viewport;
     return drawn;
 }
+Status Renderer::capture(const std::filesystem::path &path) {
+    assertThread();
+    if (!impl_->inFrame)
+        return Error{"Capture outside frame"};
+    if (impl_->passOpen)
+        return Error{"End the render pass before capturing"};
+    if (auto drawn = flush(); !drawn)
+        return drawn;
+    return readbackAndSave(impl_->native.get(), path);
+}
 Status Renderer::present(const std::optional<std::filesystem::path> &capture) {
     assertThread();
     if (!impl_->inFrame)
@@ -474,16 +495,9 @@ Status Renderer::present(const std::optional<std::filesystem::path> &capture) {
     impl_->passSize = impl_->viewport;
     if (!drawn)
         return drawn;
-    if (capture) {
-        std::unique_ptr<SDL_Surface, SurfaceDeleter> surface(
-            SDL_RenderReadPixels(impl_->native.get(), nullptr));
-        if (!surface)
-            return sdlError("Read rendered frame");
-        const auto utf8 = capture->u8string();
-        const std::string filename(utf8.begin(), utf8.end());
-        if (!SDL_SaveBMP(surface.get(), filename.c_str()))
-            return sdlError("Save frame '" + filename + "'");
-    }
+    if (capture)
+        if (auto saved = readbackAndSave(impl_->native.get(), *capture); !saved)
+            return saved;
     if (!SDL_RenderPresent(impl_->native.get()))
         return sdlError("Present frame");
     return success();

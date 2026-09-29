@@ -57,9 +57,9 @@ void ViewCamera::frame(Rect area, Vec2 viewport, float margin) {
     zoom = std::clamp(std::min(viewport.x / width, viewport.y / height), minZoom, maxZoom);
 }
 
-void SceneInteraction::bind(EditorDocument &document) {
+void SceneInteraction::bind(EditorDocument *document) {
     cancelDrag();
-    document_ = &document;
+    document_ = document;
     hovered_ = {};
     hoveredEntity_ = {};
 }
@@ -73,6 +73,8 @@ void SceneInteraction::zoomAt(Vec2 pixel, float factor) {
 }
 
 void SceneInteraction::frameSelection() {
+    if (!document_)
+        return;
     auto area = boundsOf(document_->scene(), document_->selection(), metersPerPixel());
     if (!area)
         return;
@@ -82,13 +84,17 @@ void SceneInteraction::frameSelection() {
 }
 
 void SceneInteraction::frameAll() {
+    if (!document_)
+        return;
     const Scene &scene = document_->scene();
     auto area = boundsOf(scene, scene.hierarchyOrder(), metersPerPixel());
     if (!area) {
         camera.center = {};
         return;
     }
-    camera.frame(*area, viewport, 1.15F);
+    // A nearly empty scene should show about one camera view, not zoom in on a lone marker.
+    const Vec2 size{std::max(area->size.x, 32.0F), std::max(area->size.y, 18.0F)};
+    camera.frame({yk::center(*area) - size * 0.5F, size}, viewport, 1.15F);
 }
 
 float SceneInteraction::markerHalf() const {
@@ -97,6 +103,8 @@ float SceneInteraction::markerHalf() const {
 
 std::vector<Handle> SceneInteraction::handles() const {
     std::vector<Handle> result;
+    if (!document_)
+        return result;
     const Scene &scene = document_->scene();
     const Entity *entity = scene.find(document_->primary());
     if (!entity)
@@ -128,6 +136,8 @@ std::vector<Handle> SceneInteraction::handles() const {
 
 Handle SceneInteraction::hitHandle(Vec2 pixel) const {
     Handle best;
+    if (!document_)
+        return best;
     float bestDistance = 1.0e9F;
     float radius = handleRadiusPixels;
     if (tool == Tool::Resize) {
@@ -151,6 +161,8 @@ Handle SceneInteraction::hitHandle(Vec2 pixel) const {
 }
 
 EntityId SceneInteraction::pickAt(Vec2 pixel) const {
+    if (!document_)
+        return {};
     const auto stack = pickAll(document_->scene(), toWorld(pixel), metersPerPixel());
     return stack.empty() ? EntityId{} : stack.front();
 }
@@ -168,7 +180,7 @@ std::optional<Rect> SceneInteraction::marquee() const {
 }
 
 void SceneInteraction::pointerPressed(Vec2 pixel, Modifiers modifiers) {
-    if (mode_ != Mode::Idle)
+    if (!document_ || mode_ != Mode::Idle)
         return;
     pressPixel_ = pixel;
     pressWorld_ = toWorld(pixel);
@@ -237,6 +249,8 @@ void SceneInteraction::pointerPressed(Vec2 pixel, Modifiers modifiers) {
 }
 
 void SceneInteraction::pointerMoved(Vec2 pixel, Modifiers modifiers) {
+    if (!document_)
+        return;
     if (mode_ == Mode::Idle) {
         hovered_ = hitHandle(pixel);
         hoveredEntity_ = hovered_.kind == HandleKind::None ? pickAt(pixel) : EntityId{};
@@ -285,6 +299,8 @@ void SceneInteraction::pointerMoved(Vec2 pixel, Modifiers modifiers) {
 }
 
 void SceneInteraction::pointerReleased(Vec2 pixel, Modifiers modifiers) {
+    if (!document_)
+        return;
     switch (mode_) {
     case Mode::Idle:
         return;
@@ -325,7 +341,7 @@ void SceneInteraction::finishSelectionClick(Modifiers modifiers) {
 }
 
 void SceneInteraction::cancelDrag() {
-    if (started_ && document_->inChange())
+    if (document_ && started_ && document_->inChange())
         document_->cancelChange();
     clearDrag();
 }
@@ -342,6 +358,8 @@ void SceneInteraction::clearDrag() {
 }
 
 void SceneInteraction::nudge(Vec2 direction, bool large) {
+    if (!document_)
+        return;
     const float step = (snap.enabled ? snap.grid : 0.1F) * (large ? 10.0F : 1.0F);
     const auto roots = document_->selectionRoots();
     if (roots.empty())

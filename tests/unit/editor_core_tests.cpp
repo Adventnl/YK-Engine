@@ -525,7 +525,7 @@ void linksAndGhosts() {
 struct View {
     Fixture f;
     SceneInteraction ui;
-    View() : ui(f.doc()) {
+    View() : ui(&f.doc()) {
         ui.viewport = {800.0F, 600.0F};
         ui.camera.center = {0.0F, 0.0F};
         ui.camera.zoom = 40.0F;
@@ -727,8 +727,16 @@ void movingThings() {
     w.ui.pointerMoved(w.px({3, 3}), {});
     CHECK(w.doc().inChange());
     Fixture second;
-    w.ui.bind(second.doc());
+    w.ui.bind(&second.doc());
     CHECK(!w.doc().inChange() && !w.ui.dragging());
+    // Without a document nothing happens, and nothing crashes.
+    w.ui.bind(nullptr);
+    w.ui.pointerPressed({1, 1}, {});
+    w.ui.pointerMoved({5, 5}, {});
+    w.ui.pointerReleased({5, 5}, {});
+    w.ui.nudge({1, 0}, false);
+    w.ui.frameAll();
+    CHECK(!w.ui.bound() && w.ui.handles().empty() && !w.ui.pickAt({1, 1}));
 }
 
 void resizing() {
