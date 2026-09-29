@@ -91,6 +91,22 @@ expect no-entity Checkpoint
 key ctrl+z
 expect entity Checkpoint
 
+log "== editing several entities at once"
+click "hierarchy/Ground Start"
+click "hierarchy/Ground Middle" ctrl
+expect selection-at-least 2
+expect widget prop/order
+edit prop/order 5
+expect prop "Ground Start" SpriteRenderer.order 5
+expect prop "Ground Middle" SpriteRenderer.order 5
+expect dirty
+capture ${SHOT_DIR}/edit-03-multi.bmp
+key ctrl+z
+expect prop "Ground Start" SpriteRenderer.order 0
+expect prop "Ground Middle" SpriteRenderer.order 0
+expect clean
+key escape
+
 log "== prefab instances: revert, apply, unpack"
 click "hierarchy/Lever"
 expect widget inspector/prefab/revert

@@ -514,12 +514,13 @@ void shortcutsDialog(EditorState &state) {
         const char *action;
     };
     static constexpr Row rows[] = {
-        {"Ctrl+S / Ctrl+Shift+S", "Save scene / Save scene as"},
+        {"Ctrl+N / O / S / Shift+S / Alt+S", "New scene, open project, save, save as, save all"},
+        {"Ctrl+W / Ctrl+Tab", "Close the scene, next scene tab"},
         {"Ctrl+Z / Ctrl+Y", "Undo / Redo"},
         {"Ctrl+C / X / V", "Copy / Cut / Paste entities"},
-        {"Ctrl+D, Delete", "Duplicate, delete the selection"},
+        {"Ctrl+D, Delete, Ctrl+A", "Duplicate, delete the selection, select all"},
         {"W, R, E", "Move, Resize, Rotate tool"},
-        {"F, Home", "Frame the selection, frame the whole scene"},
+        {"F, Home", "Frame the selection, frame everything you can edit"},
         {"Arrow keys", "Nudge the selection (Shift for bigger steps)"},
         {"Ctrl (while dragging)", "Toggle grid snapping"},
         {"Shift (while dragging)", "Constrain to an axis, or keep proportions when resizing"},
@@ -528,7 +529,12 @@ void shortcutsDialog(EditorState &state) {
         {"Middle or right drag", "Pan the scene view (also Space + left drag)"},
         {"Mouse wheel", "Zoom at the cursor"},
         {"F5 / Shift+F5", "Play / Stop"},
-        {"F6 / F10", "Pause / Step one tick while paused"},
+        {"F6 / F10 / Ctrl+Shift+F5", "Pause / Step one tick while paused / Restart"},
+        {"Ctrl+F5", "Run the project in the standalone player"},
+        {"Ctrl+B / Ctrl+Alt+B / Ctrl+J", "Toggle the side bar / inspector / panel"},
+        {"Ctrl+Shift+E H K X B", "Explorer, Scene, Prefabs, Components, Build view"},
+        {"Ctrl+Shift+Y M U", "Console, Problems, Build Output panel"},
+        {"Ctrl+\\", "Split the editor area"},
         {"F2", "Rename the selected entity (in the Hierarchy)"},
         {"Escape", "Cancel a drag or a pending pick"},
     };

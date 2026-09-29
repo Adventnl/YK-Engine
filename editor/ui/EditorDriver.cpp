@@ -912,12 +912,18 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
         return report(entity->editorHidden() == (what == "hidden"),
                       "'" + arg + "' is " + (entity->editorHidden() ? "hidden" : "shown"));
     }
-    if (what ==
-        "layout") { // expect layout KEY VALUE [TOLERANCE] : a number in the workbench layout
+    if (what == "layout") { // expect layout KEY VALUE [TOLERANCE] : a number or flag in the
+                            // workbench layout
         if (!need(2))
             return -1;
         const Json layoutJson = state.layout.toJson();
         const Json &value = layoutJson.get(arg);
+        if (value.isBool()) { // a flag: true/false (or on/off, 1/0)
+            const std::string word = lower(w[3]);
+            const bool wantedFlag = word == "true" || word == "on" || word == "1";
+            return report(value.asBool() == wantedFlag,
+                          arg + " is " + (value.asBool() ? "true" : "false"));
+        }
         const auto wanted = number(w[3]);
         if (!value.isNumber() || !wanted) {
             detail = "'" + arg + "' is not a number in the layout";

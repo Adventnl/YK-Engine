@@ -1,0 +1,11 @@
+{
+  "format": "yk.project",
+  "version": 1,
+  "name": "Spinner Test",
+  "startScene": "scenes/main.ykscene",
+  "window": {
+    "title": "Spinner Test",
+    "width": 640,
+    "height": 360
+  }
+}

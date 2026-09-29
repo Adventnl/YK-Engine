@@ -23,13 +23,33 @@ struct PropertyView {
     std::string changeLabel;
 };
 
-// Writes `value` into the property being edited (inside the change commitEdit opened).
+// Writes `value` into the property being edited (inside the change commitEdit opened). With
+// several entities selected the same value goes into the same component (the n-th of its type) of
+// every selected entity that has one, so a row of tiles can be recolored or reordered at once.
 void write(const PropertyView &view, PropertyValue value) {
-    Entity *entity = view.inspect.doc->edit().find(view.inspect.entity);
-    if (!entity || view.componentIndex >= entity->components().size())
+    EditorDocument &doc = *view.inspect.doc;
+    Scene &scene = doc.edit();
+    Entity *primary = scene.find(view.inspect.entity);
+    if (!primary || view.componentIndex >= primary->components().size())
         return;
-    Component &component = *entity->components()[view.componentIndex];
-    view.property.assign(component, std::move(value));
+    const std::string typeName = primary->components()[view.componentIndex]->type().name;
+    int occurrence = 0;
+    for (std::size_t i = 0; i < view.componentIndex; ++i)
+        occurrence += primary->components()[i]->type().name == typeName ? 1 : 0;
+    const auto assignTo = [&](Entity &entity) {
+        int seen = 0;
+        for (const auto &component : entity.components())
+            if (component->type().name == typeName && seen++ == occurrence) {
+                view.property.assign(*component, value);
+                return;
+            }
+    };
+    assignTo(*primary);
+    if (doc.isSelected(view.inspect.entity))
+        for (const EntityId id : doc.selection())
+            if (id != view.inspect.entity)
+                if (Entity *other = scene.find(id))
+                    assignTo(*other);
 }
 
 // One-shot edit for widgets that change discretely (a list item removed, an entity picked).
@@ -879,9 +899,14 @@ void inspectorPanel(EditorState &state) {
     }
     EditorDocument *doc = state.playing() ? nullptr : state.document.get();
     Inspect inspect{state, *scene, doc, id};
-    if (doc && doc->selection().size() > 1)
-        ImGui::TextColored(imColor(palette::dim), "%zu selected. Showing '%s'.",
-                           doc->selection().size(), entity->name().c_str());
+    if (doc && doc->selection().size() > 1) {
+        ImGui::PushStyleColor(ImGuiCol_Text, imColor(palette::dim));
+        ImGui::TextWrapped(
+            "%zu selected. Component fields change all of them; name, tags and Transform only "
+            "the one shown.",
+            doc->selection().size());
+        ImGui::PopStyleColor();
+    }
     if (!doc)
         ImGui::TextColored(imColor(palette::good), "Running copy (read-only)");
     ImGui::BeginDisabled(!doc);

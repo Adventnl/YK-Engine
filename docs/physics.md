@@ -35,7 +35,7 @@ if (!state) { /* report error */ return; }
 ```
 
 The physics library has no main loop of its own. Scenes are simulated by `GameRuntime`
-(architecture.md), which owns the `World`, calls `advance` each frame and writes the resulting
+([ARCHITECTURE.md](ARCHITECTURE.md)), which owns the `World`, calls `advance` each frame and writes the resulting
 poses back to entity transforms; an application that uses physics without scenes owns those calls.
 
 ## Units, shapes and body types

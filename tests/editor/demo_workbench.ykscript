@@ -118,3 +118,15 @@ expect side-view scene
 expect panel-view console
 expect layout sideBarWidth 290 1
 capture ${SHOT_DIR}/bench-05-reset.bmp
+
+log "== help lists the shortcuts the editor really has"
+menu "Help/Keyboard Shortcuts"
+expect dialog shortcuts
+capture ${SHOT_DIR}/bench-06-shortcuts.bmp
+click dialog/Shortcuts/close
+expect no-dialog
+# One of the shortcuts it lists, used: Ctrl+B hides the side bar and shows it again.
+key ctrl+b
+expect layout sideBarVisible false
+key ctrl+b
+expect layout sideBarVisible true

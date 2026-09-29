@@ -283,10 +283,10 @@ std::optional<fs::path> findPlayer(BuildTarget target, const fs::path &executabl
 }
 
 std::optional<fs::path> findNotices(const fs::path &executableDir) {
-    const fs::path candidates[] = {
-        executableDir / "licenses",
-        executableDir / ".." / "share" / "doc" / "yk-engine" / "licenses",
-        executableDir / ".." / "LICENSES", executableDir / ".." / ".." / "LICENSES"};
+    const fs::path candidates[] = {executableDir / "licenses",
+                                   executableDir / ".." / "share" / "doc" / "YKEngine" / "licenses",
+                                   executableDir / ".." / "LICENSES",
+                                   executableDir / ".." / ".." / "LICENSES"};
     for (const fs::path &candidate : candidates) {
         std::error_code error;
         if (fs::is_regular_file(candidate / "SDL3.txt", error))

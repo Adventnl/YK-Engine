@@ -210,7 +210,7 @@ const SceneRenderer::TextureInfo &SceneRenderer::textureFor(Renderer &renderer,
 }
 
 std::optional<SceneRenderer::LoadedTexture> SceneRenderer::loadedTexture(Renderer &renderer,
-                                                                          const std::string &path) {
+                                                                         const std::string &path) {
     const TextureInfo &info = textureFor(renderer, path);
     if (!info.handle)
         return std::nullopt;

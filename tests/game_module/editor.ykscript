@@ -1,0 +1,38 @@
+# The example game's own editor (built with yk_add_game_hosts): its component is in the catalog and
+# the Inspector, edits are undoable and saved with the scene, and the scene plays.
+timeout 300
+expect project "Spinner Test"
+expect entity Box
+expect has-component Box Spinner
+
+log "== the catalog lists the game's component"
+click activity/Components
+expect widget component/Spinner
+click component/Spinner
+capture ${SHOT_DIR}/module-01-catalog.bmp
+
+log "== the Inspector edits it like any other"
+click activity/Scene
+click "hierarchy/Box"
+expect selected Box
+expect prop Box Spinner.degreesPerSecond 90
+edit prop/degreesPerSecond 45
+expect prop Box Spinner.degreesPerSecond 45
+expect dirty
+key ctrl+z
+expect prop Box Spinner.degreesPerSecond 90
+key ctrl+y
+expect prop Box Spinner.degreesPerSecond 45
+key ctrl+s
+expect clean
+expect file-contains scenes/main.ykscene "45"
+capture ${SHOT_DIR}/module-02-inspector.bmp
+
+log "== and it runs"
+click toolbar/Play
+expect playing
+wait 30
+click toolbar/Stop
+expect editing
+expect clean
+expect prop Box Transform.rotation 0

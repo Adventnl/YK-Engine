@@ -7,6 +7,11 @@ endif()
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build configuration" FORCE)
 endif()
+# A game can add the engine as a subdirectory (docs/BUILDING.md, "Game modules"): it then gets the
+# libraries and programs, not the engine's own tests, installation or formatting targets.
+if(NOT PROJECT_IS_TOP_LEVEL)
+    set(BUILD_TESTING OFF)
+endif()
 include(CTest)
 option(YK_RUNTIME "Build SDL window, input and renderer support" ON)
 option(YK_SANITIZERS "Enable address/undefined sanitizers on project targets" OFF)
@@ -19,6 +24,7 @@ endif()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(YkTargets)
 include(YkDependencies)
+include(YkGame)
 yk_sanitize(box2d)
 
 add_library(yk_engine STATIC src/core/Log.cpp src/core/Time.cpp src/core/Color.cpp src/core/Json.cpp
@@ -48,9 +54,14 @@ add_library(yk::gameplay ALIAS yk_gameplay)
 target_link_libraries(yk_gameplay PUBLIC yk_engine)
 yk_target(yk_gameplay)
 
-# The `yk` command line: validate, format and inspect projects. Headless.
+# The `yk` command line: validate, format, inspect and export projects. Headless. The program is
+# a function (yk::host::runTool) so a game with components of its own can build its own copy.
+add_library(yk_tool_host STATIC tools/yk/Tool.cpp)
+add_library(yk::tool_host ALIAS yk_tool_host)
+target_link_libraries(yk_tool_host PUBLIC yk::gameplay)
+yk_target(yk_tool_host)
 add_executable(yk tools/yk/main.cpp)
-target_link_libraries(yk PRIVATE yk::gameplay)
+target_link_libraries(yk PRIVATE yk_tool_host)
 yk_target(yk)
 
 # Editor core: the open document with undo, picking and gizmo logic, project files and play sessions.
@@ -70,21 +81,26 @@ if(YK_RUNTIME)
         src/audio/SdlAudio.cpp src/graphics/GameView.cpp)
     target_link_libraries(yk_engine PRIVATE SDL3::SDL3)
 
-    # The standalone player: runs any project with the linked game modules.
-    add_executable(yk_player player/main.cpp player/KeyScript.cpp)
-    target_include_directories(yk_player PRIVATE player)
-    target_link_libraries(yk_player PRIVATE yk::gameplay SDL3::SDL3)
+    # The standalone player: runs any project. The program is a function (yk::host::runPlayer) so a
+    # game with components of its own can build its own copy.
+    add_library(yk_player_host STATIC player/Player.cpp player/KeyScript.cpp)
+    add_library(yk::player_host ALIAS yk_player_host)
+    target_include_directories(yk_player_host PRIVATE player)
+    target_link_libraries(yk_player_host PUBLIC yk::gameplay PRIVATE SDL3::SDL3)
+    yk_target(yk_player_host)
+    add_executable(yk_player player/main.cpp)
+    target_link_libraries(yk_player PRIVATE yk_player_host)
     yk_target(yk_player)
 
     # The editor: Dear ImGui panels over the editor core, the engine's renderer and a play session.
     yk_fetch_imgui()
     include(YkEmbed)
-    yk_embed_files("${CMAKE_BINARY_DIR}/generated/EditorFonts.cpp" NAMESPACE yk::editor::ui::fontdata FILES
+    yk_embed_files("${CMAKE_CURRENT_BINARY_DIR}/generated/EditorFonts.cpp" NAMESPACE yk::editor::ui::fontdata FILES
         interRegular=${CMAKE_CURRENT_SOURCE_DIR}/editor/resources/fonts/Inter-Regular.ttf
         interSemiBold=${CMAKE_CURRENT_SOURCE_DIR}/editor/resources/fonts/Inter-SemiBold.ttf
         jetBrainsMono=${CMAKE_CURRENT_SOURCE_DIR}/editor/resources/fonts/JetBrainsMono-Regular.ttf
         codicon=${CMAKE_CURRENT_SOURCE_DIR}/editor/resources/fonts/codicon.ttf)
-    add_library(yk_editor_ui STATIC "${CMAKE_BINARY_DIR}/generated/EditorFonts.cpp" editor/ui/Theme.cpp
+    add_library(yk_editor_ui STATIC "${CMAKE_CURRENT_BINARY_DIR}/generated/EditorFonts.cpp" editor/ui/Theme.cpp
         editor/ui/UiCommon.cpp editor/ui/EditorState.cpp editor/ui/Shell.cpp editor/ui/Workbench.cpp
         editor/ui/Menus.cpp editor/ui/Welcome.cpp editor/ui/ProblemsPanel.cpp editor/ui/ProfilerPanel.cpp
         editor/ui/SideViews.cpp editor/ui/ProjectSettings.cpp editor/ui/AssetInspector.cpp
@@ -97,8 +113,12 @@ if(YK_RUNTIME)
     target_compile_definitions(yk_editor_ui PRIVATE YK_VERSION="${PROJECT_VERSION}"
         YK_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
     yk_target(yk_editor_ui)
+    add_library(yk_editor_host STATIC editor/Host.cpp)
+    add_library(yk::editor_host ALIAS yk_editor_host)
+    target_link_libraries(yk_editor_host PUBLIC yk::editor_ui)
+    yk_target(yk_editor_host)
     add_executable(yk_editor editor/main.cpp)
-    target_link_libraries(yk_editor PRIVATE yk::editor_ui)
+    target_link_libraries(yk_editor PRIVATE yk_editor_host)
     yk_target(yk_editor)
 endif()
 target_compile_definitions(yk_engine PUBLIC YK_HAS_RUNTIME=$<BOOL:${YK_RUNTIME}>)
@@ -114,6 +134,28 @@ if(BUILD_TESTING)
         DEFINITIONS YK_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
     yk_add_test(editor_core tests/unit/editor_core_tests.cpp LIBS yk::editor_core TIMEOUT 120
         DEFINITIONS YK_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+    # An example game module (one component) and the programs built for it with yk_add_game_hosts:
+    # proves a game with C++ of its own gets its own player, editor and command line.
+    add_library(yk_spinner_module STATIC tests/game_module/SpinnerModule.cpp)
+    target_link_libraries(yk_spinner_module PUBLIC yk::gameplay)
+    target_include_directories(yk_spinner_module PUBLIC tests/game_module)
+    yk_target(yk_spinner_module)
+    yk_add_game_hosts(spinner_game MODULE yk_spinner_module HEADER SpinnerModule.hpp
+        REGISTER spinner::registerComponents)
+    set(YK_SPINNER_PROJECT "${CMAKE_CURRENT_SOURCE_DIR}/tests/game_module/project")
+    # The game's own command line knows the component; the stock one does not.
+    add_test(NAME game_module_tool COMMAND spinner_game_tool validate ${YK_SPINNER_PROJECT})
+    add_test(NAME game_module_tool_stock COMMAND yk validate ${YK_SPINNER_PROJECT})
+    set_tests_properties(game_module_tool_stock PROPERTIES WILL_FAIL TRUE)
+    if(YK_RUNTIME)
+        yk_add_test(game_module tests/game_module/game_module_tests.cpp
+            LIBS yk_spinner_module yk_player_host TIMEOUT 60
+            DEFINITIONS SPINNER_PROJECT="${YK_SPINNER_PROJECT}"
+            ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software;SDL_AUDIODRIVER=dummy")
+    else()
+        yk_add_test(game_module tests/game_module/game_module_tests.cpp LIBS yk_spinner_module
+            TIMEOUT 60 DEFINITIONS SPINNER_PROJECT="${YK_SPINNER_PROJECT}")
+    endif()
     if(YK_RUNTIME)
         add_executable(yk_runtime_tests tests/integration/runtime_tests.cpp)
         target_link_libraries(yk_runtime_tests PRIVATE yk::engine SDL3::SDL3)
@@ -125,6 +167,8 @@ if(BUILD_TESTING)
             ENVIRONMENT "SDL_AUDIODRIVER=dummy" TIMEOUT 30)
         yk_add_test(scene_render tests/integration/scene_render_tests.cpp LIBS yk::engine SDL3::SDL3
             ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software" TIMEOUT 30)
+        yk_add_test(stress tests/integration/stress_tests.cpp LIBS yk::gameplay SDL3::SDL3
+            ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software" TIMEOUT 180)
         yk_add_test(render_modes tests/integration/render_modes_tests.cpp LIBS yk::engine SDL3::SDL3
             ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software" TIMEOUT 30)
         # The editor, driven through its real UI by scripts (see editor/ui/EditorDriver.hpp).
@@ -143,6 +187,13 @@ if(BUILD_TESTING)
                     -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/editor/run_script.cmake)
             set_tests_properties(editor_${script_name} PROPERTIES TIMEOUT 300)
         endforeach()
+        # The example game's own editor, built with yk_add_game_hosts, shows and edits its component.
+        add_test(NAME editor_game_module
+            COMMAND ${CMAKE_COMMAND} -DEDITOR=$<TARGET_FILE:spinner_game_editor>
+                -DSCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/tests/game_module/editor.ykscript
+                -DWORK=${CMAKE_BINARY_DIR}/editor-tests/game_module -DPROJECT=${YK_SPINNER_PROJECT}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/editor/run_script.cmake)
+        set_tests_properties(editor_game_module PROPERTIES TIMEOUT 300)
         # The window layout survives a restart: one editor process rearranges it, the next one
         # starts from what was saved.
         foreach(part write read)
@@ -172,7 +223,7 @@ endif()
 
 # Installation: the editor, the player, the command line, the demo project, documentation and
 # license notices.
-if(YK_RUNTIME)
+if(YK_RUNTIME AND PROJECT_IS_TOP_LEVEL)
     include(GNUInstallDirs)
     install(TARGETS yk_editor yk_player yk RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
     install(DIRECTORY YK-DemoGame DESTINATION ${CMAKE_INSTALL_DATADIR}/yk-engine
@@ -191,7 +242,7 @@ if(YK_RUNTIME)
 endif()
 
 find_program(YK_CLANG_FORMAT NAMES clang-format)
-if(YK_CLANG_FORMAT)
+if(YK_CLANG_FORMAT AND PROJECT_IS_TOP_LEVEL)
     file(GLOB_RECURSE YK_FORMAT_FILES CONFIGURE_DEPENDS include/*.hpp src/*.hpp src/*.cpp tests/*.cpp
         tests/*.hpp tools/*.cpp player/*.hpp player/*.cpp editor/*.hpp editor/*.cpp)
     add_custom_target(format COMMAND ${YK_CLANG_FORMAT} -i ${YK_FORMAT_FILES} VERBATIM)
