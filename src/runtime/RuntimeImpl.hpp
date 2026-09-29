@@ -48,6 +48,9 @@ struct GameRuntime::Impl {
     Vec2 viewport{1280, 720};
     std::vector<EntityId> destroyQueue;
     std::unordered_set<const Component *> started;
+    // Assets shared by every entity; kept across restarts (the files do not change while running).
+    std::map<std::string, std::shared_ptr<const AnimationSet>> animationSets;
+    std::map<std::string, std::shared_ptr<const AnimationController>> animationControllers;
 
     // ---- Physics binding (PhysicsBinding.cpp) ----
     struct BodyRecord {

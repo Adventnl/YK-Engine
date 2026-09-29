@@ -251,6 +251,47 @@ AudioSink &GameRuntime::audio() {
 const AssetSource *GameRuntime::assets() const {
     return impl_->options.assets;
 }
+namespace {
+// Reads and parses a JSON asset; logs and returns an error result when it cannot.
+Result<Json> readJsonAsset(const AssetSource *assets, const std::string &path) {
+    if (!assets)
+        return Error{"there is no asset source"};
+    auto text = assets->readText(path);
+    if (!text)
+        return Error{text.error()};
+    return Json::parse(text.value());
+}
+} // namespace
+std::shared_ptr<const AnimationSet> GameRuntime::animationSet(const std::string &path) {
+    const auto cached = impl_->animationSets.find(path);
+    if (cached != impl_->animationSets.end())
+        return cached->second;
+    std::shared_ptr<const AnimationSet> loaded;
+    auto document = readJsonAsset(impl_->options.assets, path);
+    auto set = document ? parseAnimationSet(document.value())
+                        : Result<AnimationSet>(Error{document.error()});
+    if (set)
+        loaded = std::make_shared<const AnimationSet>(std::move(set.value()));
+    else
+        log(LogLevel::Warning, "animation", "Cannot load " + path + ": " + set.error());
+    impl_->animationSets.emplace(path, loaded);
+    return loaded;
+}
+std::shared_ptr<const AnimationController> GameRuntime::animationController(const std::string &path) {
+    const auto cached = impl_->animationControllers.find(path);
+    if (cached != impl_->animationControllers.end())
+        return cached->second;
+    std::shared_ptr<const AnimationController> loaded;
+    auto document = readJsonAsset(impl_->options.assets, path);
+    auto controller = document ? AnimationController::fromJson(document.value())
+                               : Result<AnimationController>(Error{document.error()});
+    if (controller)
+        loaded = std::make_shared<const AnimationController>(std::move(controller.value()));
+    else
+        log(LogLevel::Warning, "animation", "Cannot load " + path + ": " + controller.error());
+    impl_->animationControllers.emplace(path, loaded);
+    return loaded;
+}
 Blackboard &GameRuntime::blackboard() {
     return impl_->blackboard;
 }

@@ -56,6 +56,7 @@ Requires: `RigidBody` `Collider` `PlayerInput`
 | `maxSlopeDegrees` | float | 55 | (range 0 to 89) |
 | `gripFriction` | float | 1.2 | (range 0 to 10) |
 | `slideFriction` | float | 0 | (range 0 to 10) |
+| `landingSpeed` | float | 4 | Downward speed at which touching down raises the animation trigger 'landed'. (range 0 to 100) |
 | `jumpSound` | asset | "" |  |
 | `grounded` | bool | false | (runtime state, not saved) |
 
@@ -304,18 +305,21 @@ Defines what the game shows. The first primary camera is used.
 | `boundsMin` | vec2 | [0,0] | (range -10000 to 10000) |
 | `boundsMax` | vec2 | [32,18] | (range -10000 to 10000) |
 
-### SpriteAnimator
+### AnimatedSprite
 
-Plays clips from an animation asset.
+Animates the sprite from an animation asset, optionally through an animation controller (state machine).
 
 Requires: `SpriteRenderer`
 
 | Property | Type | Default | Notes |
 |---|---|---|---|
-| `animation` | asset | "" |  |
-| `clip` | string | "" | Clip to play on start. |
+| `animation` | asset | "" | The .ykanim asset: sheet texture, grid and clips. |
+| `controller` | asset | "" | Optional .ykctl state machine. Without one, `clip` plays. |
+| `clip` | string | "" | Clip to play when there is no controller. |
 | `speed` | float | 1 | (range 0 to 10) |
 | `playOnStart` | bool | true |  |
+| `flipParameter` | string | "facing" | Mirror the sprite when this controller parameter is negative (facing). |
+| `artFacesLeft` | bool | false | The art is drawn facing left, so the mirroring is inverted. |
 
 ## UI
 

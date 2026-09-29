@@ -91,6 +91,11 @@ class Killable final : public Component {
 // Side-view character movement on a dynamic body: acceleration-based running, variable-height
 // jumps, coyote time, jump buffering, slopes, moving platforms. It reads named actions from the
 // entity's PlayerInput, so two characters with different keys (or a gamepad) need no code.
+//
+// It tells the entity's AnimatedSprite what the character is doing through generic parameters and
+// never names a clip: `speed` (m/s along the ground), `speedRatio` (speed / moveSpeed), `moveInput`
+// (-1..1), `velocityY` (m/s, positive down), `grounded` and `facing` (+1 right, -1 left), and the
+// triggers `jumped` and `landed`. The animation controller asset decides what to play.
 class PlatformerController final : public Component {
   public:
     std::string moveLeftAction{"MoveLeft"};
@@ -110,6 +115,7 @@ class PlatformerController final : public Component {
     float maxSlopeDegrees{55.0F};
     float gripFriction{1.2F};  // Friction when standing still on the ground.
     float slideFriction{0.0F}; // Friction when moving or airborne (no wall sticking).
+    float landingSpeed{4.0F};  // Downward speed (m/s) at which touching down counts as a "landed".
     AssetRef jumpSound;
     static void describe(TypeBuilder<PlatformerController> &type);
 
@@ -131,6 +137,8 @@ class PlatformerController final : public Component {
     bool jumping_{};
     bool gripping_{};
     bool frictionApplied_{};
+    float fallSpeed_{}; // Fastest downward speed since leaving the ground.
+    bool wasGroundedForAnimation_{true};
     float appliedGravityScale_{-1.0F};
 };
 

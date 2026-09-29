@@ -1,4 +1,5 @@
 #pragma once
+#include "yk/animation/AnimationController.hpp"
 #include "yk/assets/AssetSource.hpp"
 #include "yk/audio/Audio.hpp"
 #include "yk/input/ActionInput.hpp"
@@ -7,6 +8,7 @@
 #include "yk/runtime/Blackboard.hpp"
 #include "yk/runtime/EventBus.hpp"
 #include "yk/scene/Scene.hpp"
+#include <memory>
 #include <optional>
 
 namespace yk {
@@ -29,6 +31,11 @@ class GameContext {
     virtual const ActionInput &input() const = 0;
     virtual AudioSink &audio() = 0;
     virtual const AssetSource *assets() const = 0;
+    // Animation assets, loaded once and shared by every entity that uses them. Null (after logging
+    // the reason) when the asset is missing or invalid.
+    virtual std::shared_ptr<const AnimationSet> animationSet(const std::string &path) = 0;
+    virtual std::shared_ptr<const AnimationController>
+    animationController(const std::string &path) = 0;
     virtual Blackboard &blackboard() = 0;
     virtual EventBus &events() = 0;
     virtual const LayerConfig &layers() const = 0;

@@ -92,6 +92,9 @@ void PlatformerController::describe(TypeBuilder<PlatformerController> &type) {
     type.field("maxSlopeDegrees", &PlatformerController::maxSlopeDegrees).range(0, 89, 1);
     type.field("gripFriction", &PlatformerController::gripFriction).range(0, 10, 0.05);
     type.field("slideFriction", &PlatformerController::slideFriction).range(0, 10, 0.05);
+    type.field("landingSpeed", &PlatformerController::landingSpeed)
+        .range(0, 100, 0.1)
+        .tooltip("Downward speed at which touching down raises the animation trigger 'landed'.");
     type.field("jumpSound", &PlatformerController::jumpSound).asset("sound");
     type.field("grounded", &PlatformerController::grounded_).readOnly();
 }
@@ -161,11 +164,13 @@ void PlatformerController::onFixedUpdate(GameContext &context, float seconds) {
 
     const auto *rigid = entity().get<RigidBody>();
     const float baseGravity = rigid ? rigid->gravityScale : 1.0F;
+    bool jumpedNow = false;
     if (jumpBuffer_ > 0.0F && coyote_ > 0.0F) {
         next.y = (grounded_ ? ground.velocity.y : 0.0F) - jumpSpeed;
         jumpBuffer_ = coyote_ = 0.0F;
         grounded_ = false;
         jumping_ = true;
+        jumpedNow = true;
         if (!jumpSound.path.empty())
             context.audio().play(jumpSound.path);
     } else if (jump.released && jumping_ && next.y < 0.0F) {
@@ -189,10 +194,32 @@ void PlatformerController::onFixedUpdate(GameContext &context, float seconds) {
 
     if (move != 0.0F)
         facing_ = move > 0.0F ? 1 : -1;
-    if (auto *sprite = entity().get<SpriteRenderer>())
-        sprite->flipX = facing_ < 0;
-    if (auto *animator = entity().get<SpriteAnimator>())
-        animator->play(!grounded_ ? (next.y < 0.0F ? "jump" : "fall")
-                                  : (std::fabs(move) > 0.0F ? "run" : "idle"));
+    // With an AnimatedSprite the animation system mirrors the sprite from the `facing` parameter;
+    // a plain sprite is mirrored here so a static character still faces where it walks.
+    if (!entity().has<AnimatedSprite>())
+        if (auto *sprite = entity().get<SpriteRenderer>())
+            sprite->flipX = facing_ < 0;
+    if (auto *animated = entity().get<AnimatedSprite>()) {
+        // What the body really did last tick (not what was commanded), so pushing against a wall
+        // does not look like running.
+        const float alongGround = std::fabs(velocity.x - (ground.found ? ground.velocity.x : 0.0F));
+        animated->setFloat("speed", alongGround);
+        animated->setFloat("speedRatio", moveSpeed > 0.0F ? alongGround / moveSpeed : 0.0);
+        animated->setFloat("moveInput", move);
+        animated->setFloat("velocityY", velocity.y);
+        animated->setBool("grounded", grounded_);
+        animated->setFloat("facing", facing_);
+        if (jumpedNow)
+            animated->trigger("jumped");
+        // A landing counts only after a real fall, so stepping off a curb does not squash.
+        if (!grounded_) {
+            fallSpeed_ = std::max(fallSpeed_, velocity.y);
+        } else {
+            if (!wasGroundedForAnimation_ && fallSpeed_ >= landingSpeed)
+                animated->trigger("landed");
+            fallSpeed_ = 0.0F;
+        }
+        wasGroundedForAnimation_ = grounded_;
+    }
 }
 } // namespace yk

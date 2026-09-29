@@ -1,5 +1,4 @@
 #include "yk/components/Components.hpp"
-#include "yk/animation/AnimationSet.hpp"
 #include "yk/core/Log.hpp"
 #include "yk/runtime/GameContext.hpp"
 #include <algorithm>
@@ -213,51 +212,73 @@ void AudioSource::onStart(GameContext &context) {
         play(context);
 }
 
-void SpriteAnimator::describe(TypeBuilder<SpriteAnimator> &type) {
+void AnimatedSprite::describe(TypeBuilder<AnimatedSprite> &type) {
     type.category("Rendering")
         .dependsOn("SpriteRenderer")
-        .description("Plays clips from an animation asset.");
-    type.field("animation", &SpriteAnimator::animation).asset("animation");
-    type.field("clip", &SpriteAnimator::clip).tooltip("Clip to play on start.");
-    type.field("speed", &SpriteAnimator::speed).range(0, 10, 0.05);
-    type.field("playOnStart", &SpriteAnimator::playOnStart);
+        .description("Animates the sprite from an animation asset, optionally through an "
+                     "animation controller (state machine).");
+    type.field("animation", &AnimatedSprite::animation)
+        .asset("animation")
+        .tooltip("The .ykanim asset: sheet texture, grid and clips.");
+    type.field("controller", &AnimatedSprite::controller)
+        .asset("animator")
+        .tooltip("Optional .ykctl state machine. Without one, `clip` plays.");
+    type.field("clip", &AnimatedSprite::clip).tooltip("Clip to play when there is no controller.");
+    type.field("speed", &AnimatedSprite::speed).range(0, 10, 0.05);
+    type.field("playOnStart", &AnimatedSprite::playOnStart);
+    type.field("flipParameter", &AnimatedSprite::flipParameter)
+        .tooltip("Mirror the sprite when this controller parameter is negative (facing).");
+    type.field("artFacesLeft", &AnimatedSprite::artFacesLeft)
+        .tooltip("The art is drawn facing left, so the mirroring is inverted.");
 }
-void SpriteAnimator::play(const std::string &name) {
-    if (ready_ && animator_.has(name))
-        animator_.play(name);
-}
-void SpriteAnimator::onStart(GameContext &context) {
-    if (animation.path.empty() || !context.assets())
+void AnimatedSprite::play(const std::string &name) {
+    if (!player_.ready() || !player_.set()->find(name))
         return;
-    auto text = context.assets()->readText(animation.path);
-    auto document = text ? Json::parse(text.value()) : Result<Json>(Error{text.error()});
-    auto set = document ? parseAnimationSet(document.value())
-                        : Result<AnimationSet>(Error{document.error()});
-    if (!set) {
-        log(LogLevel::Warning, "animation",
-            "'" + entity().name() + "': cannot load " + animation.path + ": " + set.error());
+    player_.playClip(name);
+    playing_ = true;
+}
+void AnimatedSprite::onStart(GameContext &context) {
+    if (animation.path.empty())
+        return;
+    const auto set = context.animationSet(animation.path);
+    if (!set)
+        return;
+    std::shared_ptr<const AnimationController> machine;
+    if (!controller.path.empty())
+        machine = context.animationController(controller.path);
+    if (auto status = player_.start(set, machine); !status) {
+        log(LogLevel::Warning, "animation", "'" + entity().name() + "': " + status.error());
         return;
     }
-    for (const AnimationClip &item : set.value().clips)
-        animator_.define(item);
+    if (!clip.empty() && !machine)
+        player_.playClip(clip);
+    playing_ = playOnStart || machine != nullptr;
     if (auto *sprite = entity().get<SpriteRenderer>()) {
-        sprite->columns = set.value().columns;
-        sprite->rows = set.value().rows;
-    }
-    ready_ = true;
-    if (playOnStart) {
-        if (!clip.empty() && animator_.has(clip))
-            animator_.play(clip);
-        else
-            animator_.play(set.value().clips.front().name);
+        if (!set->texture.empty())
+            sprite->texture.path = set->texture;
+        sprite->columns = set->columns;
+        sprite->rows = set->rows;
+        sprite->frame = player_.frame();
     }
 }
-void SpriteAnimator::onUpdate(GameContext &, float seconds) {
-    if (!ready_)
+void AnimatedSprite::onUpdate(GameContext &context, float seconds) {
+    if (!player_.ready())
         return;
-    animator_.tick(seconds * speed);
-    if (auto *sprite = entity().get<SpriteRenderer>())
-        sprite->frame = animator_.frame();
+    if (playing_)
+        player_.update(seconds * speed);
+    if (auto *sprite = entity().get<SpriteRenderer>()) {
+        sprite->frame = player_.frame();
+        if (!flipParameter.empty()) {
+            const double direction = player_.value(flipParameter);
+            if (direction != 0.0)
+                sprite->flipX = (direction < 0.0) != artFacesLeft;
+        }
+    }
+    for (const ClipEvent &event : player_.takeEvents()) {
+        context.emit(event.name, entity().id());
+        if (!event.sound.empty())
+            context.audio().play(event.sound);
+    }
 }
 
 void registerEngineComponents(ComponentRegistry &registry) {
@@ -269,7 +290,7 @@ void registerEngineComponents(ComponentRegistry &registry) {
     registry.add<Collider>("Collider").allowMultiple();
     registry.add<Camera>("Camera");
     registry.add<AudioSource>("AudioSource");
-    registry.add<SpriteAnimator>("SpriteAnimator");
+    registry.add<AnimatedSprite>("AnimatedSprite");
     const auto place = [](Scene &scene, Vec2 at, const char *name) -> Entity & {
         Entity &entity = scene.createEntity(name);
         entity.setWorldPosition(at);

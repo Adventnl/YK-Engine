@@ -26,6 +26,7 @@ add_library(yk_engine STATIC src/core/Log.cpp src/core/Time.cpp src/core/Color.c
     src/input/InputMap.cpp src/input/ActionInput.cpp
     src/scene/EntityId.cpp src/scene/Property.cpp src/scene/Registry.cpp src/scene/Entity.cpp
     src/scene/Scene.cpp src/scene/SceneSerializer.cpp src/scene/RegistryDocs.cpp src/animation/AnimationSet.cpp
+    src/animation/AnimationController.cpp
     src/assets/Project.cpp src/assets/TextureMeta.cpp src/assets/AssetSource.cpp src/components/Components.cpp
     src/runtime/Blackboard.cpp src/runtime/EventBus.cpp src/runtime/GameRuntime.cpp
     src/runtime/PhysicsBinding.cpp src/assets/Validation.cpp

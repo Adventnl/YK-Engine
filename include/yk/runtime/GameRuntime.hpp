@@ -53,6 +53,9 @@ class GameRuntime final : public GameContext {
     const ActionInput &input() const override;
     AudioSink &audio() override;
     const AssetSource *assets() const override;
+    std::shared_ptr<const AnimationSet> animationSet(const std::string &path) override;
+    std::shared_ptr<const AnimationController>
+    animationController(const std::string &path) override;
     Blackboard &blackboard() override;
     EventBus &events() override;
     const LayerConfig &layers() const override;

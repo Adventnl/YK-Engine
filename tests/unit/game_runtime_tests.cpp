@@ -560,7 +560,7 @@ void animationAndAudio() {
     f.options.assets = assets.get();
     Entity &hero = f.scene->createEntity("Hero");
     hero.add<SpriteRenderer>();
-    auto &animator = hero.add<SpriteAnimator>();
+    auto &animator = hero.add<AnimatedSprite>();
     animator.animation.path = "anim/hero.ykanim";
     animator.clip = "run";
     hero.add<AudioSource>().sound.path = "tone:440,0.1";
@@ -573,8 +573,8 @@ void animationAndAudio() {
     CHECK(sprite->columns == 4 && sprite->frame >= 1); // Sheet layout comes from the asset.
     run(runtime, 12);                                  // 0.2s at 10 fps = two frames later.
     CHECK(sprite->frame >= 1 && sprite->frame <= 3);
-    runtime.scene().find(id)->get<SpriteAnimator>()->play("idle");
-    runtime.scene().find(id)->get<SpriteAnimator>()->play("missing"); // Ignored.
+    runtime.scene().find(id)->get<AnimatedSprite>()->play("idle");
+    runtime.scene().find(id)->get<AnimatedSprite>()->play("missing"); // Ignored.
     run(runtime, 2);
     CHECK(sprite->frame == 0);
     CHECK(f.audio.count("tone:440,0.1") == 1 && f.audio.requests[0].volume == 0.5F);
@@ -582,7 +582,7 @@ void animationAndAudio() {
     Fixture missing;
     Entity &lonely = missing.scene->createEntity("Lonely");
     lonely.add<SpriteRenderer>();
-    lonely.add<SpriteAnimator>().animation.path = "nope.ykanim";
+    lonely.add<AnimatedSprite>().animation.path = "nope.ykanim";
     missing.options.assets = assets.get();
     setLogStderrEnabled(false);
     GameRuntime &tolerant = missing.start();

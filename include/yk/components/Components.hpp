@@ -1,5 +1,5 @@
 #pragma once
-#include "yk/animation/Animator.hpp"
+#include "yk/animation/AnimationController.hpp"
 #include "yk/input/Input.hpp"
 #include "yk/scene/Entity.hpp"
 #include <string>
@@ -177,23 +177,51 @@ class AudioSource final : public Component {
 };
 
 // ----- Animation ---------------------------------------------------------------------------
-// Drives a SpriteRenderer's `frame` from a ".ykanim" asset. Gameplay selects clips by name.
-class SpriteAnimator final : public Component {
+// Animates the entity's SpriteRenderer from a ".ykanim" asset (clips over a sprite sheet), either
+// by playing a clip or by running a ".ykctl" state machine over generic parameters. Gameplay never
+// names a clip: components such as PlatformerController and Killable publish parameters (speed,
+// grounded, a "jumped" trigger, dead...) and the controller asset decides what plays.
+class AnimatedSprite final : public Component {
   public:
-    AssetRef animation;
-    std::string clip;
-    float speed{1.0F};
+    AssetRef animation;  // Clips, sheet layout and texture.
+    AssetRef controller; // Optional state machine over the clips.
+    std::string clip;    // Without a controller: the clip to play (the first when empty).
+    float speed{1.0F};   // Playback speed multiplier for everything.
     bool playOnStart{true};
-    static void describe(TypeBuilder<SpriteAnimator> &type);
+    // The sprite is mirrored when this parameter is negative ("facing" is published by the
+    // platformer controller); empty never flips. Set artFacesLeft when the art is drawn facing left.
+    std::string flipParameter{"facing"};
+    bool artFacesLeft{false};
+    static void describe(TypeBuilder<AnimatedSprite> &type);
 
-    // Ignored when the clip does not exist, so gameplay can request "run" from art that lacks it.
+    // Controller parameters. Names the controller does not declare are ignored.
+    void setFloat(const std::string &name, double value) {
+        player_.setFloat(name, value);
+    }
+    void setBool(const std::string &name, bool value) {
+        player_.setBool(name, value);
+    }
+    void trigger(const std::string &name) {
+        player_.trigger(name);
+    }
+    double value(const std::string &name) const {
+        return player_.value(name);
+    }
+    // Plays a clip directly (ignored when it does not exist); starts playback if it was off.
     void play(const std::string &name);
+    const AnimationPlayer &player() const {
+        return player_;
+    }
+    // Current state of the controller (or the clip when there is none).
+    const std::string &state() const {
+        return player_.state();
+    }
     void onStart(GameContext &context) override;
     void onUpdate(GameContext &context, float seconds) override;
 
   private:
-    Animator animator_;
-    bool ready_{};
+    AnimationPlayer player_;
+    bool playing_{};
 };
 
 class ComponentRegistry;

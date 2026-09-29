@@ -41,6 +41,7 @@ struct World {
     std::unique_ptr<Scene> scene = std::make_unique<Scene>(registry, 11);
     std::unique_ptr<GameRuntime> runtime;
     RecordingAudio audio;
+    MemoryAssets assets;
     Keyboard keyboard;
     std::vector<std::string> events;
 
@@ -73,6 +74,7 @@ struct World {
         RuntimeOptions options;
         options.layers = testLayers();
         options.audio = &audio;
+        options.assets = &assets;
         auto created = GameRuntime::create(std::move(scene), options);
         CHECK(created);
         runtime = std::move(created.value());
@@ -108,6 +110,105 @@ struct World {
 };
 
 constexpr float restingHeight = floorTop - 0.475F; // Capsule center when standing on the floor.
+
+
+// The whole animation chain on real physics: the controller publishes generic parameters, the
+// controller asset picks clips, the AnimatedSprite shows frames and mirrors the sprite. No code
+// here or in the controller names a clip.
+constexpr const char *heroAnimation = R"({"format":"yk.animation","version":2,
+    "texture":"assets/hero.png","columns":8,"rows":1,"clips":[
+    {"name":"idle","first":0,"count":2,"fps":4},
+    {"name":"run","first":2,"count":2,"fps":10},
+    {"name":"jump","first":4,"count":1,"fps":10,"loop":false},
+    {"name":"fall","first":5,"count":1,"fps":10},
+    {"name":"land","first":6,"count":1,"fps":20,"loop":false}]})";
+constexpr const char *heroController = R"({"format":"yk.animator","version":1,
+    "parameters":[
+      {"name":"speed","type":"float"},{"name":"velocityY","type":"float"},
+      {"name":"grounded","type":"bool","default":true},
+      {"name":"jumped","type":"trigger"},{"name":"landed","type":"trigger"}],
+    "entry":"Idle",
+    "states":[{"name":"Idle","clip":"idle"},{"name":"Run","clip":"run"},{"name":"Jump","clip":"jump"},
+              {"name":"Fall","clip":"fall"},{"name":"Land","clip":"land"}],
+    "transitions":[
+      {"from":"*","to":"Jump","when":[{"parameter":"jumped"}]},
+      {"from":"Jump","to":"Fall","when":[{"parameter":"velocityY","op":">","value":0.5}]},
+      {"from":"Run","to":"Fall","when":[{"parameter":"grounded","value":false}]},
+      {"from":"Idle","to":"Fall","when":[{"parameter":"grounded","value":false}]},
+      {"from":"Fall","to":"Land","when":[{"parameter":"landed"}]},
+      {"from":"Fall","to":"Idle","when":[{"parameter":"grounded"}]},
+      {"from":"Land","to":"Idle","exitTime":1.0},
+      {"from":"Idle","to":"Run","when":[{"parameter":"speed","op":">","value":0.5}]},
+      {"from":"Run","to":"Idle","when":[{"parameter":"speed","op":"<=","value":0.5}]}]})";
+
+void characterAnimation() {
+    World w;
+    w.assets.files["anim/hero.ykanim"] = heroAnimation;
+    w.assets.files["anim/hero.ykctl"] = heroController;
+    w.ground();
+    Entity &hero = w.character("Hero", {0, restingHeight - 1.0F});
+    auto &animated = hero.add<AnimatedSprite>();
+    animated.animation.path = "anim/hero.ykanim";
+    animated.controller.path = "anim/hero.ykctl";
+    w.start();
+    const auto state = [&]() -> std::string { return w.at("Hero").get<AnimatedSprite>()->state(); };
+    const auto sprite = [&]() -> SpriteRenderer & { return *w.at("Hero").get<SpriteRenderer>(); };
+
+    // The asset's sheet layout and texture are applied to the sprite.
+    w.tick(1);
+    CHECK(sprite().columns == 8 && sprite().texture.path == "assets/hero.png");
+
+    // Falling onto the floor from a small height: Fall, then Idle (too slow for a Land).
+    bool sawFall = false;
+    for (int i = 0; i < 60; ++i) {
+        w.tick();
+        sawFall = sawFall || state() == "Fall";
+    }
+    CHECK(sawFall && state() == "Idle" && sprite().frame <= 1 && !sprite().flipX);
+
+    // Running right: Run clip frames, sprite not mirrored; left: mirrored.
+    w.down(Key::D);
+    w.tick(30);
+    CHECK(state() == "Run" && (sprite().frame == 2 || sprite().frame == 3) && !sprite().flipX);
+    w.up(Key::D);
+    w.tick(40);
+    CHECK(state() == "Idle");
+    w.down(Key::A);
+    w.tick(20);
+    CHECK(state() == "Run" && sprite().flipX);
+    w.up(Key::A);
+    w.tick(40);
+    CHECK(state() == "Idle" && sprite().flipX); // Keeps facing left when standing.
+
+    // A jump (starting from Idle): Jump -> Fall -> Land -> Idle, in that order (repeats collapsed).
+    std::vector<std::string> sequence;
+    w.down(Key::W);
+    for (int i = 0; i < 140; ++i) {
+        if (i == 3)
+            w.up(Key::W);
+        w.tick();
+        if (sequence.empty() || sequence.back() != state())
+            sequence.push_back(state());
+    }
+    const std::vector<std::string> expected{"Jump", "Fall", "Land", "Idle"};
+    if (sequence != expected) {
+        std::string seen;
+        for (const std::string &name : sequence)
+            seen += name + " ";
+        std::fprintf(stderr, "jump sequence was: %s\n", seen.c_str());
+    }
+    CHECK(sequence == expected);
+    CHECK(sprite().frame <= 1);
+
+    // A character without an AnimatedSprite still mirrors its plain sprite (the old behaviour).
+    World plain;
+    plain.ground();
+    plain.character("Plain", {0, restingHeight});
+    plain.start();
+    plain.down(Key::A);
+    plain.tick(10);
+    CHECK(plain.at("Plain").get<SpriteRenderer>()->flipX);
+}
 
 void controllerBasics() {
     World w;
@@ -797,6 +898,7 @@ void templatesWork() {
 
 int main() {
     controllerBasics();
+    characterAnimation();
     jumping();
     coyoteAndBuffer();
     wallsAndSlopes();

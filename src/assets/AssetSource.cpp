@@ -32,6 +32,10 @@ AssetKind classifyAsset(const std::string &path) {
         return AssetKind::Sound;
     if (extension == ".ykanim")
         return AssetKind::Animation;
+    if (extension == ".ykctl")
+        return AssetKind::Controller;
+    if (extension == ".ykmeta")
+        return AssetKind::TextureMeta;
     return AssetKind::Other;
 }
 std::vector<AssetEntry> scanAssets(const Project &project) {

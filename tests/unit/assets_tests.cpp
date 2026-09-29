@@ -2,7 +2,12 @@
 #include "support/check.hpp"
 #include "yk/assets/Project.hpp"
 #include "yk/assets/TextureMeta.hpp"
+#include "yk/assets/Validation.hpp"
+#include "yk/components/Components.hpp"
 #include "yk/core/FileIO.hpp"
+#include "yk/core/Log.hpp"
+#include "yk/scene/SceneSerializer.hpp"
+#include <algorithm>
 #include <filesystem>
 
 using namespace yk;
@@ -110,10 +115,100 @@ void projectFile() {
     CHECK(!Project::load(root));
     std::filesystem::remove_all(root);
 }
+// A component with an input-action field, so validation of action names can be tested here.
+struct Binding final : Component {
+    std::string action;
+    static void describe(TypeBuilder<Binding> &type) {
+        type.field("action", &Binding::action).inputAction();
+    }
+};
+
+bool mentions(const std::vector<ProjectIssue> &issues, ProjectIssue::Severity severity,
+              const std::string &needle) {
+    return std::any_of(issues.begin(), issues.end(), [&](const ProjectIssue &issue) {
+        return issue.severity == severity && (issue.message.find(needle) != std::string::npos ||
+                                              issue.path.find(needle) != std::string::npos);
+    });
+}
+
+void validation() {
+    using Severity = ProjectIssue::Severity;
+    const std::filesystem::path root = std::filesystem::current_path() / "validation-test-project";
+    std::filesystem::remove_all(root);
+    std::filesystem::create_directories(root / "assets");
+    std::filesystem::create_directories(root / "scenes");
+    Project project = Project::create(root, "Validation");
+    project.startScene = "scenes/main.ykscene";
+
+    const auto write = [&](const char *path, const char *text) {
+        CHECK(writeTextFileAtomic(root / path, text));
+    };
+    write("assets/good.ykanim",
+          R"({"format":"yk.animation","version":2,"texture":"assets/sheet.bmp","columns":2,"rows":1,
+              "clips":[{"name":"idle","first":0,"count":1}]})");
+    write("assets/sheet.bmp", "not really an image, only its existence matters here");
+    write("assets/broken.ykanim", R"({"format":"yk.animation","version":2,"clips":[]})");
+    write("assets/missing-sheet.ykanim",
+          R"({"format":"yk.animation","version":2,"texture":"assets/gone.png",
+              "clips":[{"name":"idle"}]})");
+    write("assets/misfit.ykctl",
+          R"({"format":"yk.animator","version":1,"states":[{"name":"S","clip":"nothing"}]})");
+    write("assets/fine.ykctl",
+          R"({"format":"yk.animator","version":1,"states":[{"name":"S","clip":"idle"}]})");
+    write("assets/bad.ykctl", R"({"format":"yk.animator","version":1,"states":[]})");
+    write("assets/sheet.bmp.ykmeta", R"({"format":"yk.texture","version":1,"filter":"blurry"})");
+    write("assets/orphan.png.ykmeta", R"({"format":"yk.texture","version":1})");
+
+    ComponentRegistry registry;
+    registerEngineComponents(registry);
+    registry.add<Binding>("Binding");
+    Scene scene(registry, 9);
+    Entity &mismatched = scene.createEntity("Mismatched");
+    mismatched.add<SpriteRenderer>().texture.path = "assets/other.bmp";
+    auto &animated = mismatched.add<AnimatedSprite>();
+    animated.animation.path = "assets/good.ykanim";
+    animated.controller.path = "assets/misfit.ykctl";
+    Entity &player = scene.createEntity("Ghost");
+    player.add<PlayerInput>().actionSet = "Ghosts";
+    player.add<Binding>().action = "Teleport";
+    Entity &fine = scene.createEntity("Fine");
+    fine.add<PlayerInput>().actionSet = "Player1";
+    fine.add<Binding>().action = "Jump";
+    auto &fineAnimated = fine.add<AnimatedSprite>();
+    fineAnimated.animation.path = "assets/good.ykanim";
+    fineAnimated.controller.path = "assets/fine.ykctl";
+    fine.get<SpriteRenderer>()->texture.path = "assets/sheet.bmp";
+    CHECK(saveScene(scene, root / "scenes/main.ykscene"));
+    setLogStderrEnabled(false);
+    const auto issues = validateProject(project, registry);
+    setLogStderrEnabled(true);
+
+    CHECK(hasErrors(issues));
+    CHECK(mentions(issues, Severity::Error, "assets/broken.ykanim"));
+    CHECK(mentions(issues, Severity::Error, "missing sheet texture 'assets/gone.png'"));
+    CHECK(mentions(issues, Severity::Error, "assets/bad.ykctl"));
+    CHECK(mentions(issues, Severity::Error, "does not fit the animation"));
+    CHECK(mentions(issues, Severity::Error, "assets/sheet.bmp.ykmeta")); // "blurry" filter.
+    CHECK(mentions(issues, Severity::Warning, "assets/orphan.png"));     // Meta without a texture.
+    CHECK(mentions(issues, Severity::Warning, "the animation's sheet wins"));
+    CHECK(mentions(issues, Severity::Warning, "input set 'Ghosts'"));
+    CHECK(mentions(issues, Severity::Warning, "input action 'Teleport'"));
+    // Nothing is said about the entity that is fine, or about known input names.
+    CHECK(!mentions(issues, Severity::Warning, "input action 'Jump'"));
+    CHECK(!mentions(issues, Severity::Warning, "input set 'Player1'"));
+    CHECK(!mentions(issues, Severity::Error, "assets/good.ykanim"));
+    CHECK(!mentions(issues, Severity::Error, "assets/fine.ykctl"));
+
+    // A broken input map is an error in the project file.
+    project.input.sets.push_back(project.input.sets.front());
+    CHECK(mentions(validateProject(project, registry), Severity::Error, "defined twice"));
+    std::filesystem::remove_all(root);
+}
 } // namespace
 
 int main() {
     textureMeta();
     projectFile();
+    validation();
     return yk::test::finish("assets");
 }
