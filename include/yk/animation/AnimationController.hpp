@@ -117,6 +117,5 @@ class AnimationPlayer {
     std::map<std::string, double> values_;
     std::set<std::string> triggers_; // Names set through trigger(), cleared after each update.
     std::string state_;
-    float speedMultiplier_{1.0F};
 };
 } // namespace yk

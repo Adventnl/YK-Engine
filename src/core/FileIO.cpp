@@ -1,4 +1,5 @@
 #include "yk/core/FileIO.hpp"
+#include <cstdlib>
 #include <fstream>
 #include <sstream>
 
@@ -50,5 +51,45 @@ Status writeTextFileAtomic(const std::filesystem::path &path, std::string_view c
 std::string toPortablePath(const std::filesystem::path &path) {
     auto text = path.generic_u8string();
     return std::string(text.begin(), text.end());
+}
+
+std::string toFileUrl(const std::filesystem::path &path) {
+    const std::string text = toPortablePath(path);
+    // "/home/me" gives file:///home/me and "C:/Games" gives file:///C:/Games.
+    std::string url = text.empty() || text.front() != '/' ? "file:///" : "file://";
+    for (const char character : text) {
+        const auto byte = static_cast<unsigned char>(character);
+        const bool plain = (byte >= 'a' && byte <= 'z') || (byte >= 'A' && byte <= 'Z') ||
+                           (byte >= '0' && byte <= '9') || character == '/' || character == '-' ||
+                           character == '_' || character == '.' || character == '~' ||
+                           character == ':';
+        if (plain) {
+            url += character;
+        } else {
+            static constexpr char digits[] = "0123456789ABCDEF";
+            url += '%';
+            url += digits[byte >> 4];
+            url += digits[byte & 15U];
+        }
+    }
+    return url;
+}
+
+std::optional<std::string> environmentVariable(std::string_view name) {
+    const std::string key(name);
+#if defined(_MSC_VER)
+    char *value = nullptr;
+    std::size_t length = 0;
+    if (_dupenv_s(&value, &length, key.c_str()) != 0 || value == nullptr)
+        return std::nullopt;
+    std::string result(value);
+    std::free(value);
+    return result;
+#else
+    const char *value = std::getenv(key.c_str());
+    if (value == nullptr)
+        return std::nullopt;
+    return std::string(value);
+#endif
 }
 } // namespace yk

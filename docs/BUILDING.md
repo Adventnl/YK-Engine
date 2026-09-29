@@ -34,10 +34,12 @@ ctest --preset dev                            # 27 tests, about two minutes
 | `release` | Optimized build, same tests. This is what `scripts/package.sh` packs. |
 | `asan` | Address and undefined-behavior sanitizers on project code. |
 | `headless` | `YK_RUNTIME=OFF`: no SDL and no window. The engine, the gameplay library, the editor core, the command line and their tests still build and run. |
+| `clang` | Clang with libc++ (see [Tests](#tests)). |
 | `windows-cross` | 64-bit Windows from Linux with MinGW-w64 (see [Windows](#windows)). |
 
 Options: `YK_RUNTIME` (default ON) builds the window, renderer, audio, player and editor;
-`YK_SANITIZERS` adds the sanitizers; `BUILD_TESTING=OFF` gives a library-only build.
+`YK_SANITIZERS` adds the sanitizers; `YK_WARNINGS_AS_ERRORS` (default ON except with MSVC);
+`BUILD_TESTING=OFF` gives a library-only build.
 
 Programs, in the build folder:
 
@@ -84,8 +86,13 @@ scripts/verify-windows.sh         # cross-compile for Windows, run all tests und
 ```
 
 Formatting is enforced by clang-format (`cmake --build --preset dev --target format`, and
-`format-check` in CI-style runs). Warnings are errors: `-Wall -Wextra -Wpedantic -Wconversion
--Wshadow -Werror` (`/W4 /WX` on MSVC).
+`format-check` in CI-style runs). Warnings are errors with GCC and Clang (`-Wall -Wextra -Wpedantic
+-Wconversion -Wshadow -Werror`; Clang also counts sign conversions). MSVC builds with `/W4` and
+reports warnings without failing, because no MSVC run has been confirmed clean yet
+(`-DYK_WARNINGS_AS_ERRORS=ON` enforces `/WX`).
+
+The `clang` preset builds everything with Clang and libc++ (what a Mac uses), a stricter standard
+library than GCC's: it has caught missing includes and sign conversions before they reached a Mac.
 
 ## Installing and packaging
 
@@ -128,7 +135,7 @@ Or use **Build > Export Game** in the editor. Either way:
 
 **Native.** Configure with the `dev` or `release` preset from a Visual Studio x64 Developer
 prompt (or with MinGW-w64), or use CMake's Visual Studio generator; the project builds with
-`/W4 /WX`. This path is **not verified in this repository's environment**: the Windows checks
+`/W4`. This path is **not verified in this repository's environment**: the Windows checks
 below were done with MinGW-w64 under Wine, not with MSVC on Windows.
 
 **From Linux (verified).** With `mingw-w64` (posix threads) and `wine64` installed:

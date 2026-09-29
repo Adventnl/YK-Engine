@@ -22,8 +22,8 @@ std::string expandVariables(const std::string &text) {
             const auto close = text.find('}', i);
             if (close != std::string::npos) {
                 const std::string name = text.substr(i + 2, close - i - 2);
-                if (const char *value = std::getenv(name.c_str()))
-                    out += value;
+                if (const auto value = environmentVariable(name))
+                    out += *value;
                 i = close + 1;
                 continue;
             }

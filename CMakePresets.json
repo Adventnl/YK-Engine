@@ -41,6 +41,16 @@
       }
     },
     {
+      "name": "clang",
+      "inherits": "dev",
+      "binaryDir": "${sourceDir}/build/clang",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_CXX_FLAGS": "-stdlib=libc++"
+      }
+    },
+    {
       "name": "windows-cross",
       "inherits": "release",
       "binaryDir": "${sourceDir}/build/windows-cross",
@@ -66,6 +76,10 @@
     {
       "name": "headless",
       "configurePreset": "headless"
+    },
+    {
+      "name": "clang",
+      "configurePreset": "clang"
     },
     {
       "name": "windows-cross",
@@ -97,6 +111,13 @@
     {
       "name": "headless",
       "configurePreset": "headless",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "clang",
+      "configurePreset": "clang",
       "output": {
         "outputOnFailure": true
       }

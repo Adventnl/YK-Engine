@@ -9,6 +9,7 @@
 #include "yk/gameplay/Gameplay.hpp"
 #include "yk/scene/SceneSerializer.hpp"
 #include <algorithm>
+#include <cstdlib>
 #include <filesystem>
 
 using namespace yk;
@@ -358,6 +359,14 @@ void exportRefusals() {
     CHECK(!fs::exists(dir.path / "out2"));
 }
 
+void setEnvironment(const char *name, const std::string &value) {
+#ifdef _WIN32
+    _putenv_s(name, value.c_str());
+#else
+    setenv(name, value.c_str(), 1);
+#endif
+}
+
 void findingPlayers() {
     TempDir dir("yk-export-find");
     const fs::path here = dir.path / "bin";
@@ -381,6 +390,17 @@ void findingPlayers() {
     CHECK(!findNotices(here));
     put(here / "licenses" / "SDL3.txt", "license");
     CHECK(findNotices(here).has_value());
+
+    // $YK_TEMPLATES is searched first, for players kept outside the installation.
+    CHECK(!environmentVariable("YK_SURELY_NOT_SET_9F3A"));
+    const fs::path shared = dir.path / "shared";
+    put(shared / name(other) / playerFileName(other), "player");
+    setEnvironment("YK_TEMPLATES", shared.string());
+    CHECK(environmentVariable("YK_TEMPLATES") == shared.string());
+    const auto fromEnvironment = findPlayer(other, dir.path / "nowhere");
+    CHECK(fromEnvironment && fromEnvironment->parent_path().filename() == name(other));
+    setEnvironment("YK_TEMPLATES", "");
+    CHECK(!findPlayer(other, dir.path / "nowhere"));
 }
 } // namespace
 

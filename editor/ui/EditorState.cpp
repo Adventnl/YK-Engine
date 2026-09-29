@@ -70,11 +70,15 @@ Status EditorState::initialize(Renderer &rendererRef) {
         return Error{created.error()};
     sceneRenderer = std::move(created.value());
     if (!options.project.empty()) {
-        if (auto opened = openProject(options.project); !opened)
-            return opened;
+        // A project that cannot be opened at start-up (moved, damaged) is reported and the welcome
+        // screen stays: the editor is a window, and quitting would only make it vanish.
+        if (auto opened = openProject(options.project); !opened) {
+            message("Cannot open the project", opened.error());
+            return success();
+        }
         if (!options.scene.empty() && (!document || document->path() != options.scene))
             if (auto scene = openScene(options.scene); !scene)
-                return scene;
+                message("Cannot open the scene", scene.error());
     }
     return success();
 }

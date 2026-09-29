@@ -1,4 +1,5 @@
 #include "ui/Panels.hpp"
+#include "yk/core/FileIO.hpp"
 #include "yk/core/Log.hpp"
 #include <SDL3/SDL.h>
 #include <algorithm>
@@ -580,7 +581,7 @@ void messageDialog(EditorState &state) {
         ImGui::SameLine();
         if (ImGui::Button("Show Folder", {120.0F, 0.0F})) {
             // The file manager opens the folder; nothing is done with the result.
-            const std::string url = "file://" + state.dialog.revealPath.generic_string();
+            const std::string url = toFileUrl(state.dialog.revealPath);
             SDL_OpenURL(url.c_str());
         }
         markItem("dialog/Message/reveal");

@@ -11,8 +11,8 @@ code of its own and no line of the engine that knows it exists.
 include/yk/  src/         the engine and the gameplay library (public headers / implementation)
 editor/core/              what the editor does: documents, undo, selection, gizmos, projects (no window)
 editor/ui/                Dear ImGui panels, the workbench, the scripted UI driver
-player/                   yk_player: runs a project as a game
-tools/yk/                 yk: validate, format, info, components, export, targets
+player/                   yk_player: runs a project as a game (yk::host::runPlayer)
+tools/yk/                 yk: validate, format, info, components, export, targets (yk::host::runTool)
 YK-DemoGame/              the demo game: a project folder (data) and the tools that generate its art
 tests/                    unit, integration, UI scripts, install check
 docs/  LICENSES/  cmake/  scripts/  third_party/
@@ -40,7 +40,11 @@ docs/  LICENSES/  cmake/  scripts/  third_party/
   above. The demo has none. A game that needs C++ builds its own copies of the player and the
   editor with its components registered ([BUILDING.md](BUILDING.md#game-modules-custom-c-components)).
 - **Hosts** (`yk_player`, `yk_editor`, `yk`) start from `registerStandardComponents`, which
-  registers the engine's components and the gameplay library, and add the game module's.
+  registers the engine's components and the gameplay library, and add the game module's. Each
+  program is a function in `include/yk/host/Hosts.hpp` (`runPlayer`, `runEditor`, `runTool`,
+  taking `argc`/`argv` and the game's registration function) behind a one-line `main`;
+  `yk_add_game_hosts()` in `cmake/YkGame.cmake` writes the three mains for a game
+  ([ADR 0011](decisions/0011-game-modules-are-hosted-by-libraries.md)).
 - Nothing in `yk::engine` or `yk::gameplay` includes editor or game headers. Public headers
   contain no Box2D or SDL types. `YK_RUNTIME=OFF` builds everything that needs no window: the
   engine, gameplay, the editor core, the command line and their tests.

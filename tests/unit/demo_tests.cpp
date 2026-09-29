@@ -34,7 +34,7 @@ struct Game {
     Keyboard keyboard;
     std::vector<std::string> events;
     std::set<std::string> animationStates[2]; // Ember, Tide: controller states seen so far.
-    bool trace{std::getenv("YK_TEST_TRACE") != nullptr};
+    bool trace{environmentVariable("YK_TEST_TRACE").has_value()};
 
     Game() : project(loadProject()), assets(project) {
         registerStandardComponents(registry);

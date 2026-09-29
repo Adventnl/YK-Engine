@@ -118,6 +118,13 @@ void projectFile() {
         root / "project.ykproj",
         R"({"format":"yk.project","version":1,"textures":{"filter":"blurry"}})"));
     CHECK(!Project::load(root));
+
+    // Asking for something that is not a project says so, in words a person can act on.
+    const auto missing = Project::load(root / "nowhere");
+    CHECK(!missing && missing.error().find("There is no project at") != std::string::npos);
+    std::filesystem::remove(root / "project.ykproj");
+    const auto notAProject = Project::load(root);
+    CHECK(!notAProject && notAProject.error().find("is not a project folder") != std::string::npos);
     std::filesystem::remove_all(root);
 }
 // A component with an input-action field, so validation of action names can be tested here.

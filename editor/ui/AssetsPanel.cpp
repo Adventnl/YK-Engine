@@ -1,4 +1,5 @@
 #include "ui/Panels.hpp"
+#include "yk/core/FileIO.hpp"
 #include "yk/core/Log.hpp"
 #include <SDL3/SDL.h>
 #include <algorithm>
@@ -184,7 +185,7 @@ void fileRow(EditorState &state, const Node &node) {
             if (ImGui::MenuItem("Show in File Manager") && state.project) {
                 const auto absolute =
                     state.project->project().root / std::filesystem::path(entry.path);
-                const std::string url = "file://" + absolute.parent_path().generic_string();
+                const std::string url = toFileUrl(absolute.parent_path());
                 SDL_OpenURL(url.c_str());
             }
         }

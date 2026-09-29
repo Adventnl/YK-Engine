@@ -348,7 +348,7 @@ Status SceneRenderer::drawSprite(Renderer &renderer, const Entity &entity,
             break;
         }
         const auto &border = info.settings.border; // Left, top, right, bottom, pixels.
-        const auto edge = [&](int index) { return static_cast<float>(border[index]); };
+        const auto edge = [&](std::size_t index) { return static_cast<float>(border[index]); };
         float left = edge(0) / pixelsPerUnit, top = edge(1) / pixelsPerUnit;
         float right = edge(2) / pixelsPerUnit, bottom = edge(3) / pixelsPerUnit;
         // A sprite smaller than its borders shrinks them together.

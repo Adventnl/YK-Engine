@@ -10,6 +10,8 @@ yk_editor path/to/project --scene scenes/level2.ykscene
 yk_editor --size 1920x1080          # window size
 ```
 
+A project path that cannot be opened is reported in a dialog and the welcome screen stays.
+
 The welcome screen offers **Open the Demo Game** (Cinder Vale, in `YK-DemoGame/`): open it, press
 **F5**, then select the lever and see the arrow to the gate it opens. The demo is a normal project;
 nothing in the editor knows about it.

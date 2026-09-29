@@ -152,6 +152,13 @@ if(BUILD_TESTING)
             LIBS yk_spinner_module yk_player_host TIMEOUT 60
             DEFINITIONS SPINNER_PROJECT="${YK_SPINNER_PROJECT}"
             ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software;SDL_AUDIODRIVER=dummy")
+        # Exported with the game's own tool and player, the game runs on its own.
+        add_test(NAME game_module_export
+            COMMAND ${CMAKE_COMMAND} -DTOOL=$<TARGET_FILE:spinner_game_tool>
+                -DPLAYER=$<TARGET_FILE:spinner_game_player> -DPROJECT=${YK_SPINNER_PROJECT}
+                -DWORK=${CMAKE_BINARY_DIR}/game-module-export
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/game_module/check_export.cmake)
+        set_tests_properties(game_module_export PROPERTIES TIMEOUT 120)
     else()
         yk_add_test(game_module tests/game_module/game_module_tests.cpp LIBS yk_spinner_module
             TIMEOUT 60 DEFINITIONS SPINNER_PROJECT="${YK_SPINNER_PROJECT}")
@@ -194,6 +201,14 @@ if(BUILD_TESTING)
                 -DWORK=${CMAKE_BINARY_DIR}/editor-tests/game_module -DPROJECT=${YK_SPINNER_PROJECT}
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/editor/run_script.cmake)
         set_tests_properties(editor_game_module PROPERTIES TIMEOUT 300)
+        # An editor started with a project that is not there reports it and stays open.
+        add_test(NAME editor_bad_project
+            COMMAND ${CMAKE_COMMAND} -DEDITOR=$<TARGET_FILE:yk_editor>
+                -DSCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/tests/editor/startup/bad_project.ykscript
+                -DWORK=${CMAKE_BINARY_DIR}/editor-tests/bad_project
+                -DRAW_PROJECT=${CMAKE_BINARY_DIR}/editor-tests/bad_project/no-such-project
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/editor/run_script.cmake)
+        set_tests_properties(editor_bad_project PROPERTIES TIMEOUT 120)
         # The window layout survives a restart: one editor process rearranges it, the next one
         # starts from what was saved.
         foreach(part write read)

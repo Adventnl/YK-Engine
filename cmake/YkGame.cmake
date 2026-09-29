@@ -13,13 +13,15 @@
 # creates my_game_player, my_game_editor (when the engine builds the editor) and my_game_tool (the
 # `yk` command line). REGISTER names a function `void f(yk::ComponentRegistry &)` declared in HEADER.
 # The programs behave exactly like the stock ones (same options, same project files) and export the
-# same way: pass the game's player to `yk export --player` or the Export dialog.
+# same way: pass the game's player to `yk export --player` or the Export dialog. Each program gets
+# a licenses/ folder next to it, so the games it exports carry the engine's third-party notices.
 function(yk_add_game_hosts name)
     cmake_parse_arguments(ARG "" "MODULE;HEADER;REGISTER" "" ${ARGN})
     if(NOT ARG_MODULE OR NOT ARG_HEADER OR NOT ARG_REGISTER)
         message(FATAL_ERROR "yk_add_game_hosts(${name}) needs MODULE, HEADER and REGISTER")
     endif()
     set(generated "${CMAKE_CURRENT_BINARY_DIR}/yk-game-hosts/${name}")
+    file(REAL_PATH "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../LICENSES" notices)
     set(programs tool)
     if(TARGET yk_player_host)
         list(APPEND programs player)
@@ -46,5 +48,11 @@ int main(int argc, char **argv) {
 ")
         add_executable(${name}_${program} "${generated}/${program}_main.cpp")
         target_link_libraries(${name}_${program} PRIVATE yk_${program}_host ${ARG_MODULE})
+        # An export carries the license notices of the libraries inside the player, which the
+        # exporter looks for in a licenses/ folder next to the program that exports.
+        add_custom_command(TARGET ${name}_${program} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory "${notices}"
+                "$<TARGET_FILE_DIR:${name}_${program}>/licenses"
+            VERBATIM)
     endforeach()
 endfunction()

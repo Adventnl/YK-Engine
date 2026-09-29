@@ -156,8 +156,14 @@ Project Project::create(const std::filesystem::path &directory, std::string proj
 Result<Project> Project::load(const std::filesystem::path &fileOrDirectory) {
     std::filesystem::path file = fileOrDirectory;
     std::error_code error;
-    if (std::filesystem::is_directory(file, error))
+    if (!std::filesystem::exists(file, error))
+        return Error{"There is no project at '" + fileOrDirectory.string() + "'"};
+    if (std::filesystem::is_directory(file, error)) {
         file /= fileName;
+        if (!std::filesystem::exists(file, error))
+            return Error{"'" + fileOrDirectory.string() + "' is not a project folder: it has no " +
+                         fileName};
+    }
     auto text = readTextFile(file);
     if (!text)
         return Error{text.error()};

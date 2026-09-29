@@ -266,9 +266,9 @@ std::vector<std::string> exportedFiles(const Project &project) {
 std::optional<fs::path> findPlayer(BuildTarget target, const fs::path &executableDir) {
     std::vector<fs::path> candidates;
     const std::string file = playerFileName(target);
-    if (const char *templates = std::getenv("YK_TEMPLATES");
-        templates != nullptr && *templates != 0)
-        candidates.push_back(fs::path(templates) / name(target) / file);
+    if (const auto templates = environmentVariable("YK_TEMPLATES");
+        templates && !templates->empty())
+        candidates.push_back(fs::path(*templates) / name(target) / file);
     if (target == hostTarget())
         candidates.push_back(executableDir / file);
     candidates.push_back(executableDir / "templates" / name(target) / file);

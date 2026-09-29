@@ -1,3 +1,4 @@
+#include "yk/core/FileIO.hpp"
 #include "yk/core/Time.hpp"
 #include "yk/graphics/Camera2D.hpp"
 #include "yk/input/Input.hpp"
@@ -18,6 +19,11 @@ bool near(float a, float b) {
 }
 } // namespace
 int main() {
+    check(yk::toFileUrl("/home/me/My Game") == "file:///home/me/My%20Game",
+          "a file URL escapes what a URL cannot hold");
+    check(yk::toFileUrl("C:/Games/Cinder Vale") == "file:///C:/Games/Cinder%20Vale",
+          "a file URL for a Windows drive has three slashes");
+    check(yk::toFileUrl("/tmp/a#b%c") == "file:///tmp/a%23b%25c", "a file URL escapes # and %");
     yk::Keyboard keyboard;
     keyboard.beginFrame();
     keyboard.set(yk::Key::A, true);

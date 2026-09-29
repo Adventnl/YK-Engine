@@ -1,6 +1,8 @@
 # Runs the editor headlessly with a UI script and fails when the script reports a problem.
 #   cmake -DEDITOR=<yk_editor> -DSCRIPT=<file.ykscript> -DWORK=<scratch dir> [-DPROJECT=<dir>]
-#         [-DPERSIST=ON] [-DKEEP=ON] -P run_script.cmake
+#         [-DRAW_PROJECT=<argument>] [-DPERSIST=ON] [-DKEEP=ON] -P run_script.cmake
+# PROJECT is copied and opened; RAW_PROJECT is handed to the editor as it is (a path that is not
+# there, for the start-up error test).
 # PERSIST keeps the window layout (it is normally ignored and not saved); KEEP reuses WORK from an
 # earlier run instead of starting empty (to check that a layout survives a restart).
 # The editor draws with SDL's software renderer on the dummy video driver, so no display is needed.
@@ -58,6 +60,9 @@ if(PROJECT)
         file(COPY "${sample}" DESTINATION "${WORK}/tmp")
     endforeach()
     file(WRITE "${WORK}/tmp/notes.txt" "not an asset\n")
+endif()
+if(RAW_PROJECT)
+    list(APPEND arguments "${RAW_PROJECT}")
 endif()
 execute_process(COMMAND "${EDITOR}" ${arguments}
     RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE errors TIMEOUT 240)

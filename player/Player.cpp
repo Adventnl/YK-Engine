@@ -221,8 +221,13 @@ int runPlayer(int argc, char **argv, const RegisterComponents &registerGame) {
         return 1;
     }
     auto project = Project::load(locateProject(*options));
-    if (!project)
+    if (!project) {
+        if (options->project.empty())
+            std::fprintf(stderr,
+                         "Tell the player which game to run: yk_player <project folder> (an "
+                         "exported game keeps its data/ folder next to the program).\n");
         return fatal(project.error());
+    }
     if (!options->capture.empty() && options->frames == 0) {
         std::fprintf(stderr, "--capture needs --frames\n");
         return 2;
