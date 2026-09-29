@@ -1,7 +1,8 @@
 # ADR 0003: Root engine layout
 
 Date: 2026-09-27
-Status: Accepted; follows repository reorganization f20e619.
+Status: Accepted; follows repository reorganization f20e619. Its "no application or game target" clause
+is superseded by ADR 0004; the root layout stands.
 
 ## Context
 

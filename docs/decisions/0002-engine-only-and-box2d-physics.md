@@ -1,6 +1,7 @@
 # ADR 0002: Engine-only layout and private Box2D solver
 
-Date: 2026-09-27. Status: accepted; directory placement superseded by ADR 0003.
+Date: 2026-09-27. Status: accepted for the Box2D/physics decisions; directory placement superseded
+by ADR 0003; the "engine only, no games" product boundary superseded by ADR 0004.
 
 The user requested the engine itself, removal of all games, a single engine folder,
 and a substantial working 2D physics implementation. This explicitly supersedes the
