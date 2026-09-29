@@ -25,6 +25,12 @@ class PlayerInput final : public Component {
 
 // ----- Rendering ---------------------------------------------------------------------------
 enum class SpriteShape { Rectangle, Ellipse };
+// Simple stretches the texture over `size`. Tiled repeats it (cropping the last row and column) so a
+// platform can be resized without distorting its art. Sliced keeps the corners of a nine-slice
+// texture (its .ykmeta `border`) at their natural size and fills the edges and the middle.
+enum class SpriteDrawMode { Simple, Tiled, Sliced };
+enum class SpriteFill { Stretch, Tile }; // How a Sliced sprite fills its edges and middle.
+enum class SpriteBlend { Alpha, Additive };
 
 // Draws a texture, or a colored placeholder shape while no art exists. Swapping in final art is
 // assigning `texture`; nothing else in the game depends on how a sprite looks.
@@ -39,9 +45,16 @@ class SpriteRenderer final : public Component {
     float order{0.0F};
     bool flipX{false};
     bool visible{true};
-    int columns{1}; // Sprite sheet grid; `frame` selects the cell.
+    int columns{1}; // Sprite sheet grid; `frame` selects the cell. 1 x 1 defers to the texture's meta.
     int rows{1};
     int frame{0};
+    SpriteDrawMode drawMode{SpriteDrawMode::Simple};
+    Vec2 tileSize{0.0F, 0.0F}; // Tiled: world size of one repeat; 0 uses the texture's own size.
+    SpriteFill sliceFill{SpriteFill::Tile};
+    SpriteBlend blend{SpriteBlend::Alpha};
+    // 1 moves with the world; 0 stays fixed on screen (far background); in between scrolls slower
+    // than the camera. Applied by the game view, not by the editor's scene view.
+    Vec2 parallax{1.0F, 1.0F};
     static void describe(TypeBuilder<SpriteRenderer> &type);
 };
 

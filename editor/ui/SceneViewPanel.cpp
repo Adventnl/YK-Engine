@@ -658,7 +658,8 @@ Status renderViewports(EditorState &state) {
             }
         }
         if (drawn)
-            drawn = state.sceneRenderer->drawWorld(*state.renderer, *scene);
+            drawn = state.sceneRenderer->drawWorld(*state.renderer, *scene,
+                                                   {camera, pixels, false});
         if (drawn && state.view.colliders)
             drawn = state.sceneRenderer->drawColliders(*state.renderer, *scene);
         const Status ended = state.renderer->endPass();

@@ -52,6 +52,23 @@ void SpriteRenderer::describe(TypeBuilder<SpriteRenderer> &type) {
     type.field("frame", &SpriteRenderer::frame)
         .range(0, 65535)
         .tooltip("Sprite sheet cell to draw.");
+    type.field("drawMode", &SpriteRenderer::drawMode)
+        .options({"Simple", "Tiled", "Sliced"})
+        .tooltip("Simple stretches the texture; Tiled repeats it; Sliced keeps the corners of a "
+                 "nine-slice texture (set its border in the texture's import settings).");
+    type.field("tileSize", &SpriteRenderer::tileSize)
+        .range(0, 1000)
+        .tooltip("Tiled: world size of one repeat. 0 uses the texture's own size.");
+    type.field("sliceFill", &SpriteRenderer::sliceFill)
+        .options({"Stretch", "Tile"})
+        .tooltip("Sliced: how the edges and the middle are filled.");
+    type.field("blend", &SpriteRenderer::blend)
+        .options({"Alpha", "Additive"})
+        .tooltip("Additive adds light to what is behind (glows, sparks).");
+    type.field("parallax", &SpriteRenderer::parallax)
+        .range(-10, 10, 0.01)
+        .tooltip("1 moves with the world, 0 stays fixed on screen, in between scrolls slower than "
+                 "the camera. Applied in the game view.");
 }
 void UiText::describe(TypeBuilder<UiText> &type) {
     type.category("UI").screenSpace().description(

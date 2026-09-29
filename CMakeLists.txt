@@ -26,7 +26,7 @@ add_library(yk_engine STATIC src/core/Log.cpp src/core/Time.cpp src/core/Color.c
     src/input/InputMap.cpp src/input/ActionInput.cpp
     src/scene/EntityId.cpp src/scene/Property.cpp src/scene/Registry.cpp src/scene/Entity.cpp
     src/scene/Scene.cpp src/scene/SceneSerializer.cpp src/scene/RegistryDocs.cpp src/animation/AnimationSet.cpp
-    src/assets/Project.cpp src/assets/AssetSource.cpp src/components/Components.cpp
+    src/assets/Project.cpp src/assets/TextureMeta.cpp src/assets/AssetSource.cpp src/components/Components.cpp
     src/runtime/Blackboard.cpp src/runtime/EventBus.cpp src/runtime/GameRuntime.cpp
     src/runtime/PhysicsBinding.cpp src/assets/Validation.cpp
     src/physics/World.cpp src/physics/Queries.cpp src/physics/Joints.cpp)
@@ -97,7 +97,7 @@ endif()
 target_compile_definitions(yk_engine PUBLIC YK_HAS_RUNTIME=$<BOOL:${YK_RUNTIME}>)
 
 if(BUILD_TESTING)
-    foreach(suite core physics json animation scene game_runtime audio input)
+    foreach(suite core physics json animation scene game_runtime audio input assets)
         yk_add_test(${suite} tests/unit/${suite}_tests.cpp LIBS yk::engine TIMEOUT 30)
     endforeach()
     yk_add_test(gameplay tests/unit/gameplay_tests.cpp LIBS yk::gameplay TIMEOUT 120)
@@ -115,6 +115,8 @@ if(BUILD_TESTING)
         yk_add_test(sdl_audio tests/integration/sdl_audio_tests.cpp LIBS yk::engine SDL3::SDL3
             ENVIRONMENT "SDL_AUDIODRIVER=dummy" TIMEOUT 30)
         yk_add_test(scene_render tests/integration/scene_render_tests.cpp LIBS yk::engine SDL3::SDL3
+            ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software" TIMEOUT 30)
+        yk_add_test(render_modes tests/integration/render_modes_tests.cpp LIBS yk::engine SDL3::SDL3
             ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software" TIMEOUT 30)
         # The editor, driven through its real UI by scripts (see editor/ui/EditorDriver.hpp).
         file(GLOB YK_EDITOR_SCRIPTS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/tests/editor/*.ykscript")

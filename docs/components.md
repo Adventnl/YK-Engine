@@ -280,6 +280,11 @@ Draws a texture or a colored placeholder shape.
 | `columns` | int | 1 | Sprite sheet columns. (range 1 to 256) |
 | `rows` | int | 1 | Sprite sheet rows. (range 1 to 256) |
 | `frame` | int | 0 | Sprite sheet cell to draw. (range 0 to 65535) |
+| `drawMode` | enum | "Simple" | Simple stretches the texture; Tiled repeats it; Sliced keeps the corners of a nine-slice texture (set its border in the texture's import settings). Options: Simple Tiled Sliced |
+| `tileSize` | vec2 | [0,0] | Tiled: world size of one repeat. 0 uses the texture's own size. (range 0 to 1000) |
+| `sliceFill` | enum | "Tile" | Sliced: how the edges and the middle are filled. Options: Stretch Tile |
+| `blend` | enum | "Alpha" | Additive adds light to what is behind (glows, sparks). Options: Alpha Additive |
+| `parallax` | vec2 | [1,1] | 1 moves with the world, 0 stays fixed on screen, in between scrolls slower than the camera. Applied in the game view. (range -10 to 10) |
 
 ### Camera
 

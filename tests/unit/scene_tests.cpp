@@ -216,6 +216,37 @@ void hierarchy() {
     CHECK(fixed.id() == EntityId{77});
 }
 
+// orderedIds() is the cached form of hierarchyOrder(): same order, rebuilt after every structural
+// change (a stale cache would make the renderer or runtime skip or repeat entities).
+void cachedOrder() {
+    auto registry = makeRegistry();
+    Scene scene(registry, 6);
+    const auto matches = [&] { return scene.orderedIds() == scene.hierarchyOrder(); };
+    CHECK(scene.orderedIds().empty());
+    Entity &a = scene.createEntity("A");
+    CHECK(scene.orderedIds().size() == 1 && matches());
+    Entity &b = scene.createEntity("B");
+    Entity &a1 = scene.createEntity("A1", a.id());
+    CHECK(scene.orderedIds().size() == 3 && matches());
+    CHECK(scene.orderedIds()[0] == a.id() && scene.orderedIds()[1] == a1.id() &&
+          scene.orderedIds()[2] == b.id());
+    // Reparenting, reordering and destroying each invalidate it.
+    CHECK(scene.setParent(b.id(), a.id(), 0));
+    CHECK(matches() && scene.orderedIds()[1] == b.id());
+    CHECK(scene.setSiblingIndex(b.id(), 1));
+    CHECK(matches() && scene.orderedIds()[2] == b.id());
+    CHECK(scene.destroy(a1.id()));
+    CHECK(matches() && scene.orderedIds().size() == 2);
+    CHECK(scene.findByName("B") == &b && !scene.findByName("A1"));
+    // A copy taken earlier is unaffected by later changes (callers rely on that while iterating).
+    const auto snapshot = scene.hierarchyOrder();
+    scene.createEntity("C");
+    CHECK(snapshot.size() == 2 && scene.orderedIds().size() == 3);
+    // Repeated calls without changes give the very same storage (no rebuild).
+    const auto *first = scene.orderedIds().data();
+    CHECK(scene.orderedIds().data() == first);
+}
+
 void transforms() {
     auto registry = makeRegistry();
     Scene scene(registry, 3);
@@ -556,6 +587,7 @@ int main() {
     registration();
     reflection();
     hierarchy();
+    cachedOrder();
     transforms();
     components();
     serialization();

@@ -151,6 +151,12 @@ Result<Project> Project::load(const std::filesystem::path &fileOrDirectory) {
             return Error{file.string() + ": " + parsed.error()};
         project.layers = std::move(parsed.value());
     }
+    if (const Json *textures = json.find("textures")) {
+        auto parsed = TextureDefaults::fromJson(*textures);
+        if (!parsed)
+            return Error{file.string() + ": " + parsed.error()};
+        project.textures = parsed.value();
+    }
     if (const Json *input = json.find("input")) {
         auto parsed = InputMap::fromJson(*input);
         if (!parsed)
@@ -171,6 +177,7 @@ Status Project::save() const {
     windowJson.set("height", window.height);
     json.set("window", windowJson);
     json.set("layers", layers.toJson());
+    json.set("textures", textures.toJson());
     json.set("input", input.toJson());
     return writeTextFileAtomic(file(), json.dump(2) + "\n");
 }

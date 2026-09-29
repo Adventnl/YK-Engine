@@ -103,7 +103,8 @@ Status EditorState::attachProject(std::unique_ptr<EditorProject> opened) {
     interaction.bind(nullptr);
     document.reset();
     project = std::move(opened);
-    auto renderers = SceneRenderer::create(*renderer, &project->assets());
+    auto renderers =
+        SceneRenderer::create(*renderer, &project->assets(), project->project().textures);
     if (!renderers) {
         project.reset();
         return Error{renderers.error()};

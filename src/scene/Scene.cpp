@@ -22,7 +22,7 @@ const Entity *Scene::find(EntityId id) const {
     return found == entities_.end() ? nullptr : found->second.get();
 }
 Entity *Scene::findByName(std::string_view name) const {
-    for (const EntityId id : hierarchyOrder())
+    for (const EntityId id : orderedIds())
         if (const Entity *entity = find(id); entity && entity->name() == name)
             return const_cast<Entity *>(entity);
     return nullptr;
@@ -116,13 +116,27 @@ Status Scene::setSiblingIndex(EntityId id, std::size_t index) {
     touch();
     return success();
 }
+const std::vector<EntityId> &Scene::orderedIds() const {
+    if (orderRevision_ == revision_)
+        return order_;
+    order_.clear();
+    order_.reserve(entities_.size());
+    std::vector<EntityId> stack;
+    for (auto root = roots_.rbegin(); root != roots_.rend(); ++root)
+        stack.push_back(*root);
+    while (!stack.empty()) {
+        const EntityId id = stack.back();
+        stack.pop_back();
+        order_.push_back(id);
+        const auto &children = find(id)->childIds();
+        for (auto child = children.rbegin(); child != children.rend(); ++child)
+            stack.push_back(*child);
+    }
+    orderRevision_ = revision_;
+    return order_;
+}
 std::vector<EntityId> Scene::hierarchyOrder() const {
-    std::vector<EntityId> order;
-    order.reserve(entities_.size());
-    for (const EntityId root : roots_)
-        for (const EntityId id : subtree(root))
-            order.push_back(id);
-    return order;
+    return orderedIds();
 }
 void Scene::forEach(const std::function<void(Entity &)> &visit) {
     for (const EntityId id : hierarchyOrder())

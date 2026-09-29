@@ -104,7 +104,7 @@ class PlayerLayer final : public ApplicationLayer {
         : project_(project), registry_(registry), options_(options), assets_(project) {}
 
     Status initialize(Renderer &renderer) override {
-        auto sceneRenderer = SceneRenderer::create(renderer, &assets_);
+        auto sceneRenderer = SceneRenderer::create(renderer, &assets_, project_.textures);
         if (!sceneRenderer)
             return Error{sceneRenderer.error()};
         sceneRenderer_ = std::move(sceneRenderer.value());

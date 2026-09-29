@@ -1,4 +1,5 @@
 #pragma once
+#include "yk/assets/TextureMeta.hpp"
 #include "yk/core/Color.hpp"
 #include "yk/core/Result.hpp"
 #include "yk/graphics/Camera2D.hpp"
@@ -26,9 +27,11 @@ class TextureHandle {
     std::weak_ptr<const void> owner_;
     std::size_t index_{};
 };
-enum class TextureFilter { Nearest, Linear };
 // Procedural textures every renderer can provide, so placeholder art needs no files.
 enum class BuiltinTexture { White, Circle };
+// Alpha: the usual "over" blend. Additive: adds the sprite's light to what is behind it (glows,
+// sparks, fire); the sprite's alpha scales its contribution.
+enum class BlendMode { Alpha, Additive };
 struct Sprite {
     TextureHandle texture;
     Transform2D transform;
@@ -38,6 +41,7 @@ struct Sprite {
     // Pixel-space atlas region. Empty draws the complete texture.
     std::optional<Rect> source;
     bool flipHorizontal{};
+    BlendMode blend{BlendMode::Alpha};
     int layer{};
     float depth{}; // Ascending depth, then submission order within each layer.
 };
@@ -67,10 +71,13 @@ class Renderer {
     // invalid.
     SDL_Texture *nativeTexture(TextureHandle texture) const;
     Vec2 textureSize(TextureHandle texture) const; // Pixels; zero for an invalid handle.
-    // Absolute paths only; equivalent paths share a cached resource.
-    Result<TextureHandle> loadBmp(const std::filesystem::path &path);
+    // Absolute paths only; equivalent paths share a cached resource (the filter of the first load
+    // wins).
+    Result<TextureHandle> loadBmp(const std::filesystem::path &path,
+                                  TextureFilter filter = TextureFilter::Nearest);
     // Decodes PNG as RGBA, preserves alpha and caches by canonical absolute path.
-    Result<TextureHandle> loadPng(const std::filesystem::path &path);
+    Result<TextureHandle> loadPng(const std::filesystem::path &path,
+                                  TextureFilter filter = TextureFilter::Nearest);
     Status release(TextureHandle texture);
     bool valid(TextureHandle texture) const;
     // Logical size in letterbox mode; the current output size in native-resolution mode.
@@ -85,6 +92,13 @@ class Renderer {
     Status debugLine(Vec2 first, Vec2 second, Color color, int layer = 1000);
     // Diagnostic readback saves the physical content viewport before present (excludes bars).
     Status present(const std::optional<std::filesystem::path> &capture = std::nullopt);
+    // What the previous frame asked the backend to draw (for profilers and tests).
+    struct FrameStats {
+        std::size_t sprites{}; // Textured quads.
+        std::size_t lines{};   // Debug lines and rectangles.
+        std::size_t passes{};
+    };
+    FrameStats lastFrameStats() const;
     // Saves what has been drawn so far this frame as a BMP. Call after every pass has ended and
     // before present (tools that draw their own UI capture screenshots this way).
     Status capture(const std::filesystem::path &path);

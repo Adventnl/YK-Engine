@@ -1,4 +1,5 @@
 #pragma once
+#include "yk/assets/TextureMeta.hpp"
 #include "yk/core/Json.hpp"
 #include "yk/core/Result.hpp"
 #include "yk/input/InputMap.hpp"
@@ -57,6 +58,8 @@ class Project {
     LayerConfig layers{LayerConfig::defaults()};
     // Named actions and the keys/buttons that drive them (see yk/input/InputMap.hpp).
     InputMap input{InputMap::standard()};
+    // Fallbacks for textures without a .ykmeta sidecar (world scale and filtering).
+    TextureDefaults textures;
 
     // Accepts the project file or its directory.
     static Result<Project> load(const std::filesystem::path &fileOrDirectory);
