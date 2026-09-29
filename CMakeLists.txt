@@ -24,7 +24,10 @@ yk_sanitize(box2d)
 add_library(yk_engine STATIC src/core/Log.cpp src/core/Time.cpp src/core/Color.cpp src/core/Json.cpp
     src/core/FileIO.cpp src/animation/Animator.cpp src/input/Input.cpp
     src/scene/EntityId.cpp src/scene/Property.cpp src/scene/Registry.cpp src/scene/Entity.cpp
-    src/scene/Scene.cpp src/scene/SceneSerializer.cpp
+    src/scene/Scene.cpp src/scene/SceneSerializer.cpp src/animation/AnimationSet.cpp
+    src/assets/Project.cpp src/assets/AssetSource.cpp src/components/Components.cpp
+    src/runtime/Blackboard.cpp src/runtime/EventBus.cpp src/runtime/GameRuntime.cpp
+    src/runtime/PhysicsBinding.cpp
     src/physics/World.cpp src/physics/Queries.cpp src/physics/Joints.cpp)
 add_library(yk::engine ALIAS yk_engine)
 target_include_directories(yk_engine PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
@@ -42,7 +45,7 @@ endif()
 target_compile_definitions(yk_engine PUBLIC YK_HAS_RUNTIME=$<BOOL:${YK_RUNTIME}>)
 
 if(BUILD_TESTING)
-    foreach(suite core physics json animation scene)
+    foreach(suite core physics json animation scene game_runtime)
         yk_add_test(${suite} tests/unit/${suite}_tests.cpp LIBS yk::engine TIMEOUT 30)
     endforeach()
     if(YK_RUNTIME)

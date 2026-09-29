@@ -41,6 +41,11 @@ void Keyboard::releaseAll() {
     for (std::size_t i = 0; i < keys_.size(); ++i)
         set(static_cast<Key>(i), false);
 }
+void Keyboard::assign(Key key, ButtonState state) {
+    const auto index = static_cast<std::size_t>(key);
+    if (index < keys_.size())
+        keys_[index] = state;
+}
 ButtonState Keyboard::state(Key key) const {
     const auto index = static_cast<std::size_t>(key);
     return index < keys_.size() ? keys_[index] : ButtonState{};

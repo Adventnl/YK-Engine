@@ -59,6 +59,8 @@ class Keyboard {
     void beginFrame();
     void set(Key key, bool down);
     void releaseAll();
+    // Overwrites a key's exact state, for replaying or re-timing input (fixed-step runtime, tests).
+    void assign(Key key, ButtonState state);
     ButtonState state(Key key) const;
 
   private:
