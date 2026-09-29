@@ -17,7 +17,8 @@ scene. The editor uses the link for **Revert to Prefab**, **Apply to Prefab**, *
 Instances** and **Unpack**. Reverting keeps the root's identity (id, name, transform, place in the
 hierarchy) so references to it stay valid, and keeps references the instance held to entities
 outside itself. There is no override data, so reverting or updating replaces an instance's own
-changes; bulk updates ask first and only reach the open scenes.
+changes; bulk updates ask first and reach every scene of the project (the open ones as undoable
+edits, the others as files written at once).
 
 ## Consequences
 

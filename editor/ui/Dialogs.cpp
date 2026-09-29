@@ -569,6 +569,7 @@ void shortcutsDialog(EditorState &state) {
         {"W, R, E", "Move, Resize, Rotate tool"},
         {"F, Home", "Frame the selection, frame everything you can edit"},
         {"Arrow keys", "Nudge the selection (Shift for bigger steps)"},
+        {"Alt+Up / Alt+Down", "Move the selected entity among its siblings"},
         {"Ctrl (while dragging)", "Toggle grid snapping"},
         {"Shift (while dragging)", "Constrain to an axis, or keep proportions when resizing"},
         {"Alt (resizing)", "Resize from the center"},

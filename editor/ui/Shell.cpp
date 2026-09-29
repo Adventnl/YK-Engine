@@ -272,6 +272,10 @@ void handleShortcuts(EditorState &state) {
         doc.selectAll();
     if (pressed(ImGuiKey_Delete) && !state.explorerFocused) // In the Explorer it deletes a file.
         doc.deleteSelection();
+    if (pressed(ImGuiMod_Alt | ImGuiKey_UpArrow))
+        doc.moveAmongSiblings(doc.primary(), -1);
+    if (pressed(ImGuiMod_Alt | ImGuiKey_DownArrow))
+        doc.moveAmongSiblings(doc.primary(), 1);
     if (pressed(ImGuiKey_Escape)) {
         if (state.pick)
             state.pick.reset();
@@ -291,7 +295,9 @@ void handleShortcuts(EditorState &state) {
         if (pressed(ImGuiKey_E))
             state.interaction.tool = Tool::Rotate;
         const auto nudge = [&](ImGuiKey key, Vec2 direction) {
-            if (ImGui::IsKeyPressed(key, true) && !ImGui::GetIO().WantTextInput)
+            // Alt+arrows reorder siblings instead.
+            if (ImGui::IsKeyPressed(key, true) && !ImGui::GetIO().WantTextInput &&
+                !ImGui::GetIO().KeyAlt)
                 state.interaction.nudge(direction, ImGui::GetIO().KeyShift);
         };
         nudge(ImGuiKey_LeftArrow, {-1.0F, 0.0F});

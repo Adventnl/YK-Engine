@@ -88,8 +88,9 @@ What the test suites cover, in the order of the audit's findings:
   module, and a game with such components builds its own player, editor and command line
   (`yk_add_game_hosts`). Modules are not loaded at run time.
 - **Prefab instances have no override data.** Revert, apply and update replace an instance's own
-  changes (except name and placement); the editor asks before bulk updates, which only reach open
-  scenes ([ADR 0010](decisions/0010-prefab-instances-are-copies-with-a-source-link.md)).
+  changes (except name and placement); the editor asks before bulk updates, which reach every scene
+  of the project (scenes that are not open are written at once)
+  ([ADR 0010](decisions/0010-prefab-instances-are-copies-with-a-source-link.md)).
 - **No tilemap editor, no skeletal animation, no lighting model**, no networking. Levels are
   built from prefabs (a tiled sprite makes a resizable platform); `Light2D` is a decoration glow.
 - **The Explorer has no thumbnails, no new-folder command and no drag-to-move** (Rename or Move

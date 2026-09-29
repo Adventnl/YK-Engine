@@ -107,6 +107,25 @@ expect prop "Ground Middle" SpriteRenderer.order 0
 expect clean
 key escape
 
+log "== reorder siblings from the keyboard and the Entity menu"
+click "hierarchy/Gate"
+expect sibling-index Gate 1
+key alt+up
+expect sibling-index Gate 0
+expect undo "Reorder"
+key alt+down
+expect sibling-index Gate 1
+menu "Entity/Move Down"
+expect sibling-index Gate 2
+menu "Entity/Move Up"
+expect sibling-index Gate 1
+key ctrl+z
+key ctrl+z
+key ctrl+z
+key ctrl+z
+expect sibling-index Gate 1
+expect clean
+
 log "== prefab instances: revert, apply, unpack"
 click "hierarchy/Lever"
 expect widget inspector/prefab/revert
@@ -149,6 +168,27 @@ expect prop "Grass 2" SpriteRenderer.color "#ff0000ff"
 expect undo "Update Prefab Instances"
 key ctrl+z
 expect prop-not "Grass 2" SpriteRenderer.color "#ff0000ff"
+key ctrl+z
+expect clean
+# The scenes that are not open follow too: they are written at once, and the dialog says so.
+click "hierarchy/Gate"
+expect widget prop/startsOpen
+click prop/startsOpen
+click inspector/prefab/apply
+expect file-contains prefabs/mechanisms/gate.ykprefab "\"startsOpen\": true"
+expect file-lacks scenes/practice.ykscene "\"startsOpen\": true"
+menu "Entity/Prefab/Update Other Instances"
+expect dialog confirm
+expect dialog-text "scenes/practice.ykscene"
+expect dialog-text "cannot be undone"
+capture ${SHOT_DIR}/edit-04-update-closed.bmp
+click dialog/Confirm/cancel
+expect file-lacks scenes/practice.ykscene "\"startsOpen\": true"
+menu "Entity/Prefab/Update Other Instances"
+click dialog/Confirm/ok
+expect no-dialog
+expect file-contains scenes/practice.ykscene "\"startsOpen\": true"
+expect console "that were not open were saved"
 key ctrl+z
 expect clean
 click "hierarchy/Lever"

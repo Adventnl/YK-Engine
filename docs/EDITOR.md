@@ -194,8 +194,9 @@ and the hierarchy's context menu:
   entities outside the instance (a plate wired to a door) survive.
 - **Apply to Prefab** writes the instance into the prefab file. Other instances keep their contents
   until you choose **Update Other Instances**, which asks first: instances carry no override data,
-  so an update replaces their own changes (other than name and placement). Only the open scenes
-  are updated.
+  so an update replaces their own changes (other than name and placement). It reaches every
+  scene of the project: the open ones change in the editor (unsaved, undoable), the ones that are
+  not open are written to disk at once, and the dialog says which is which.
 - **Unpack Prefab** forgets the link; **Show Prefab in Explorer** finds the file.
 
 ## Play, Stop, and what stays yours

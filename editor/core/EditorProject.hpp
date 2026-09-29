@@ -6,6 +6,7 @@
 #include "yk/assets/Validation.hpp"
 #include <filesystem>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -103,6 +104,26 @@ class EditorProject {
     // Writes the instance rooted at `root` back to the prefab file it came from (its root's
     // position is not stored, so the prefab has no place of its own).
     Status applyToPrefab(const EditorDocument &document, EntityId root);
+
+    // Prefab instances in the project's scenes that are not open in an editor (`open` lists the
+    // scenes that are, by path): how many, and which scenes hold them.
+    struct ClosedInstances {
+        std::size_t instances{0};
+        std::vector<std::string> scenes; // Sorted; only scenes that hold at least one.
+    };
+    ClosedInstances closedInstancesOf(const std::string &source,
+                                      const std::set<std::string> &open) const;
+    struct ClosedUpdate {
+        std::size_t updated{0};
+        std::vector<std::string> scenes;   // The scenes that were written.
+        std::vector<std::string> failures; // "scene: why" for the ones that could not be.
+    };
+    // Puts those instances back to the prefab file's contents (names and placement stay, as in
+    // EditorDocument::updatePrefabInstances) and saves each scene that changed. Scenes are written
+    // right away, so this cannot be undone; a scene that cannot be loaded or saved is reported and
+    // the others still go ahead.
+    ClosedUpdate updateClosedInstances(const std::string &source,
+                                       const std::set<std::string> &open);
 
     // Loads every scene and prefab and reports what a game would trip over.
     std::vector<ProjectIssue> validate() const;

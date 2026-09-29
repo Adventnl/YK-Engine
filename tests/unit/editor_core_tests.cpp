@@ -14,6 +14,7 @@
 #include "yk/scene/SceneSerializer.hpp"
 #include <cmath>
 #include <filesystem>
+#include <set>
 
 using namespace yk;
 using namespace yk::editor;
@@ -1636,6 +1637,92 @@ void assetOperations() {
     CHECK(missing);
 }
 
+// A prefab is used all over a project: updating its instances reaches the scenes that are not open.
+void prefabUpdatesAcrossScenes() {
+    ComponentRegistry registry;
+    registerStandardComponents(registry);
+    TempDir dir("yk-editor-prefab-scenes-test");
+    auto created = EditorProject::create(dir.path / "P", "P", registry);
+    CHECK(created);
+    if (!created)
+        return;
+    EditorProject &project = *created.value();
+    const auto root = project.project().root;
+    const std::string source = "prefabs/floor.ykprefab";
+
+    // The prefab, a scene with an instance, another with two, and one with none.
+    auto firstScene = project.newScene("scenes/first");
+    CHECK(firstScene);
+    if (!firstScene)
+        return;
+    EditorDocument &doc = *firstScene.value();
+    const auto platform = doc.createFromTemplate(templateNamed(registry, "Platform"), {0, 0});
+    CHECK(platform && project.savePrefab(doc, platform.value(), "prefabs/floor"));
+    const auto prefab = project.loadPrefab(source);
+    CHECK(prefab);
+    if (!prefab || !platform)
+        return;
+    const auto a = doc.instantiatePrefab(prefab.value(), {10, 0}, {}, source);
+    CHECK(a && project.saveScene(doc));
+    auto secondScene = project.newScene("scenes/second");
+    CHECK(secondScene);
+    if (!secondScene || !a)
+        return;
+    EditorDocument &other = *secondScene.value();
+    const auto b1 = other.instantiatePrefab(prefab.value(), {1, 1}, {}, source);
+    const auto b2 = other.instantiatePrefab(prefab.value(), {2, 2}, {}, source);
+    CHECK(b1 && b2 && project.saveScene(other));
+    CHECK(project.newScene("scenes/third"));
+    if (!b1 || !b2)
+        return;
+
+    // The instance in the first scene is recolored and applied to the prefab.
+    doc.change("recolor", [&](Scene &scene) {
+        scene.find(a.value())->get<SpriteRenderer>()->color = Color{9, 8, 7, 255};
+    });
+    CHECK(project.applyToPrefab(doc, a.value()));
+    CHECK(project.saveScene(doc));
+
+    // Only scenes that are not open are looked at, and only ones that hold instances count.
+    const std::set<std::string> open{"scenes/first.ykscene"};
+    const auto found = project.closedInstancesOf(source, open);
+    CHECK(found.instances == 2 &&
+          found.scenes == std::vector<std::string>{"scenes/second.ykscene"});
+    CHECK(project.closedInstancesOf(source, {"scenes/first.ykscene", "scenes/second.ykscene"})
+              .instances == 0);
+    const std::string thirdBefore = readAll(root / "scenes/third.ykscene");
+    const std::string firstBefore = readAll(root / "scenes/first.ykscene");
+
+    const auto updated = project.updateClosedInstances(source, open);
+    CHECK(updated.updated == 2 && updated.failures.empty() && updated.scenes == found.scenes);
+    auto reopened = project.openScene("scenes/second.ykscene");
+    CHECK(reopened);
+    if (reopened) {
+        for (const EntityId id : {b1.value(), b2.value()}) {
+            const Entity *entity = reopened.value()->scene().find(id);
+            CHECK(entity && entity->get<SpriteRenderer>()->color == Color(9, 8, 7, 255));
+        }
+        CHECK_NEAR(reopened.value()->scene().find(b2.value())->worldPosition().x,
+                   2.0); // Stays put.
+        CHECK(!reopened.value()->dirty());
+    }
+    CHECK(readAll(root / "scenes/third.ykscene") == thirdBefore);
+    CHECK(readAll(root / "scenes/first.ykscene") == firstBefore); // The open scene is the editor's.
+
+    // A scene that cannot be written is reported; the others still go ahead.
+    auto fourthScene = project.newScene("scenes/zzz");
+    CHECK(fourthScene);
+    if (!fourthScene)
+        return;
+    CHECK(fourthScene.value()->instantiatePrefab(prefab.value(), {3, 3}, {}, source) &&
+          project.saveScene(*fourthScene.value()));
+    std::filesystem::create_directories(root / "scenes/zzz.ykscene.tmp");
+    const auto partial = project.updateClosedInstances(source, open);
+    CHECK(partial.updated == 2 && partial.scenes == found.scenes);
+    CHECK(partial.failures.size() == 1 && partial.failures[0].starts_with("scenes/zzz.ykscene"));
+    CHECK(project.updateClosedInstances("prefabs/none.ykprefab", open).updated == 0);
+}
+
 int main() {
     workbenchLayout();
     undoAndRedo();
@@ -1660,6 +1747,7 @@ int main() {
     sampleProject();
     prefabWorkflow();
     assetOperations();
+    prefabUpdatesAcrossScenes();
     playing();
     console();
     return yk::test::finish("editor_core");

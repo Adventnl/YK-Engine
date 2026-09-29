@@ -670,6 +670,20 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
         const std::string actual = parent ? parent->name() : "none";
         return report(actual == w[3], "'" + arg + "' has parent '" + actual + "'");
     }
+    if (what == "sibling-index") { // expect sibling-index ENTITY N: its place among its siblings
+        if (!need(2))
+            return -1;
+        const Entity *entity = findNamed(scene, arg);
+        if (!entity)
+            return report(false, "there is no entity named '" + arg + "'");
+        const std::vector<EntityId> &siblings =
+            entity->parent() ? entity->parent()->childIds() : scene->roots();
+        const auto found = std::find(siblings.begin(), siblings.end(), entity->id());
+        const auto index = static_cast<long>(found - siblings.begin());
+        return report(found != siblings.end() &&
+                          index == static_cast<long>(number(w[3]).value_or(-1)),
+                      "'" + arg + "' is at index " + std::to_string(index));
+    }
     if (what == "no-links") { // expect no-links FROM TO
         if (!need(2))
             return -1;

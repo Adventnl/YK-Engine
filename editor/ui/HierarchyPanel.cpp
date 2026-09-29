@@ -413,12 +413,6 @@ void hierarchyPanel(EditorState &state) {
             state.renameBuffer = scene->find(primary)->name();
             state.renameFocus = true;
         }
-        if (primary && ImGui::GetIO().KeyAlt) {
-            if (ImGui::IsKeyPressed(ImGuiKey_UpArrow))
-                doc->moveAmongSiblings(primary, -1);
-            if (ImGui::IsKeyPressed(ImGuiKey_DownArrow))
-                doc->moveAmongSiblings(primary, 1);
-        }
     }
 }
 } // namespace yk::editor::ui

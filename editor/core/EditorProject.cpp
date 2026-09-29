@@ -598,6 +598,56 @@ Status EditorProject::deleteAsset(const std::string &pathInput) {
     return success();
 }
 
+EditorProject::ClosedInstances
+EditorProject::closedInstancesOf(const std::string &source,
+                                 const std::set<std::string> &open) const {
+    ClosedInstances found;
+    for (const AssetEntry &entry : scanAssets(project_)) {
+        if (entry.kind != AssetKind::Scene || open.contains(entry.path))
+            continue;
+        const auto document = openScene(entry.path);
+        if (!document)
+            continue;
+        std::size_t count = 0;
+        document.value()->scene().forEach(
+            [&](const Entity &entity) { count += entity.prefabSource() == source ? 1 : 0; });
+        if (count > 0) {
+            found.instances += count;
+            found.scenes.push_back(entry.path);
+        }
+    }
+    return found;
+}
+
+EditorProject::ClosedUpdate
+EditorProject::updateClosedInstances(const std::string &source, const std::set<std::string> &open) {
+    ClosedUpdate result;
+    const auto prefab = loadPrefab(source);
+    if (!prefab) {
+        result.failures.push_back(source + ": " + prefab.error());
+        return result;
+    }
+    for (const std::string &path : closedInstancesOf(source, open).scenes) {
+        auto document = openScene(path);
+        if (!document) {
+            result.failures.push_back(path + ": " + document.error());
+            continue;
+        }
+        const auto updated = document.value()->updatePrefabInstances(source, prefab.value(), {});
+        if (!updated) {
+            result.failures.push_back(path + ": " + updated.error());
+            continue;
+        }
+        if (auto saved = saveScene(*document.value()); !saved) {
+            result.failures.push_back(path + ": " + saved.error());
+            continue;
+        }
+        result.updated += updated.value();
+        result.scenes.push_back(path);
+    }
+    return result;
+}
+
 Result<ExportReport> EditorProject::exportGame(const ExportOptions &options) const {
     auto report = yk::exportGame(project_, *registry_, options);
     if (report)

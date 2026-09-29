@@ -286,7 +286,7 @@ void menuComponent(EditorState &state) {
 
 void menuBuild(EditorState &state) {
     const bool hasProject = state.project != nullptr;
-    if (item("Build/Validate Project", "Validate Project", "Ctrl+Shift+M", hasProject))
+    if (item("Build/Validate Project", "Validate Project", nullptr, hasProject))
         state.validateProject();
     if (item("Build/Export Game", "Export Game...", nullptr, hasProject && !state.playing()))
         openDialog(state, DialogKind::Export);

@@ -701,6 +701,17 @@ Status EditorState::revertPrefab(EntityId entity) {
 }
 
 namespace {
+// The files a dialog lists, one per line, the first few.
+std::string fileList(const std::vector<std::string> &files) {
+    constexpr std::size_t shown = 6;
+    std::string text;
+    for (std::size_t i = 0; i < files.size() && i < shown; ++i)
+        text += "\n   " + files[i];
+    if (files.size() > shown)
+        text += "\n   ... and " + std::to_string(files.size() - shown) + " more";
+    return text;
+}
+
 // How many other instances of `source` the open scenes hold (`except` is the one being acted on).
 std::size_t otherInstances(const EditorState &state, const std::string &source, EntityId except) {
     std::size_t count = 0;
@@ -735,7 +746,8 @@ Status EditorState::applyPrefab(EntityId entity) {
     if (const std::size_t others = otherInstances(*this, source, root); others > 0)
         text += ". " + std::to_string(others) +
                 " other instance(s) in the open scenes still have the old contents (Entity > "
-                "Prefab > Update Other Instances brings them in line)";
+                "Prefab > Update Other Instances brings them in line, in the scenes that are not "
+                "open too)";
     log(LogLevel::Info, "editor", text);
     refreshProblems();
     return success();
@@ -748,21 +760,32 @@ void EditorState::updateOtherInstances(EntityId entity) {
     if (!root)
         return;
     const std::string source = document->scene().find(root)->prefabSource();
-    const std::size_t others = otherInstances(*this, source, root);
-    if (others == 0) {
+    const std::set<std::string> open(sceneTabs.begin(), sceneTabs.end());
+    const std::size_t inOpen = otherInstances(*this, source, root);
+    const auto closed = project->closedInstancesOf(source, open);
+    if (inOpen + closed.instances == 0) {
         log(LogLevel::Info, "editor",
-            "There are no other instances of " + source + " in the open scenes");
+            "There are no other instances of " + source + " in the project");
         return;
     }
     dialog = {};
     dialog.kind = DialogKind::Confirm;
     dialog.title = "Update Other Instances";
-    dialog.message = "This puts " + std::to_string(others) + " other instance(s) of\n" + source +
+    dialog.message = "This puts " + std::to_string(inOpen + closed.instances) +
+                     " other instance(s) of\n" + source +
                      "\nback to the prefab file's contents. Their names and placement stay; "
                      "any other changes made to them are replaced.";
+    if (inOpen > 0)
+        dialog.message += "\n\n" + std::to_string(inOpen) +
+                          " in the open scenes (these become unsaved changes you can undo).";
+    if (closed.instances > 0)
+        dialog.message += "\n\n" + std::to_string(closed.instances) +
+                          " in scenes that are not open, which are saved right away and cannot be "
+                          "undone:" +
+                          fileList(closed.scenes);
     dialog.confirmLabel = "Update";
     dialog.needsOpen = true;
-    dialog.continuation = [this, source, root] {
+    dialog.continuation = [this, source, root, open] {
         auto prefab = project ? project->loadPrefab(source) : Result<Json>(Error{"No project"});
         if (!prefab) {
             log(LogLevel::Error, "editor", prefab.error());
@@ -780,8 +803,18 @@ void EditorState::updateOtherInstances(EntityId entity) {
         for (auto &entry : background)
             if (entry.second.document)
                 update(*entry.second.document, {});
-        log(LogLevel::Info, "editor",
-            "Updated " + std::to_string(updated) + " other instance(s) of " + source);
+        const auto written = project->updateClosedInstances(source, open);
+        updated += written.updated;
+        std::string text = "Updated " + std::to_string(updated) + " other instance(s) of " + source;
+        if (!written.scenes.empty())
+            text += "; " + std::to_string(written.scenes.size()) +
+                    " scene(s) that were not open were saved";
+        log(LogLevel::Info, "editor", text);
+        for (const std::string &failure : written.failures)
+            log(LogLevel::Error, "editor", failure);
+        if (!written.failures.empty())
+            message("Some scenes were not updated", fileList(written.failures));
+        refreshProblems();
     };
 }
 
@@ -799,17 +832,6 @@ bool isFolder(const EditorProject &project, const std::string &path) {
     std::error_code error;
     return std::filesystem::is_directory(project.project().root / std::filesystem::path(path),
                                          error);
-}
-
-// "a, b and 3 more" for the dialogs that list files.
-std::string fileList(const std::vector<std::string> &files) {
-    constexpr std::size_t shown = 6;
-    std::string text;
-    for (std::size_t i = 0; i < files.size() && i < shown; ++i)
-        text += "\n   " + files[i];
-    if (files.size() > shown)
-        text += "\n   ... and " + std::to_string(files.size() - shown) + " more";
-    return text;
 }
 } // namespace
 
