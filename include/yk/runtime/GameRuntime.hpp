@@ -9,6 +9,7 @@ struct RuntimeOptions {
     unsigned maxStepsPerFrame{8}; // Beyond this, simulated time is dropped rather than spiraling.
     Vec2 viewportSize{1280, 720};
     LayerConfig layers{LayerConfig::defaults()};
+    InputMap inputMap{InputMap::standard()};
     AudioSink *audio{nullptr};          // Borrowed; nullptr discards sound requests.
     const AssetSource *assets{nullptr}; // Borrowed; nullptr means no asset access.
 };
@@ -26,9 +27,12 @@ class GameRuntime final : public GameContext {
     ~GameRuntime() override;
 
     // Frame driver: accumulates time into fixed ticks (bounded catch-up), then runs one variable
-    // update. Key edges in `keyboard` are delivered to exactly one tick.
+    // update. Key and button edges in `input` are delivered to exactly one tick. The Keyboard
+    // overloads are for callers with no gamepads (tests, scripted input).
+    void update(double frameSeconds, const InputFrame &input);
     void update(double frameSeconds, const Keyboard &keyboard);
     // Deterministic single step for tests and tools: exactly one fixed tick plus one update.
+    void stepOnce(const InputFrame &input);
     void stepOnce(const Keyboard &keyboard);
 
     // Rebuilds the scene from its start state and clears variables and events. requestRestart()
@@ -46,6 +50,7 @@ class GameRuntime final : public GameContext {
     Scene &scene() override;
     physics::World &physics() override;
     const Keyboard &keyboard() const override;
+    const ActionInput &input() const override;
     AudioSink &audio() override;
     const AssetSource *assets() const override;
     Blackboard &blackboard() override;

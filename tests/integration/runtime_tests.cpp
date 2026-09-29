@@ -66,7 +66,7 @@ class TestApplicationLayer final : public yk::ApplicationLayer {
         return yk::success();
     }
     bool update(const yk::FrameContext &frame) override {
-        const auto state = frame.keyboard.state(yk::Key::D);
+        const auto state = frame.input.keyboard.state(yk::Key::D);
         if (frames_ == 0) {
             check(state.held && state.pressed, "platform key mapping and first press");
             check(frame.delta.seconds == 0, "application first frame has zero delta");

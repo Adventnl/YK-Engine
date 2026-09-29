@@ -119,14 +119,16 @@ class PlayerLayer final : public ApplicationLayer {
         return load(options_.scene.empty() ? project_.startScene : options_.scene, renderer);
     }
     bool update(const FrameContext &frame) override {
-        if (frame.keyboard.state(Key::Escape).pressed)
+        if (frame.input.keyboard.state(Key::Escape).pressed)
             return false;
-        const Keyboard input = script_.empty() ? frame.keyboard : script_.at(frameIndex_);
-        if (input.state(Key::F1).pressed)
+        InputFrame input = frame.input;
+        if (!script_.empty())
+            input.keyboard = script_.at(frameIndex_);
+        if (input.keyboard.state(Key::F1).pressed)
             physicsDebug_ = !physicsDebug_;
-        if (input.state(Key::F2).pressed)
+        if (input.keyboard.state(Key::F2).pressed)
             colliders_ = !colliders_;
-        if (input.state(Key::F3).pressed)
+        if (input.keyboard.state(Key::F3).pressed)
             stats_ = !stats_;
         const double seconds =
             options_.fixedStep ? 1.0 / 60.0 : static_cast<double>(frame.delta.seconds);
@@ -167,6 +169,7 @@ class PlayerLayer final : public ApplicationLayer {
             return Error{scene.error()};
         RuntimeOptions runtimeOptions;
         runtimeOptions.layers = project_.layers;
+        runtimeOptions.inputMap = project_.input;
         runtimeOptions.viewportSize = renderer.viewport();
         runtimeOptions.audio = audio_.get();
         runtimeOptions.assets = &assets_;

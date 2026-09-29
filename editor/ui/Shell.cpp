@@ -174,7 +174,7 @@ void menuPlay(EditorState &state) {
     if (ImGui::MenuItem("Pause", "F6", state.playing() && state.play->paused(), state.playing()))
         state.togglePause();
     if (ImGui::MenuItem("Step", "F10", false, state.playing() && state.play->paused()))
-        state.stepPlay(Keyboard{});
+        state.stepPlay(InputFrame{});
     clicked = ImGui::MenuItem("Stop", "Shift+F5", false, state.playing());
     markItem("menu/Play/Stop");
     if (clicked)
@@ -381,7 +381,7 @@ void toolbar(EditorState &state, ImGuiViewport *viewport) {
         ImGui::SameLine();
         ImGui::BeginDisabled(!state.playing() || !state.play->paused());
         if (iconButton("toolbar/Step", Icon::Step, false, "Step one tick (F10)"))
-            state.stepPlay(Keyboard{});
+            state.stepPlay(InputFrame{});
         ImGui::EndDisabled();
         ImGui::SameLine();
         if (iconButton("toolbar/Stop", Icon::Stop, false, "Stop (Shift+F5)",
@@ -637,7 +637,7 @@ void handleShortcuts(EditorState &state) {
     if (pressed(ImGuiKey_F6))
         state.togglePause();
     if (pressed(ImGuiKey_F10) && state.playing() && state.play->paused())
-        state.stepPlay(Keyboard{});
+        state.stepPlay(InputFrame{});
     if (!state.document)
         return;
     EditorDocument &doc = *state.document;

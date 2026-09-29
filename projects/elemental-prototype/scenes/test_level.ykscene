@@ -1483,11 +1483,17 @@
           }
         },
         {
+          "type": "PlayerInput",
+          "properties": {
+            "actionSet": "Player1"
+          }
+        },
+        {
           "type": "PlatformerController",
           "properties": {
-            "leftKey": "A",
-            "rightKey": "D",
-            "jumpKey": "W",
+            "moveLeftAction": "MoveLeft",
+            "moveRightAction": "MoveRight",
+            "jumpAction": "Jump",
             "moveSpeed": 5.5,
             "groundAcceleration": 70,
             "groundDeceleration": 80,
@@ -1572,11 +1578,17 @@
           }
         },
         {
+          "type": "PlayerInput",
+          "properties": {
+            "actionSet": "Player2"
+          }
+        },
+        {
           "type": "PlatformerController",
           "properties": {
-            "leftKey": "Left",
-            "rightKey": "Right",
-            "jumpKey": "Up",
+            "moveLeftAction": "MoveLeft",
+            "moveRightAction": "MoveRight",
+            "jumpAction": "Jump",
             "moveSpeed": 5.5,
             "groundAcceleration": 70,
             "groundDeceleration": 80,
@@ -1855,7 +1867,8 @@
             "restartDelay": 1.5,
             "completeDelay": 2.5,
             "nextScene": "",
-            "restartKey": "R",
+            "restartSet": "Global",
+            "restartAction": "Restart",
             "completeMessage": "LEVEL COMPLETE!",
             "failMessage": "TRY AGAIN",
             "completeSound": "tone:880,0.4,sine",

@@ -57,11 +57,17 @@
           }
         },
         {
+          "type": "PlayerInput",
+          "properties": {
+            "actionSet": "Player2"
+          }
+        },
+        {
           "type": "PlatformerController",
           "properties": {
-            "leftKey": "Left",
-            "rightKey": "Right",
-            "jumpKey": "Up",
+            "moveLeftAction": "MoveLeft",
+            "moveRightAction": "MoveRight",
+            "jumpAction": "Jump",
             "moveSpeed": 5.5,
             "groundAcceleration": 70,
             "groundDeceleration": 80,

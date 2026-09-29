@@ -74,11 +74,11 @@ bool EditorApp::update(const FrameContext &frame) {
             state_.framesPerSecond * 0.9F + static_cast<float>(1.0 / seconds) * 0.1F;
 
     // The game hears the keyboard only while its view has the user's attention.
-    Keyboard gameInput;
+    InputFrame gameInput;
     if (state_.playing() && !io.WantTextInput &&
         (state_.gameView.focused || state_.gameView.hovered) &&
         state_.dialog.kind == DialogKind::None)
-        gameInput = frame.keyboard;
+        gameInput = frame.input;
     state_.tick(state_.options.fixedStep ? 1.0 / 60.0 : seconds, gameInput);
 
     ImGui_ImplSDLRenderer3_NewFrame();

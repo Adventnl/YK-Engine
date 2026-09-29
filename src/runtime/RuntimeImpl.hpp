@@ -8,15 +8,21 @@
 #include <unordered_set>
 
 namespace yk {
-// Re-times frame input for fixed ticks: held keys reach every tick; press/release edges reach
-// exactly one tick, even when a frame produces several ticks or none.
+// Re-times frame input for fixed ticks: held keys and buttons reach every tick; press/release edges
+// reach exactly one tick, even when a frame produces several ticks or none.
 class InputTracker {
   public:
-    void feed(const Keyboard &frame);
-    void fill(Keyboard &tick); // Consumes pending edges.
+    void feed(const InputFrame &frame);
+    void fill(InputFrame &tick); // Consumes pending edges.
 
   private:
+    struct PadTrack {
+        bool connected{};
+        std::array<bool, gamepadButtonCount> held{}, pressed{}, released{};
+        std::array<float, gamepadAxisCount> axes{};
+    };
     std::array<bool, keyCount> held_{}, pressed_{}, released_{};
+    std::array<PadTrack, maxGamepads> pads_{};
 };
 
 struct GameRuntime::Impl {
@@ -30,7 +36,8 @@ struct GameRuntime::Impl {
     Blackboard blackboard;
     EventBus events;
     NullAudio nullAudio;
-    Keyboard tickKeyboard;
+    InputFrame tickInput;
+    ActionInput actions;
     InputTracker input;
     double time{};
     std::uint64_t ticks{};

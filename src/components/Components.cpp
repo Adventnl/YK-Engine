@@ -13,6 +13,20 @@ const std::vector<std::string> &uiAnchorNames() {
     return names;
 }
 
+void PlayerInput::describe(TypeBuilder<PlayerInput> &type) {
+    type.category("Input").description(
+        "Lets a person control this entity through one action set of the project's input map.");
+    type.field("actionSet", &PlayerInput::actionSet)
+        .inputSet()
+        .tooltip("Set of the project's input map, for example Player1.");
+}
+ButtonState PlayerInput::button(const GameContext &context, std::string_view action) const {
+    return enabled ? context.input().state(actionSet, action) : ButtonState{};
+}
+float PlayerInput::value(const GameContext &context, std::string_view action) const {
+    return enabled ? context.input().value(actionSet, action) : 0.0F;
+}
+
 void SpriteRenderer::describe(TypeBuilder<SpriteRenderer> &type) {
     type.category("Rendering").description("Draws a texture or a colored placeholder shape.");
     type.field("texture", &SpriteRenderer::texture)
@@ -233,6 +247,7 @@ void registerEngineComponents(ComponentRegistry &registry) {
     registry.add<SpriteRenderer>("SpriteRenderer");
     registry.add<UiText>("UiText");
     registry.add<UiPanel>("UiPanel");
+    registry.add<PlayerInput>("PlayerInput");
     registry.add<RigidBody>("RigidBody");
     registry.add<Collider>("Collider").allowMultiple();
     registry.add<Camera>("Camera");

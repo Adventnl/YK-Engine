@@ -26,6 +26,7 @@ Result<std::unique_ptr<PlaySession>> PlaySession::start(const EditorDocument &do
 Status PlaySession::load(std::unique_ptr<Scene> scene) {
     RuntimeOptions options;
     options.layers = project_->project().layers;
+    options.inputMap = project_->project().input;
     options.viewportSize = viewport_;
     options.audio = audio_;
     options.assets = &project_->assets();
@@ -56,17 +57,29 @@ Status PlaySession::followSceneChange() {
 }
 
 void PlaySession::update(double seconds, const Keyboard &keyboard) {
+    InputFrame frame;
+    frame.keyboard = keyboard;
+    update(seconds, frame);
+}
+
+void PlaySession::update(double seconds, const InputFrame &input) {
     if (!paused_)
-        runtime_->update(seconds, keyboard);
+        runtime_->update(seconds, input);
     if (auto status = followSceneChange(); !status)
         log(LogLevel::Error, "play", status.error()); // Keep playing the current scene.
 }
 
 void PlaySession::step(const Keyboard &keyboard) {
+    InputFrame frame;
+    frame.keyboard = keyboard;
+    step(frame);
+}
+
+void PlaySession::step(const InputFrame &input) {
     if (!paused_)
         return;
     runtime_->setPaused(false);
-    runtime_->stepOnce(keyboard);
+    runtime_->stepOnce(input);
     runtime_->setPaused(true);
 }
 

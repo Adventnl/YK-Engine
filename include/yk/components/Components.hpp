@@ -1,13 +1,28 @@
 #pragma once
 #include "yk/animation/Animator.hpp"
+#include "yk/input/Input.hpp"
 #include "yk/scene/Entity.hpp"
 #include <string>
+#include <string_view>
 #include <vector>
 
 // Standard components every game gets: rendering data, physics bodies and colliders, camera, UI,
 // audio and sprite animation. They are data plus (where needed) small runtime behaviour; drawing is
 // done by SceneRenderer and simulation by GameRuntime.
 namespace yk {
+// ----- Input -------------------------------------------------------------------------------
+// Says which set of the project's input map ("Player1", "Player2") controls this entity. Components
+// that respond to a person (the platformer controller, levers with an Interact action) read their
+// named actions through it, so two characters need two PlayerInput components and no code.
+class PlayerInput final : public Component {
+  public:
+    std::string actionSet{"Player1"};
+    static void describe(TypeBuilder<PlayerInput> &type);
+
+    ButtonState button(const GameContext &context, std::string_view action) const;
+    float value(const GameContext &context, std::string_view action) const;
+};
+
 // ----- Rendering ---------------------------------------------------------------------------
 enum class SpriteShape { Rectangle, Ellipse };
 

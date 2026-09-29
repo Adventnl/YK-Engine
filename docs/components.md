@@ -35,13 +35,13 @@ Can be killed by hazards; comes back after a delay.
 
 Side-view character movement: run, jump, slopes, moving platforms.
 
-Requires: `RigidBody` `Collider`
+Requires: `RigidBody` `Collider` `PlayerInput`
 
 | Property | Type | Default | Notes |
 |---|---|---|---|
-| `leftKey` | enum | "A" |  |
-| `rightKey` | enum | "D" |  |
-| `jumpKey` | enum | "W" |  |
+| `moveLeftAction` | string | "MoveLeft" |  |
+| `moveRightAction` | string | "MoveRight" |  |
+| `jumpAction` | string | "Jump" |  |
 | `moveSpeed` | float | 5.5 | Top running speed, m/s. (range 0 to 50) |
 | `groundAcceleration` | float | 70 | (range 0 to 500) |
 | `groundDeceleration` | float | 80 | (range 0 to 500) |
@@ -197,6 +197,35 @@ Requires: `Collider`
 | `targets` | entity list | [] |  |
 | `occupied` | bool | false | (runtime state, not saved) |
 
+### LevelFlow
+
+Level rules: complete when every goal is satisfied; optionally restart when anyone dies or a restart action is pressed.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `goals` | entity list | [] | Goal entities that must all be satisfied at once. |
+| `restartOnDeath` | bool | false | Restart the whole level when anyone dies. |
+| `restartDelay` | float | 1.5 | (range 0 to 30) |
+| `completeDelay` | float | 2.5 | (range 0 to 30) |
+| `nextScene` | string | "" | Project-relative scene to load after completion. |
+| `restartSet` | string | "Global" |  |
+| `restartAction` | string | "Restart" |  |
+| `completeMessage` | string | "LEVEL COMPLETE!" |  |
+| `failMessage` | string | "TRY AGAIN" |  |
+| `completeSound` | asset | "" |  |
+| `failSound` | asset | "" |  |
+| `state` | enum | "Playing" | Options: Playing Complete Failed (runtime state, not saved) |
+
+## Input
+
+### PlayerInput
+
+Lets a person control this entity through one action set of the project's input map.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `actionSet` | string | "Player1" | Set of the project's input map, for example Player1. |
+
 ## Physics
 
 ### RigidBody
@@ -230,26 +259,6 @@ Several instances may be added to one entity.
 | `friction` | float | 0.6 | (range 0 to 10) |
 | `restitution` | float | 0 | (range 0 to 1) |
 | `density` | float | 1 | (range 0 to 100) |
-
-## Prototype
-
-### LevelFlow
-
-Level rules: complete when every goal is satisfied; optionally restart when anyone dies.
-
-| Property | Type | Default | Notes |
-|---|---|---|---|
-| `goals` | entity list | [] | Goal entities that must all be satisfied at once. |
-| `restartOnDeath` | bool | false | Restart the whole level when anyone dies. |
-| `restartDelay` | float | 1.5 | (range 0 to 30) |
-| `completeDelay` | float | 2.5 | (range 0 to 30) |
-| `nextScene` | string | "" | Project-relative scene to load after completion. |
-| `restartKey` | enum | "R" |  |
-| `completeMessage` | string | "LEVEL COMPLETE!" |  |
-| `failMessage` | string | "TRY AGAIN" |  |
-| `completeSound` | asset | "" |  |
-| `failSound` | asset | "" |  |
-| `state` | enum | "Playing" | Options: Playing Complete Failed (runtime state, not saved) |
 
 ## Rendering
 
@@ -341,12 +350,12 @@ Offered by the editor's Create menu.
 
 - **Basic**: Empty; Sprite; Camera;
 
-- **Gameplay**: Hazard; Collectible; Checkpoint; Goal; Trigger Zone; Spawn Point; Character;
+- **Gameplay**: Hazard; Collectible; Checkpoint; Goal; Trigger Zone; Spawn Point; Level Flow; Character;
 
 - **Level**: Platform; Crate;
 
 - **Mechanisms**: Moving Platform; Door; Pressure Plate; Lever;
 
-- **Prototype**: Fire Character; Water Character; Fire Exit; Water Exit; Lava Pool; Water Pool; Goo Pool; Fire Gem; Water Gem; Level Flow;
+- **Prototype**: Fire Character; Water Character; Fire Exit; Water Exit; Lava Pool; Water Pool; Goo Pool; Fire Gem; Water Gem;
 
 - **UI**: UI Text; UI Panel;

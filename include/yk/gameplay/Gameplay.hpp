@@ -89,13 +89,13 @@ class Killable final : public Component {
 };
 
 // Side-view character movement on a dynamic body: acceleration-based running, variable-height
-// jumps, coyote time, jump buffering, slopes, moving platforms. Keys are properties, so two
-// characters with different keys need no code.
+// jumps, coyote time, jump buffering, slopes, moving platforms. It reads named actions from the
+// entity's PlayerInput, so two characters with different keys (or a gamepad) need no code.
 class PlatformerController final : public Component {
   public:
-    Key leftKey{Key::A};
-    Key rightKey{Key::D};
-    Key jumpKey{Key::W};
+    std::string moveLeftAction{"MoveLeft"};
+    std::string moveRightAction{"MoveRight"};
+    std::string jumpAction{"Jump"};
     float moveSpeed{5.5F};           // m/s
     float groundAcceleration{70.0F}; // m/s^2 while a direction is held on the ground
     float groundDeceleration{80.0F}; // m/s^2 when no direction is held on the ground
@@ -303,6 +303,41 @@ class TriggerZone final : public Component {
   private:
     bool occupied_{};
     bool finished_{};
+};
+
+// ----- Level rules ---------------------------------------------------------------------------
+// The rules of a level: it completes when every listed Goal is satisfied at once, can restart when
+// anyone dies or when a person presses the restart action, and can continue to another scene. It
+// publishes `level_state` ("playing", "complete", "failed"), `level_message` and `level_time`
+// (whole seconds) to the Blackboard, so UiText can show them, and raises "level_completed".
+class LevelFlow final : public Component {
+  public:
+    std::vector<EntityRef> goals;
+    bool restartOnDeath{false};
+    float restartDelay{1.5F};
+    float completeDelay{2.5F};
+    std::string nextScene; // Project-relative scene to load after completion; empty stays.
+    std::string restartSet{"Global"};
+    std::string restartAction{"Restart"};
+    std::string completeMessage{"LEVEL COMPLETE!"};
+    std::string failMessage{"TRY AGAIN"};
+    AssetRef completeSound;
+    AssetRef failSound;
+    static void describe(TypeBuilder<LevelFlow> &type);
+
+    bool completed() const {
+        return state_ == State::Complete;
+    }
+    void onStart(GameContext &context) override;
+    void onFixedUpdate(GameContext &context, float seconds) override;
+    void onDestroy(GameContext &context) override;
+
+  private:
+    enum class State { Playing, Complete, Failed };
+    State state_{State::Playing};
+    float timer_{};
+    float elapsed_{};
+    EventBus::Subscription deathSubscription_{};
 };
 
 // Registers every component above plus generic entity templates (Platform, Door, ...).

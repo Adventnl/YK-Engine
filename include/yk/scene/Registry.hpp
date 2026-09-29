@@ -1,5 +1,4 @@
 #pragma once
-#include "yk/input/Input.hpp"
 #include "yk/scene/Component.hpp"
 #include "yk/scene/Property.hpp"
 #include <functional>
@@ -170,17 +169,19 @@ class FieldBuilder {
         info_->isDisplacement = true;
         return *this;
     }
+    // A string naming a set ("Player1") of the project's input map; the editor offers a picker.
+    FieldBuilder &inputSet() {
+        info_->isInputSet = true;
+        return *this;
+    }
+    // A string naming an action ("Jump") of the project's input map; the editor offers a picker.
+    FieldBuilder &inputAction() {
+        info_->isInputAction = true;
+        return *this;
+    }
     FieldBuilder &multiline() {
         info_->multiline = true;
         return *this;
-    }
-    // Key-valued fields share one option list.
-    FieldBuilder &keyOptions() {
-        std::vector<std::string> labels;
-        labels.reserve(keyCount);
-        for (std::size_t i = 0; i < keyCount; ++i)
-            labels.emplace_back(keyName(static_cast<Key>(i)));
-        return options(std::move(labels));
     }
 
   private:

@@ -1,6 +1,7 @@
 #pragma once
 #include "yk/core/Json.hpp"
 #include "yk/core/Result.hpp"
+#include "yk/input/InputMap.hpp"
 #include <cstdint>
 #include <filesystem>
 #include <optional>
@@ -54,6 +55,8 @@ class Project {
     std::string startScene;     // Project-relative .ykscene, empty when none.
     WindowSettings window;
     LayerConfig layers{LayerConfig::defaults()};
+    // Named actions and the keys/buttons that drive them (see yk/input/InputMap.hpp).
+    InputMap input{InputMap::standard()};
 
     // Accepts the project file or its directory.
     static Result<Project> load(const std::filesystem::path &fileOrDirectory);

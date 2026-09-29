@@ -4,18 +4,43 @@
 #include <cmath>
 
 namespace yk {
-void InputTracker::feed(const Keyboard &frame) {
+void InputTracker::feed(const InputFrame &frame) {
     for (std::size_t i = 0; i < keyCount; ++i) {
-        const ButtonState state = frame.state(static_cast<Key>(i));
+        const ButtonState state = frame.keyboard.state(static_cast<Key>(i));
         held_[i] = state.held;
         pressed_[i] = pressed_[i] || state.pressed;
         released_[i] = released_[i] || state.released;
     }
+    for (std::size_t p = 0; p < maxGamepads; ++p) {
+        PadTrack &track = pads_[p];
+        const Gamepad &pad = frame.gamepads[p];
+        track.connected = pad.connected();
+        for (std::size_t b = 0; b < gamepadButtonCount; ++b) {
+            const ButtonState state = pad.button(static_cast<GamepadButton>(b));
+            track.held[b] = state.held;
+            track.pressed[b] = track.pressed[b] || state.pressed;
+            track.released[b] = track.released[b] || state.released;
+        }
+        for (std::size_t a = 0; a < gamepadAxisCount; ++a)
+            track.axes[a] = pad.axis(static_cast<GamepadAxis>(a));
+    }
 }
-void InputTracker::fill(Keyboard &tick) {
+void InputTracker::fill(InputFrame &tick) {
     for (std::size_t i = 0; i < keyCount; ++i) {
-        tick.assign(static_cast<Key>(i), {held_[i], pressed_[i], released_[i]});
+        tick.keyboard.assign(static_cast<Key>(i), {held_[i], pressed_[i], released_[i]});
         pressed_[i] = released_[i] = false;
+    }
+    for (std::size_t p = 0; p < maxGamepads; ++p) {
+        PadTrack &track = pads_[p];
+        Gamepad &pad = tick.gamepads[p];
+        pad.setConnected(track.connected);
+        for (std::size_t b = 0; b < gamepadButtonCount; ++b) {
+            pad.assignButton(static_cast<GamepadButton>(b),
+                             {track.held[b], track.pressed[b], track.released[b]});
+            track.pressed[b] = track.released[b] = false;
+        }
+        for (std::size_t a = 0; a < gamepadAxisCount; ++a)
+            pad.setAxis(static_cast<GamepadAxis>(a), track.axes[a]);
     }
 }
 
@@ -33,6 +58,8 @@ Result<std::unique_ptr<GameRuntime>> GameRuntime::create(std::unique_ptr<Scene> 
         options.viewportSize.x <= 0 || options.viewportSize.y <= 0)
         return Error{"Invalid runtime options"};
     if (auto status = options.layers.validate(); !status)
+        return Error{status.error()};
+    if (auto status = options.inputMap.validate(); !status)
         return Error{status.error()};
     auto runtime = std::unique_ptr<GameRuntime>(new GameRuntime());
     runtime->impl_->options = std::move(options);
@@ -53,7 +80,8 @@ Status GameRuntime::Impl::rebuild(std::unique_ptr<Scene> fresh) {
     ticks = 0;
     accumulator = 0;
     restartWanted = false;
-    tickKeyboard = Keyboard{};
+    tickInput = InputFrame{};
+    actions = ActionInput(options.inputMap);
     return buildWorld();
 }
 
@@ -92,7 +120,8 @@ void GameRuntime::Impl::startPending() {
 }
 
 void GameRuntime::Impl::fixedTick() {
-    input.fill(tickKeyboard);
+    input.fill(tickInput);
+    actions.update(tickInput);
     syncActivation();
     startPending();
     const float step = static_cast<float>(options.fixedSeconds);
@@ -142,10 +171,16 @@ void GameRuntime::Impl::finishFrame() {
 }
 
 void GameRuntime::update(double frameSeconds, const Keyboard &keyboard) {
+    InputFrame frame;
+    frame.keyboard = keyboard;
+    update(frameSeconds, frame);
+}
+
+void GameRuntime::update(double frameSeconds, const InputFrame &frameInput) {
     auto &state = *impl_;
     if (state.paused)
         return;
-    state.input.feed(keyboard);
+    state.input.feed(frameInput);
     if (!std::isfinite(frameSeconds) || frameSeconds < 0)
         frameSeconds = 0;
     const double step = state.options.fixedSeconds;
@@ -163,10 +198,16 @@ void GameRuntime::update(double frameSeconds, const Keyboard &keyboard) {
 }
 
 void GameRuntime::stepOnce(const Keyboard &keyboard) {
+    InputFrame frame;
+    frame.keyboard = keyboard;
+    stepOnce(frame);
+}
+
+void GameRuntime::stepOnce(const InputFrame &frameInput) {
     auto &state = *impl_;
     if (state.paused)
         return;
-    state.input.feed(keyboard);
+    state.input.feed(frameInput);
     state.fixedTick();
     state.variableUpdate(static_cast<float>(state.options.fixedSeconds));
     state.finishFrame();
@@ -199,7 +240,10 @@ const physics::World &GameRuntime::physics() const {
     return *impl_->world;
 }
 const Keyboard &GameRuntime::keyboard() const {
-    return impl_->tickKeyboard;
+    return impl_->tickInput.keyboard;
+}
+const ActionInput &GameRuntime::input() const {
+    return impl_->actions;
 }
 AudioSink &GameRuntime::audio() {
     return impl_->options.audio ? *impl_->options.audio : impl_->nullAudio;

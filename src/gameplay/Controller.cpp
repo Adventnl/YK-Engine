@@ -54,6 +54,7 @@ void PlatformerController::describe(TypeBuilder<PlatformerController> &type) {
         .description("Side-view character movement: run, jump, slopes, moving platforms.")
         .dependsOn("RigidBody")
         .dependsOn("Collider")
+        .dependsOn("PlayerInput")
         .onAdd([](Entity &entity, PlatformerController &) {
             if (auto *body = entity.get<RigidBody>()) {
                 body->type = RigidBodyType::Dynamic;
@@ -67,9 +68,9 @@ void PlatformerController::describe(TypeBuilder<PlatformerController> &type) {
                 collider->layer = layers::player;
             }
         });
-    type.field("leftKey", &PlatformerController::leftKey).keyOptions();
-    type.field("rightKey", &PlatformerController::rightKey).keyOptions();
-    type.field("jumpKey", &PlatformerController::jumpKey).keyOptions();
+    type.field("moveLeftAction", &PlatformerController::moveLeftAction).inputAction();
+    type.field("moveRightAction", &PlatformerController::moveRightAction).inputAction();
+    type.field("jumpAction", &PlatformerController::jumpAction).inputAction();
     type.field("moveSpeed", &PlatformerController::moveSpeed)
         .range(0, 50, 0.1)
         .tooltip("Top running speed, m/s.");
@@ -105,9 +106,15 @@ void PlatformerController::onFixedUpdate(GameContext &context, float seconds) {
     const auto state = world.state(*body);
     if (!state)
         return;
-    const Keyboard &keyboard = context.keyboard();
-    const float move = (keyboard.state(rightKey).held ? 1.0F : 0.0F) -
-                       (keyboard.state(leftKey).held ? 1.0F : 0.0F);
+    // Input: a character with no PlayerInput (or a disabled one) simply stands still.
+    const auto *player = entity().get<PlayerInput>();
+    float move = 0.0F;
+    ButtonState jump;
+    if (player && player->enabled) {
+        const ActionInput &input = context.input();
+        move = input.axis(player->actionSet, moveLeftAction, moveRightAction);
+        jump = input.state(player->actionSet, jumpAction);
+    }
     const float cosMaxSlope = std::cos(degreesToRadians(maxSlopeDegrees));
 
     Vec2 velocity = state.value().linearVelocity;
@@ -131,8 +138,7 @@ void PlatformerController::onFixedUpdate(GameContext &context, float seconds) {
     lastGroundVelocity_ = ground.found ? ground.velocity : Vec2{};
     grounded_ = ground.found;
     coyote_ = grounded_ ? coyoteTime : std::max(0.0F, coyote_ - seconds);
-    jumpBuffer_ =
-        keyboard.state(jumpKey).pressed ? jumpBufferTime : std::max(0.0F, jumpBuffer_ - seconds);
+    jumpBuffer_ = jump.pressed ? jumpBufferTime : std::max(0.0F, jumpBuffer_ - seconds);
     const float target = move * moveSpeed;
 
     Vec2 next = velocity;
@@ -162,7 +168,7 @@ void PlatformerController::onFixedUpdate(GameContext &context, float seconds) {
         jumping_ = true;
         if (!jumpSound.path.empty())
             context.audio().play(jumpSound.path);
-    } else if (keyboard.state(jumpKey).released && jumping_ && next.y < 0.0F) {
+    } else if (jump.released && jumping_ && next.y < 0.0F) {
         next.y *= jumpCutMultiplier;
     }
     next.y = std::min(next.y, maxFallSpeed);

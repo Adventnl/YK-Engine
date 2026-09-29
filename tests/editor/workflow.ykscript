@@ -84,14 +84,9 @@ click picker/Door
 expect links "Pressure Plate" Door
 capture ${SHOT_DIR}/04-linked.bmp
 click "hierarchy/Player Two"
-click prop/leftKey
-click prop/leftKey/Left
-click prop/rightKey
-click prop/rightKey/Right
-click prop/jumpKey
-click prop/jumpKey/Up
-expect prop "Player Two" PlatformerController.leftKey Left
-expect prop "Player Two" PlatformerController.jumpKey Up
+edit prop/actionSet Player2
+expect prop "Player Two" PlayerInput.actionSet Player2
+expect prop "Player One" PlayerInput.actionSet Player1
 
 create Gameplay/Goal
 edit inspector/position/x 9

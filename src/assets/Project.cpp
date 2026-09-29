@@ -151,6 +151,12 @@ Result<Project> Project::load(const std::filesystem::path &fileOrDirectory) {
             return Error{file.string() + ": " + parsed.error()};
         project.layers = std::move(parsed.value());
     }
+    if (const Json *input = json.find("input")) {
+        auto parsed = InputMap::fromJson(*input);
+        if (!parsed)
+            return Error{file.string() + ": " + parsed.error()};
+        project.input = std::move(parsed.value());
+    }
     return project;
 }
 Status Project::save() const {
@@ -165,6 +171,7 @@ Status Project::save() const {
     windowJson.set("height", window.height);
     json.set("window", windowJson);
     json.set("layers", layers.toJson());
+    json.set("input", input.toJson());
     return writeTextFileAtomic(file(), json.dump(2) + "\n");
 }
 Result<std::filesystem::path> Project::resolve(std::string_view relative) const {

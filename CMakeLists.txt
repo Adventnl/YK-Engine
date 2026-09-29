@@ -23,6 +23,7 @@ yk_sanitize(box2d)
 
 add_library(yk_engine STATIC src/core/Log.cpp src/core/Time.cpp src/core/Color.cpp src/core/Json.cpp
     src/core/FileIO.cpp src/audio/Tone.cpp src/animation/Animator.cpp src/input/Input.cpp
+    src/input/InputMap.cpp src/input/ActionInput.cpp
     src/scene/EntityId.cpp src/scene/Property.cpp src/scene/Registry.cpp src/scene/Entity.cpp
     src/scene/Scene.cpp src/scene/SceneSerializer.cpp src/scene/RegistryDocs.cpp src/animation/AnimationSet.cpp
     src/assets/Project.cpp src/assets/AssetSource.cpp src/components/Components.cpp
@@ -37,7 +38,8 @@ yk_target(yk_engine)
 
 # Reusable gameplay components (plates, doors, controllers...). Depends only on the engine.
 add_library(yk_gameplay STATIC src/gameplay/Signals.cpp src/gameplay/Controller.cpp
-    src/gameplay/Mechanisms.cpp src/gameplay/Interactions.cpp src/gameplay/Registration.cpp)
+    src/gameplay/Mechanisms.cpp src/gameplay/Interactions.cpp src/gameplay/Level.cpp
+    src/gameplay/Registration.cpp)
 add_library(yk::gameplay ALIAS yk_gameplay)
 target_link_libraries(yk_gameplay PUBLIC yk_engine)
 yk_target(yk_gameplay)
@@ -95,7 +97,7 @@ endif()
 target_compile_definitions(yk_engine PUBLIC YK_HAS_RUNTIME=$<BOOL:${YK_RUNTIME}>)
 
 if(BUILD_TESTING)
-    foreach(suite core physics json animation scene game_runtime audio)
+    foreach(suite core physics json animation scene game_runtime audio input)
         yk_add_test(${suite} tests/unit/${suite}_tests.cpp LIBS yk::engine TIMEOUT 30)
     endforeach()
     yk_add_test(gameplay tests/unit/gameplay_tests.cpp LIBS yk::gameplay TIMEOUT 120)

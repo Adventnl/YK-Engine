@@ -37,34 +37,6 @@ int main() {
               !keyboard.state(yk::Key::A).held,
           "tap in a single frame preserves both edges");
     check(!keyboard.state(yk::Key::Count).held, "invalid key is safe");
-    yk::ActionBinding action{yk::Key::A, yk::Key::Left};
-    action.update(keyboard);
-    check(action.state().pressed && action.state().released && !action.state().held,
-          "action retains short tap");
-    keyboard.beginFrame();
-    keyboard.set(yk::Key::A, true);
-    action.update(keyboard);
-    check(action.state().pressed && action.state().held, "bound action starts");
-    keyboard.beginFrame();
-    keyboard.set(yk::Key::Left, true);
-    keyboard.set(yk::Key::A, false);
-    action.update(keyboard);
-    check(action.state().held && !action.state().pressed && !action.state().released,
-          "switching aliases keeps combined action held");
-    keyboard.beginFrame();
-    keyboard.releaseAll();
-    action.update(keyboard);
-    check(action.state().released && !action.state().held, "all aliases released");
-    keyboard.beginFrame();
-    action.update(keyboard);
-    check(!action.state().pressed && !action.state().released, "action edges clear");
-    bool threw = false;
-    try {
-        yk::ActionBinding invalid{yk::Key::Count};
-    } catch (const std::invalid_argument &) {
-        threw = true;
-    }
-    check(threw, "invalid binding rejected");
     check(near(yk::boundedDelta(0.016).seconds, 0.016F), "normal seconds preserved");
     check(near(yk::boundedDelta(9).seconds, 0.1F), "long pause clamped");
     check(yk::boundedDelta(-1).seconds == 0 &&

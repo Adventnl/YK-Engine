@@ -55,14 +55,14 @@ struct World {
     Entity &ground(float left = -40.0F, float right = 40.0F) {
         return box("Ground", {(left + right) / 2, floorTop + 0.5F}, {right - left, 1.0F});
     }
-    Entity &character(const char *name, Vec2 at, Key left = Key::A, Key right = Key::D,
-                      Key jump = Key::W, const char *tag = "") {
+    // `actionSet` names the input-map set that drives it ("Player1" is A/D/W, "Player2" the arrow
+    // keys); a set that does not exist leaves the character uncontrolled.
+    Entity &character(const char *name, Vec2 at, const char *actionSet = "Player1",
+                      const char *tag = "") {
         Entity &entity = scene->createEntity(name);
         entity.transform().position = at;
-        auto &controller = entity.add<PlatformerController>();
-        controller.leftKey = left;
-        controller.rightKey = right;
-        controller.jumpKey = jump;
+        entity.add<PlatformerController>();
+        entity.get<PlayerInput>()->actionSet = actionSet;
         entity.add<Killable>();
         entity.add<SpriteRenderer>().size = {0.6F, 0.95F};
         if (*tag)
@@ -292,7 +292,7 @@ void platformsCarryRiders() {
     elevator.travel = {0.0F, -5.0F};
     elevator.speed = 2.0F;
     w.character("Rider", {0.0F, floorTop - 1.0F - 0.2F - 0.475F});
-    w.character("Climber", {-12.0F, floorTop - 1.0F - 0.2F - 0.475F}, Key::F1, Key::F2, Key::F3);
+    w.character("Climber", {-12.0F, floorTop - 1.0F - 0.2F - 0.475F}, "Nobody");
     w.start();
     w.tick(30);
     const float riderStart = w.position("Rider").x, shuttleStart = w.position("Shuttle").x;
@@ -313,7 +313,7 @@ void pushingAndTwoPlayers() {
     Entity &crate = w.box("Crate", {3.0F, floorTop - 0.5F}, {1.0F, 1.0F}, layers::prop);
     crate.add<RigidBody>();
     w.character("One", {0.0F, restingHeight});
-    w.character("Two", {-8.0F, restingHeight}, Key::Left, Key::Right, Key::Up);
+    w.character("Two", {-8.0F, restingHeight}, "Player2");
     w.start();
     w.tick(30);
     const float crateStart = w.position("Crate").x, twoStart = w.position("Two").x;
@@ -354,7 +354,7 @@ struct PlateAndDoor {
 void plateOpensDoor() {
     PlateAndDoor level;
     World &w = level.w;
-    w.character("Hero", {-4.0F, restingHeight}, Key::A, Key::D, Key::W, "hero");
+    w.character("Hero", {-4.0F, restingHeight}, "Player1", "hero");
     w.start();
     const float closedY = w.position("Door").y;
     w.tick(60);
@@ -390,7 +390,7 @@ void plateOpensDoor() {
 void doorBlocksAndLatches() {
     PlateAndDoor level(true);
     World &w = level.w;
-    w.character("Hero", {4.0F, restingHeight}, Key::A, Key::D, Key::W, "hero");
+    w.character("Hero", {4.0F, restingHeight}, "Player1", "hero");
     w.start();
     w.down(Key::D);
     w.tick(150); // The closed door stops the character.
@@ -447,7 +447,7 @@ void plateFiltersAndCombines() {
             plate.add<PressurePlate>().targets = {door.id()};
         }
         w.character("A", {-6.0F, restingHeight});
-        w.character("B", {6.0F, restingHeight}, Key::Left, Key::Right, Key::Up);
+        w.character("B", {6.0F, restingHeight}, "Player2");
         w.start();
         w.tick(90);
         CHECK(w.at("Left").get<PressurePlate>()->pressed() &&
@@ -522,8 +522,8 @@ void hazardsKillTheRightCharacters() {
     Entity &lava = w.box("Lava", {0.0F, floorTop - 0.25F}, {4.0F, 0.5F}, layers::sensor);
     lava.get<Collider>()->isTrigger = true;
     lava.add<Hazard>().affectsTags = {"water"};
-    w.character("Fire", {-6.0F, restingHeight}, Key::A, Key::D, Key::W, "fire");
-    w.character("Water", {-9.0F, restingHeight}, Key::Left, Key::Right, Key::Up, "water");
+    w.character("Fire", {-6.0F, restingHeight}, "Player1", "fire");
+    w.character("Water", {-9.0F, restingHeight}, "Player2", "water");
     w.start();
     w.tick(30);
     w.down(Key::D);
@@ -621,8 +621,8 @@ void collectibles() {
     item.variable = "fire_gems";
     item.value = 2.0F;
     item.sound.path = "tone:880,0.1";
-    w.character("Water", {-2.0F, restingHeight}, Key::A, Key::D, Key::W, "water");
-    w.character("Fire", {2.0F, restingHeight}, Key::Left, Key::Right, Key::Up, "fire");
+    w.character("Water", {-2.0F, restingHeight}, "Player1", "water");
+    w.character("Fire", {2.0F, restingHeight}, "Player2", "fire");
     w.start();
     w.tick(30);
     w.runtime->teleport(w.at("Water"), {0.0F, restingHeight});
@@ -648,7 +648,7 @@ void collectibles() {
     pearl.get<Collider>()->isTrigger = true;
     pearl.add<Collectible>();
     both.character("A", {-0.15F, restingHeight - 1.0F});
-    both.character("B", {0.15F, restingHeight - 1.0F}, Key::Left, Key::Right, Key::Up);
+    both.character("B", {0.15F, restingHeight - 1.0F}, "Player2");
     both.start();
     both.tick(60);
     CHECK(both.runtime->blackboard().number("score") == 1.0);
@@ -671,8 +671,8 @@ void goalsAndZones() {
     region.enterEvent = "zone_in";
     region.exitEvent = "zone_out";
     region.once = true;
-    w.character("Water", {-2.0F, restingHeight}, Key::Left, Key::Right, Key::Up, "water");
-    w.character("Fire", {-5.0F, restingHeight}, Key::A, Key::D, Key::W, "fire");
+    w.character("Water", {-2.0F, restingHeight}, "Player2", "water");
+    w.character("Fire", {-5.0F, restingHeight}, "Player1", "fire");
     w.start();
     w.tick(30);
     w.runtime->teleport(w.at("Water"), {0.0F, restingHeight});
@@ -725,7 +725,7 @@ void defaultsOnAdd() {
 
 void persistenceAndPrefabs() {
     PlateAndDoor level;
-    level.w.character("Hero", {0.0F, restingHeight}, Key::A, Key::D, Key::W, "hero");
+    level.w.character("Hero", {0.0F, restingHeight}, "Player1", "hero");
     Entity &lever = level.w.box("Lever", {-6.0F, floorTop - 0.4F}, {0.5F, 0.8F}, layers::sensor);
     lever.get<Collider>()->isTrigger = true;
     lever.add<Lever>().targets = {level.door->id()};

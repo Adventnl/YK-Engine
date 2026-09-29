@@ -54,6 +54,7 @@ void registerGameplayComponents(ComponentRegistry &registry) {
     registry.add<SpawnPoint>("SpawnPoint");
     registry.add<Goal>("Goal");
     registry.add<TriggerZone>("TriggerZone");
+    registry.add<LevelFlow>("LevelFlow");
 
     registry.addTemplate(
         {"Platform", "Level", [](Scene &scene, Vec2 at) {
@@ -138,6 +139,11 @@ void registerGameplayComponents(ComponentRegistry &registry) {
                               sprite.layer = 3;
                               spawn.add<SpawnPoint>();
                               return spawn.id();
+                          }});
+    registry.addTemplate({"Level Flow", "Gameplay", [](Scene &scene, Vec2 at) {
+                              Entity &flow = place(scene, "Level Flow", at);
+                              flow.add<LevelFlow>();
+                              return flow.id();
                           }});
     registry.addTemplate({"Character", "Gameplay", [](Scene &scene, Vec2 at) {
                               Entity &character = place(scene, "Character", at);

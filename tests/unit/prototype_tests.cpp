@@ -43,6 +43,7 @@ struct Game {
             return;
         RuntimeOptions options;
         options.layers = project.layers;
+        options.inputMap = project.input;
         options.assets = &assets;
         auto created = GameRuntime::create(std::move(loaded.value()), options);
         CHECK(created);

@@ -1,6 +1,7 @@
 #pragma once
 #include "yk/assets/AssetSource.hpp"
 #include "yk/audio/Audio.hpp"
+#include "yk/input/ActionInput.hpp"
 #include "yk/input/Input.hpp"
 #include "yk/physics/World.hpp"
 #include "yk/runtime/Blackboard.hpp"
@@ -23,6 +24,9 @@ class GameContext {
     virtual physics::World &physics() = 0;
     // Input as seen by the current fixed tick: edges (pressed/released) appear on exactly one tick.
     virtual const Keyboard &keyboard() const = 0;
+    // Named actions ("Player1/Jump") evaluated from the project's input map for the current tick.
+    // Gameplay should ask for actions, never for keys.
+    virtual const ActionInput &input() const = 0;
     virtual AudioSink &audio() = 0;
     virtual const AssetSource *assets() const = 0;
     virtual Blackboard &blackboard() = 0;

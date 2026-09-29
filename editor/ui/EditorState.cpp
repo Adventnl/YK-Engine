@@ -324,9 +324,9 @@ void EditorState::togglePause() {
         play->setPaused(!play->paused());
 }
 
-void EditorState::stepPlay(const Keyboard &keyboard) {
+void EditorState::stepPlay(const InputFrame &input) {
     if (play)
-        play->step(keyboard);
+        play->step(input);
 }
 
 void EditorState::restartPlay() {
@@ -378,7 +378,7 @@ std::string EditorState::windowTitle() const {
     return title;
 }
 
-void EditorState::tick(double seconds, const Keyboard &gameInput) {
+void EditorState::tick(double seconds, const InputFrame &gameInput) {
     if (play)
         play->update(seconds, gameInput);
     if (audio)

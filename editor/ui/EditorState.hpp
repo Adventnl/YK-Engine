@@ -181,7 +181,7 @@ class EditorState {
     void startPlay();
     void stopPlay();
     void togglePause();
-    void stepPlay(const Keyboard &keyboard);
+    void stepPlay(const InputFrame &input);
     void restartPlay();
 
     void message(std::string title, std::string body);
@@ -191,7 +191,7 @@ class EditorState {
     std::vector<std::string> prefabPaths() const;
     std::string windowTitle() const;
     // Advances play mode and background services once per frame.
-    void tick(double seconds, const Keyboard &gameInput);
+    void tick(double seconds, const InputFrame &gameInput);
 
   private:
     void bindDocument();
