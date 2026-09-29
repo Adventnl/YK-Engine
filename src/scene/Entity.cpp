@@ -63,7 +63,7 @@ Component *Entity::attach(const ComponentType &type) {
     scene_->touch();
     return components_.back().get();
 }
-Component *Entity::addComponent(std::string_view typeName) {
+Component *Entity::addComponent(std::string_view typeName, bool applyDefaults) {
     const ComponentType *type = scene_->registry().find(typeName);
     if (!type) {
         log(LogLevel::Error, "scene", "Unknown component type '" + std::string(typeName) + "'");
@@ -72,10 +72,15 @@ Component *Entity::addComponent(std::string_view typeName) {
     if (!type->allowMultiple)
         if (Component *existing = findComponent(type->name))
             return existing;
-    for (const std::string &dependency : type->dependencies)
-        if (!addComponent(dependency))
+    for (const std::string &dependency : type->dependencies) {
+        // An existing instance satisfies a dependency, even for types that allow several.
+        if (!findComponent(dependency) && !addComponent(dependency, applyDefaults))
             return nullptr;
-    return attach(*type);
+    }
+    Component *component = attach(*type);
+    if (applyDefaults && type->onAdded)
+        type->onAdded(*this, *component);
+    return component;
 }
 Component *Entity::addComponentOfClass(std::type_index index) {
     const ComponentType *type = scene_->registry().find(index);

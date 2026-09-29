@@ -242,6 +242,15 @@ Entity *GameRuntime::entityOfShape(physics::ShapeHandle shape) const {
     const auto found = impl_->shapes.find(shape.serial());
     return found == impl_->shapes.end() ? nullptr : impl_->scene->find(found->second.entity);
 }
+std::vector<physics::ShapeHandle> GameRuntime::bodyShapes(EntityId entity) const {
+    std::vector<physics::ShapeHandle> result;
+    for (const auto &[serial, record] : impl_->shapes) {
+        (void)serial;
+        if (record.bodyEntity == entity && !record.trigger)
+            result.push_back(record.handle);
+    }
+    return result;
+}
 const std::vector<EntityId> &GameRuntime::overlapping(EntityId trigger) const {
     const auto found = impl_->overlaps.find(trigger);
     return found == impl_->overlaps.end() ? impl_->noOverlaps : found->second;

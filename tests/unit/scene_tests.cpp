@@ -273,6 +273,19 @@ void components() {
     CHECK(!entity.removeComponent(entity.get<Widget>()));
     CHECK(entity.removeComponent(&follower) && entity.removeComponent(entity.get<Widget>()));
     CHECK(entity.components().size() == 2 && !entity.removeComponent(&follower));
+    // A dependency is satisfied by an existing instance even when its type allows several.
+    struct NeedsStack final : Component {
+        static void describe(TypeBuilder<NeedsStack> &t) {
+            t.dependsOn("Stackable");
+        }
+    };
+    auto extended = makeRegistry();
+    extended.add<NeedsStack>("NeedsStack");
+    Scene stackScene(extended, 6);
+    Entity &stacked = stackScene.createEntity("S");
+    stacked.add<Stackable>();
+    stacked.add<NeedsStack>();
+    CHECK(stacked.getAll<Stackable>().size() == 1);
     ComponentRegistry empty;
     Scene bare(empty, 5);
     bool threw = false;

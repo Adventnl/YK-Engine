@@ -13,6 +13,7 @@
 
 namespace yk {
 class Scene;
+class Entity;
 
 // Everything the engine knows about one component class.
 struct ComponentType {
@@ -24,6 +25,10 @@ struct ComponentType {
     std::vector<PropertyInfo> properties;
     std::vector<std::string>
         dependencies; // Component type names added automatically before this one.
+    // Sensible starting values when a user (or code) adds the component to an entity; receives the
+    // entity so it can configure dependencies (a plate turns its Collider into a trigger). Never
+    // runs while loading saved data, so it cannot overwrite what was saved.
+    std::function<void(Entity &, Component &)> onAdded;
     bool allowMultiple{};
     bool hiddenInMenus{}; // Not offered by the editor's Add Component menu.
 
@@ -192,6 +197,12 @@ template <class T> class TypeBuilder {
     }
     TypeBuilder &allowMultiple() {
         type_->allowMultiple = true;
+        return *this;
+    }
+    TypeBuilder &onAdd(std::function<void(Entity &, T &)> hook) {
+        type_->onAdded = [hook = std::move(hook)](Entity &entity, Component &component) {
+            hook(entity, static_cast<T &>(component));
+        };
         return *this;
     }
     TypeBuilder &hiddenInMenus() {

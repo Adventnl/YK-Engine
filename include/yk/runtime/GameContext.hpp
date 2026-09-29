@@ -37,6 +37,8 @@ class GameContext {
     virtual std::optional<physics::BodyHandle> bodyOf(EntityId entity) const = 0;
     virtual Entity *entityOfBody(physics::BodyHandle body) const = 0;
     virtual Entity *entityOfShape(physics::ShapeHandle shape) const = 0;
+    // Solid (non-trigger) shapes attached to the body owned by `entity`.
+    virtual std::vector<physics::ShapeHandle> bodyShapes(EntityId entity) const = 0;
     // Entities currently overlapping any trigger collider of `trigger` (updated after each tick).
     virtual const std::vector<EntityId> &overlapping(EntityId trigger) const = 0;
 

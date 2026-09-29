@@ -51,9 +51,11 @@ Application::~Application() {
     log(LogLevel::Info, "application", "Shutdown complete");
 }
 Result<std::unique_ptr<Application>> Application::create(const ApplicationConfig &config) {
-    if (config.width <= 0 || config.height <= 0 || config.logicalWidth <= 0 ||
-        config.logicalHeight <= 0)
-        return Error{"Window and logical viewport dimensions must be positive"};
+    const bool nativeResolution = config.logicalWidth == 0 && config.logicalHeight == 0;
+    if (config.width <= 0 || config.height <= 0 ||
+        (!nativeResolution && (config.logicalWidth <= 0 || config.logicalHeight <= 0)))
+        return Error{"Window dimensions must be positive; the logical viewport must be positive or "
+                     "both zero for native resolution"};
     // SDL owns process-wide platform state. One application owns the entire lifecycle.
     if (SDL_WasInit(0) != 0)
         return Error{"SDL already initialized; only one owning application is supported"};
@@ -78,6 +80,9 @@ Result<std::unique_ptr<Application>> Application::create(const ApplicationConfig
     log(LogLevel::Info, "application", "Initialized SDL3 window and renderer");
     return app;
 }
+SDL_Window *Application::nativeWindow() const {
+    return impl_->window.get();
+}
 Status Application::run(ApplicationLayer &layer, const RunOptions &options) {
     assert(std::this_thread::get_id() == impl_->thread);
     if (options.captureLastFrame && options.frameLimit == 0)
@@ -99,6 +104,7 @@ Status Application::run(ApplicationLayer &layer, const RunOptions &options) {
         impl_->keyboard.beginFrame();
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
+            layer.onNativeEvent(event);
             if (event.type == SDL_EVENT_QUIT)
                 running = false;
             if (event.type >= SDL_EVENT_WINDOW_FIRST && event.type <= SDL_EVENT_WINDOW_LAST &&
@@ -134,7 +140,8 @@ Status Application::run(ApplicationLayer &layer, const RunOptions &options) {
         if (!running)
             break;
         const auto delta = clock.tick();
-        const FrameContext context{focused && !minimized ? delta : FrameTime{}, impl_->keyboard};
+        const FrameContext context{focused && !minimized ? delta : FrameTime{}, impl_->keyboard,
+                                   focused && !minimized};
         if (!layer.update(context))
             break;
         auto begun = impl_->renderer->beginFrame({24, 29, 40, 255}, layer.camera());

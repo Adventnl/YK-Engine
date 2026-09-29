@@ -110,7 +110,7 @@ Status applyEntityRecord(Entity &entity, const Json &record, const std::string &
             return Error{context + ": unknown component type '" + typeName + "'"};
         Component *component = nullptr;
         if (type->allowMultiple || !entity.findComponent(typeName))
-            component = entity.addComponent(typeName);
+            component = entity.addComponent(typeName, false);
         else
             component =
                 entity.findComponent(typeName); // Dependency added it earlier; adopt its values.

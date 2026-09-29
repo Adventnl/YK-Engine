@@ -77,7 +77,8 @@ class Entity {
     }
     // Adds a component by registered type name, first adding its dependencies. Returns the existing
     // instance when the type forbids duplicates. Null (with a logged reason) for unknown types.
-    Component *addComponent(std::string_view typeName);
+    // `applyDefaults` runs the types' onAdd hooks; loaders pass false so saved values win.
+    Component *addComponent(std::string_view typeName, bool applyDefaults = true);
     Component *findComponent(std::string_view typeName) const;
     // Empty when the component may be removed; otherwise names the component that requires it.
     std::string removalBlocker(const Component &component) const;

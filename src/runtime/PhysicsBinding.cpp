@@ -245,6 +245,9 @@ void GameRuntime::Impl::syncTransforms() {
 void GameRuntime::Impl::notifyTrigger(bool enter, Entity &owner, Entity &visitor) {
     GameContext &context = self;
     const auto call = [&](Entity &subject, Entity &counterpart) {
+        if (!subject
+                 .activeInHierarchy()) // A callback earlier in this tick may have deactivated it.
+            return;
         std::vector<Component *> components;
         for (const auto &component : subject.components())
             components.push_back(component.get());

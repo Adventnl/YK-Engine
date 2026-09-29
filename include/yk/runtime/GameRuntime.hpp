@@ -58,6 +58,7 @@ class GameRuntime final : public GameContext {
     std::optional<physics::BodyHandle> bodyOf(EntityId entity) const override;
     Entity *entityOfBody(physics::BodyHandle body) const override;
     Entity *entityOfShape(physics::ShapeHandle shape) const override;
+    std::vector<physics::ShapeHandle> bodyShapes(EntityId entity) const override;
     const std::vector<EntityId> &overlapping(EntityId trigger) const override;
     void teleport(Entity &entity, Vec2 worldPosition) override;
     void destroyLater(EntityId entity) override;

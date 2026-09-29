@@ -1,4 +1,5 @@
 #pragma once
+#include "yk/core/Color.hpp"
 #include "yk/core/Result.hpp"
 #include "yk/graphics/Camera2D.hpp"
 #include <cstdint>
@@ -7,6 +8,7 @@
 #include <optional>
 #include <span>
 struct SDL_Window;
+struct SDL_Renderer;
 namespace yk {
 class Application;
 class Renderer;
@@ -23,9 +25,9 @@ class TextureHandle {
     std::weak_ptr<const void> owner_;
     std::size_t index_{};
 };
-struct Color {
-    std::uint8_t r{}, g{}, b{}, a{255};
-};
+enum class TextureFilter { Nearest, Linear };
+// Procedural textures every renderer can provide, so placeholder art needs no files.
+enum class BuiltinTexture { White, Circle };
 struct Sprite {
     TextureHandle texture;
     Transform2D transform;
@@ -38,31 +40,53 @@ struct Sprite {
     int layer{};
     float depth{}; // Ascending depth, then submission order within each layer.
 };
+// A rectangle of the frame drawn with its own camera. Passes let one frame hold several views (the
+// editor's scene and game panels, a HUD drawn in screen space) without a second renderer.
+struct RenderPass {
+    Camera2D camera;
+    std::optional<Rect>
+        viewport;               // Pixels of the render output (or logical units in letterbox mode).
+    std::optional<Color> clear; // Fills the viewport before drawing.
+};
+
 class Renderer {
   public:
     ~Renderer();
     Renderer(const Renderer &) = delete;
     Renderer &operator=(const Renderer &) = delete;
-    Result<TextureHandle> createTexture(int width, int height, std::span<const Color> pixels);
+    Result<TextureHandle> createTexture(int width, int height, std::span<const Color> pixels,
+                                        TextureFilter filter = TextureFilter::Nearest);
+    Result<TextureHandle> builtinTexture(BuiltinTexture kind);
+    Vec2 textureSize(TextureHandle texture) const; // Pixels; zero for an invalid handle.
     // Absolute paths only; equivalent paths share a cached resource.
     Result<TextureHandle> loadBmp(const std::filesystem::path &path);
     // Decodes PNG as RGBA, preserves alpha and caches by canonical absolute path.
     Result<TextureHandle> loadPng(const std::filesystem::path &path);
     Status release(TextureHandle texture);
     bool valid(TextureHandle texture) const;
+    // Logical size in letterbox mode; the current output size in native-resolution mode.
     Vec2 viewport() const;
     Status beginFrame(Color clear, const Camera2D &camera);
+    // Draws everything submitted so far, then directs later submissions to `pass`. endPass draws
+    // the pass and restores the whole-frame view. Passes cannot nest and must end before present().
+    Status beginPass(const RenderPass &pass);
+    Status endPass();
     Status submit(const Sprite &sprite);
     Status debugRect(Rect rect, Color color, int layer = 1000);
     Status debugLine(Vec2 first, Vec2 second, Color color, int layer = 1000);
     // Diagnostic readback saves the physical content viewport before present (excludes bars).
     Status present(const std::optional<std::filesystem::path> &capture = std::nullopt);
+    // The SDL backend, for tools that draw directly between passes and present (the editor's UI
+    // layer). Game code must not use it.
+    SDL_Renderer *nativeRenderer() const;
 
   private:
     friend class Application;
     Renderer();
     void assertThread() const;
+    // width == height == 0 selects native resolution: no logical presentation, 1 unit = 1 pixel.
     static Result<std::unique_ptr<Renderer>> create(SDL_Window *window, int width, int height);
+    Status flush();
     struct Impl;
     std::unique_ptr<Impl> impl_;
 };

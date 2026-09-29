@@ -35,10 +35,17 @@ target_include_directories(yk_engine PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include
 target_link_libraries(yk_engine PRIVATE box2d)
 yk_target(yk_engine)
 
+# Reusable gameplay components (plates, doors, controllers...). Depends only on the engine.
+add_library(yk_gameplay STATIC src/gameplay/Signals.cpp src/gameplay/Controller.cpp
+    src/gameplay/Mechanisms.cpp src/gameplay/Interactions.cpp src/gameplay/Registration.cpp)
+add_library(yk::gameplay ALIAS yk_gameplay)
+target_link_libraries(yk_gameplay PUBLIC yk_engine)
+yk_target(yk_gameplay)
+
 if(YK_RUNTIME)
     yk_fetch_sdl3()
     target_sources(yk_engine PRIVATE src/platform/Application.cpp src/graphics/Renderer.cpp
-        src/graphics/PhysicsDebug.cpp)
+        src/graphics/PhysicsDebug.cpp src/graphics/BitmapFont.cpp src/graphics/SceneRenderer.cpp)
     target_link_libraries(yk_engine PRIVATE SDL3::SDL3)
 
 endif()
@@ -48,12 +55,15 @@ if(BUILD_TESTING)
     foreach(suite core physics json animation scene game_runtime)
         yk_add_test(${suite} tests/unit/${suite}_tests.cpp LIBS yk::engine TIMEOUT 30)
     endforeach()
+    yk_add_test(gameplay tests/unit/gameplay_tests.cpp LIBS yk::gameplay TIMEOUT 120)
     if(YK_RUNTIME)
         add_executable(yk_runtime_tests tests/integration/runtime_tests.cpp)
         target_link_libraries(yk_runtime_tests PRIVATE yk::engine SDL3::SDL3)
         yk_target(yk_runtime_tests)
         add_test(NAME runtime COMMAND yk_runtime_tests)
         set_tests_properties(runtime PROPERTIES
+            ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software" TIMEOUT 30)
+        yk_add_test(scene_render tests/integration/scene_render_tests.cpp LIBS yk::engine SDL3::SDL3
             ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software" TIMEOUT 30)
     endif()
 endif()
