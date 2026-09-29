@@ -1,11 +1,14 @@
 #!/usr/bin/env sh
+# Builds the release preset and packs the editor, player, sample project, docs and license notices
+# with CPack: build/package/YKEngine-<version>-<system>.tar.gz (a .zip on Windows).
+#
+#   scripts/package.sh
+#
+# Behind a restricted network run scripts/fetch-deps.sh first and export YK_DEPS_DIR.
 set -eu
 root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$root"
 cmake --preset release
 cmake --build --preset release
-rm -rf build/package/ElementalEscape build/package/ElementalEscape-linux-x86_64.tar.gz
-cmake --install build/release --prefix build/package/ElementalEscape
-rm -rf build/package/ElementalEscape/include build/package/ElementalEscape/lib
-cmake -E tar cfvz build/package/ElementalEscape-linux-x86_64.tar.gz --format=gnutar build/package/ElementalEscape
-printf '%s\n' "$root/build/package/ElementalEscape-linux-x86_64.tar.gz"
+rm -rf build/package
+cpack --config build/release/CPackConfig.cmake -B build/package

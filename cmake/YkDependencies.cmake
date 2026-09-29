@@ -26,6 +26,11 @@ FetchContent_Declare(box2d
     DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
 yk_prefer_local_source(box2d box2d CMakeLists.txt)
 FetchContent_MakeAvailable(box2d)
+# Box2D is linked statically and stays private, so its own install rules (headers, library, CMake
+# package files) must not end up in an installed or packaged engine. Excluding its directory from
+# "all" leaves its install script out of the installation; the library is still built because the
+# engine links it.
+set_property(DIRECTORY "${box2d_SOURCE_DIR}" PROPERTY EXCLUDE_FROM_ALL TRUE)
 
 # Configures and fetches SDL3 (runtime, player and editor).
 macro(yk_fetch_sdl3)

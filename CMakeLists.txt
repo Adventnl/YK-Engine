@@ -130,7 +130,33 @@ if(BUILD_TESTING)
                     -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/editor/run_script.cmake)
             set_tests_properties(editor_${script_name} PROPERTIES TIMEOUT 300)
         endforeach()
+        # The installation and its CPack archive: contents, no private dependencies, and the
+        # installed programs work where they were put.
+        add_test(NAME install
+            COMMAND ${CMAKE_COMMAND} -DBUILD_DIR=${CMAKE_BINARY_DIR} -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+                -DWORK=${CMAKE_BINARY_DIR}/install-test -DCONFIG=$<CONFIG>
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/install/check_install.cmake)
+        set_tests_properties(install PROPERTIES TIMEOUT 300)
     endif()
+endif()
+
+# Installation: the editor, the player, the sample project, documentation and license notices.
+if(YK_RUNTIME)
+    include(GNUInstallDirs)
+    install(TARGETS yk_editor yk_player RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(DIRECTORY projects/elemental-prototype
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/yk-engine/projects)
+    install(DIRECTORY docs/ DESTINATION ${CMAKE_INSTALL_DOCDIR})
+    install(DIRECTORY LICENSES/ DESTINATION ${CMAKE_INSTALL_DOCDIR}/licenses)
+    install(FILES README.md THIRD_PARTY.md DESTINATION ${CMAKE_INSTALL_DOCDIR})
+    set(CPACK_PACKAGE_NAME "YKEngine")
+    set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+    set(CPACK_PACKAGE_VENDOR "YK")
+    set(CPACK_GENERATOR "TGZ")
+    if(WIN32)
+        set(CPACK_GENERATOR "ZIP")
+    endif()
+    include(CPack)
 endif()
 
 find_program(YK_CLANG_FORMAT NAMES clang-format)
