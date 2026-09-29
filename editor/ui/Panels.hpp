@@ -23,6 +23,8 @@ Status runInPlayer(EditorState &state);
 
 void hierarchyPanel(EditorState &state);
 void inspectorPanel(EditorState &state);
+// The Inspector's view of the file picked in the Explorer (AssetInspector.cpp).
+void assetInspector(EditorState &state);
 void sceneViewPanel(EditorState &state);
 void gameViewPanel(EditorState &state);
 void assetsPanel(EditorState &state);
@@ -53,6 +55,10 @@ void createEntityMenu(EditorState &state, EntityId parent, std::optional<Vec2> a
 // Where new entities land when the position is not given: the middle of the scene view, on the
 // grid.
 Vec2 defaultSpawnPoint(const EditorState &state);
+// The Prefab items for an entity that is part of a prefab instance (show it in the Explorer,
+// revert, apply, unpack), shared by the Entity menu, the hierarchy's context menu and the
+// Inspector. Draws nothing for an entity that is not part of an instance.
+void prefabMenuItems(EditorState &state, EntityId entity, const std::string &menuId = {});
 // Menu of components that can be added to `entity`, grouped by category.
 void addComponentMenu(EditorState &state, EntityId entity);
 

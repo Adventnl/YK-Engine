@@ -56,6 +56,13 @@ class SceneRenderer {
     const SceneRenderStats &stats() const {
         return stats_;
     }
+    // A texture the renderer has loaded (loading it first), with its size in pixels, for tools that
+    // show it (the editor's asset preview). Empty when the file cannot be loaded.
+    struct LoadedTexture {
+        TextureHandle handle;
+        Vec2 pixels;
+    };
+    std::optional<LoadedTexture> loadedTexture(Renderer &renderer, const std::string &path);
     // Import settings of a texture (project defaults merged with its sidecar).
     ResolvedTexture textureSettings(const std::string &path);
     // Drops what was loaded for `path` (texture and sidecar) so the next draw reads it again; the

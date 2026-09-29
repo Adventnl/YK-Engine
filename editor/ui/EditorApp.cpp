@@ -50,6 +50,17 @@ Status EditorApp::initialize(Renderer &renderer) {
 void EditorApp::onNativeEvent(const SDL_Event &event) {
     if (imguiReady_)
         ImGui_ImplSDL3_ProcessEvent(&event);
+    // Files dropped from the file manager: a project file opens the project, media files are
+    // imported into the open one.
+    if (event.type == SDL_EVENT_DROP_FILE && event.drop.data != nullptr) {
+        const std::filesystem::path dropped(event.drop.data);
+        if (dropped.filename() == Project::fileName) {
+            const std::filesystem::path project = dropped;
+            state_.guarded([this, project] { state_.openProject(project); });
+        } else if (state_.project) {
+            state_.queueImport({dropped});
+        }
+    }
 }
 
 bool EditorApp::onCloseRequested() {

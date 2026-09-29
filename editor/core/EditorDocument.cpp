@@ -403,6 +403,56 @@ void EditorDocument::setEditorHidden(const std::vector<EntityId> &ids, bool hidd
     });
 }
 
+EntityId EditorDocument::prefabRootOf(EntityId id) const {
+    for (const Entity *at = scene_->find(id); at; at = scene_->find(at->parentId()))
+        if (!at->prefabSource().empty())
+            return at->id();
+    return {};
+}
+
+Status EditorDocument::revertToPrefab(EntityId root, const Json &prefab) {
+    const Entity *entity = scene_->find(root);
+    if (!entity || entity->prefabSource().empty())
+        return Error{"That entity is not a prefab instance"};
+    const std::string source = entity->prefabSource();
+    Status result = success();
+    change("Revert to Prefab",
+           [&](Scene &scene) { result = reapplyPrefab(scene, root, prefab, source); });
+    return result;
+}
+
+Result<std::size_t> EditorDocument::updatePrefabInstances(const std::string &source,
+                                                          const Json &prefab, EntityId except) {
+    std::vector<EntityId> instances;
+    scene_->forEach([&](const Entity &entity) {
+        if (entity.prefabSource() == source && entity.id() != except)
+            instances.push_back(entity.id());
+    });
+    if (instances.empty())
+        return std::size_t{0};
+    std::size_t updated = 0;
+    std::string failure;
+    change("Update Prefab Instances", [&](Scene &scene) {
+        for (const EntityId id : instances)
+            if (scene.find(id)) {
+                if (auto done = reapplyPrefab(scene, id, prefab, source); done)
+                    ++updated;
+                else
+                    failure = done.error();
+            }
+    });
+    if (!failure.empty())
+        return Error{failure};
+    return updated;
+}
+
+void EditorDocument::unpackPrefab(EntityId root) {
+    change("Unpack Prefab", [&](Scene &scene) {
+        if (Entity *entity = scene.find(root))
+            entity->setPrefabSource({});
+    });
+}
+
 void EditorDocument::editSettings(const std::string &label,
                                   const std::function<void(SceneSettings &)> &edit) {
     change(label, [&](Scene &scene) { edit(scene.settings); });

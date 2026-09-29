@@ -156,6 +156,34 @@ Status EditorProject::savePrefab(const EditorDocument &document, EntityId root,
     return success();
 }
 
+Status EditorProject::applyToPrefab(const EditorDocument &document, EntityId root) {
+    const Entity *entity = document.scene().find(root);
+    if (!entity || entity->prefabSource().empty())
+        return Error{"That entity is not a prefab instance"};
+    const std::string source = entity->prefabSource();
+    auto absolute = project_.resolve(source);
+    if (!absolute)
+        return Error{absolute.error()};
+    Json prefab = subtreeToJson(document.scene(), root);
+    if (Json *entities = prefab.find("entities"))
+        for (std::size_t i = 0; i < entities->size(); ++i)
+            if (entities->at(i).get("id").asString() == toString(root)) {
+                Json &record = entities->at(i);
+                record.erase("prefab"); // The prefab is not an instance of anything.
+                if (Json *transform = record.find("transform")) {
+                    Json position = Json::array();
+                    position.push(0.0);
+                    position.push(0.0);
+                    transform->set("position", position);
+                }
+            }
+    if (auto written = writeTextFileAtomic(absolute.value(), prefab.dump(2) + "\n"); !written)
+        return written;
+    refresh();
+    log(LogLevel::Info, "editor", "Applied the instance to " + source);
+    return success();
+}
+
 Result<Json> EditorProject::loadPrefab(const std::string &path) const {
     auto absolute = project_.resolve(path);
     if (!absolute)
@@ -165,6 +193,61 @@ Result<Json> EditorProject::loadPrefab(const std::string &path) const {
 
 std::vector<ProjectIssue> EditorProject::validate() const {
     return validateProject(project_, *registry_);
+}
+
+bool EditorProject::importable(const std::filesystem::path &file) {
+    const AssetKind kind = classifyAsset(file.generic_string());
+    return kind == AssetKind::Texture || kind == AssetKind::Sound;
+}
+
+std::string EditorProject::defaultImportFolder(const std::filesystem::path &file) {
+    return classifyAsset(file.generic_string()) == AssetKind::Sound ? "assets/audio"
+                                                                    : "assets/textures";
+}
+
+Result<EditorProject::ImportResult>
+EditorProject::importFiles(const std::vector<std::filesystem::path> &files,
+                           const std::string &folder) {
+    ImportResult result;
+    std::error_code error;
+    for (const std::filesystem::path &source : files) {
+        const std::string name = source.filename().string();
+        if (!std::filesystem::is_regular_file(source, error)) {
+            result.skipped.push_back(name + ": not a file");
+            continue;
+        }
+        if (!importable(source)) {
+            result.skipped.push_back(name + ": only .png, .bmp and .wav files can be imported");
+            continue;
+        }
+        // Never copy a file onto itself (it is already in the project).
+        if (project_.relativize(source))
+            if (std::filesystem::equivalent(source.parent_path(),
+                                            project_.root / std::filesystem::path(folder), error)) {
+                result.skipped.push_back(name + ": already in that folder");
+                continue;
+            }
+        const std::string target = folder.empty() ? defaultImportFolder(source) : folder;
+        auto directory = project_.resolve(target);
+        if (!directory)
+            return Error{directory.error()};
+        std::filesystem::create_directories(directory.value(), error);
+        if (error)
+            return Error{"Cannot create '" + target + "': " + error.message()};
+        // A free name: "hero.png", then "hero (1).png", "hero (2).png", ...
+        std::filesystem::path destination = directory.value() / source.filename();
+        for (int copy = 1; std::filesystem::exists(destination, error); ++copy)
+            destination =
+                directory.value() / (source.stem().string() + " (" + std::to_string(copy) + ")" +
+                                     source.extension().string());
+        std::filesystem::copy_file(source, destination, error);
+        if (error)
+            return Error{"Cannot copy '" + source.string() + "': " + error.message()};
+        if (const auto relative = project_.relativize(destination))
+            result.imported.push_back(*relative);
+    }
+    refresh();
+    return result;
 }
 
 Result<ExportReport> EditorProject::exportGame(const ExportOptions &options) const {

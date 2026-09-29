@@ -49,6 +49,15 @@ if(PROJECT)
         file(COPY "${PROJECT}" DESTINATION "${WORK}/project")
     endif()
     list(APPEND arguments "${WORK}/project/${project_name}")
+    # Files to import from outside the project (scripts/demo_assets): a real picture, a real
+    # sound and something that cannot be imported.
+    file(GLOB sample_png "${PROJECT}/assets/tiles/platform.png")
+    file(GLOB sample_wav "${PROJECT}/assets/audio/lever.wav")
+    foreach(sample ${sample_png} ${sample_wav})
+        get_filename_component(sample_name "${sample}" NAME)
+        file(COPY "${sample}" DESTINATION "${WORK}/tmp")
+    endforeach()
+    file(WRITE "${WORK}/tmp/notes.txt" "not an asset\n")
 endif()
 execute_process(COMMAND "${EDITOR}" ${arguments}
     RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE errors TIMEOUT 240)

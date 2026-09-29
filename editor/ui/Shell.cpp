@@ -95,6 +95,39 @@ void createEntityMenu(EditorState &state, EntityId parent, std::optional<Vec2> a
     }
 }
 
+void prefabMenuItems(EditorState &state, EntityId entity, const std::string &menuId) {
+    if (!state.document || state.playing())
+        return;
+    const EntityId root = state.document->prefabRootOf(entity);
+    if (!root)
+        return;
+    const std::string source = state.document->scene().find(root)->prefabSource();
+    const auto id = [&](const char *leaf) { return "menu/" + menuId + "/" + leaf; };
+    if (ImGui::MenuItem("Show Prefab in Explorer"))
+        state.showAssetInExplorer(source);
+    if (!menuId.empty())
+        markItem(id("Show Prefab in Explorer"));
+    ImGui::Separator();
+    if (ImGui::MenuItem("Revert to Prefab"))
+        state.revertPrefab(entity);
+    if (!menuId.empty())
+        markItem(id("Revert to Prefab"));
+    tooltip("Put this instance back to what the prefab file says. Its name, position, rotation and "
+            "size stay; its parts and settings come from the prefab.");
+    if (ImGui::MenuItem("Apply to Prefab"))
+        state.applyPrefab(entity);
+    if (!menuId.empty())
+        markItem(id("Apply to Prefab"));
+    tooltip("Write this instance to the prefab file and update the other instances in the open "
+            "scenes.");
+    ImGui::Separator();
+    if (ImGui::MenuItem("Unpack Prefab"))
+        state.unpackPrefab(entity);
+    if (!menuId.empty())
+        markItem(id("Unpack Prefab"));
+    tooltip("Forget where this instance came from. Its entities stay as they are.");
+}
+
 void addComponentMenu(EditorState &state, EntityId entity) {
     if (!state.document || state.playing())
         return;

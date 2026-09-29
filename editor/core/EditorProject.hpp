@@ -48,6 +48,20 @@ class EditorProject {
     }
     void refresh();
 
+    // The file kinds Import Assets accepts: images (.png, .bmp) and sounds (.wav).
+    static bool importable(const std::filesystem::path &file);
+    // Where an imported file goes when the user gave no folder: assets/textures or assets/audio.
+    static std::string defaultImportFolder(const std::filesystem::path &file);
+    // Copies files from outside the project into `folder` (project-relative; empty picks a folder
+    // per kind). Existing files are never overwritten: a numbered name is used instead. Unsupported
+    // files are skipped and named in `skipped`. Returns the new project-relative paths.
+    struct ImportResult {
+        std::vector<std::string> imported;
+        std::vector<std::string> skipped; // "name: reason"
+    };
+    Result<ImportResult> importFiles(const std::vector<std::filesystem::path> &files,
+                                     const std::string &folder);
+
     // A new, empty scene (with a camera) saved at `path`. Fails if the file exists.
     Result<std::unique_ptr<EditorDocument>> newScene(const std::string &path);
     Result<std::unique_ptr<EditorDocument>> openScene(const std::string &path) const;
@@ -58,6 +72,9 @@ class EditorProject {
     // Saves the entity and everything below it as a reusable prefab.
     Status savePrefab(const EditorDocument &document, EntityId root, const std::string &path);
     Result<Json> loadPrefab(const std::string &path) const;
+    // Writes the instance rooted at `root` back to the prefab file it came from (its root's
+    // position is not stored, so the prefab has no place of its own).
+    Status applyToPrefab(const EditorDocument &document, EntityId root);
 
     // Loads every scene and prefab and reports what a game would trip over.
     std::vector<ProjectIssue> validate() const;

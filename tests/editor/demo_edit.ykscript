@@ -91,6 +91,40 @@ expect no-entity Checkpoint
 key ctrl+z
 expect entity Checkpoint
 
+log "== prefab instances: revert, apply, unpack"
+click "hierarchy/Lever"
+expect widget inspector/prefab/revert
+expect widget inspector/prefab/apply
+expect links Lever Gate
+edit prop/cooldown 3
+expect prop Lever Lever.cooldown 3
+click inspector/prefab/revert
+expect prop Lever Lever.cooldown 0.4
+expect undo "Revert to Prefab"
+expect links Lever Gate
+key ctrl+z
+expect prop Lever Lever.cooldown 3
+# Apply writes the prefab file, and the console says so.
+expect file-lacks prefabs/mechanisms/lever.ykprefab "\"cooldown\": 3"
+click inspector/prefab/apply
+expect file-contains prefabs/mechanisms/lever.ykprefab "\"cooldown\": 3"
+expect console "Applied 'Lever'"
+key ctrl+z
+key ctrl+z
+expect prop Lever Lever.cooldown 0.4
+expect clean
+# A part of an instance points back at its instance.
+menu "Entity/Prefab/Unpack Prefab"
+expect dirty
+expect no-widget inspector/prefab/revert
+key ctrl+z
+expect widget inspector/prefab/revert
+menu "Entity/Prefab/Show Prefab in Explorer"
+expect side-view explorer
+expect asset prefabs/mechanisms/lever.ykprefab
+click activity/Scene
+expect side-view scene
+
 log "== prefab from the selection, then instantiate it from the Prefabs view"
 click "hierarchy/Lever"
 menu "Entity/Save as Prefab"

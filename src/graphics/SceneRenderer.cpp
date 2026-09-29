@@ -209,6 +209,14 @@ const SceneRenderer::TextureInfo &SceneRenderer::textureFor(Renderer &renderer,
     return textures_.emplace(path, std::move(info)).first->second;
 }
 
+std::optional<SceneRenderer::LoadedTexture> SceneRenderer::loadedTexture(Renderer &renderer,
+                                                                          const std::string &path) {
+    const TextureInfo &info = textureFor(renderer, path);
+    if (!info.handle)
+        return std::nullopt;
+    return LoadedTexture{*info.handle, info.pixels};
+}
+
 ResolvedTexture SceneRenderer::textureSettings(const std::string &path) {
     const auto cached = textures_.find(path);
     if (cached != textures_.end())

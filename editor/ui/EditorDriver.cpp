@@ -33,13 +33,18 @@ std::string expandVariables(const std::string &text) {
     return out;
 }
 
-// Splits a line into words; double quotes group words.
+// Splits a line into words; double quotes group words and \" is a quote character.
 std::vector<std::string> tokenize(const std::string &line) {
     std::vector<std::string> words;
     std::string current;
     bool quoted = false, started = false;
-    for (const char c : line) {
-        if (c == '"') {
+    for (std::size_t i = 0; i < line.size(); ++i) {
+        const char c = line[i];
+        if (c == '\\' && i + 1 < line.size() && line[i + 1] == '"') {
+            current += '"';
+            started = true;
+            ++i;
+        } else if (c == '"') {
             quoted = !quoted;
             started = true;
         } else if (!quoted && std::isspace(static_cast<unsigned char>(c))) {
@@ -501,6 +506,8 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
         return report(state.dialog.kind == DialogKind::None, "a dialog is open");
     if (what == "no-project")
         return report(!state.project, "a project is open");
+    if (what == "no-asset")
+        return report(state.selectedAsset.empty(), "'" + state.selectedAsset + "' is selected");
     if (what == "no-pick")
         return report(!state.pick, "waiting for the user to pick an entity");
     if (what == "pick")
@@ -815,6 +822,9 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
                       "'" + path.string() + (found ? "' contains '" : "' does not contain '") +
                           w[3] + "'");
     }
+    if (what == "asset") // expect asset PATH : the Explorer's selection, shown in the Inspector
+        return report(state.selectedAsset == arg,
+                      "the selected asset is '" + state.selectedAsset + "'");
     if (what == "start-scene")
         return report(state.project && state.project->project().startScene == arg,
                       "the start scene differs");
@@ -985,6 +995,14 @@ bool EditorDriver::execute(EditorApp &app, const Command &command) {
     }
     if (name == "quit") {
         app.quit();
+        return true;
+    }
+    if (name == "import") { // import FILE... : as if the files were dropped on the window
+        std::vector<std::filesystem::path> files;
+        for (std::size_t i = 1; i < w.size(); ++i)
+            files.emplace_back(argument(i));
+        if (auto imported = app.state().importAssets(files); !imported)
+            fail(app, command, imported.error());
         return true;
     }
     if (name == "closewindow") { // The window's close button: unsaved work must be asked about.

@@ -47,6 +47,14 @@ struct PrefabPlacement {
 Result<std::vector<EntityId>> instantiateSubtrees(Scene &scene,
                                                   const std::vector<PrefabPlacement> &placements,
                                                   bool keepExternalReferences = false);
+// Puts an instance back to what its prefab says (the editor's Revert to Prefab and the update of
+// other instances after Apply). The entity `root` keeps its identity: id, name, transform, tags,
+// active/locked/hidden flags, place in the hierarchy, and so every reference from other entities to
+// it stays valid. Everything else (its components and all its children) is replaced by the
+// prefab's. References an instance's parts held to entities outside the instance (a plate wired to
+// a door) survive when the prefab has no reference of its own in that spot. `source` becomes the
+// root's prefab link. Nothing changes when the prefab is invalid.
+Status reapplyPrefab(Scene &scene, EntityId root, const Json &prefab, const std::string &source);
 // Loads `document` and writes it back the way the editor saves it (every property present, stable
 // order) while keeping entity ids, so files written by scripts or by hand diff cleanly against
 // editor-saved ones. Fail like the loaders do. `yk format` is built on these.

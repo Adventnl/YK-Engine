@@ -128,6 +128,10 @@ void contextMenu(Tree &tree, EntityId id) {
         tree.doc->setEntityActive(id, !entity->active());
     if (ImGui::MenuItem("Save as Prefab..."))
         showDialog(state, DialogKind::SavePrefab, id);
+    if (tree.doc->prefabRootOf(id).value != 0 && ImGui::BeginMenu("Prefab")) {
+        prefabMenuItems(state, id);
+        ImGui::EndMenu();
+    }
     if (ImGui::MenuItem("Frame in Scene View"))
         tree.toFrame = id;
     ImGui::EndPopup();

@@ -85,10 +85,8 @@ void prefabsPanel(EditorState &state) {
                     if (ImGui::MenuItem("Add to Scene", nullptr, false,
                                         state.document != nullptr && !state.playing()))
                         state.instantiatePrefab(path, defaultSpawnPoint(state));
-                    if (ImGui::MenuItem("Show in Explorer")) {
-                        state.selectedAsset = path;
-                        state.layout.sideView = SideView::Explorer;
-                    }
+                    if (ImGui::MenuItem("Show in Explorer"))
+                        state.showAssetInExplorer(path);
                     if (ImGui::MenuItem("Copy Path"))
                         ImGui::SetClipboardText(path.c_str());
                 }

@@ -132,6 +132,19 @@ class EditorDocument {
     // Editor hints saved with the scene (see Entity::locked, Entity::editorHidden).
     void setLocked(const std::vector<EntityId> &ids, bool locked);
     void setEditorHidden(const std::vector<EntityId> &ids, bool hidden);
+    // Prefab instances. An instance is an entity subtree whose root remembers the prefab it came
+    // from. `prefabRootOf` finds the instance a selected entity belongs to (null when it is not
+    // part of one); the others change the scene in one undo step each.
+    EntityId prefabRootOf(EntityId id) const;
+    // Puts the instance back to what `prefab` says, keeping the root's identity, name, transform
+    // and place (see reapplyPrefab in SceneSerializer.hpp).
+    Status revertToPrefab(EntityId root, const Json &prefab);
+    // After the prefab `source` changed on disk: every other instance of it in this scene is put
+    // back to `prefab` the same way. Returns how many were updated.
+    Result<std::size_t> updatePrefabInstances(const std::string &source, const Json &prefab,
+                                              EntityId except);
+    // Forgets the prefab link of an instance; its entities stay as they are.
+    void unpackPrefab(EntityId root);
     // Scene-wide settings (name, gravity, background): one undo step per change.
     void editSettings(const std::string &label, const std::function<void(SceneSettings &)> &edit);
     // Value is validated and clamped like any other property write. False when nothing was written.

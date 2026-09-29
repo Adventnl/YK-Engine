@@ -1344,6 +1344,94 @@ void workbenchLayout() {
 }
 } // namespace
 
+// The prefab workflow on a real project: place instances, edit one, apply it to the prefab file,
+// update the others, revert, unpack, all undoable.
+void prefabWorkflow() {
+    ComponentRegistry registry;
+    registerStandardComponents(registry);
+    TempDir dir("yk-editor-prefab-test");
+    auto created = EditorProject::create(dir.path / "P", "P", registry);
+    CHECK(created);
+    if (!created)
+        return;
+    EditorProject &project = *created.value();
+    auto opened = project.newScene("scenes/level");
+    CHECK(opened);
+    if (!opened)
+        return;
+    EditorDocument &doc = *opened.value();
+
+    // A prefab of a platform with a child.
+    const auto platform = doc.createFromTemplate(templateNamed(registry, "Platform"), {0, 0});
+    CHECK(platform);
+    doc.change("child", [&](Scene &scene) { scene.createEntity("Trim", platform.value()); });
+    CHECK(project.savePrefab(doc, platform.value(), "prefabs/floor"));
+    auto prefab = project.loadPrefab("prefabs/floor.ykprefab");
+    CHECK(prefab);
+    const std::string source = "prefabs/floor.ykprefab";
+    CHECK(doc.prefabRootOf(platform.value()).value == 0); // The original is no instance.
+
+    // Two instances, and their parts know which instance they belong to.
+    const auto a = doc.instantiatePrefab(prefab.value(), {10, 0}, {}, source);
+    const auto b = doc.instantiatePrefab(prefab.value(), {20, 0}, {}, source);
+    CHECK(a && b);
+    if (!a || !b)
+        return;
+    const EntityId trimOfB = doc.scene().find(b.value())->childIds().at(0);
+    CHECK(doc.prefabRootOf(b.value()) == b.value() && doc.prefabRootOf(trimOfB) == b.value());
+    CHECK(doc.prefabRootOf(a.value()) == a.value());
+
+    // Change instance A: another color, and remove its child. Apply writes the prefab file.
+    doc.change("edit A", [&](Scene &scene) {
+        Entity *entity = scene.find(a.value());
+        entity->get<SpriteRenderer>()->color = Color{200, 0, 0, 255};
+        scene.destroy(entity->childIds().at(0));
+    });
+    CHECK(project.applyToPrefab(doc, a.value()));
+    auto changed = project.loadPrefab(source);
+    CHECK(changed && changed.value().dump() != prefab.value().dump());
+    if (changed) {
+        // The prefab has no place of its own and is not an instance of itself.
+        const Json &rootRecord = changed.value().get("entities").at(0);
+        CHECK(!rootRecord.contains("prefab"));
+        CHECK(changed.value().get("entities").size() == 1); // The child is gone from the prefab.
+        for (const Json &record : changed.value().get("entities").items())
+            if (record.get("id").asString() == changed.value().get("root").asString())
+                CHECK(record.get("transform").get("position").at(0).asNumber() == 0.0);
+    }
+    CHECK(!project.applyToPrefab(doc, doc.scene().findByName("Main Camera")->id()));
+
+    // The other instance follows, in one undo step; A itself is left alone.
+    const auto updated = doc.updatePrefabInstances(source, changed.value(), a.value());
+    CHECK(updated && updated.value() == 1);
+    CHECK(doc.scene().find(b.value())->childIds().empty());
+    CHECK(doc.scene().find(b.value())->get<SpriteRenderer>()->color == Color(200, 0, 0, 255));
+    CHECK_NEAR(doc.scene().find(b.value())->worldPosition().x, 20.0); // It stays where it was.
+    CHECK(doc.undoLabel() == "Update Prefab Instances");
+    CHECK(doc.undo());
+    CHECK(doc.scene().find(b.value())->childIds().size() == 1);
+    CHECK(doc.redo());
+
+    // Revert puts an edited instance back, keeping name and place.
+    doc.change("edit B", [&](Scene &scene) {
+        scene.find(b.value())->setName("Special");
+        scene.find(b.value())->get<SpriteRenderer>()->color = Color{1, 2, 3, 255};
+    });
+    CHECK(doc.revertToPrefab(b.value(), changed.value()));
+    CHECK(doc.scene().find(b.value())->name() == "Special");
+    CHECK(doc.scene().find(b.value())->get<SpriteRenderer>()->color == Color(200, 0, 0, 255));
+    CHECK(doc.undoLabel() == "Revert to Prefab");
+    CHECK(!doc.revertToPrefab(platform.value(), changed.value())); // Not an instance.
+
+    // Unpacking forgets the link.
+    doc.unpackPrefab(b.value());
+    CHECK(doc.scene().find(b.value())->prefabSource().empty() &&
+          doc.prefabRootOf(b.value()).value == 0);
+    CHECK(doc.undo() && doc.scene().find(b.value())->prefabSource() == source);
+    const auto none = doc.updatePrefabInstances("prefabs/other.ykprefab", changed.value(), {});
+    CHECK(none && none.value() == 0);
+}
+
 int main() {
     workbenchLayout();
     undoAndRedo();
@@ -1366,6 +1454,7 @@ int main() {
     draggingGhosts();
     projectFiles();
     sampleProject();
+    prefabWorkflow();
     playing();
     console();
     return yk::test::finish("editor_core");

@@ -13,9 +13,12 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <string>
 #include <vector>
+
+struct SDL_Window;
 
 namespace yk::editor {
 struct EditorOptions {
@@ -176,7 +179,11 @@ class EditorState {
     std::vector<OutputLine> output; // Build Output panel.
     std::string componentFilter, prefabFilter;
     std::string selectedAsset; // Project file picked in the Explorer (Inspector shows it).
-    bool frameRequested{};     // Frame the whole scene once the scene view knows its size.
+    // The entity selection at the moment `selectedAsset` was picked: once the selection changes the
+    // Inspector goes back to showing entities.
+    std::vector<EntityId> assetSelectionMark;
+    std::string explorerReveal; // File the Explorer should open its folders for and scroll to.
+    bool frameRequested{};      // Frame the whole scene once the scene view knows its size.
     bool quit{};
     float framesPerSecond{};
     std::string hierarchyFilter;
@@ -226,6 +233,26 @@ class EditorState {
     // update.
     void refreshProblems();
     void addOutput(LogLevel level, const std::string &text); // A line for the Build Output panel.
+    // Copies files into the project (Explorer's Import Assets, files dropped on the window). Every
+    // file is reported in the console; the first imported one is selected in the Explorer.
+    Status importAssets(const std::vector<std::filesystem::path> &files,
+                        const std::string &folder = {});
+    // Files chosen in the system's file dialog or dropped on the window arrive here from wherever
+    // SDL calls back (possibly another thread); tick() imports them on the main thread.
+    void queueImport(std::vector<std::filesystem::path> files);
+    // Prefab instances (the entity may be any part of the instance). Revert puts it back to its
+    // prefab file; Apply writes it to the prefab file and updates the other instances in the open
+    // scenes; Unpack forgets the link. All of them tell the console what they did.
+    Status revertPrefab(EntityId entity);
+    Status applyPrefab(EntityId entity);
+    void unpackPrefab(EntityId entity);
+    // Selects a project file: the Explorer opens its folders and scrolls to it, and the Inspector
+    // shows it until something else is selected.
+    void showAssetInExplorer(const std::string &path);
+    // Opens the system's file dialog to pick files to import.
+    void chooseAssetsToImport(SDL_Window *window);
+    // The folder the Explorer last selected or opened (imports go there); project-relative.
+    std::string explorerFolder;
     // The folder the editor runs from: the player, `yk` and export templates live beside it.
     std::filesystem::path executableDirectory() const;
     // The player program for `target`, when one can be found (Export.hpp: findPlayer).
@@ -254,6 +281,8 @@ class EditorState {
     void tick(double seconds, const InputFrame &gameInput);
 
   private:
+    std::mutex importMutex_;
+    std::vector<std::filesystem::path> importQueue_;
     void bindDocument();
     void stashActive();
     Status attachProject(std::unique_ptr<EditorProject> opened);

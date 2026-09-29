@@ -1,0 +1,112 @@
+# The Explorer and the Inspector's view of files: the folder tree, search, previews, import
+# settings written next to a texture, animation clip timing, playing a sound, importing files, and
+# the scene settings shown when no entity is selected.
+timeout 300
+expect project "Cinder Vale"
+click activity/Explorer
+expect side-view explorer
+expect widget assets/filter
+expect widget assets/folder/assets
+capture ${SHOT_DIR}/assets-01-explorer.bmp
+
+log "== the Inspector shows the scene until something else is picked"
+expect no-asset
+expect widget scene/settings/gravity/y
+expect widget scene/settings/name
+edit scene/settings/gravity/y 4.5
+expect dirty
+expect undo "Edit Gravity"
+key ctrl+z
+expect clean
+click scene/settings/name
+key ctrl+a
+type "Renamed Vale"
+key enter
+expect undo "Rename Scene"
+key ctrl+z
+expect clean
+
+log "== searching opens the matching folders"
+click assets/filter
+type lever
+expect widget asset/assets/mechanisms/lever.png
+expect widget asset/assets/mechanisms/lever.ykanim
+expect widget asset/assets/mechanisms/lever.ykctl
+expect no-widget asset/assets/tiles/platform.png
+
+log "== a texture: preview and import settings"
+click asset/assets/mechanisms/lever.png
+expect asset assets/mechanisms/lever.png
+expect widget asset/inspector
+expect file assets/mechanisms/lever.png.ykmeta missing
+click asset/inspector/ppu/override
+expect widget asset/inspector/ppu
+edit asset/inspector/ppu 128
+click asset/inspector/apply
+expect file-contains assets/mechanisms/lever.png.ykmeta "128"
+capture ${SHOT_DIR}/assets-02-texture.bmp
+# Turning every override off removes the sidecar again.
+click asset/inspector/ppu/override
+click asset/inspector/apply
+expect file assets/mechanisms/lever.png.ykmeta missing
+expect clean
+
+log "== animation clips: preview and timing"
+click asset/assets/mechanisms/lever.ykanim
+expect widget asset/inspector/animation/preview
+expect widget asset/inspector/animation/clip
+wait 20
+expect widget asset/inspector/animation/fps/switch_on
+expect file-lacks assets/mechanisms/lever.ykanim "12"
+edit asset/inspector/animation/fps/switch_on 12
+click asset/inspector/apply
+expect file-contains assets/mechanisms/lever.ykanim "12"
+capture ${SHOT_DIR}/assets-03-animation.bmp
+
+log "== an animation controller"
+click asset/assets/mechanisms/lever.ykctl
+expect widget asset/inspector
+capture ${SHOT_DIR}/assets-04-controller.bmp
+
+log "== a sound"
+click assets/filter
+key ctrl+a
+type lever.wav
+click asset/assets/audio/lever.wav
+expect widget asset/inspector/sound/play
+expect widget asset/inspector/sound/stop
+capture ${SHOT_DIR}/assets-05-sound.bmp
+
+log "== selecting an entity brings the entity Inspector back"
+click activity/Scene
+click "hierarchy/Gate"
+expect selected Gate
+expect no-asset
+expect widget inspector/position/x
+click activity/Explorer
+click asset/assets/audio/lever.wav
+expect asset assets/audio/lever.wav
+expect no-widget inspector/position/x
+
+log "== importing files (as if dropped on the window)"
+click assets/filter
+key ctrl+a
+key delete
+import ${YK_TEST_TMP}/platform.png ${YK_TEST_TMP}/lever.wav ${YK_TEST_TMP}/notes.txt
+expect file assets/textures/platform.png exists
+expect file assets/audio/lever (1).wav missing
+expect file assets/audio/lever.wav exists
+expect file assets/textures/notes.txt missing
+expect asset assets/textures/platform.png
+expect widget asset/assets/textures/platform.png
+# The same file again gets a new name instead of replacing anything.
+import ${YK_TEST_TMP}/platform.png
+expect file "assets/textures/platform (1).png" exists
+capture ${SHOT_DIR}/assets-06-imported.bmp
+
+log "== a scene file"
+click assets/filter
+type level01
+click asset/scenes/level01.ykscene
+expect widget asset/inspector/open
+expect widget asset/inspector/setstart

@@ -222,6 +222,11 @@ void menuEntity(EditorState &state) {
     ImGui::Separator();
     if (item("Entity/Save as Prefab", "Save as Prefab...", nullptr, selected.value != 0))
         openDialog(state, DialogKind::SavePrefab, selected);
+    const bool instance = selected.value != 0 && state.document->prefabRootOf(selected).value != 0;
+    if (beginMenu("Entity/Prefab", "Prefab", instance)) {
+        prefabMenuItems(state, selected, "Entity/Prefab");
+        ImGui::EndMenu();
+    }
     const std::vector<std::string> prefabs = state.prefabPaths();
     if (beginMenu("Entity/Instantiate Prefab", "Instantiate Prefab", editing && !prefabs.empty())) {
         for (const std::string &path : prefabs)

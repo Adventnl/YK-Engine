@@ -12,9 +12,7 @@ void reveal(EditorState &state, const ProjectIssue &issue) {
     } else if (issue.path.ends_with(sceneExtension)) {
         state.openScene(issue.path);
     } else {
-        state.selectedAsset = issue.path;
-        state.layout.sideView = SideView::Explorer;
-        state.layout.sideBarVisible = true;
+        state.showAssetInExplorer(issue.path);
     }
 }
 } // namespace

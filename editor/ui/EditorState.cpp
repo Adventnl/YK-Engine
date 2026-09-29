@@ -578,5 +578,136 @@ void EditorState::tick(double seconds, const InputFrame &gameInput) {
         play->update(seconds, gameInput);
     if (audio)
         audio->update();
+    std::vector<std::filesystem::path> imports;
+    {
+        const std::lock_guard<std::mutex> lock(importMutex_);
+        imports.swap(importQueue_);
+    }
+    if (!imports.empty())
+        importAssets(imports, explorerFolder);
+}
+
+void EditorState::queueImport(std::vector<std::filesystem::path> files) {
+    const std::lock_guard<std::mutex> lock(importMutex_);
+    importQueue_.insert(importQueue_.end(), files.begin(), files.end());
+}
+
+namespace {
+// SDL calls this when the file dialog closes, possibly from another thread.
+void onFilesChosen(void *userdata, const char *const *files, int) {
+    auto *state = static_cast<EditorState *>(userdata);
+    if (!files)
+        return; // The dialog failed; SDL logs the reason.
+    std::vector<std::filesystem::path> chosen;
+    for (const char *const *file = files; *file; ++file)
+        chosen.emplace_back(*file);
+    if (!chosen.empty())
+        state->queueImport(std::move(chosen));
+}
+} // namespace
+
+void EditorState::chooseAssetsToImport(SDL_Window *window) {
+    static const SDL_DialogFileFilter filters[] = {
+        {"Images and sounds", "png;bmp;wav"}, {"Images", "png;bmp"}, {"Sounds", "wav"}};
+    SDL_Window *parent = window ? window : SDL_GetKeyboardFocus();
+    SDL_ShowOpenFileDialog(onFilesChosen, this, parent, filters, 3, nullptr, true);
+}
+
+Status EditorState::importAssets(const std::vector<std::filesystem::path> &files,
+                                 const std::string &folder) {
+    if (!project)
+        return Error{"No project is open"};
+    auto imported = project->importFiles(files, folder);
+    if (!imported) {
+        log(LogLevel::Error, "editor", imported.error());
+        return Error{imported.error()};
+    }
+    for (const std::string &path : imported.value().imported) {
+        log(LogLevel::Info, "editor", "Imported " + path);
+        if (sceneRenderer)
+            sceneRenderer->reload(*renderer, path);
+    }
+    for (const std::string &why : imported.value().skipped)
+        log(LogLevel::Warning, "editor", "Skipped " + why);
+    if (!imported.value().imported.empty())
+        showAssetInExplorer(imported.value().imported.front());
+    return success();
+}
+
+Status EditorState::revertPrefab(EntityId entity) {
+    if (!project || !document || playing())
+        return Error{"There is no scene to edit"};
+    const EntityId root = document->prefabRootOf(entity);
+    if (!root)
+        return Error{"That entity is not part of a prefab instance"};
+    const std::string source = document->scene().find(root)->prefabSource();
+    auto prefab = project->loadPrefab(source);
+    if (!prefab) {
+        log(LogLevel::Error, "editor", prefab.error());
+        message("Cannot revert", prefab.error());
+        return Error{prefab.error()};
+    }
+    auto reverted = document->revertToPrefab(root, prefab.value());
+    if (!reverted) {
+        log(LogLevel::Error, "editor", reverted.error());
+        return reverted;
+    }
+    log(LogLevel::Info, "editor",
+        "Reverted '" + document->scene().find(root)->name() + "' to " + source);
+    return success();
+}
+
+Status EditorState::applyPrefab(EntityId entity) {
+    if (!project || !document || playing())
+        return Error{"There is no scene to edit"};
+    const EntityId root = document->prefabRootOf(entity);
+    if (!root)
+        return Error{"That entity is not part of a prefab instance"};
+    const std::string source = document->scene().find(root)->prefabSource();
+    if (auto written = project->applyToPrefab(*document, root); !written) {
+        log(LogLevel::Error, "editor", written.error());
+        message("Cannot apply to the prefab", written.error());
+        return written;
+    }
+    auto prefab = project->loadPrefab(source);
+    if (!prefab)
+        return Error{prefab.error()};
+    std::size_t updated = 0;
+    const auto update = [&](EditorDocument &target, EntityId except) {
+        if (auto done = target.updatePrefabInstances(source, prefab.value(), except); done)
+            updated += done.value();
+        else
+            log(LogLevel::Error, "editor", done.error());
+    };
+    update(*document, root);
+    for (auto &entry : background)
+        if (entry.second.document)
+            update(*entry.second.document, {});
+    log(LogLevel::Info, "editor",
+        "Applied '" + document->scene().find(root)->name() + "' to " + source + "; " +
+            std::to_string(updated) + " other instance(s) in the open scenes were updated");
+    refreshProblems();
+    return success();
+}
+
+void EditorState::unpackPrefab(EntityId entity) {
+    if (!document || playing())
+        return;
+    if (const EntityId root = document->prefabRootOf(entity)) {
+        document->unpackPrefab(root);
+        log(LogLevel::Info, "editor", "Unpacked '" + document->scene().find(root)->name() + "'");
+    }
+}
+
+void EditorState::showAssetInExplorer(const std::string &path) {
+    selectedAsset = path;
+    explorerReveal = path;
+    explorerFolder = std::filesystem::path(path).parent_path().generic_string();
+    assetSelectionMark.clear();
+    if (document)
+        for (const EntityId id : document->selection())
+            assetSelectionMark.push_back(id);
+    layout.sideView = SideView::Explorer;
+    layout.sideBarVisible = true;
 }
 } // namespace yk::editor
