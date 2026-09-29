@@ -479,6 +479,9 @@ void blackboardAndEvents() {
           board.text("ratio") == "0.50");
     CHECK(board.format("Gems: {gems}/{name} {missing}!") == "Gems: 5/Lava !");
     CHECK(board.format("{{literal}} {open") == "{literal} {open");
+    CHECK(board.format("{gems:0}/{later:9} {name:none}") ==
+          "5/9 Lava"); // Fallback only while unset.
+    CHECK(board.format("{a:b:c}") == "b:c");
     board.clear();
     CHECK(!board.has("gems"));
 

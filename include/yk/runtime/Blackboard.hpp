@@ -28,8 +28,8 @@ class Blackboard {
         return values_;
     }
 
-    // Substitutes {name} with the variable's text (missing variables become empty). "{{" and "}}"
-    // produce literal braces.
+    // Substitutes {name} with the variable's text (missing variables become empty) and
+    // {name:fallback} with the fallback while unset. "{{" and "}}" produce literal braces.
     std::string format(std::string_view templateText) const;
 
   private:

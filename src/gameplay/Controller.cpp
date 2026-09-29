@@ -114,9 +114,21 @@ void PlatformerController::onFixedUpdate(GameContext &context, float seconds) {
     Ground ground = probeGround(context, *body, cosMaxSlope);
     // Contact manifolds are computed at the start of a physics step, so right after leaving the
     // ground they are one tick stale. Moving away from the surface (along its normal, so running up
-    // a slope does not count) faster than 1 m/s means the character has left it.
-    if (ground.found && dot(velocity - ground.velocity, ground.normal) > 1.0F)
-        ground.found = false;
+    // a slope does not count) faster than 1 m/s means the character has left it. Judge that against
+    // the ground velocity the character was riding last tick: a platform that stops or reverses
+    // abruptly must not read as the rider having jumped off.
+    const float gravityMagnitude =
+        std::fabs(context.scene().settings.gravity.y) *
+        (entity().get<RigidBody>() ? entity().get<RigidBody>()->gravityScale : 1.0F);
+    const float jumpSpeed = std::sqrt(2.0F * gravityMagnitude * jumpHeight);
+    if (ground.found) {
+        // A bump over a seam is not a jump: require a good fraction of the real jump speed.
+        const Vec2 reference = wasGrounded_ ? lastGroundVelocity_ : ground.velocity;
+        if (dot(velocity - reference, ground.normal) > std::clamp(0.5F * jumpSpeed, 1.0F, 2.5F))
+            ground.found = false;
+    }
+    wasGrounded_ = ground.found;
+    lastGroundVelocity_ = ground.found ? ground.velocity : Vec2{};
     grounded_ = ground.found;
     coyote_ = grounded_ ? coyoteTime : std::max(0.0F, coyote_ - seconds);
     jumpBuffer_ =
@@ -132,15 +144,19 @@ void PlatformerController::onFixedUpdate(GameContext &context, float seconds) {
         next = ground.velocity + tangent * approach(along, target, rate * seconds);
         jumping_ = false;
     } else {
-        const float rate = move != 0.0F ? airAcceleration : airDeceleration;
+        // Right after losing the ground without jumping (a seam, a ledge), keep ground-style
+        // control for the coyote window so brief contact loss does not turn into a slide.
+        const bool recentlyGrounded = coyote_ > 0.0F && !jumping_;
+        const float rate = recentlyGrounded
+                               ? (move != 0.0F ? groundAcceleration : groundDeceleration)
+                               : (move != 0.0F ? airAcceleration : airDeceleration);
         next.x = approach(velocity.x, target, rate * seconds);
     }
 
     const auto *rigid = entity().get<RigidBody>();
     const float baseGravity = rigid ? rigid->gravityScale : 1.0F;
     if (jumpBuffer_ > 0.0F && coyote_ > 0.0F) {
-        const float gravity = std::fabs(context.scene().settings.gravity.y) * baseGravity;
-        next.y = (grounded_ ? ground.velocity.y : 0.0F) - std::sqrt(2.0F * gravity * jumpHeight);
+        next.y = (grounded_ ? ground.velocity.y : 0.0F) - jumpSpeed;
         jumpBuffer_ = coyote_ = 0.0F;
         grounded_ = false;
         jumping_ = true;

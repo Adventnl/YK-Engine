@@ -1,0 +1,58 @@
+{
+  "format": "yk.prefab",
+  "version": 1,
+  "root": "2245bd5fbb686f68",
+  "entities": [
+    {
+      "id": "2245bd5fbb686f68",
+      "name": "Water Gem",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "",
+            "shape": "Ellipse",
+            "size": [0.5, 0.5],
+            "offset": [0, 0],
+            "color": "#6ebeffff",
+            "layer": 2,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.5, 0.5],
+            "offset": [0, 0],
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": ["water"],
+            "variable": "water_gems",
+            "value": 1,
+            "sound": "tone:988,0.09,sine"
+          }
+        }
+      ]
+    }
+  ]
+}

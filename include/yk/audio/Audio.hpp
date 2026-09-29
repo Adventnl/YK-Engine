@@ -9,14 +9,22 @@ namespace yk {
 class AudioSink {
   public:
     virtual ~AudioSink() = default;
-    virtual void play(const std::string &path, float volume = 1.0F, bool loop = false) = 0;
+    // Non-virtual so the defaults live in one place regardless of the implementation.
+    void play(const std::string &path, float volume = 1.0F, bool loop = false) {
+        playSound(path, volume, loop);
+    }
     virtual void stopAll() = 0;
+
+  protected:
+    virtual void playSound(const std::string &path, float volume, bool loop) = 0;
 };
 
 class NullAudio final : public AudioSink {
   public:
-    void play(const std::string &, float, bool) override {}
     void stopAll() override {}
+
+  protected:
+    void playSound(const std::string &, float, bool) override {}
 };
 
 // Remembers requests so tests can assert on them.
@@ -29,9 +37,6 @@ class RecordingAudio final : public AudioSink {
     };
     std::vector<Request> requests;
     int stops{};
-    void play(const std::string &path, float volume, bool loop) override {
-        requests.push_back({path, volume, loop});
-    }
     void stopAll() override {
         ++stops;
     }
@@ -40,6 +45,11 @@ class RecordingAudio final : public AudioSink {
         for (const Request &request : requests)
             total += request.path == path ? 1 : 0;
         return total;
+    }
+
+  protected:
+    void playSound(const std::string &path, float volume, bool loop) override {
+        requests.push_back({path, volume, loop});
     }
 };
 } // namespace yk

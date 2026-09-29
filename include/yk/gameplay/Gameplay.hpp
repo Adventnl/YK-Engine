@@ -119,6 +119,8 @@ class PlatformerController final : public Component {
 
   private:
     bool grounded_{};
+    bool wasGrounded_{};
+    Vec2 lastGroundVelocity_{};
     int facing_{1};
     float coyote_{};
     float jumpBuffer_{};

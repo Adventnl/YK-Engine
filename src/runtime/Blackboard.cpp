@@ -50,7 +50,11 @@ std::string Blackboard::format(std::string_view templateText) const {
                 out.push_back(c); // Unterminated: keep the text as written.
                 continue;
             }
-            out += text(std::string(templateText.substr(i + 1, close - i - 1)));
+            // "{name}" or "{name:fallback}": the fallback shows while the variable is unset.
+            const std::string field(templateText.substr(i + 1, close - i - 1));
+            const auto colon = field.find(':');
+            const std::string name = field.substr(0, colon);
+            out += colon == std::string::npos ? text(name) : text(name, field.substr(colon + 1));
             i = close;
         } else {
             out.push_back(c);
