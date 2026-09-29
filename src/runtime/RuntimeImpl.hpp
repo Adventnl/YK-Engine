@@ -51,6 +51,7 @@ struct GameRuntime::Impl {
     // Assets shared by every entity; kept across restarts (the files do not change while running).
     std::map<std::string, std::shared_ptr<const AnimationSet>> animationSets;
     std::map<std::string, std::shared_ptr<const AnimationController>> animationControllers;
+    std::map<std::string, Json> prefabDocuments;
 
     // ---- Physics binding (PhysicsBinding.cpp) ----
     struct BodyRecord {

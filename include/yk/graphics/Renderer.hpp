@@ -28,7 +28,7 @@ class TextureHandle {
     std::size_t index_{};
 };
 // Procedural textures every renderer can provide, so placeholder art needs no files.
-enum class BuiltinTexture { White, Circle };
+enum class BuiltinTexture { White, Circle, Glow };
 // Alpha: the usual "over" blend. Additive: adds the sprite's light to what is behind it (glows,
 // sparks, fire); the sprite's alpha scales its contribution.
 enum class BlendMode { Alpha, Additive };

@@ -28,6 +28,7 @@ add_library(yk_engine STATIC src/core/Log.cpp src/core/Time.cpp src/core/Color.c
     src/scene/Scene.cpp src/scene/SceneSerializer.cpp src/scene/RegistryDocs.cpp src/animation/AnimationSet.cpp
     src/animation/AnimationController.cpp
     src/assets/Project.cpp src/assets/TextureMeta.cpp src/assets/AssetSource.cpp src/components/Components.cpp
+    src/components/Effects.cpp
     src/runtime/Blackboard.cpp src/runtime/EventBus.cpp src/runtime/GameRuntime.cpp
     src/runtime/PhysicsBinding.cpp src/assets/Validation.cpp
     src/physics/World.cpp src/physics/Queries.cpp src/physics/Joints.cpp)
@@ -98,7 +99,7 @@ endif()
 target_compile_definitions(yk_engine PUBLIC YK_HAS_RUNTIME=$<BOOL:${YK_RUNTIME}>)
 
 if(BUILD_TESTING)
-    foreach(suite core physics json animation scene game_runtime audio input assets)
+    foreach(suite core physics json animation scene game_runtime audio input assets effects)
         yk_add_test(${suite} tests/unit/${suite}_tests.cpp LIBS yk::engine TIMEOUT 30)
     endforeach()
     yk_add_test(gameplay tests/unit/gameplay_tests.cpp LIBS yk::gameplay TIMEOUT 120)

@@ -71,6 +71,8 @@ class GameRuntime final : public GameContext {
     void teleport(Entity &entity, Vec2 worldPosition) override;
     void destroyLater(EntityId entity) override;
     Result<EntityId> spawn(const Json &prefab, Vec2 worldPosition, EntityId parent = {}) override;
+    Result<EntityId> spawnPrefab(const std::string &path, Vec2 worldPosition,
+                                 EntityId parent = {}) override;
     void requestRestart() override;
     void requestSceneChange(std::string projectRelativePath) override;
 

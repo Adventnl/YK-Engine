@@ -363,6 +363,17 @@ Result<EntityId> GameRuntime::spawn(const Json &prefab, Vec2 worldPosition, Enti
     impl_->bindEntities(impl_->scene->subtree(created.value()));
     return created;
 }
+Result<EntityId> GameRuntime::spawnPrefab(const std::string &path, Vec2 worldPosition,
+                                          EntityId parent) {
+    auto cached = impl_->prefabDocuments.find(path);
+    if (cached == impl_->prefabDocuments.end()) {
+        auto document = readJsonAsset(impl_->options.assets, path);
+        if (!document)
+            return Error{"Cannot load prefab " + path + ": " + document.error()};
+        cached = impl_->prefabDocuments.emplace(path, std::move(document.value())).first;
+    }
+    return spawn(cached->second, worldPosition, parent);
+}
 void GameRuntime::requestRestart() {
     impl_->restartWanted = true;
 }

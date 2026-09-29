@@ -81,7 +81,7 @@ struct Renderer::Impl {
     Camera2D frameCamera; // Camera given to beginFrame; restored after each pass.
     Vec2 viewport;        // Whole output (logical units in letterbox mode).
     Vec2 passSize;        // Size of the viewport the current pass draws into.
-    std::array<std::optional<TextureHandle>, 2> builtins;
+    std::array<std::optional<TextureHandle>, 3> builtins;
     std::set<std::size_t> renderTargets; // Texture indices created by createRenderTarget.
     FrameStats building; // Counted while the current frame is being drawn.
     FrameStats finished; // The last completed frame.
@@ -170,6 +170,22 @@ Result<TextureHandle> Renderer::builtinTexture(BuiltinTexture kind) {
                 const float coverage = std::clamp(size / 2.0F - distance + 0.5F, 0.0F, 1.0F);
                 pixels[static_cast<std::size_t>(y * size + x)] = {
                     255, 255, 255, static_cast<std::uint8_t>(std::lround(coverage * 255.0F))};
+            }
+        created = createTexture(size, size, pixels, TextureFilter::Linear);
+    }
+    if (kind == BuiltinTexture::Glow) {
+        // White with a smooth radial falloff (alpha 1 at the center, 0 at the edge): the shape of
+        // every soft particle and glow. Squared so it fades gently rather than showing a disc.
+        constexpr int size = 128;
+        std::vector<Color> pixels(static_cast<std::size_t>(size * size));
+        for (int y = 0; y < size; ++y)
+            for (int x = 0; x < size; ++x) {
+                const float distance = std::hypot(static_cast<float>(x) + 0.5F - size / 2.0F,
+                                                  static_cast<float>(y) + 0.5F - size / 2.0F) /
+                                       (size / 2.0F);
+                const float falloff = std::clamp(1.0F - distance, 0.0F, 1.0F);
+                pixels[static_cast<std::size_t>(y * size + x)] = {
+                    255, 255, 255, static_cast<std::uint8_t>(std::lround(falloff * falloff * 255.0F))};
             }
         created = createTexture(size, size, pixels, TextureFilter::Linear);
     }

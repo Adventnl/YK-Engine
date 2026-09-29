@@ -58,6 +58,10 @@ class GameContext {
     virtual void destroyLater(EntityId entity) = 0;
     virtual Result<EntityId> spawn(const Json &prefab, Vec2 worldPosition,
                                    EntityId parent = {}) = 0;
+    // Instantiates a prefab asset (project-relative path) with its root at `worldPosition`. The
+    // document is read once and kept, so gameplay can spawn an effect on every jump.
+    virtual Result<EntityId> spawnPrefab(const std::string &path, Vec2 worldPosition,
+                                         EntityId parent = {}) = 0;
     virtual void requestRestart() = 0;
     virtual void requestSceneChange(std::string projectRelativePath) = 0;
 

@@ -1,6 +1,7 @@
 #pragma once
 #include "yk/assets/AssetSource.hpp"
 #include "yk/components/Components.hpp"
+#include "yk/components/Effects.hpp"
 #include "yk/graphics/BitmapFont.hpp"
 #include "yk/graphics/Renderer.hpp"
 #include "yk/runtime/Blackboard.hpp"
@@ -25,6 +26,7 @@ struct SceneRenderStats {
     std::size_t sprites{}; // SpriteRenderer components considered.
     std::size_t culled{};  // Skipped because they were entirely outside the view.
     std::size_t quads{};   // Textured quads submitted (every tile of a tiled sprite counts).
+    std::size_t particles{}; // Live particles drawn.
 };
 
 // Turns scene data into renderer submissions. It reads components and never changes the scene, so
@@ -78,6 +80,10 @@ class SceneRenderer {
     const TextureInfo &textureFor(Renderer &renderer, const std::string &path);
     Status drawSprite(Renderer &renderer, const Entity &entity, const SpriteRenderer &sprite,
                       const WorldView &view, const Rect &visible, bool culling);
+    Status drawParticles(Renderer &renderer, const Entity &entity, const ParticleEmitter &emitter,
+                         const Rect &visible, bool culling);
+    Status drawLight(Renderer &renderer, const Entity &entity, const Light2D &light,
+                     const Rect &visible, bool culling);
 
     const AssetSource *assets_{};
     TextureDefaults defaults_;

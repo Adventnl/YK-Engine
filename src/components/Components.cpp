@@ -1,4 +1,5 @@
 #include "yk/components/Components.hpp"
+#include "yk/components/Effects.hpp"
 #include "yk/core/Log.hpp"
 #include "yk/runtime/GameContext.hpp"
 #include <algorithm>
@@ -304,6 +305,7 @@ void registerEngineComponents(ComponentRegistry &registry) {
     registry.add<Camera>("Camera");
     registry.add<AudioSource>("AudioSource");
     registry.add<AnimatedSprite>("AnimatedSprite");
+    registerEffectComponents(registry);
     const auto place = [](Scene &scene, Vec2 at, const char *name) -> Entity & {
         Entity &entity = scene.createEntity(name);
         entity.setWorldPosition(at);

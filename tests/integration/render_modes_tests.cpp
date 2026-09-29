@@ -4,6 +4,7 @@
 #include "support/check.hpp"
 #include "yk/assets/AssetSource.hpp"
 #include "yk/core/Application.hpp"
+#include "yk/components/Effects.hpp"
 #include "yk/core/FileIO.hpp"
 #include "yk/graphics/SceneRenderer.hpp"
 #include <SDL3/SDL.h>
@@ -141,6 +142,33 @@ class ModesLayer final : public ApplicationLayer {
             Case &c = add({0, 0});
             sprite(c, "Missing", {0, 0}, {2, 2}, "assets/does-not-exist.bmp");
         }
+        // 8: particles. Three stationary red squares born at the same place, simulated by hand
+        // (there is no game runtime in this test).
+        {
+            Case &c = add({0, 0});
+            Entity &entity = c.scene->createEntity("Sparks");
+            entity.transform().position = {1.0F, 0.0F};
+            auto &emitter = entity.add<ParticleEmitter>();
+            emitter.particleShape = ParticleShape::Square;
+            emitter.blend = SpriteBlend::Alpha;
+            emitter.startColor = red;
+            emitter.endColor = red;
+            emitter.endScale = 1.0F;
+            emitter.startSize = {1.0F, 1.0F};
+            emitter.speed = {0.0F, 0.0F};
+            emitter.lifetime = {10.0F, 10.0F};
+            emitter.playOnStart = false;
+            emitter.emitBurst(3);
+            emitter.step(0.01F, entity.worldTransform());
+        }
+        // 9: a glow: additive, brightest at the center and fading to nothing at its radius.
+        {
+            Case &c = add({0, 0});
+            Entity &entity = c.scene->createEntity("Torch");
+            auto &glow = entity.add<Light2D>();
+            glow.color = {200, 100, 0, 255};
+            glow.radius = 2.0F;
+        }
         return success();
     }
     bool update(const FrameContext &) override {
@@ -226,7 +254,7 @@ int main() {
     const std::filesystem::path capture = root / "modes.bmp";
     std::vector<Case> cases;
     {
-        auto app = Application::create({"render modes test", 4 * regionWidth, 2 * regionHeight, 0, 0});
+        auto app = Application::create({"render modes test", 4 * regionWidth, 3 * regionHeight, 0, 0});
         CHECK(app);
         if (!app)
             return 1;
@@ -247,8 +275,8 @@ int main() {
     CHECK(image != nullptr);
     if (!image)
         return yk::test::finish("render_modes");
-    CHECK(cases.size() == 8);
-    if (cases.size() != 8)
+    CHECK(cases.size() == 10);
+    if (cases.size() != 10)
         return yk::test::finish("render_modes");
 
     // 0: Tiled. Sprite spans x in [-1.75, 1.75], y in [-1, 1]; tiles start at its top-left, so tile
@@ -320,6 +348,20 @@ int main() {
     // 7: the missing texture is a magenta square (255, 0, 220).
     const Probe missing{image, cases[7]};
     CHECK(missing.at(0.0F, 0.0F, missingMagenta));
+    // 8: the three particles are drawn as one red square around (1, 0), 1 unit big.
+    const Probe sparks{image, cases[8]};
+    CHECK(cases[8].stats.particles == 3);
+    CHECK(sparks.at(1.0F, 0.0F, red));
+    CHECK(sparks.at(1.4F, 0.4F, red));
+    CHECK(sparks.at(0.0F, 0.0F, clearGray)); // Outside the square.
+    CHECK(sparks.at(1.7F, 0.0F, clearGray));
+    // 9: additive glow (200, 100, 0) over gray 40: full strength at the center, a quarter of it at
+    // half the radius (the falloff is squared), nothing beyond the radius.
+    const Probe torch{image, cases[9]};
+    CHECK(torch.at(0.0F, 0.0F, {240, 140, 40, 255}, 8));
+    CHECK(torch.at(1.0F, 0.0F, {90, 65, 40, 255}, 8));
+    CHECK(torch.at(2.3F, 0.0F, clearGray));
+    CHECK(cases[9].stats.quads == 1);
     SDL_DestroySurface(image);
     std::filesystem::remove_all(root);
     return yk::test::finish("render_modes");

@@ -380,17 +380,120 @@ Status SceneRenderer::drawSprite(Renderer &renderer, const Entity &entity,
     return done;
 }
 
+Status SceneRenderer::drawParticles(Renderer &renderer, const Entity &entity,
+                                    const ParticleEmitter &emitter, const Rect &visible,
+                                    bool culling) {
+    if (emitter.particles().empty())
+        return success();
+    Sprite proto;
+    if (emitter.texture.path.empty()) {
+        auto builtin = renderer.builtinTexture(emitter.particleShape == ParticleShape::Soft
+                                                   ? BuiltinTexture::Glow
+                                               : emitter.particleShape == ParticleShape::Circle
+                                                   ? BuiltinTexture::Circle
+                                                   : BuiltinTexture::White);
+        if (!builtin)
+            return Error{builtin.error()};
+        proto.texture = builtin.value();
+    } else {
+        const TextureInfo &info = textureFor(renderer, emitter.texture.path);
+        if (!info.handle) {
+            auto white = renderer.builtinTexture(BuiltinTexture::White);
+            if (!white)
+                return Error{white.error()};
+            proto.texture = white.value();
+        } else {
+            proto.texture = *info.handle;
+        }
+    }
+    proto.layer = emitter.layer;
+    proto.depth = emitter.order;
+    proto.blend = emitter.blend == SpriteBlend::Additive ? BlendMode::Additive : BlendMode::Alpha;
+    const Transform2D world = emitter.localSpace ? entity.worldTransform() : Transform2D{};
+    for (const ParticleEmitter::Particle &particle : emitter.particles()) {
+        const float t = std::clamp(particle.age / particle.lifetime, 0.0F, 1.0F);
+        const float size = particle.size * lerp(1.0F, emitter.endScale, t);
+        if (!(size > 0.0F))
+            continue;
+        const Vec2 position = emitter.localSpace ? transformPoint(world, particle.position)
+                                                 : particle.position;
+        if (culling && !overlaps({position - Vec2{size, size} * 0.71F, Vec2{size, size} * 1.42F}, visible))
+            continue;
+        Sprite quad = proto;
+        quad.transform.position = position;
+        quad.transform.rotationDegrees = particle.rotation + world.rotationDegrees;
+        quad.size = {size, size};
+        quad.tint = lerp(emitter.startColor, emitter.endColor, t);
+        if (quad.tint.a == 0)
+            continue;
+        if (auto submitted = renderer.submit(quad); !submitted)
+            return submitted;
+        ++stats_.quads;
+        ++stats_.particles;
+    }
+    return success();
+}
+
+Status SceneRenderer::drawLight(Renderer &renderer, const Entity &entity, const Light2D &light,
+                                const Rect &visible, bool culling) {
+    const float strength = std::min(std::max(light.currentIntensity(), 0.0F), 1.0F);
+    if (strength <= 0.0F || !(light.radius > 0.0F))
+        return success();
+    const Transform2D world = entity.worldTransform();
+    const Vec2 center = transformPoint(world, light.offset);
+    const float radius = light.radius * std::max(std::fabs(world.scale.x), std::fabs(world.scale.y));
+    if (culling && !overlaps({center - Vec2{radius, radius}, Vec2{radius, radius} * 2.0F}, visible))
+        return success();
+    auto glow = renderer.builtinTexture(BuiltinTexture::Glow);
+    if (!glow)
+        return Error{glow.error()};
+    Sprite quad;
+    quad.texture = glow.value();
+    quad.transform.position = center;
+    quad.size = {radius * 2.0F, radius * 2.0F};
+    quad.tint = {static_cast<std::uint8_t>(static_cast<float>(light.color.r) * strength),
+                 static_cast<std::uint8_t>(static_cast<float>(light.color.g) * strength),
+                 static_cast<std::uint8_t>(static_cast<float>(light.color.b) * strength),
+                 light.color.a};
+    quad.blend = BlendMode::Additive;
+    quad.layer = light.layer;
+    quad.depth = light.order;
+    ++stats_.quads;
+    return renderer.submit(quad);
+}
+
 Status SceneRenderer::drawWorld(Renderer &renderer, const Scene &scene, const WorldView &view) {
     stats_ = {};
     const bool culling = view.viewport.x > 0.0F && view.viewport.y > 0.0F;
     const Rect visible = culling ? view.camera.visibleWorld(view.viewport) : Rect{};
     static const std::type_index spriteType(typeid(SpriteRenderer));
+    static const std::type_index emitterType(typeid(ParticleEmitter));
+    static const std::type_index lightType(typeid(Light2D));
     for (const EntityId id : scene.orderedIds()) {
         const Entity *entity = scene.find(id);
         if (!entity || !entity->activeInHierarchy())
             continue;
         for (const auto &component : entity->components()) {
-            if (component->type().type != spriteType)
+            if (!component->enabled)
+                continue;
+            const std::type_index type = component->type().type;
+            if (type == emitterType) {
+                if (auto drawn = drawParticles(renderer, *entity,
+                                               static_cast<const ParticleEmitter &>(*component),
+                                               visible, culling);
+                    !drawn)
+                    return drawn;
+                continue;
+            }
+            if (type == lightType) {
+                if (auto drawn = drawLight(renderer, *entity,
+                                           static_cast<const Light2D &>(*component), visible,
+                                           culling);
+                    !drawn)
+                    return drawn;
+                continue;
+            }
+            if (type != spriteType)
                 continue;
             const auto &sprite = static_cast<const SpriteRenderer &>(*component);
             if (!sprite.enabled || !sprite.visible || sprite.color.a == 0)

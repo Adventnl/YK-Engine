@@ -16,6 +16,79 @@ Plays a sound on start or on request.
 | `loop` | bool | false |  |
 | `playOnStart` | bool | false |  |
 
+## Effects
+
+### ParticleEmitter
+
+Emits small sprites (sparks, dust, bubbles). Use a one-shot emitter inside an effect prefab that gameplay components spawn.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `texture` | asset | "" | Leave empty for a placeholder particle. |
+| `particleShape` | enum | "Soft" | Options: Soft Circle Square |
+| `playOnStart` | bool | true |  |
+| `loop` | bool | true | Off: emit for `duration` seconds, then stop (a one-shot). |
+| `duration` | float | 1 | (range 0 to 600) |
+| `rate` | float | 20 | Particles per second. (range 0 to 2000) |
+| `burst` | int | 0 | Particles emitted at once when playback starts. (range 0 to 5000) |
+| `maxParticles` | int | 100 | (range 1 to 5000) |
+| `lifetime` | vec2 | [0.5,1] | Minimum and maximum seconds a particle lives. (range 0.01 to 600) |
+| `area` | enum | "Point" | Options: Point Circle Box |
+| `areaSize` | vec2 | [1,1] | (range 0 to 1000) |
+| `direction` | float | 0 | Degrees clockwise from up. (range -360 to 360) |
+| `spread` | float | 360 | (range 0 to 360) |
+| `speed` | vec2 | [1,2] | (range 0 to 500) |
+| `gravity` | vec2 | [0,0] | (range -500 to 500) |
+| `drag` | float | 0 | (range 0 to 50) |
+| `startSize` | vec2 | [0.1,0.2] | (range 0.001 to 100) |
+| `endScale` | float | 0 | Size multiplier reached at the end of a particle's life. (range 0 to 20) |
+| `startRotation` | vec2 | [0,0] | (range -720 to 720) |
+| `rotationSpeed` | vec2 | [0,0] | (range -3600 to 3600) |
+| `startColor` | color | "#ffffffff" |  |
+| `endColor` | color | "#ffffff00" |  |
+| `blend` | enum | "Additive" | Options: Alpha Additive |
+| `layer` | int | 6 | (range -1000 to 1000) |
+| `order` | float | 0 | (range -1000 to 1000) |
+| `localSpace` | bool | false | Particles follow the emitter instead of staying where they were born. |
+
+### Light2D
+
+A soft additive glow (torch, lava, gem). Decoration only: it lights nothing else.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `color` | color | "#ffc878ff" |  |
+| `intensity` | float | 1 | (range 0 to 10) |
+| `radius` | float | 2 | (range 0.05 to 100) |
+| `offset` | vec2 | [0,0] | (range -100 to 100) |
+| `flicker` | float | 0 | (range 0 to 1) |
+| `flickerSpeed` | float | 6 | (range 0 to 60) |
+| `layer` | int | 7 | (range -1000 to 1000) |
+| `order` | float | 0 | (range -1000 to 1000) |
+
+### Oscillator
+
+Sways, bobs or pulses the entity's transform in a repeating wave (grass, gems, glows).
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `position` | vec2 | [0,0] | (range -100 to 100) |
+| `rotation` | float | 0 | (range -360 to 360) |
+| `scale` | vec2 | [0,0] | (range -10 to 10) |
+| `frequency` | float | 0.5 | (range 0 to 20) |
+| `phase` | float | 0 | (range 0 to 1) |
+| `randomPhase` | bool | true | Offset each copy by its own amount so a row of grass does not sway in step. |
+| `wave` | enum | "Sine" | Options: Sine Triangle |
+
+### Lifetime
+
+Destroys the entity after a while (for effect prefabs).
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `seconds` | float | 1.5 | (range 0 to 3600) |
+| `untilEmitterFinished` | bool | false | Also destroy as soon as this entity's particle emitter has finished. |
+
 ## Gameplay
 
 ### Killable
@@ -359,6 +432,8 @@ Screen space: placed in pixels on the screen, not in the world.
 Offered by the editor's Create menu.
 
 - **Basic**: Empty; Sprite; Camera;
+
+- **Effects**: Particle Emitter; Glow;
 
 - **Gameplay**: Hazard; Collectible; Checkpoint; Goal; Trigger Zone; Spawn Point; Level Flow; Character;
 
