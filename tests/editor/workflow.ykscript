@@ -115,6 +115,38 @@ expect prop "Main Camera" Camera.mode FitTargets
 expect prop "Main Camera" Camera.targets "Player One,Player Two"
 capture ${SHOT_DIR}/05-configured.bmp
 
+log "== 4b. Add and remove components on a scratch entity, re-link by drag and drop"
+create "Empty Entity"
+expect selected Entity
+click inspector/add-component
+click add-category/Rendering
+click add/SpriteRenderer
+expect has-component Entity SpriteRenderer
+click component/SpriteRenderer/menu
+click component/SpriteRenderer/remove
+expect no-component Entity SpriteRenderer
+key ctrl+z
+expect has-component Entity SpriteRenderer
+# Adding a Door brings the body and collider it needs, and they cannot be removed under it.
+click inspector/add-component
+click add-category/Gameplay
+click add/Door
+expect has-component Entity RigidBody
+expect has-component Entity Collider
+click component/Collider/menu
+click component/Collider/remove
+expect has-component Entity Collider
+key escape
+click "hierarchy/Entity"
+key delete
+expect no-entity Entity
+click "hierarchy/Pressure Plate"
+click prop/targets/remove/0
+expect no-links "Pressure Plate" Door
+drag "hierarchy/Door" prop/targets/add
+expect links "Pressure Plate" Door
+capture ${SHOT_DIR}/05b-relinked.bmp
+
 log "== 5. Save"
 expect dirty
 key ctrl+s
@@ -139,10 +171,12 @@ report Hazard
 expect runtime-moved "Player One" x>=1.5
 expect runtime-moved "Player Two" x>=1.5
 capture ${SHOT_DIR}/07-play-running.bmp
-hold w 8
-hold up 8
-wait 12
-expect runtime-moved "Player One" y<=-0.2
+# A jump: W lifts Player One off the ground.
+keydown w
+wait 5
+expect runtime-moved "Player One" y<=-0.3
+keyup w
+wait 20
 click toolbar/Pause
 expect paused
 click toolbar/Play

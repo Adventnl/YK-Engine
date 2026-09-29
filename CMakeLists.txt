@@ -114,6 +114,22 @@ if(BUILD_TESTING)
             ENVIRONMENT "SDL_AUDIODRIVER=dummy" TIMEOUT 30)
         yk_add_test(scene_render tests/integration/scene_render_tests.cpp LIBS yk::engine SDL3::SDL3
             ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software" TIMEOUT 30)
+        # The editor, driven through its real UI by scripts (see editor/ui/EditorDriver.hpp).
+        file(GLOB YK_EDITOR_SCRIPTS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/tests/editor/*.ykscript")
+        foreach(script ${YK_EDITOR_SCRIPTS})
+            get_filename_component(script_name "${script}" NAME_WE)
+            # Scripts named sample_* start with the Elemental Prototype project open; the others
+            # start from the welcome screen.
+            set(script_project "")
+            if(script_name MATCHES "^sample_")
+                set(script_project -DPROJECT=${CMAKE_CURRENT_SOURCE_DIR}/projects/elemental-prototype)
+            endif()
+            add_test(NAME editor_${script_name}
+                COMMAND ${CMAKE_COMMAND} -DEDITOR=$<TARGET_FILE:yk_editor> -DSCRIPT=${script}
+                    -DWORK=${CMAKE_BINARY_DIR}/editor-tests/${script_name} ${script_project}
+                    -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/editor/run_script.cmake)
+            set_tests_properties(editor_${script_name} PROPERTIES TIMEOUT 300)
+        endforeach()
     endif()
 endif()
 

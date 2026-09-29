@@ -150,8 +150,8 @@ int main(int argc, char **argv) {
         return 1;
     }
     if (driver) {
-        if (!driver->finished()) {
-            std::fprintf(stderr, "The script did not finish (stopped at a later command)\n");
+        if (!driver->finished() && !(editor.state().quit && driver->onlyTrivialCommandsLeft())) {
+            std::fprintf(stderr, "The script did not finish (the editor exited early)\n");
             return 1;
         }
         if (driver->failures() != 0) {

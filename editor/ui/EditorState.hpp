@@ -140,6 +140,7 @@ class EditorState {
     std::string renameBuffer;
     bool renameFocus{};
     EntityId selectionAnchor; // For shift-click range selection in the hierarchy.
+    EntityId pressedRow;      // Hierarchy row the mouse went down on; it is selected on release.
     std::string assetFilter;
 
     bool playing() const {

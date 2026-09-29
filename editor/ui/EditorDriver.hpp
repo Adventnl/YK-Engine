@@ -27,11 +27,11 @@ namespace yk::editor {
 //   keydown K | keyup K | hold K N      keys for the game: hold d 60
 //   type TEXT                           text into the focused field
 //   edit T TEXT                         double-click a drag/text field, replace its value, Enter
-//   menu File/Save Scene                click through a menu path
+//   menu File/Save Scene                click through a menu path (use | when an item has a slash)
 //   create Level/Platform               "+" in the hierarchy, then category and template
 //   capture FILE.bmp                    save a screenshot
 //   timeout N                           frames a target or expectation may take to appear
-//   report ENTITY | log TEXT | quit
+//   report ENTITY | log TEXT | closewindow | quit
 //   expect ...                          see check() in EditorDriver.cpp: selected, prop, position,
 //                                       size, links, playing, dirty, dialog, runtime-moved, ...
 // clang-format on
@@ -48,6 +48,9 @@ class EditorDriver {
     bool finished() const {
         return index_ >= commands_.size();
     }
+    // True when only waiting, logging or quitting is left: a script may end because the editor
+    // closed itself (closing the window after answering "discard changes").
+    bool onlyTrivialCommandsLeft() const;
     // Where screenshots of failed expectations go ("" disables them).
     void setFailureDirectory(std::filesystem::path directory) {
         failureDirectory_ = std::move(directory);

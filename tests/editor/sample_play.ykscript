@@ -1,0 +1,34 @@
+# Plays the checked-in Elemental Prototype level from the editor with both characters.
+timeout 300
+expect project "Elemental Prototype"
+expect scene scenes/test_level.ykscene
+expect entity "Fire Character"
+expect entity "Water Character"
+expect clean
+capture ${SHOT_DIR}/sample-01-edit.bmp
+
+click toolbar/Play
+expect playing
+wait 25
+# Fire runs with A/D/W, Water with the arrow keys.
+keydown d
+keydown right
+wait 30
+keyup d
+keyup right
+expect runtime-moved "Fire Character" x>=1
+expect runtime-moved "Water Character" x>=1
+hold w 6
+hold up 6
+wait 4
+capture ${SHOT_DIR}/sample-02-play.bmp
+
+# The running copy can be inspected but not edited.
+click "hierarchy/Lever Door"
+expect selected "Lever Door"
+expect prop "Lever Door" Door.openOffset 0,-4.4
+click toolbar/Stop
+expect editing
+expect clean
+expect no-entity "Fire Character (1)"
+capture ${SHOT_DIR}/sample-03-stopped.bmp

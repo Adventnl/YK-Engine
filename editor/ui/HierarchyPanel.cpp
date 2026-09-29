@@ -202,10 +202,16 @@ void drawRow(Tree &tree, EntityId id, bool flat) {
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {4.0F, 2.5F});
     const bool open = ImGui::TreeNodeEx("##row", flags);
     ImGui::PopStyleVar();
-    const bool clicked = ImGui::IsItemClicked(ImGuiMouseButton_Left) && !ImGui::IsItemToggledOpen();
+    // A row is selected when the mouse comes back up on it, so pressing it to drag it (onto an
+    // inspector field, into another parent) does not change what the inspector is showing.
+    if (ImGui::IsItemClicked(ImGuiMouseButton_Left) && !ImGui::IsItemToggledOpen())
+        state.pressedRow = id;
+    const bool released = ImGui::IsItemHovered() && ImGui::IsMouseReleased(ImGuiMouseButton_Left) &&
+                          state.pressedRow == id && !ImGui::IsItemToggledOpen() &&
+                          ImGui::GetDragDropPayload() == nullptr;
     const bool doubleClicked =
         ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left);
-    if (clicked && state.renaming != id)
+    if (released && state.renaming != id)
         selectRow(tree, id);
     if (doubleClicked)
         tree.toFrame = id;
@@ -293,6 +299,8 @@ void hierarchyPanel(EditorState &state) {
     if (state.playing())
         ImGui::TextColored(imColor(palette::good), "Running copy (read-only)");
 
+    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+        state.pressedRow = {}; // Rows that are pressed this frame set it again below.
     Tree tree{state, *scene, doc, {}, {}};
     ImGui::BeginChild("##tree", {0.0F, 0.0F}, ImGuiChildFlags_None);
     if (!state.hierarchyFilter.empty()) {
@@ -330,6 +338,8 @@ void hierarchyPanel(EditorState &state) {
         }
     }
     ImGui::EndChild();
+    if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+        state.pressedRow = {};
 
     if (tree.toFrame) {
         if (doc)

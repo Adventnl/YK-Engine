@@ -336,11 +336,14 @@ Result<std::unique_ptr<EditorDriver>> EditorDriver::parse(const std::string &scr
             add({"key", "enter"});
             add({"wait", "2"});
         } else if (words[0] == "menu" && words.size() >= 2) {
-            // menu File/Save Scene -> click each level of the menu path.
+            // menu File/Save Scene -> click each level of the menu path. Items whose own name has a
+            // slash (a scene path) need '|' as the separator: menu "File|Open
+            // Scene|scenes/a.ykscene".
             std::string path = "menu";
             std::stringstream parts(words[1]);
             std::string part;
-            while (std::getline(parts, part, '/')) {
+            const char separator = words[1].find('|') != std::string::npos ? '|' : '/';
+            while (std::getline(parts, part, separator)) {
                 path += "/" + part;
                 add({"click", path});
             }
@@ -367,6 +370,19 @@ Result<std::unique_ptr<EditorDriver>> EditorDriver::load(const std::filesystem::
     if (!text)
         return Error{text.error()};
     return parse(text.value());
+}
+
+bool EditorDriver::onlyTrivialCommandsLeft() const {
+    for (std::size_t i = index_; i < commands_.size(); ++i) {
+        const auto &words = commands_[i].words;
+        const std::string &name = words[0];
+        const bool trivial = name == "wait" || name == "log" || name == "quit" ||
+                             name == "settle" ||
+                             (name == "expect" && words.size() > 1 && words[1] == "quitting");
+        if (!trivial)
+            return false;
+    }
+    return true;
 }
 
 void EditorDriver::fail(EditorApp &app, const Command &command, const std::string &detail) {
@@ -506,6 +522,11 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
         return report(count == static_cast<std::size_t>(number(arg).value_or(-1)),
                       "selection holds " + std::to_string(count));
     }
+    if (what == "selection-at-least") {
+        const std::size_t count = state.document ? state.document->selection().size() : 0;
+        return report(count >= static_cast<std::size_t>(number(arg).value_or(1e9)),
+                      "selection holds only " + std::to_string(count));
+    }
     if (what == "entity")
         return report(findNamed(scene, arg) != nullptr, "there is no entity named '" + arg + "'");
     if (what == "no-entity")
@@ -619,6 +640,27 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
         return report(std::abs(static_cast<double>(bounds->size.x) - wanted->first) <= 0.02 &&
                           std::abs(static_cast<double>(bounds->size.y) - wanted->second) <= 0.02,
                       "'" + arg + "' " + buffer);
+    }
+    if (what == "parent") { // expect parent CHILD PARENT|none
+        if (!need(2))
+            return -1;
+        const Entity *child = findNamed(scene, arg);
+        if (!child)
+            return report(false, "there is no entity named '" + arg + "'");
+        const Entity *parent = child->parent();
+        const std::string actual = parent ? parent->name() : "none";
+        return report(actual == w[3], "'" + arg + "' has parent '" + actual + "'");
+    }
+    if (what == "no-links") { // expect no-links FROM TO
+        if (!need(2))
+            return -1;
+        const Entity *from = findNamed(scene, arg), *to = findNamed(scene, w[3]);
+        if (!from || !to)
+            return report(false, "unknown entity in the link check");
+        for (const Link &link : linksFrom(*scene, from->id()))
+            if (link.to == to->id())
+                return report(false, "'" + arg + "' still links to '" + w[3] + "'");
+        return 1;
     }
     if (what == "links") { // expect links FROM TO
         if (!need(2))
@@ -819,6 +861,14 @@ bool EditorDriver::execute(EditorApp &app, const Command &command) {
     }
     if (name == "quit") {
         app.quit();
+        return true;
+    }
+    if (name == "closewindow") { // The window's close button: unsaved work must be asked about.
+        SDL_Event event;
+        SDL_zero(event);
+        event.type = SDL_EVENT_WINDOW_CLOSE_REQUESTED;
+        event.window.windowID = SDL_GetWindowID(app.window());
+        SDL_PushEvent(&event);
         return true;
     }
     if (name ==

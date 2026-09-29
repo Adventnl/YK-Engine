@@ -87,9 +87,13 @@ void menuEdit(EditorState &state) {
     ImGui::Separator();
     if (ImGui::MenuItem("Cut", "Ctrl+X", false, selection))
         copySelection(state, true);
-    if (ImGui::MenuItem("Copy", "Ctrl+C", false, selection))
+    clicked = ImGui::MenuItem("Copy", "Ctrl+C", false, selection);
+    markItem("menu/Edit/Copy");
+    if (clicked)
         copySelection(state, false);
-    if (ImGui::MenuItem("Paste", "Ctrl+V", false, editing))
+    clicked = ImGui::MenuItem("Paste", "Ctrl+V", false, editing);
+    markItem("menu/Edit/Paste");
+    if (clicked)
         pasteClipboard(state);
     clicked = ImGui::MenuItem("Duplicate", "Ctrl+D", false, selection);
     markItem("menu/Edit/Duplicate");
@@ -130,7 +134,10 @@ void menuEntity(EditorState &state) {
     }
     markItem("menu/Entity/Add Component");
     ImGui::Separator();
-    if (ImGui::MenuItem("Save as Prefab...", nullptr, false, selected.value != 0))
+    const bool savePrefab =
+        ImGui::MenuItem("Save as Prefab...", nullptr, false, selected.value != 0);
+    markItem("menu/Entity/Save as Prefab");
+    if (savePrefab)
         openDialog(state, DialogKind::SavePrefab, selected);
     if (ImGui::MenuItem("Toggle Active", nullptr, false, selected.value != 0)) {
         const Entity *entity = state.document->scene().find(selected);
@@ -219,19 +226,27 @@ void mainMenu(EditorState &state) {
         markItem("menu/File/Save Scene");
         if (clicked)
             state.saveScene();
-        if (ImGui::MenuItem("Save Scene As...", "Ctrl+Shift+S", false, editing))
+        clicked = ImGui::MenuItem("Save Scene As...", "Ctrl+Shift+S", false, editing);
+        markItem("menu/File/Save Scene As");
+        if (clicked)
             openDialog(state, DialogKind::SaveSceneAs);
         ImGui::Separator();
-        if (ImGui::MenuItem("Project Settings...", nullptr, false, hasProject))
+        clicked = ImGui::MenuItem("Project Settings...", nullptr, false, hasProject);
+        markItem("menu/File/Project Settings");
+        if (clicked)
             openDialog(state, DialogKind::ProjectSettings);
         clicked = ImGui::MenuItem("Validate Project", nullptr, false, hasProject);
         markItem("menu/File/Validate Project");
         if (clicked)
             state.validateProject();
-        if (ImGui::MenuItem("Close Project", nullptr, false, hasProject))
+        clicked = ImGui::MenuItem("Close Project", nullptr, false, hasProject);
+        markItem("menu/File/Close Project");
+        if (clicked)
             state.guarded([&state] { state.closeProject(); });
         ImGui::Separator();
-        if (ImGui::MenuItem("Quit", "Ctrl+Q"))
+        clicked = ImGui::MenuItem("Quit", "Ctrl+Q");
+        markItem("menu/File/Quit");
+        if (clicked)
             state.requestQuit();
         ImGui::EndMenu();
     }
@@ -506,7 +521,9 @@ void addComponentMenu(EditorState &state, EntityId entity) {
             categories.push_back(type->category);
     std::sort(categories.begin(), categories.end());
     for (const std::string &category : categories) {
-        if (!ImGui::BeginMenu(category.c_str()))
+        const bool categoryOpen = ImGui::BeginMenu(category.c_str());
+        markItem("add-category/" + category);
+        if (!categoryOpen)
             continue;
         for (const auto &type : state.registry.types()) {
             if (type->hiddenInMenus || type->category != category)

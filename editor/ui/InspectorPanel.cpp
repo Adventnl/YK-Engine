@@ -186,6 +186,8 @@ void entityListField(const PropertyView &view, const std::vector<EntityId> &list
     tooltip("Choose an entity to add, or drop one here.");
     if (add && inspect.doc)
         ImGui::OpenPopup("entity_picker");
+    // An entity dragged from the hierarchy can be dropped on the Add button.
+    const std::optional<EntityId> dropped = inspect.doc ? droppedEntity() : std::nullopt;
     ImGui::SameLine();
     if (iconButton(("prop/" + view.property.name + "/pick").c_str(), Icon::Target, false,
                    "Pick entities in the Scene view", 0, button)) {
@@ -211,9 +213,8 @@ void entityListField(const PropertyView &view, const std::vector<EntityId> &list
     if (inspect.doc) {
         std::vector<EntityId> updated = list;
         bool changed = false;
-        if (const auto dropped = droppedEntity()) {
-            if (std::find(updated.begin(), updated.end(), *dropped) == updated.end())
-                updated.push_back(*dropped);
+        if (dropped && std::find(updated.begin(), updated.end(), *dropped) == updated.end()) {
+            updated.push_back(*dropped);
             changed = true;
         }
         if (const auto picked = entityPicker(inspect, "entity_picker", inspect.entity)) {

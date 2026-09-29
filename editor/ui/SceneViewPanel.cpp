@@ -121,6 +121,33 @@ void link(const Canvas &canvas, const Scene &scene, const Link &connection, Colo
     canvas.list.AddCircleFilled(a, 3.0F, packedColor);
 }
 
+std::string handleName(const Handle &handle) {
+    switch (handle.kind) {
+    case HandleKind::Left:
+        return "Left";
+    case HandleKind::Right:
+        return "Right";
+    case HandleKind::Top:
+        return "Top";
+    case HandleKind::Bottom:
+        return "Bottom";
+    case HandleKind::TopLeft:
+        return "TopLeft";
+    case HandleKind::TopRight:
+        return "TopRight";
+    case HandleKind::BottomLeft:
+        return "BottomLeft";
+    case HandleKind::BottomRight:
+        return "BottomRight";
+    case HandleKind::Rotate:
+        return "Rotate";
+    case HandleKind::Ghost:
+        return "Ghost" + std::to_string(handle.index);
+    default:
+        return "Body";
+    }
+}
+
 void drawGizmoHandles(const Canvas &canvas, const EditorState &state) {
     const SceneInteraction &ui = state.interaction;
     const Handle hovered = ui.hovered();
@@ -139,6 +166,8 @@ void drawGizmoHandles(const Canvas &canvas, const EditorState &state) {
     for (const Handle &handle : ui.handles()) {
         const bool hot = hovered.kind == handle.kind && hovered.index == handle.index;
         const ImVec2 c{canvas.origin.x + handle.screen.x, canvas.origin.y + handle.screen.y};
+        widgets().mark("scene/handle/" + handleName(handle),
+                       {vec(c) - Vec2{6.0F, 6.0F}, {12.0F, 12.0F}});
         const ImU32 fill = hot ? packed(palette::selection) : IM_COL32(245, 247, 252, 255);
         const ImU32 edge = IM_COL32(20, 22, 28, 255);
         switch (handle.kind) {

@@ -49,29 +49,14 @@ void fileRow(EditorState &state, const AssetEntry &entry) {
     const std::string name = std::filesystem::path(entry.path).filename().string();
     ImGui::PushID(entry.path.c_str());
     const bool isCurrent = state.document && state.document->path() == entry.path;
-    ImGui::PushStyleColor(ImGuiCol_Text,
-                          imColor(isCurrent ? palette::selection : Color{216, 220, 230, 255}));
     const ImVec2 origin = ImGui::GetCursorScreenPos();
-    const bool clicked =
-        ImGui::Selectable("##file", isCurrent, ImGuiSelectableFlags_AllowDoubleClick);
+    ImGui::Selectable("##file", isCurrent, ImGuiSelectableFlags_AllowDoubleClick);
     const bool doubleClicked =
         ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left);
     markItem("asset/" + entry.path);
-    ImGui::PopStyleColor();
-    (void)clicked;
-    ImGui::SetCursorScreenPos(origin);
-    ImGui::PushStyleColor(ImGuiCol_Text,
-                          imColor(isCurrent ? palette::selection : Color{216, 220, 230, 255}));
-    iconLabel(iconFor(entry.kind), name.c_str(), packed(colorFor(entry.kind)));
-    ImGui::PopStyleColor();
     tooltip(entry.path);
-
-    if (doubleClicked) {
-        if (entry.kind == AssetKind::Scene && !state.playing())
-            state.guarded([&state, path = entry.path] { state.openScene(path); });
-        else if (entry.kind == AssetKind::Prefab && state.document && !state.playing())
-            state.instantiatePrefab(entry.path, defaultSpawnPoint(state));
-    }
+    // Drag and context menu belong to the selectable, so they come before the label is laid over
+    // it.
     if (entry.kind == AssetKind::Prefab && ImGui::BeginDragDropSource()) {
         ImGui::SetDragDropPayload("YK_PREFAB", entry.path.c_str(), entry.path.size() + 1);
         ImGui::TextUnformatted(name.c_str());
@@ -97,6 +82,18 @@ void fileRow(EditorState &state, const AssetEntry &entry) {
         if (ImGui::MenuItem("Copy Path"))
             ImGui::SetClipboardText(entry.path.c_str());
         ImGui::EndPopup();
+    }
+    ImGui::SetCursorScreenPos(origin);
+    ImGui::PushStyleColor(ImGuiCol_Text,
+                          imColor(isCurrent ? palette::selection : Color{216, 220, 230, 255}));
+    iconLabel(iconFor(entry.kind), name.c_str(), packed(colorFor(entry.kind)));
+    ImGui::PopStyleColor();
+
+    if (doubleClicked) {
+        if (entry.kind == AssetKind::Scene && !state.playing())
+            state.guarded([&state, path = entry.path] { state.openScene(path); });
+        else if (entry.kind == AssetKind::Prefab && state.document && !state.playing())
+            state.instantiatePrefab(entry.path, defaultSpawnPoint(state));
     }
     ImGui::PopID();
 }
