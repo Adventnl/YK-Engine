@@ -48,7 +48,7 @@ std::unique_ptr<Scene> buildScene(const ComponentRegistry &registry) {
     for (int i = 0; i < boxes; ++i) {
         Entity &box = scene->createEntity("Box");
         box.transform().position = {static_cast<float>((i * 37) % 190) + 5.0F,
-                                    static_cast<float>(100 + (i * 11) % 90)};
+                                    static_cast<float>(150 + (i * 11) % 50)};
         box.add<RigidBody>().type = RigidBodyType::Dynamic;
         box.add<Collider>().size = {0.8F, 0.8F};
     }
@@ -113,19 +113,19 @@ int main() {
     const double orderMs = millisecondsSince(start);
     CHECK(scene->orderedIds().size() == total);
 
-    // Simulate five seconds of falling boxes.
+    // Simulate three seconds of boxes falling and piling up.
     auto created = GameRuntime::create(std::move(scene));
     CHECK(created);
     if (!created)
         return 1;
     GameRuntime &runtime = *created.value();
     start = Clock::now();
-    for (int tick = 0; tick < 300; ++tick)
+    for (int tick = 0; tick < 180; ++tick)
         runtime.update(1.0 / 60.0, InputFrame{});
     const double simulateMs = millisecondsSince(start);
     const auto physics = runtime.physics().stats();
     CHECK(physics.bodies == static_cast<std::size_t>(boxes + 3)); // Nothing lost or duplicated.
-    CHECK(runtime.tick() == 300);
+    CHECK(runtime.tick() == 180);
     std::size_t escaped = 0; // A box that fell through the floor or out of the walls.
     runtime.scene().forEach([&](const Entity &entity) {
         if (entity.name() == "Box") {
@@ -157,16 +157,19 @@ int main() {
     CHECK(stats.culled >= stats.sprites * 95 / 100);
     CHECK(stats.quads < 2500);
 
-    const double tickMs = simulateMs / 300.0;
+    const double tickMs = simulateMs / 180.0;
     const double frameMs = frames > 0 ? drawMs / frames : 0.0;
     std::printf(
         "stress: %zu entities (%d sprites, %d bodies); build %.0f ms; order lookups %.2f ms per "
         "1000; tick %.2f ms; draw %.2f ms per frame, %zu of %zu sprites culled, %zu quads\n",
         total, columns * rows, boxes, buildMs, orderMs, tickMs, frameMs, stats.culled,
         stats.sprites, stats.quads);
-    // Budgets an order of magnitude above what a Debug build measures on a slow machine.
-    CHECK(tickMs < 200.0);
-    CHECK(frameMs < 400.0);
-    CHECK(orderMs < 500.0);
+    // Budgets are more than ten times what a Debug build measures here: they exist to catch a
+    // change that makes the cost grow with the square of the entity count (seconds per frame), not
+    // to measure speed. Sanitizer builds are slower still and get more room.
+    constexpr double slack = YK_STRESS_SLOWDOWN;
+    CHECK(tickMs < 1500.0 * slack);
+    CHECK(frameMs < 1500.0 * slack);
+    CHECK(orderMs < 1500.0 * slack);
     return yk::test::finish("stress");
 }

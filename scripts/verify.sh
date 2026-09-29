@@ -3,7 +3,7 @@
 # every preset (dev, release, asan, headless). Takes a while on the first run.
 #
 #   scripts/verify.sh              # all presets
-#   scripts/verify.sh dev release  # only these
+#   scripts/verify.sh dev release  # only these (also: clang, Clang + libc++ like a Mac uses)
 #
 # Behind a restricted network run scripts/fetch-deps.sh first and export YK_DEPS_DIR.
 # scripts/verify-windows.sh checks the Windows build (cross-compiled, run under Wine).

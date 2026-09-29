@@ -174,8 +174,14 @@ if(BUILD_TESTING)
             ENVIRONMENT "SDL_AUDIODRIVER=dummy" TIMEOUT 30)
         yk_add_test(scene_render tests/integration/scene_render_tests.cpp LIBS yk::engine SDL3::SDL3
             ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software" TIMEOUT 30)
+        # Sanitizer builds run this ten times slower: the budgets it checks and its timeout grow.
+        set(yk_stress_slowdown 1)
+        if(YK_SANITIZERS)
+            set(yk_stress_slowdown 10)
+        endif()
         yk_add_test(stress tests/integration/stress_tests.cpp LIBS yk::gameplay SDL3::SDL3
-            ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software" TIMEOUT 180)
+            DEFINITIONS YK_STRESS_SLOWDOWN=${yk_stress_slowdown}
+            ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software" TIMEOUT 600)
         yk_add_test(render_modes tests/integration/render_modes_tests.cpp LIBS yk::engine SDL3::SDL3
             ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software" TIMEOUT 30)
         # The editor, driven through its real UI by scripts (see editor/ui/EditorDriver.hpp).
