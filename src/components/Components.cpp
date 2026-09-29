@@ -103,15 +103,28 @@ void RigidBody::describe(TypeBuilder<RigidBody> &type) {
     type.field("bullet", &RigidBody::bullet).tooltip("Continuous collision for very fast bodies.");
     type.field("allowSleep", &RigidBody::allowSleep);
 }
+std::array<Vec2, 3> wedgePoints(Vec2 halfExtents, Vec2 scaleSign) {
+    const float sx = scaleSign.x < 0.0F ? -1.0F : 1.0F;
+    const float sy = scaleSign.y < 0.0F ? -1.0F : 1.0F;
+    // Right angle at the bottom left; the hypotenuse rises to the right (y is down).
+    return {Vec2{-halfExtents.x * sx, halfExtents.y * sy}, Vec2{halfExtents.x * sx, halfExtents.y * sy},
+            Vec2{halfExtents.x * sx, -halfExtents.y * sy}};
+}
+
 void Collider::describe(TypeBuilder<Collider> &type) {
     type.category("Physics").description(
         "Collision or trigger geometry attached to the nearest RigidBody.");
-    type.field("shape", &Collider::shape).options({"Box", "Circle", "Capsule"});
+    type.field("shape", &Collider::shape)
+        .options({"Box", "Circle", "Capsule", "Wedge"})
+        .tooltip("Wedge is a right triangle (a ramp rising to the right); mirror the entity for "
+                 "the other direction.");
     type.field("size", &Collider::size)
         .range(0.01, 1000)
         .size()
         .tooltip("Full extent in world units.");
     type.field("offset", &Collider::offset).offset();
+    type.field("oneWay", &Collider::oneWay)
+        .tooltip("A jump-through platform: blocks only what lands on its top side.");
     type.field("isTrigger", &Collider::isTrigger)
         .tooltip("Detects overlaps without blocking movement.");
     type.field("detectTriggers", &Collider::detectTriggers)

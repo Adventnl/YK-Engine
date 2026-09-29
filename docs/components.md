@@ -251,9 +251,10 @@ Several instances may be added to one entity.
 
 | Property | Type | Default | Notes |
 |---|---|---|---|
-| `shape` | enum | "Box" | Options: Box Circle Capsule |
+| `shape` | enum | "Box" | Wedge is a right triangle (a ramp rising to the right); mirror the entity for the other direction. Options: Box Circle Capsule Wedge |
 | `size` | vec2 | [1,1] | Full extent in world units. (range 0.01 to 1000) |
 | `offset` | vec2 | [0,0] |  |
+| `oneWay` | bool | false | A jump-through platform: blocks only what lands on its top side. |
 | `isTrigger` | bool | false | Detects overlaps without blocking movement. |
 | `detectTriggers` | bool | false | Let a trigger also see other triggers. |
 | `layer` | string | "Default" | Project collision layer. |

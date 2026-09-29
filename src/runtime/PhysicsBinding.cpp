@@ -51,6 +51,12 @@ std::optional<physics::Geometry> makeGeometry(const Collider &collider,
         const Vec2 axis = rotated({0.0F, half}, angle);
         return physics::Capsule{center - axis, center + axis, radius};
     }
+    case ColliderShape::Wedge: {
+        physics::Polygon wedge;
+        for (const Vec2 corner : wedgePoints(extent * 0.5F, colliderWorld.scale))
+            wedge.vertices.push_back(center + rotated(corner, angle));
+        return wedge;
+    }
     }
     return std::nullopt;
 }
@@ -131,6 +137,13 @@ void GameRuntime::Impl::bindEntities(const std::vector<EntityId> &ids) {
             definition.friction = collider->friction;
             definition.restitution = collider->restitution;
             definition.sensor = collider->isTrigger;
+            if (collider->oneWay && !collider->isTrigger) {
+                definition.oneWay = true;
+                // "Up" of the collider, in the body's frame (they differ for a rotated child).
+                definition.oneWayNormal = rotated(
+                    {0.0F, -1.0F}, degreesToRadians(entity->worldTransform().rotationDegrees -
+                                                    bodyEntity.worldTransform().rotationDegrees));
+            }
             definition.filter.categoryBits = options.layers.categoryBits(collider->layer);
             definition.filter.maskBits = options.layers.maskBits(collider->layer);
             if (options.layers.indexOf(collider->layer) < 0)

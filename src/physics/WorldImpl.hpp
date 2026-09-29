@@ -75,6 +75,8 @@ struct World::Impl {
     std::unordered_map<std::uint64_t, Shape> shapes;
     std::unordered_map<std::uint64_t, Joint> joints;
     std::unordered_map<std::uint64_t, ShapeHandle> nativeShapes;
+    // One-way shapes: native shape id -> body-local direction of the solid side (unit length).
+    std::unordered_map<std::uint64_t, Vec2> oneWayShapes;
     std::vector<std::uint64_t> retiredShapes;
     std::vector<Event> events;
 
@@ -109,5 +111,8 @@ struct World::Impl {
             retiredShapes.push_back(id);
     }
     void collectEvents();
+    // Pre-solve decision for contacts involving one-way shapes (see ShapeDef::oneWay). True keeps
+    // the contact, false disables it for this step. Read-only: the solver is running.
+    bool preSolve(b2ShapeId shapeA, b2ShapeId shapeB, const b2Manifold &manifold) const;
 };
 } // namespace yk::physics

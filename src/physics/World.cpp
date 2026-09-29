@@ -31,6 +31,35 @@ b2BodyType native(BodyType type) {
 } // namespace
 
 World::World() : impl_(std::make_unique<Impl>()) {}
+
+bool World::Impl::preSolve(b2ShapeId shapeA, b2ShapeId shapeB, const b2Manifold &manifold) const {
+    if (oneWayShapes.empty() || manifold.pointCount == 0)
+        return true;
+    const auto first = oneWayShapes.find(b2StoreShapeId(shapeA));
+    const auto second = oneWayShapes.find(b2StoreShapeId(shapeB));
+    if (first == oneWayShapes.end() && second == oneWayShapes.end())
+        return true; // Not involving a one-way shape.
+    if (first != oneWayShapes.end() && second != oneWayShapes.end())
+        return false; // Two one-way platforms never block each other.
+    const bool platformIsFirst = first != oneWayShapes.end();
+    const b2ShapeId platform = platformIsFirst ? shapeA : shapeB;
+    const b2ShapeId other = platformIsFirst ? shapeB : shapeA;
+    // Normal from the platform toward the other shape (Box2D's points from A to B).
+    const b2Vec2 toOther = platformIsFirst ? manifold.normal
+                                           : b2Vec2{-manifold.normal.x, -manifold.normal.y};
+    const b2BodyId platformBody = b2Shape_GetBody(platform);
+    const b2Vec2 solid = b2RotateVector(b2Body_GetRotation(platformBody),
+                                        physics::native((platformIsFirst ? first : second)->second));
+    // Beside or below the solid side: pass through. (0.7 is about 45 degrees, so landing on a
+    // rounded corner still counts as landing on top.)
+    if (b2Dot(toOther, solid) < 0.7F)
+        return false;
+    // Moving up through it (relative to the platform, so a rising elevator carries its riders):
+    // pass through, even when the body's feet are already above the middle of the platform.
+    const b2Vec2 relative = b2Sub(b2Body_GetLinearVelocity(b2Shape_GetBody(other)),
+                                  b2Body_GetLinearVelocity(platformBody));
+    return b2Dot(relative, solid) <= 0.25F;
+}
 World::~World() = default;
 Result<std::unique_ptr<World>> World::create(const WorldConfig &config) {
     if (!bounded(config.gravity) || !std::isfinite(config.fixedSeconds) ||
@@ -48,6 +77,13 @@ Result<std::unique_ptr<World>> World::create(const WorldConfig &config) {
     result->impl_->world = b2CreateWorld(&definition);
     if (B2_IS_NULL(result->impl_->world))
         return Error{"Create physics world failed"};
+    // Only shapes created with enablePreSolveEvents (the one-way ones) reach the callback.
+    b2World_SetPreSolveCallback(
+        result->impl_->world,
+        [](b2ShapeId shapeA, b2ShapeId shapeB, b2Manifold *manifold, void *context) {
+            return static_cast<const World::Impl *>(context)->preSolve(shapeA, shapeB, *manifold);
+        },
+        result->impl_.get());
     return result;
 }
 bool World::valid(BodyHandle body) const {
@@ -92,6 +128,14 @@ Result<ShapeHandle> World::createShape(BodyHandle body, const Geometry &geometry
         !nonnegative(definition.restitution) || definition.restitution > 1 ||
         !validFilter(definition.filter))
         return Error{"Invalid density, friction, restitution, or collision group"};
+    Vec2 solidSide{};
+    if (definition.oneWay) {
+        if (definition.sensor)
+            return Error{"A sensor cannot be one-way (it has no solid side)"};
+        solidSide = normalized(definition.oneWayNormal);
+        if (!bounded(definition.oneWayNormal) || lengthSquared(solidSide) < 0.5F)
+            return Error{"A one-way shape needs a finite, non-zero solid-side direction"};
+    }
     auto shape = b2DefaultShapeDef();
     shape.density = definition.density;
     shape.material.friction = definition.friction;
@@ -101,6 +145,7 @@ Result<ShapeHandle> World::createShape(BodyHandle body, const Geometry &geometry
     shape.enableSensorEvents = true;
     shape.enableContactEvents = true;
     shape.enableHitEvents = true;
+    shape.enablePreSolveEvents = definition.oneWay;
     auto &record = impl_->bodies.at(body.serial_);
     const auto createNativeShape = [&] {
         return std::visit(
@@ -174,6 +219,8 @@ Result<ShapeHandle> World::createShape(BodyHandle body, const Geometry &geometry
         assert(B2_IS_NON_NULL(id) && !impl_->nativeShapes.contains(b2StoreShapeId(id)));
     }
     const auto handle = impl_->handle<ShapeTag>();
+    if (definition.oneWay)
+        impl_->oneWayShapes[b2StoreShapeId(id)] = solidSide;
     impl_->shapes.emplace(handle.serial_, Impl::Shape{id, body, impl_->ticks});
     impl_->nativeShapes.insert_or_assign(b2StoreShapeId(id), handle);
     record.shapes.push_back(handle);
@@ -184,6 +231,7 @@ Status World::destroy(ShapeHandle shape) {
         return invalidHandle();
     const auto record = impl_->shapes.at(shape.serial_);
     impl_->retireShape(record);
+    impl_->oneWayShapes.erase(b2StoreShapeId(record.nativeId));
     b2DestroyShape(record.nativeId, true);
     std::erase(impl_->bodies.at(record.body.serial_).shapes, shape);
     impl_->shapes.erase(shape.serial_);
@@ -209,6 +257,7 @@ Status World::destroy(BodyHandle body) {
             return status;
     }
     for (const auto &shape : record.shapes) {
+        impl_->oneWayShapes.erase(b2StoreShapeId(impl_->shapes.at(shape.serial_).nativeId));
         impl_->retireShape(impl_->shapes.at(shape.serial_));
         impl_->shapes.erase(shape.serial_);
     }

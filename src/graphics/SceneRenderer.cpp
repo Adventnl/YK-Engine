@@ -430,6 +430,9 @@ Status SceneRenderer::drawColliders(Renderer &renderer, const Scene &scene, int 
                 const Vec2 h = extent * 0.5F;
                 outline = {local({-h.x, -h.y}), local({h.x, -h.y}), local({h.x, h.y}),
                            local({-h.x, h.y})};
+            } else if (collider->shape == ColliderShape::Wedge) {
+                for (const Vec2 corner : wedgePoints(extent * 0.5F, world.scale))
+                    outline.push_back(local(corner));
             } else if (collider->shape == ColliderShape::Circle) {
                 arc({0, 0}, 0.5F * collider->size.x * std::max(scale.x, scale.y), 0, 2 * pi,
                     circleSegments);

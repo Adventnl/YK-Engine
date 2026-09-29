@@ -2,6 +2,7 @@
 #include "yk/animation/AnimationController.hpp"
 #include "yk/input/Input.hpp"
 #include "yk/scene/Entity.hpp"
+#include <array>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -112,7 +113,14 @@ class RigidBody final : public Component {
     static void describe(TypeBuilder<RigidBody> &type);
 };
 
-enum class ColliderShape { Box, Circle, Capsule };
+// A Wedge is a right triangle filling its size box, with the right angle at the bottom left, so it
+// rises to the right: a ramp. Mirror the entity (scale x = -1) for a ramp that rises to the left,
+// or scale y = -1 for a sloped ceiling. Its sprite mirrors the same way.
+enum class ColliderShape { Box, Circle, Capsule, Wedge };
+
+// The three corners of a wedge of `halfExtents` in the collider's own frame (before rotation),
+// mirrored by the signs of `scaleSign`. Shared by physics and the editor's outline drawing.
+std::array<Vec2, 3> wedgePoints(Vec2 halfExtents, Vec2 scaleSign);
 
 // Collision or trigger geometry. `size` is the full extent in world units (before entity scale);
 // circles use the width as diameter; capsules are vertical with rounded ends.
@@ -122,6 +130,9 @@ class Collider final : public Component {
     Vec2 size{1.0F, 1.0F};
     Vec2 offset{0.0F, 0.0F};
     bool isTrigger{false};        // Overlap events only, no physical response.
+    // A jump-through platform: it blocks only what comes down onto its top side; things below or
+    // beside it, or moving up through it, pass. Not for triggers.
+    bool oneWay{false};
     bool detectTriggers{false};   // A trigger normally ignores other triggers.
     std::string layer{"Default"}; // Project collision layer name.
     float friction{0.6F};

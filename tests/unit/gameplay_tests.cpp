@@ -210,6 +210,118 @@ void characterAnimation() {
     CHECK(plain.at("Plain").get<SpriteRenderer>()->flipX);
 }
 
+// Level geometry a platformer needs beyond boxes: jump-through platforms and wedge ramps.
+void oneWayAndWedge() {
+    // A one-way platform hovering above the floor: the hero jumps up through it, lands on top and
+    // walks off it again.
+    {
+        World w;
+        w.ground();
+        Entity &platform = w.box("Ledge", {0.0F, 8.4F}, {4.0F, 0.4F}); // Spans y 8.2 .. 8.6.
+        platform.get<Collider>()->oneWay = true;
+        w.character("Hero", {-1.0F, restingHeight});
+        w.start();
+        w.tick(30);
+        auto *controller = w.at("Hero").get<PlatformerController>();
+        CHECK(controller->grounded());
+        // Hold jump for the whole rise (2.3 m: the feet reach y = 7.7, above the ledge's top 8.2).
+        w.down(Key::W);
+        float highest = 100.0F;
+        for (int i = 0; i < 50; ++i) {
+            w.tick();
+            highest = std::min(highest, w.position("Hero").y);
+        }
+        w.up(Key::W);
+        CHECK(highest < 8.2F - 0.475F - 0.1F); // It rose past the ledge: through it.
+        w.tick(60);
+        CHECK_NEAR(w.position("Hero").y, 8.2F - 0.475F, 0.06); // ...and now stands on top.
+        CHECK(controller->grounded());
+
+        // Walk off the right edge and land back on the floor.
+        w.down(Key::D);
+        w.tick(90);
+        w.up(Key::D);
+        w.tick(60);
+        CHECK(w.position("Hero").x > 2.0F);
+        CHECK_NEAR(w.position("Hero").y, restingHeight, 0.06);
+    }
+    // A platform lower than the hero is tall: a solid box would stop the hero, the one-way one is
+    // simply walked through (it only blocks from above).
+    {
+        World w;
+        w.ground();
+        Entity &low = w.box("Ceiling", {0.0F, 9.35F}, {6.0F, 0.3F}); // Underside at y 9.5, feet at 10.
+        low.get<Collider>()->oneWay = true;
+        w.character("Hero", {-5.0F, restingHeight});
+        w.start();
+        w.tick(30);
+        w.down(Key::D);
+        w.tick(120);
+        CHECK(w.position("Hero").x > 2.0F);
+
+        World solid; // The same setup with a plain box blocks the hero, so the test can tell.
+        solid.ground();
+        solid.box("Ceiling", {0.0F, 9.35F}, {6.0F, 0.3F});
+        solid.character("Hero", {-5.0F, restingHeight});
+        solid.start();
+        solid.tick(30);
+        solid.down(Key::D);
+        solid.tick(120);
+        CHECK(solid.position("Hero").x < -2.0F);
+    }
+    // Wedge ramps: 4 wide, 2 high (about 27 degrees), rising to the right...
+    {
+        World w;
+        w.ground();
+        Entity &ramp = w.box("Ramp", {4.0F, floorTop - 1.0F}, {4.0F, 2.0F});
+        ramp.get<Collider>()->shape = ColliderShape::Wedge;
+        w.character("Hero", {-1.0F, restingHeight});
+        w.start();
+        w.tick(30);
+        w.down(Key::D);
+        w.tick(60);
+        CHECK(w.position("Hero").x > 2.5F && w.position("Hero").x < 5.5F); // On the ramp.
+        CHECK(w.position("Hero").y < restingHeight - 0.5F);                // Climbing.
+        CHECK(w.at("Hero").get<PlatformerController>()->grounded());
+        w.up(Key::D);
+        w.tick(45);
+        const Vec2 rest = w.position("Hero");
+        w.tick(60);
+        CHECK_NEAR(w.position("Hero").y, rest.y, 0.03); // Grip holds it on the slope.
+        CHECK_NEAR(w.position("Hero").x, rest.x, 0.03);
+    }
+    // ...and mirrored (scale x = -1): rising to the left.
+    {
+        World w;
+        w.ground();
+        Entity &ramp = w.box("Ramp", {-4.0F, floorTop - 1.0F}, {4.0F, 2.0F});
+        ramp.get<Collider>()->shape = ColliderShape::Wedge;
+        ramp.transform().scale = {-1.0F, 1.0F};
+        w.character("Hero", {1.0F, restingHeight});
+        w.start();
+        w.tick(30);
+        w.down(Key::A);
+        w.tick(60);
+        CHECK(w.position("Hero").x < -2.5F && w.position("Hero").x > -5.5F);
+        CHECK(w.position("Hero").y < restingHeight - 0.5F);
+        CHECK(w.at("Hero").get<PlatformerController>()->grounded());
+    }
+    // The tall side is a wall: walking into it from the right stops the hero at x = 6 + radius.
+    {
+        World w;
+        w.ground();
+        Entity &ramp = w.box("Ramp", {4.0F, floorTop - 1.0F}, {4.0F, 2.0F});
+        ramp.get<Collider>()->shape = ColliderShape::Wedge;
+        w.character("Hero", {9.0F, restingHeight});
+        w.start();
+        w.tick(30);
+        w.down(Key::A);
+        w.tick(120);
+        CHECK_NEAR(w.position("Hero").x, 6.3F, 0.1);
+        CHECK_NEAR(w.position("Hero").y, restingHeight, 0.06);
+    }
+}
+
 void controllerBasics() {
     World w;
     w.ground();
@@ -899,6 +1011,7 @@ void templatesWork() {
 int main() {
     controllerBasics();
     characterAnimation();
+    oneWayAndWedge();
     jumping();
     coyoteAndBuffer();
     wallsAndSlopes();
