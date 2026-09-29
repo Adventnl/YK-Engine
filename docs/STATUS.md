@@ -26,7 +26,7 @@ Run from the last commit that changed code on this branch (documentation changed
 | Check | Result |
 |---|---|
 | `ctest` on `dev` (Debug, GCC 13) | 34 of 34 passed (about 6 minutes) |
-| `ctest` on `release` | 34 of 34 passed (about 1.5 minutes) |
+| `ctest` on `release` | 34 of 34 passed (about 1.5 minutes), also from a fresh `git clone` of the pushed branch built from scratch, so nothing untracked is needed |
 | `ctest` on `asan` (address + undefined behavior sanitizers, including the editor UI scripts) | 34 of 34 passed |
 | `ctest` on `headless` (`YK_RUNTIME=OFF`: no SDL, no window; the tests that need none) | 17 of 17 passed |
 | `ctest` on `clang` (Clang 18 and libc++, what a Mac uses; sign conversions count as errors) | 34 of 34 passed, including the demo playthrough |
