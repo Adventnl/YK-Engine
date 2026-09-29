@@ -204,7 +204,8 @@ void hierarchy() {
     CHECK(scene.setParent(a1.id(), EntityId{}) && a1.parentId() == EntityId{} &&
           scene.roots().back() == a1.id());
     const EntityId doomed = a.id();
-    CHECK(scene.destroy(doomed) && !scene.find(doomed) && !scene.find(a2.id()) &&
+    const EntityId doomedChild = a2.id(); // `a` and `a2` are gone once the subtree is destroyed.
+    CHECK(scene.destroy(doomed) && !scene.find(doomed) && !scene.find(doomedChild) &&
           scene.size() == 3 && !scene.destroy(doomed));
     CHECK(scene.find(a1x.id()) != nullptr &&
           scene.find(a1x.id())->parentId() == a1.id()); // Unrelated subtree survives.

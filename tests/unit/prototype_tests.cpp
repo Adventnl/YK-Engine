@@ -164,7 +164,11 @@ void levelIsCompletable() {
     CHECK_NEAR(game.pos(water).x, 3.6, 0.1);
 
     // 1. The water character pulls the lever on its way; fire waits by the door.
-    CHECK(game.until(600, [&] { return game.walkTo(water, 10.4F) & game.walkTo(fire, 9.0F); }));
+    CHECK(game.until(600, [&] {
+        const bool waterThere = game.walkTo(water, 10.4F); // Both characters move every tick.
+        const bool fireThere = game.walkTo(fire, 9.0F);
+        return waterThere && fireThere;
+    }));
     const auto *leverDoor = game.entity("Lever Door").get<Door>();
     CHECK(game.until(
         300, [&] { return leverDoor->openAmount() > 0.99F; })); // Nobody had to touch the door.
@@ -204,8 +208,11 @@ void levelIsCompletable() {
     CHECK(game.runAndJump(fire, 29.0F));
     CHECK(game.runAndJump(water, 29.0F));
     CHECK(game.alive(fire) && game.alive(water));
-    CHECK(game.until(
-        600, [&] { return game.walkTo(fire, 34.5F, 0.3F) & game.walkTo(water, 37.5F, 0.3F); }));
+    CHECK(game.until(600, [&] {
+        const bool fireThere = game.walkTo(fire, 34.5F, 0.3F);
+        const bool waterThere = game.walkTo(water, 37.5F, 0.3F);
+        return fireThere && waterThere;
+    }));
     CHECK(game.until(600, [&] { return game.entity("Level Flow").get<LevelFlow>()->completed(); }));
     CHECK(game.happened("level_completed") &&
           runtime.blackboard().text("level_state") == "complete");
