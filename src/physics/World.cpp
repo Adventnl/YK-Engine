@@ -45,11 +45,12 @@ bool World::Impl::preSolve(b2ShapeId shapeA, b2ShapeId shapeB, const b2Manifold 
     const b2ShapeId platform = platformIsFirst ? shapeA : shapeB;
     const b2ShapeId other = platformIsFirst ? shapeB : shapeA;
     // Normal from the platform toward the other shape (Box2D's points from A to B).
-    const b2Vec2 toOther = platformIsFirst ? manifold.normal
-                                           : b2Vec2{-manifold.normal.x, -manifold.normal.y};
+    const b2Vec2 toOther =
+        platformIsFirst ? manifold.normal : b2Vec2{-manifold.normal.x, -manifold.normal.y};
     const b2BodyId platformBody = b2Shape_GetBody(platform);
-    const b2Vec2 solid = b2RotateVector(b2Body_GetRotation(platformBody),
-                                        physics::native((platformIsFirst ? first : second)->second));
+    const b2Vec2 solid =
+        b2RotateVector(b2Body_GetRotation(platformBody),
+                       physics::native((platformIsFirst ? first : second)->second));
     // Beside or below the solid side: pass through. (0.7 is about 45 degrees, so landing on a
     // rounded corner still counts as landing on top.)
     if (b2Dot(toOther, solid) < 0.7F)

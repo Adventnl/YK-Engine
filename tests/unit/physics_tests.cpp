@@ -591,7 +591,8 @@ void oneWayPlatforms() {
         const auto dropped = ball(*simulation, {0, -3});
         ticks(*simulation, 120);
         const auto state = take(simulation->state(dropped));
-        check(near(state.pose.position.y, -0.15F - 0.25F, 0.03F), "a body dropped onto a one-way platform rests on it");
+        check(near(state.pose.position.y, -0.15F - 0.25F, 0.03F),
+              "a body dropped onto a one-way platform rests on it");
         check(std::abs(state.linearVelocity.y) < 0.2F, "it is at rest, not falling through");
     }
     // Thrown up from below it passes through, then comes back down and lands on top.
@@ -607,7 +608,8 @@ void oneWayPlatforms() {
             highest = std::min(highest, y);
             passedThrough = passedThrough || y < -0.5F;
         }
-        check(passedThrough && highest < -1.0F, "a body moving up passes through a one-way platform");
+        check(passedThrough && highest < -1.0F,
+              "a body moving up passes through a one-way platform");
         const auto state = take(simulation->state(thrown));
         check(near(state.pose.position.y, -0.15F - 0.25F, 0.03F), "and then lands on top of it");
     }
@@ -617,7 +619,8 @@ void oneWayPlatforms() {
         platform(*simulation, {0, 0});
         const auto flying = ball(*simulation, {-4, 0}, {6, 0});
         ticks(*simulation, 120);
-        check(take(simulation->state(flying)).pose.position.x > 1.5F, "a one-way platform does not block from the side");
+        check(take(simulation->state(flying)).pose.position.x > 1.5F,
+              "a one-way platform does not block from the side");
     }
     // Falling onto it from below-left of its edge misses it entirely.
     {
@@ -625,7 +628,8 @@ void oneWayPlatforms() {
         platform(*simulation, {0, 0});
         const auto beside = ball(*simulation, {3.5F, -3});
         ticks(*simulation, 90);
-        check(take(simulation->state(beside)).pose.position.y > 1.0F, "beside the platform there is nothing to land on");
+        check(take(simulation->state(beside)).pose.position.y > 1.0F,
+              "beside the platform there is nothing to land on");
     }
     // A rotated platform: solid side turned to the right blocks a body coming from the right.
     {
@@ -635,8 +639,10 @@ void oneWayPlatforms() {
         const auto fromRight = ball(*simulation, {4, 0}, {-6, 0});
         const auto fromLeft = ball(*simulation, {-4, 1.5F}, {6, 0});
         ticks(*simulation, 90);
-        check(take(simulation->state(fromRight)).pose.position.x > 0.2F, "a rotated one-way platform blocks from its solid side");
-        check(take(simulation->state(fromLeft)).pose.position.x > 1.5F, "and lets bodies through from the other side");
+        check(take(simulation->state(fromRight)).pose.position.x > 0.2F,
+              "a rotated one-way platform blocks from its solid side");
+        check(take(simulation->state(fromLeft)).pose.position.x > 1.5F,
+              "and lets bodies through from the other side");
     }
     // A kinematic platform moving up carries a rider and does not let it sink through.
     {
@@ -653,7 +659,8 @@ void oneWayPlatforms() {
         ticks(*simulation, 120);
         const float liftY = take(simulation->state(lift)).pose.position.y;
         const float riderY = take(simulation->state(rider)).pose.position.y;
-        check(liftY < 0.5F && near(riderY, liftY - 0.15F - 0.25F, 0.06F), "a rising one-way platform carries what stands on it");
+        check(liftY < 0.5F && near(riderY, liftY - 0.15F - 0.25F, 0.06F),
+              "a rising one-way platform carries what stands on it");
     }
     // Contacts with a disabled (passing) one-way shape are not reported as touching.
     {
@@ -662,7 +669,8 @@ void oneWayPlatforms() {
         const auto below = ball(*simulation, {0, 1.0F}, {0, -3});
         ticks(*simulation, 10);
         const auto touching = take(simulation->contacts(below));
-        check(touching.empty(), "a body passing through a one-way platform has no touching contact");
+        check(touching.empty(),
+              "a body passing through a one-way platform has no touching contact");
     }
     // Definitions that make no sense are rejected; ordinary shapes are unaffected.
     {
@@ -675,9 +683,11 @@ void oneWayPlatforms() {
         ShapeDef degenerate;
         degenerate.oneWay = true;
         degenerate.oneWayNormal = {0, 0};
-        check(!simulation->createShape(solid, Box{}, degenerate), "a zero solid-side direction is rejected");
+        check(!simulation->createShape(solid, Box{}, degenerate),
+              "a zero solid-side direction is rejected");
         degenerate.oneWayNormal = {std::numeric_limits<float>::quiet_NaN(), 1};
-        check(!simulation->createShape(solid, Box{}, degenerate), "a non-finite direction is rejected");
+        check(!simulation->createShape(solid, Box{}, degenerate),
+              "a non-finite direction is rejected");
         // Destroying a one-way shape and creating another must not confuse the callback.
         ShapeDef one;
         one.oneWay = true;
@@ -686,7 +696,8 @@ void oneWayPlatforms() {
         take(simulation->createShape(solid, Box{{2, 0.15F}}));
         const auto resting = ball(*simulation, {0, -1});
         ticks(*simulation, 90);
-        check(take(simulation->state(resting)).pose.position.y < 0.0F, "a regular shape created after a one-way one still blocks from above");
+        check(take(simulation->state(resting)).pose.position.y < 0.0F,
+              "a regular shape created after a one-way one still blocks from above");
         const auto under = ball(*simulation, {0, 1.0F}, {0, -3});
         ticks(*simulation, 30);
         check(take(simulation->state(under)).pose.position.y > 0.0F, "and blocks from below");

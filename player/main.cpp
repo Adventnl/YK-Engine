@@ -3,8 +3,8 @@
 #include "yk/audio/SdlAudio.hpp"
 #include "yk/core/Application.hpp"
 #include "yk/core/Log.hpp"
-#include "yk/graphics/GameView.hpp"
 #include "yk/gameplay/Gameplay.hpp"
+#include "yk/graphics/GameView.hpp"
 #include "yk/scene/SceneSerializer.hpp"
 #include <SDL3/SDL.h>
 #include <cstdio>

@@ -23,9 +23,9 @@ float waveValue(Wave kind, float cycle) {
 
 // ----- ParticleEmitter ---------------------------------------------------------------------------
 void ParticleEmitter::describe(TypeBuilder<ParticleEmitter> &type) {
-    type.category("Effects")
-        .description("Emits small sprites (sparks, dust, bubbles). Use a one-shot emitter inside an "
-                     "effect prefab that gameplay components spawn.");
+    type.category("Effects").description(
+        "Emits small sprites (sparks, dust, bubbles). Use a one-shot emitter inside an "
+        "effect prefab that gameplay components spawn.");
     type.field("texture", &ParticleEmitter::texture)
         .asset("texture")
         .tooltip("Leave empty for a placeholder particle.");
@@ -94,7 +94,8 @@ void ParticleEmitter::emitBurst(int count) {
 }
 
 void ParticleEmitter::spawn(const Transform2D &world) {
-    const std::size_t cap = static_cast<std::size_t>(std::clamp(maxParticles, 1, hardParticleLimit));
+    const std::size_t cap =
+        static_cast<std::size_t>(std::clamp(maxParticles, 1, hardParticleLimit));
     if (particles_.size() >= cap)
         return;
     Particle particle;
@@ -122,8 +123,8 @@ void ParticleEmitter::spawn(const Transform2D &world) {
         velocity = rotated(velocity, degreesToRadians(world.rotationDegrees));
     }
     particle.velocity = velocity;
-    particle.lifetime = std::max(0.01F, random(std::min(lifetime.x, lifetime.y),
-                                               std::max(lifetime.x, lifetime.y)));
+    particle.lifetime =
+        std::max(0.01F, random(std::min(lifetime.x, lifetime.y), std::max(lifetime.x, lifetime.y)));
     particle.size = random(std::min(startSize.x, startSize.y), std::max(startSize.x, startSize.y));
     particle.rotation = random(std::min(startRotation.x, startRotation.y),
                                std::max(startRotation.x, startRotation.y));

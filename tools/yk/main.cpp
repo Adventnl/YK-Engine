@@ -29,13 +29,14 @@ using namespace yk;
 
 namespace {
 void usage() {
-    std::puts("usage: yk <command> [options] [project]\n"
-              "  validate            check every scene, prefab and asset; exit 1 on errors\n"
-              "  format [--check]    write scenes, prefabs, animations and the project file in the\n"
-              "                      editor's canonical form (--check: only list what would change)\n"
-              "  info                summarize the project\n"
-              "  components          print the component reference (Markdown)\n"
-              "project: a directory or project.ykproj (default: the current directory)");
+    std::puts(
+        "usage: yk <command> [options] [project]\n"
+        "  validate            check every scene, prefab and asset; exit 1 on errors\n"
+        "  format [--check]    write scenes, prefabs, animations and the project file in the\n"
+        "                      editor's canonical form (--check: only list what would change)\n"
+        "  info                summarize the project\n"
+        "  components          print the component reference (Markdown)\n"
+        "project: a directory or project.ykproj (default: the current directory)");
 }
 
 struct Args {
@@ -142,31 +143,32 @@ int format(const Args &args) {
     ComponentRegistry registry;
     registerStandardComponents(registry);
     std::size_t changed = 0, failed = 0, checked = 0;
-    const auto handle = [&](const std::string &name, const std::filesystem::path &file,
-                            const std::function<Result<std::string>(const std::string &)> &rewrite) {
-        auto text = readTextFile(file);
-        if (!text) {
-            std::fprintf(stderr, "error: %s: %s\n", name.c_str(), text.error().c_str());
-            ++failed;
-            return;
-        }
-        ++checked;
-        auto formatted = rewrite(text.value());
-        if (!formatted) {
-            std::fprintf(stderr, "error: %s: %s\n", name.c_str(), formatted.error().c_str());
-            ++failed;
-            return;
-        }
-        if (formatted.value() == text.value())
-            return;
-        ++changed;
-        std::printf("%s %s\n", args.check ? "would format" : "formatted", name.c_str());
-        if (!args.check)
-            if (auto written = writeTextFileAtomic(file, formatted.value()); !written) {
-                std::fprintf(stderr, "error: %s: %s\n", name.c_str(), written.error().c_str());
+    const auto handle =
+        [&](const std::string &name, const std::filesystem::path &file,
+            const std::function<Result<std::string>(const std::string &)> &rewrite) {
+            auto text = readTextFile(file);
+            if (!text) {
+                std::fprintf(stderr, "error: %s: %s\n", name.c_str(), text.error().c_str());
                 ++failed;
+                return;
             }
-    };
+            ++checked;
+            auto formatted = rewrite(text.value());
+            if (!formatted) {
+                std::fprintf(stderr, "error: %s: %s\n", name.c_str(), formatted.error().c_str());
+                ++failed;
+                return;
+            }
+            if (formatted.value() == text.value())
+                return;
+            ++changed;
+            std::printf("%s %s\n", args.check ? "would format" : "formatted", name.c_str());
+            if (!args.check)
+                if (auto written = writeTextFileAtomic(file, formatted.value()); !written) {
+                    std::fprintf(stderr, "error: %s: %s\n", name.c_str(), written.error().c_str());
+                    ++failed;
+                }
+        };
     for (const AssetEntry &entry : scanAssets(*project)) {
         if (entry.kind == AssetKind::Other || entry.kind == AssetKind::Texture ||
             entry.kind == AssetKind::Sound)
@@ -196,7 +198,7 @@ int info(const Args &args) {
     std::map<std::string, std::size_t> counts;
     std::vector<std::string> scenes;
     for (const AssetEntry &entry : scanAssets(*project)) {
-        static const char *names[] = {"scene",     "prefab",     "texture",     "sound",
+        static const char *names[] = {"scene",     "prefab",     "texture",      "sound",
                                       "animation", "controller", "texture meta", "other"};
         ++counts[names[static_cast<int>(entry.kind)]];
         if (entry.kind == AssetKind::Scene)
@@ -232,8 +234,7 @@ int info(const Args &args) {
 
 int main(int argc, char **argv) {
     const auto args = parse(argc, argv);
-    if (!args || args->command == "help" || args->command == "--help" ||
-        args->command == "-h") {
+    if (!args || args->command == "help" || args->command == "--help" || args->command == "-h") {
         usage();
         return args ? 0 : 2;
     }

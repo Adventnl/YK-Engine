@@ -22,9 +22,11 @@ struct AnimationClip {
     int firstFrame{}, frameCount{1};
     float frameSeconds{0.1F};
     bool loop{true};
-    std::vector<int> frames;      // Non-empty: these cells, in this order (overrides firstFrame/frameCount).
-    std::vector<float> durations; // Non-empty: seconds per frame (one per frame; overrides frameSeconds).
-    std::string next;             // A non-looping clip continues with this one when it ends.
+    std::vector<int>
+        frames; // Non-empty: these cells, in this order (overrides firstFrame/frameCount).
+    std::vector<float>
+        durations;    // Non-empty: seconds per frame (one per frame; overrides frameSeconds).
+    std::string next; // A non-looping clip continues with this one when it ends.
     std::vector<ClipEvent> events;
 
     int length() const {

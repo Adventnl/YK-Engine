@@ -30,6 +30,8 @@ Json entityRecord(const Entity &entity) {
         json.set("active", false);
     if (entity.locked())
         json.set("locked", true);
+    if (entity.editorHidden())
+        json.set("editorHidden", true);
     if (!entity.prefabSource().empty())
         json.set("prefab", entity.prefabSource());
     if (!entity.tags().empty()) {
@@ -73,6 +75,11 @@ Status applyEntityRecord(Entity &entity, const Json &record, const std::string &
         if (!active->isBool())
             return Error{context + ": 'active' must be a boolean"};
         entity.setActive(active->asBool());
+    }
+    if (const Json *hidden = record.find("editorHidden")) {
+        if (!hidden->isBool())
+            return Error{context + ": 'editorHidden' must be a boolean"};
+        entity.setEditorHidden(hidden->asBool());
     }
     if (const Json *locked = record.find("locked")) {
         if (!locked->isBool())
@@ -434,8 +441,8 @@ Result<std::vector<EntityId>> instantiateSubtrees(Scene &scene,
 }
 
 Result<EntityId> instantiateSubtree(Scene &scene, const Json &prefab, EntityId parent,
-                                    std::optional<Vec2> worldPosition,
-                                    bool keepExternalReferences, const std::string &source) {
+                                    std::optional<Vec2> worldPosition, bool keepExternalReferences,
+                                    const std::string &source) {
     auto roots = instantiateSubtrees(scene, {{&prefab, parent, source}}, keepExternalReferences);
     if (!roots)
         return Error{roots.error()};

@@ -15,6 +15,12 @@ bool Entity::lockedInHierarchy() const {
             return true;
     return false;
 }
+bool Entity::hiddenInHierarchy() const {
+    for (const Entity *entity = this; entity; entity = entity->parent())
+        if (entity->editorHidden_)
+            return true;
+    return false;
+}
 bool Entity::activeInHierarchy() const {
     for (const Entity *node = this; node; node = node->parent())
         if (!node->active_)

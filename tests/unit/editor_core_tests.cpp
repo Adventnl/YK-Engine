@@ -6,6 +6,7 @@
 #include "core/EditorProject.hpp"
 #include "core/PlaySession.hpp"
 #include "core/SceneInteraction.hpp"
+#include "core/WorkbenchLayout.hpp"
 #include "support/check.hpp"
 #include "yk/core/FileIO.hpp"
 #include "yk/core/Log.hpp"
@@ -461,7 +462,8 @@ void picking() {
     stack = pickAll(doc.scene(), {0, 0}, 0.02F);
     CHECK(stack.size() == 2 && stack[0] == back && stack[1] == front);
 
-    // A locked entity (a huge backdrop, say) is neither picked by a click nor swept up by a marquee.
+    // A locked entity (a huge backdrop, say) is neither picked by a click nor swept up by a
+    // marquee.
     doc.change("lock", [&](Scene &scene) { scene.find(back)->setLocked(true); });
     stack = pickAll(doc.scene(), {0, 0}, 0.02F);
     CHECK(stack.size() == 1 && stack[0] == front);
@@ -1080,8 +1082,8 @@ void sampleProject() {
     setLogStderrEnabled(false);
     ComponentRegistry registry;
     registerStandardComponents(registry);
-    auto opened = EditorProject::open(
-        std::filesystem::path(YK_SOURCE_DIR) / "YK-DemoGame", registry);
+    auto opened =
+        EditorProject::open(std::filesystem::path(YK_SOURCE_DIR) / "YK-DemoGame", registry);
     CHECK(opened);
     if (!opened)
         return;
@@ -1123,8 +1125,8 @@ void playing() {
     setLogStderrEnabled(false);
     ComponentRegistry registry;
     registerStandardComponents(registry);
-    auto opened = EditorProject::open(
-        std::filesystem::path(YK_SOURCE_DIR) / "YK-DemoGame", registry);
+    auto opened =
+        EditorProject::open(std::filesystem::path(YK_SOURCE_DIR) / "YK-DemoGame", registry);
     CHECK(opened);
     if (!opened)
         return;
@@ -1220,9 +1222,124 @@ void console() {
     yk::log(LogLevel::Info, "after", "the console is gone"); // No dangling sink.
     setLogStderrEnabled(true);
 }
+
+double area(Rect rect) {
+    return static_cast<double>(rect.size.x) * static_cast<double>(rect.size.y);
+}
+bool touches(Rect a, Rect b) {
+    return a.position.x < b.position.x + b.size.x - 0.01F &&
+           b.position.x < a.position.x + a.size.x - 0.01F &&
+           a.position.y < b.position.y + b.size.y - 0.01F &&
+           b.position.y < a.position.y + a.size.y - 0.01F;
+}
+
+void workbenchLayout() {
+    const Vec2 window{1600.0F, 900.0F};
+    WorkbenchLayout layout;
+    WorkbenchRegions r = layout.regions(window);
+    // Every part is placed and together they tile the window, without overlapping.
+    CHECK(r.hasSideBar && r.hasInspector && r.hasPanel && !r.hasGroupB);
+    CHECK_NEAR(area(r.title) + area(r.status) + area(r.activity) + area(r.sideBar) +
+                   area(r.editor) + area(r.panel) + area(r.inspector),
+               1600.0 * 900.0, 1.0);
+    CHECK(!touches(r.sideBar, r.editor) && !touches(r.editor, r.panel) &&
+          !touches(r.editor, r.inspector) && !touches(r.activity, r.sideBar));
+    CHECK_NEAR(r.title.size.y, 30.0, 0.01);
+    CHECK_NEAR(r.activity.size.x, 46.0, 0.01);
+    CHECK_NEAR(r.status.position.y + r.status.size.y, 900.0, 0.01);
+    CHECK_NEAR(r.sideBar.size.x, layout.sideBarWidth, 0.01);
+    CHECK_NEAR(r.panel.size.y, layout.panelHeight, 0.01);
+    CHECK_NEAR(r.panel.position.x, r.editor.position.x, 0.01); // The panel sits under the editor.
+
+    // Hiding parts hands their room to the editor; the activity bar stays.
+    const float editorWidth = r.editor.size.x;
+    layout.sideBarVisible = false;
+    layout.inspectorVisible = false;
+    layout.panelVisible = false;
+    r = layout.regions(window);
+    CHECK(!r.hasSideBar && !r.hasInspector && !r.hasPanel);
+    CHECK(r.editor.size.x > editorWidth + 600.0F && r.editor.size.y > 800.0F);
+    CHECK_NEAR(r.editor.position.x, r.activity.size.x, 0.01);
+
+    // Splitting the editor area gives two groups that tile it.
+    layout = {};
+    layout.split = EditorSplit::Right;
+    r = layout.regions(window);
+    CHECK(r.hasGroupB && !touches(r.groupA, r.groupB));
+    CHECK_NEAR(area(r.groupA) + area(r.groupB), area(r.editor), 1.0);
+    CHECK_NEAR(r.groupA.size.x / r.editor.size.x, 0.5, 0.01);
+    layout.split = EditorSplit::Down;
+    layout.splitRatio = 0.7F;
+    r = layout.regions(window);
+    CHECK(r.hasGroupB && r.groupA.size.x == r.editor.size.x && r.groupA.size.y > r.groupB.size.y);
+    CHECK_NEAR(area(r.groupA) + area(r.groupB), area(r.editor), 1.0);
+
+    // The activity bar toggles views like VS Code: the same one again hides the side bar.
+    layout = {};
+    layout.toggleSideView(SideView::Explorer);
+    CHECK(layout.sideBarVisible && layout.sideView == SideView::Explorer);
+    layout.toggleSideView(SideView::Explorer);
+    CHECK(!layout.sideBarVisible);
+    layout.toggleSideView(SideView::Prefabs);
+    CHECK(layout.sideBarVisible && layout.sideView == SideView::Prefabs);
+    layout.togglePanelView(PanelView::Problems);
+    CHECK(layout.panelVisible && layout.panelView == PanelView::Problems);
+    layout.panelMaximized = true;
+    r = layout.regions(window);
+    CHECK_NEAR(r.panel.size.y, r.activity.size.y,
+               0.01); // Maximized: the panel replaces the editor.
+    layout.togglePanelView(PanelView::Problems);
+    CHECK(!layout.panelVisible && !layout.panelMaximized);
+
+    // Nothing collapses or overflows in a small window, or with silly stored sizes.
+    layout = {};
+    layout.sideBarWidth = 5000.0F;
+    layout.inspectorWidth = 5000.0F;
+    layout.panelHeight = 5000.0F;
+    r = layout.regions({900.0F, 500.0F});
+    CHECK(r.editor.size.x >= 250.0F && r.editor.size.y >= 150.0F);
+    CHECK(r.sideBar.position.x + r.sideBar.size.x <= r.editor.position.x + 0.01F);
+    CHECK(r.inspector.position.x >= r.editor.position.x + r.editor.size.x - 0.01F);
+    CHECK(r.panel.position.y + r.panel.size.y <= 500.0F - r.status.size.y + 0.01F);
+    WorkbenchMetrics hiDpi;
+    hiDpi.scale = 2.0F;
+    r = WorkbenchLayout{}.regions({3200.0F, 1800.0F}, hiDpi);
+    CHECK_NEAR(r.title.size.y, 60.0, 0.01);
+    CHECK_NEAR(r.activity.size.x, 92.0, 0.01);
+
+    // It survives a restart, and damaged files never get in the way.
+    layout = {};
+    layout.sideView = SideView::Build;
+    layout.panelView = PanelView::Profiler;
+    layout.split = EditorSplit::Down;
+    layout.sideBarWidth = 333.0F;
+    layout.inspectorVisible = false;
+    layout.panelMaximized = true;
+    auto text = Json::parse(layout.toJson().dump(2));
+    CHECK(text && WorkbenchLayout::fromJson(text.value()) == layout);
+    Json damaged = Json::object();
+    damaged.set("sideView", "nonsense");
+    damaged.set("sideBarWidth", "wide");
+    damaged.set("panelHeight", 1e30);
+    damaged.set("split", 7);
+    damaged.set("splitRatio", 0.0);
+    const WorkbenchLayout repaired = WorkbenchLayout::fromJson(damaged);
+    CHECK(repaired.sideView == WorkbenchLayout{}.sideView &&
+          repaired.sideBarWidth == WorkbenchLayout{}.sideBarWidth &&
+          repaired.split == EditorSplit::None && repaired.panelHeight <= 4000.0F &&
+          repaired.splitRatio >= 0.15F);
+    CHECK(WorkbenchLayout::fromJson(Json("not an object")) == WorkbenchLayout{});
+    for (const SideView view : {SideView::Explorer, SideView::Scene, SideView::Prefabs,
+                                SideView::Components, SideView::Build})
+        CHECK(sideViewFromName(name(view)) == view);
+    for (const PanelView view :
+         {PanelView::Console, PanelView::Problems, PanelView::Output, PanelView::Profiler})
+        CHECK(panelViewFromName(name(view)) == view);
+}
 } // namespace
 
 int main() {
+    workbenchLayout();
     undoAndRedo();
     historyLimit();
     selection();

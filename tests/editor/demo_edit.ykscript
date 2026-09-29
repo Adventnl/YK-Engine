@@ -91,7 +91,7 @@ expect no-entity Checkpoint
 key ctrl+z
 expect entity Checkpoint
 
-log "== prefab from the selection, then instantiate it from the assets panel"
+log "== prefab from the selection, then instantiate it from the Prefabs view"
 click "hierarchy/Lever"
 menu "Entity/Save as Prefab"
 expect dialog saveprefab
@@ -100,27 +100,51 @@ type prefabs/my_lever
 click dialog/SavePrefab/ok
 expect no-dialog
 expect file prefabs/my_lever.ykprefab exists
+click activity/Prefabs
+expect side-view Prefabs
 expect widget asset/prefabs/my_lever.ykprefab
 doubleclick asset/prefabs/my_lever.ykprefab
 expect entity-count 172
 expect dirty
+click activity/Scene
+expect side-view Scene
+
+log "== scenes open in tabs; edits stay with their tab"
+menu "File|Open Scene|scenes/practice.ykscene"
+expect scene scenes/practice.ykscene
+expect scene-tabs 2
+expect scene-open scenes/level01.ykscene
+expect widget tab/practice.ykscene
+expect widget tab/level01.ykscene
+expect clean
+click tab/level01.ykscene
+expect scene scenes/level01.ykscene
+expect dirty
+expect entity-count 172
 
 log "== unsaved changes are never lost silently"
-menu "File|Open Scene|scenes/practice.ykscene"
+click tab/practice.ykscene
+expect scene scenes/practice.ykscene
+key ctrl+w
+expect scene-closed scenes/practice.ykscene
+expect scene scenes/level01.ykscene
+key ctrl+w
 expect dialog unsaved
 click dialog/Unsaved/cancel
 expect no-dialog
 expect scene scenes/level01.ykscene
-menu "File|Open Scene|scenes/practice.ykscene"
-click dialog/Unsaved/save
-expect scene scenes/practice.ykscene
+expect dirty
+menu "File/Save All"
 expect clean
+menu "File|Open Scene|scenes/practice.ykscene"
+expect scene-tabs 2
 
 log "== validation and project settings"
-menu "File/Validate Project"
-expect dialog validation
-click dialog/Validation/close
-expect no-dialog
+menu "Build/Validate Project"
+expect panel-view Problems
+expect problems 0
+click "panel-tab/Console"
+expect panel-view Console
 menu "File/Project Settings"
 expect dialog settings
 click dialog/Settings/save

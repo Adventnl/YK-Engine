@@ -7,7 +7,8 @@
 
 namespace yk::editor::ui {
 namespace {
-constexpr float stripHeight = 30.0F;
+constexpr float toolbarHeight = 30.0F;
+constexpr float crumbHeight = 22.0F;
 
 void dashedLine(ImDrawList &list, ImVec2 from, ImVec2 to, ImU32 color, float thickness = 1.0F,
                 float dash = 6.0F, float gap = 4.0F) {
@@ -242,6 +243,23 @@ void drawOverlays(EditorState &state, const Canvas &canvas) {
     if (options.cameraFrame)
         drawCameraFrame(canvas, state, *scene);
 
+    // Debug overlays: the box of every sprite, and where each entity's origin is.
+    if (!state.playing() && (options.spriteBounds || options.pivots) && scene->size() < 4000) {
+        for (const EntityId id : scene->hierarchyOrder()) {
+            const Entity *entity = scene->find(id);
+            if (!entity->activeInHierarchy() || entity->hiddenInHierarchy())
+                continue;
+            if (options.spriteBounds && entity->has<SpriteRenderer>())
+                outline(canvas, displayBox(*entity, half), IM_COL32(120, 200, 255, 110), 1.0F);
+            if (options.pivots) {
+                const ImVec2 at = canvas.at(entity->worldPosition());
+                const ImU32 tone = IM_COL32(255, 120, 120, 200);
+                canvas.list.AddLine({at.x - 4.0F, at.y}, {at.x + 4.0F, at.y}, tone, 1.5F);
+                canvas.list.AddLine({at.x, at.y - 4.0F}, {at.x, at.y + 4.0F}, tone, 1.5F);
+            }
+        }
+    }
+
     // Deactivated entities keep a faint dashed outline so they can still be found and selected.
     if (!state.playing() && scene->size() < 3000) {
         for (const EntityId id : scene->hierarchyOrder()) {
@@ -320,45 +338,144 @@ void banner(const ViewportPanel &panel, const std::string &text, Color color) {
     list.AddText(origin, IM_COL32(16, 18, 24, 255), text.c_str());
 }
 
-bool toggle(const char *id, Icon icon, bool &value, const char *tip) {
-    const bool clicked = iconButton(id, icon, value, tip, 0, 22.0F);
-    if (clicked)
-        value = !value;
-    return clicked;
+void separator() {
+    ImGui::SameLine(0.0F, 6.0F);
+    const ImVec2 origin = ImGui::GetCursorScreenPos();
+    ImGui::GetWindowDrawList()->AddLine({origin.x, origin.y + 5.0F}, {origin.x, origin.y + 21.0F},
+                                        packed(vs::border));
+    ImGui::Dummy({1.0F, 26.0F});
+    ImGui::SameLine(0.0F, 6.0F);
 }
 
-void strip(EditorState &state, bool hoveredLastFrame, ImVec2 start) {
-    ImGui::SetCursorPos({start.x + 8.0F, start.y + 4.0F});
-    toggle("scene/Grid", Icon::Grid, state.view.grid, "Show the grid");
-    ImGui::SameLine();
-    toggle("scene/Colliders", Icon::Entity, state.view.colliders, "Show collider outlines");
-    ImGui::SameLine();
-    toggle("scene/Links", Icon::Link, state.view.links, "Show links of the selection");
-    ImGui::SameLine();
-    toggle("scene/AllLinks", Icon::Eye, state.view.allLinks, "Show every link in the scene");
-    ImGui::SameLine();
-    toggle("scene/Camera", Icon::Target, state.view.cameraFrame, "Show the game camera's frame");
-    ImGui::SameLine();
-    toggle("scene/Names", Icon::Search, state.view.labels, "Show entity names");
-    ImGui::SameLine(0.0F, 14.0F);
-    if (iconButton("scene/FrameAll", Icon::Resize, false, "Frame the whole scene (Home)", 0, 22.0F))
+// One row above the view: the tools (move, resize, rotate), snapping, the overlays menu and the
+// pointer position. Widget ids are stable ("toolbar/Move") so scripts and tests can find them.
+void toolbar(EditorState &state, bool hoveredLastFrame, ImVec2 start) {
+    ImDrawList &list = *ImGui::GetWindowDrawList();
+    const ImVec2 origin = ImGui::GetWindowPos();
+    list.AddRectFilled({origin.x, origin.y + start.y},
+                       {origin.x + ImGui::GetWindowWidth(), origin.y + start.y + toolbarHeight},
+                       packed(vs::editorBg));
+    ImGui::SetCursorPos({start.x + 6.0F, start.y + 2.0F});
+    const bool editing = state.document != nullptr && !state.playing();
+    SceneInteraction &interaction = state.interaction;
+    ImGui::BeginDisabled(!editing);
+    if (iconButton("toolbar/Move", Icon::Move, interaction.tool == Tool::Move, "Move (W)"))
+        interaction.tool = Tool::Move;
+    ImGui::SameLine(0.0F, 2.0F);
+    if (iconButton("toolbar/Resize", Icon::Resize, interaction.tool == Tool::Resize, "Resize (R)"))
+        interaction.tool = Tool::Resize;
+    ImGui::SameLine(0.0F, 2.0F);
+    if (iconButton("toolbar/Rotate", Icon::Rotate, interaction.tool == Tool::Rotate, "Rotate (E)"))
+        interaction.tool = Tool::Rotate;
+    separator();
+    if (iconButton("toolbar/Snap", Icon::Snap, interaction.snap.enabled,
+                   "Snap to grid (hold Ctrl while dragging to toggle)"))
+        interaction.snap.enabled = !interaction.snap.enabled;
+    ImGui::SameLine(0.0F, 2.0F);
+    ImGui::SetNextItemWidth(70.0F);
+    static constexpr float steps[] = {0.1F, 0.25F, 0.5F, 1.0F, 2.0F};
+    char current[16];
+    std::snprintf(current, sizeof current, "%g m", static_cast<double>(interaction.snap.grid));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {6.0F, 2.0F});
+    const bool comboOpen = ImGui::BeginCombo("##grid", current);
+    markItem("toolbar/GridSize");
+    if (comboOpen) {
+        for (const float step : steps) {
+            char item[16];
+            std::snprintf(item, sizeof item, "%g m", static_cast<double>(step));
+            if (ImGui::Selectable(item, std::abs(step - interaction.snap.grid) < 1e-4F))
+                interaction.snap.grid = step;
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::PopStyleVar();
+    ImGui::EndDisabled();
+    separator();
+    if (iconButton("toolbar/Overlays", Icon::Layers, false, "Overlays: what the scene view draws"))
+        ImGui::OpenPopup("overlays_menu");
+    if (ImGui::BeginPopup("overlays_menu")) {
+        ViewOptions &view = state.view;
+        const auto item = [&](const char *id, const char *text, bool &value) {
+            const bool clicked = ImGui::MenuItem(text, nullptr, value);
+            markItem(std::string("overlay/") + id);
+            if (clicked)
+                value = !value;
+        };
+        item("Grid", "Grid", view.grid);
+        item("Colliders", "Collider outlines", view.colliders);
+        item("Sprites", "Sprite bounds", view.spriteBounds);
+        item("Pivots", "Pivot points", view.pivots);
+        item("Links", "Links of the selection", view.links);
+        item("AllLinks", "Every link in the scene", view.allLinks);
+        item("Names", "Entity names", view.labels);
+        item("Camera", "Game camera frame", view.cameraFrame);
+        ImGui::EndPopup();
+    }
+    ImGui::SameLine(0.0F, 2.0F);
+    if (iconButton("scene/FrameAll", Icon::Target, false, "Frame the whole scene (Home)"))
         state.interaction.frameAll();
 
     const ImGuiIO &io = ImGui::GetIO();
     char text[96];
     if (hoveredLastFrame && state.interaction.bound()) {
         const Vec2 world = state.interaction.toWorld(vec(io.MousePos) - state.sceneView.origin);
-        std::snprintf(text, sizeof text, "x %.2f   y %.2f   zoom %d%%",
-                      static_cast<double>(world.x), static_cast<double>(world.y),
+        std::snprintf(text, sizeof text, "x %.2f   y %.2f   %d%%", static_cast<double>(world.x),
+                      static_cast<double>(world.y),
                       static_cast<int>(state.interaction.camera.zoom / 48.0F * 100.0F));
     } else {
-        std::snprintf(text, sizeof text, "zoom %d%%",
+        std::snprintf(text, sizeof text, "%d%%",
                       static_cast<int>(state.interaction.camera.zoom / 48.0F * 100.0F));
     }
     const float width = ImGui::CalcTextSize(text).x;
     ImGui::SameLine(ImGui::GetWindowWidth() - width - 12.0F);
     ImGui::AlignTextToFramePadding();
+    ImGui::PushFont(fonts().mono, 12.0F);
     ImGui::TextColored(imColor(palette::dim), "%s", text);
+    ImGui::PopFont();
+}
+
+// The path to the selected entity, like VS Code's breadcrumbs: scene > parent > entity. Every part
+// selects its entity.
+void breadcrumbs(EditorState &state, ImVec2 start) {
+    ImDrawList &list = *ImGui::GetWindowDrawList();
+    const ImVec2 origin = ImGui::GetWindowPos();
+    const float top = origin.y + start.y + toolbarHeight;
+    list.AddRectFilled({origin.x, top}, {origin.x + ImGui::GetWindowWidth(), top + crumbHeight},
+                       packed(vs::editorBg));
+    ImGui::SetCursorPos({start.x + 10.0F, start.y + toolbarHeight + 2.0F});
+    ImGui::PushStyleColor(ImGuiCol_Text, imColor(vs::textDim));
+    const Scene *scene = state.visibleScene();
+    const std::string sceneName =
+        state.document ? std::filesystem::path(state.document->path()).filename().string() : "";
+    ImGui::TextUnformatted(sceneName.empty() ? "Scene" : sceneName.c_str());
+    if (scene && state.inspected() && scene->find(state.inspected())) {
+        std::vector<EntityId> chain;
+        for (const Entity *entity = scene->find(state.inspected()); entity;
+             entity = entity->parent())
+            chain.push_back(entity->id());
+        std::reverse(chain.begin(), chain.end());
+        for (const EntityId id : chain) {
+            ImGui::SameLine(0.0F, 4.0F);
+            drawIcon(*ImGui::GetWindowDrawList(), Icon::ChevronRight,
+                     {ImGui::GetCursorScreenPos().x + 5.0F, ImGui::GetCursorScreenPos().y + 8.0F},
+                     12.0F, packed(vs::textFaint));
+            ImGui::Dummy({10.0F, 1.0F});
+            ImGui::SameLine(0.0F, 2.0F);
+            ImGui::PushID(static_cast<int>(id.value & 0x7fffffff));
+            ImGui::TextUnformatted(entityLabel(*scene, id).c_str());
+            const bool hovered = ImGui::IsItemHovered();
+            if (hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && state.document &&
+                !state.playing())
+                state.document->select(id);
+            markItem("crumb/" + entityLabel(*scene, id));
+            if (hovered)
+                ImGui::GetWindowDrawList()->AddLine(
+                    {ImGui::GetItemRectMin().x, ImGui::GetItemRectMax().y}, ImGui::GetItemRectMax(),
+                    packed(vs::text));
+            ImGui::PopID();
+        }
+    }
+    ImGui::PopStyleColor();
 }
 
 void handleInput(EditorState &state, ViewportPanel &panel) {
@@ -463,7 +580,7 @@ void emptyState(EditorState &state) {
     const ImVec2 avail = ImGui::GetContentRegionAvail();
     const ImVec2 origin = ImGui::GetCursorScreenPos();
     ImGui::GetWindowDrawList()->AddRectFilled(origin, {origin.x + avail.x, origin.y + avail.y},
-                                              IM_COL32(20, 22, 28, 255));
+                                              packed(vs::editorBg));
     const char *headline = state.project ? "No scene is open" : "No project is open";
     const char *hint = state.project ? "Open a scene from the Assets panel or File > Open Scene."
                                      : "Create or open a project to start.";
@@ -527,38 +644,20 @@ void sceneViewPanel(EditorState &state) {
     const bool hoveredLastFrame = panel.hovered;
     panel.visible = false;
     panel.hovered = false;
-    panel.focused = false;
-    if (!state.showScene)
-        return;
-    if (state.focusRequest == "Scene") {
-        ImGui::SetNextWindowFocus();
-        state.focusRequest.clear();
-    }
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0F, 0.0F});
-    const bool open =
-        ImGui::Begin("Scene", &state.showScene,
-                     ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-    ImGui::PopStyleVar();
-    if (!open) {
-        ImGui::End();
-        return;
-    }
-    markWindow("panel/Scene");
     panel.focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
-    const ImVec2 contentStart = ImGui::GetCursorPos(); // Below the tab bar when docked.
+    const ImVec2 contentStart = ImGui::GetCursorPos(); // Below the tab bar.
 
     const Scene *scene = state.visibleScene();
     if (!scene) {
         emptyState(state);
-        ImGui::End();
         return;
     }
-    strip(state, hoveredLastFrame, contentStart);
-    ImGui::SetCursorPos({contentStart.x, contentStart.y + stripHeight});
+    toolbar(state, hoveredLastFrame, contentStart);
+    breadcrumbs(state, contentStart);
+    ImGui::SetCursorPos({contentStart.x, contentStart.y + toolbarHeight + crumbHeight});
     const ImVec2 avail = ImGui::GetContentRegionAvail();
     if (avail.x < 8.0F || avail.y < 8.0F) {
-        ImGui::Dummy({0.0F, 0.0F}); // The first frames of a docked window are tiny.
-        ImGui::End();
+        ImGui::Dummy({0.0F, 0.0F}); // The first frames of a group are tiny.
         return;
     }
     const float dpi = std::max(1.0F, ImGui::GetIO().DisplayFramebufferScale.x);
@@ -611,7 +710,6 @@ void sceneViewPanel(EditorState &state) {
             contextMenu(state, panel);
         }
     }
-    ImGui::End();
 }
 
 Status renderViewports(EditorState &state) {
@@ -659,7 +757,7 @@ Status renderViewports(EditorState &state) {
         }
         if (drawn)
             drawn = state.sceneRenderer->drawWorld(*state.renderer, *scene,
-                                                   {camera, pixels, false});
+                                                   {camera, pixels, false, true});
         if (drawn && state.view.colliders)
             drawn = state.sceneRenderer->drawColliders(*state.renderer, *scene);
         const Status ended = state.renderer->endPass();

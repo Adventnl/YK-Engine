@@ -208,7 +208,7 @@ key ctrl+s
 expect clean
 
 log "== 8. Export the game (needs the player next to the editor)"
-menu "File/Export Game"
+menu "Build/Export Game"
 expect dialog export
 click dialog/Export/path
 key ctrl+a

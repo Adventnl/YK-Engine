@@ -1,0 +1,15 @@
+# Second half: a new editor process starts with the layout the first one left behind.
+timeout 300
+expect project "Cinder Vale"
+expect side-view prefabs
+expect layout sideBarWidth 380 6
+expect panel-view profiler
+expect split right
+expect inspector hidden
+expect widget tab/Game
+menu "View/Reset Layout"
+expect side-view scene
+expect split none
+expect inspector visible
+wait 5
+expect layout-saved

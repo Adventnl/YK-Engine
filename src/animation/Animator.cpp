@@ -31,7 +31,8 @@ Status Animator::define(AnimationClip clip) {
     }
     for (const ClipEvent &event : clip.events)
         if (event.frame < 0 || event.frame >= clip.length() || event.name.empty())
-            return Error{"Invalid animation clip: an event needs a name and a frame inside the clip"};
+            return Error{
+                "Invalid animation clip: an event needs a name and a frame inside the clip"};
     if (clip.next == clip.name)
         return Error{"Invalid animation clip: 'next' cannot be the clip itself (use loop)"};
     const auto name = clip.name;

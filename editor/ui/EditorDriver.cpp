@@ -505,6 +505,16 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
         return report(!state.pick, "waiting for the user to pick an entity");
     if (what == "pick")
         return report(state.pick.has_value(), "not waiting for a pick");
+    if (what == "layout-saved") { // expect layout-saved : workbench.json matches the live layout
+        std::error_code error;
+        const auto file = state.settingsDirectory / "workbench.json";
+        if (!std::filesystem::exists(file, error))
+            return report(false, "workbench.json has not been written");
+        const auto text = readTextFile(file);
+        const auto json = text ? Json::parse(text.value()) : Result<Json>(Error{"unreadable"});
+        return report(json && WorkbenchLayout::fromJson(json.value()) == state.layout,
+                      "workbench.json differs from the live layout");
+    }
     if (!need(1))
         return -1;
     const std::string &arg = w[2];
@@ -796,6 +806,102 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
     if (what == "start-scene")
         return report(state.project && state.project->project().startScene == arg,
                       "the start scene differs");
+    // The workbench: which side bar view and panel are showing, how the editor area is split.
+    if (what == "side-view") { // expect side-view Explorer|Scene|Prefabs|Components|Build|none
+        if (lower(arg) == "none")
+            return report(!state.layout.sideBarVisible,
+                          "the side bar is showing " + std::string(name(state.layout.sideView)));
+        const auto wanted = sideViewFromName(lower(arg));
+        if (!wanted) {
+            detail = "unknown side bar view '" + arg + "'";
+            return -1;
+        }
+        return report(state.layout.sideBarVisible && state.layout.sideView == *wanted,
+                      state.layout.sideBarVisible
+                          ? "the side bar shows " + std::string(name(state.layout.sideView))
+                          : std::string("the side bar is hidden"));
+    }
+    if (what == "panel-view") { // expect panel-view Console|Problems|Output|Profiler|none
+        if (lower(arg) == "none")
+            return report(!state.layout.panelVisible,
+                          "the panel is showing " + std::string(name(state.layout.panelView)));
+        const auto wanted = panelViewFromName(lower(arg));
+        if (!wanted) {
+            detail = "unknown panel '" + arg + "'";
+            return -1;
+        }
+        return report(state.layout.panelVisible && state.layout.panelView == *wanted,
+                      state.layout.panelVisible
+                          ? "the panel shows " + std::string(name(state.layout.panelView))
+                          : std::string("the panel is hidden"));
+    }
+    if (what == "inspector") // expect inspector visible|hidden
+        return report(state.layout.inspectorVisible == (lower(arg) == "visible"),
+                      state.layout.inspectorVisible ? "the inspector is visible"
+                                                    : "the inspector is hidden");
+    if (what == "split") { // expect split none|right|down
+        const auto wanted = editorSplitFromName(lower(arg));
+        if (!wanted) {
+            detail = "unknown split '" + arg + "'";
+            return -1;
+        }
+        return report(state.layout.split == *wanted,
+                      "the editor area is split " + std::string(name(state.layout.split)));
+    }
+    if (what == "scene-tabs") { // expect scene-tabs N
+        return report(state.sceneTabs.size() == static_cast<std::size_t>(number(arg).value_or(-1)),
+                      std::to_string(state.sceneTabs.size()) + " scenes are open");
+    }
+    if (what == "scene-open") { // expect scene-open PATH
+        return report(std::find(state.sceneTabs.begin(), state.sceneTabs.end(), arg) !=
+                          state.sceneTabs.end(),
+                      "'" + arg + "' is not open in a tab");
+    }
+    if (what == "scene-closed") {
+        return report(std::find(state.sceneTabs.begin(), state.sceneTabs.end(), arg) ==
+                          state.sceneTabs.end(),
+                      "'" + arg + "' is still open in a tab");
+    }
+    if (what == "editor-focus") // expect editor-focus scene|game
+        return report((state.editorFocus == EditorFocus::Game) == (lower(arg) == "game"),
+                      "another editor tab is showing");
+    if (what == "problems") { // expect problems N (after a validation)
+        return report(state.problems.size() == static_cast<std::size_t>(number(arg).value_or(-1)),
+                      std::to_string(state.problems.size()) + " problems are listed");
+    }
+    if (what == "locked" || what == "unlocked") { // expect locked ENTITY
+        const Entity *entity = findNamed(scene, arg);
+        if (!entity) {
+            detail = "there is no entity named '" + arg + "'";
+            return 0;
+        }
+        return report(entity->locked() == (what == "locked"),
+                      "'" + arg + "' is " + (entity->locked() ? "locked" : "not locked"));
+    }
+    if (what == "hidden" || what == "shown") { // expect hidden ENTITY : hidden in the editor
+        const Entity *entity = findNamed(scene, arg);
+        if (!entity) {
+            detail = "there is no entity named '" + arg + "'";
+            return 0;
+        }
+        return report(entity->editorHidden() == (what == "hidden"),
+                      "'" + arg + "' is " + (entity->editorHidden() ? "hidden" : "shown"));
+    }
+    if (what ==
+        "layout") { // expect layout KEY VALUE [TOLERANCE] : a number in the workbench layout
+        if (!need(2))
+            return -1;
+        const Json layoutJson = state.layout.toJson();
+        const Json &value = layoutJson.get(arg);
+        const auto wanted = number(w[3]);
+        if (!value.isNumber() || !wanted) {
+            detail = "'" + arg + "' is not a number in the layout";
+            return -1;
+        }
+        const double tolerance = w.size() > 4 ? number(w[4]).value_or(0.5) : 0.5;
+        return report(std::abs(value.asNumber() - *wanted) <= tolerance,
+                      arg + " is " + std::to_string(value.asNumber()));
+    }
     detail = "unknown expectation '" + what + "'";
     return -1;
 }

@@ -112,7 +112,6 @@ struct World {
 
 constexpr float restingHeight = floorTop - 0.475F; // Capsule center when standing on the floor.
 
-
 // The whole animation chain on real physics: the controller publishes generic parameters, the
 // controller asset picks clips, the AnimatedSprite shows frames and mirrors the sprite. No code
 // here or in the controller names a clip.
@@ -251,7 +250,8 @@ void oneWayAndWedge() {
     {
         World w;
         w.ground();
-        Entity &low = w.box("Ceiling", {0.0F, 9.35F}, {6.0F, 0.3F}); // Underside at y 9.5, feet at 10.
+        Entity &low =
+            w.box("Ceiling", {0.0F, 9.35F}, {6.0F, 0.3F}); // Underside at y 9.5, feet at 10.
         low.get<Collider>()->oneWay = true;
         w.character("Hero", {-5.0F, restingHeight});
         w.start();
@@ -331,9 +331,9 @@ void interactLever() {
     Entity &lever = w.box("Lever", {0.0F, floorTop - 0.4F}, {0.6F, 0.8F}, layers::sensor);
     lever.get<Collider>()->isTrigger = true;
     lever.add<Lever>().interactAction = "Interact";
-    w.character("One", {-1.5F, restingHeight});                // Player1: Interact is S / E.
-    w.character("Two", {3.0F, restingHeight}, "Player2");      // Player2: Interact is Down.
-    w.character("Nobody", {-3.0F, restingHeight}, "Nobody");   // No such set: cannot interact.
+    w.character("One", {-1.5F, restingHeight});              // Player1: Interact is S / E.
+    w.character("Two", {3.0F, restingHeight}, "Player2");    // Player2: Interact is Down.
+    w.character("Nobody", {-3.0F, restingHeight}, "Nobody"); // No such set: cannot interact.
     w.start();
     w.tick(30);
     auto *plate = w.at("Lever").get<Lever>();
@@ -466,7 +466,7 @@ void deathAndRespawn() {
     CHECK(!killable->alive() && w.happened("entity_died"));
     const Vec2 diedAt = w.position("Hero");
     CHECK(w.at("Hero").get<Collider>()->enabled == false); // Nothing collides with it any more.
-    CHECK(visible() && state() == "Death");               // The animation plays in place.
+    CHECK(visible() && state() == "Death");                // The animation plays in place.
     CHECK(w.runtime->scene().findByName("Puff") != nullptr);
     CHECK(w.runtime->scene().findByName("Puff")->worldPosition() == diedAt);
     w.tick(30); // 0.5 s: still inside the 0.6 s death animation.
@@ -548,7 +548,8 @@ void collectTotalsAndEffects() {
 
 // Mechanisms tell their AnimatedSprite what state they are in, instead of tinting the sprite, so
 // art states come from the animation controller.
-constexpr const char *mechanismAnimation = R"({"format":"yk.animation","version":2,"columns":2,"rows":1,
+constexpr const char *mechanismAnimation =
+    R"({"format":"yk.animation","version":2,"columns":2,"rows":1,
     "clips":[{"name":"off","first":0,"count":1},{"name":"on","first":1,"count":1}]})";
 constexpr const char *mechanismController = R"({"format":"yk.animator","version":1,
     "parameters":[{"name":"pressed","type":"bool"},{"name":"on","type":"bool"},
@@ -587,13 +588,15 @@ void mechanismsPublishState() {
     w.character("Hero", {0.0F, restingHeight});
     w.start();
     w.tick(30);
-    const auto stateOf = [&](const char *name) { return w.at(name).get<AnimatedSprite>()->state(); };
+    const auto stateOf = [&](const char *name) {
+        return w.at(name).get<AnimatedSprite>()->state();
+    };
     CHECK(stateOf("Plate") == "Off" && stateOf("Exit") == "Off" && stateOf("Door") == "Off");
     w.down(Key::D);
     w.tick(20);
     w.up(Key::D);
     CHECK(w.at("Plate").get<PressurePlate>()->pressed());
-    CHECK(stateOf("Plate") == "On");                          // pressed
+    CHECK(stateOf("Plate") == "On");                                             // pressed
     CHECK(w.at("Plate").get<SpriteRenderer>()->color == Color{10, 20, 30, 255}); // Not tinted.
     w.tick(60);
     CHECK(stateOf("Door") == "On"); // open
@@ -634,7 +637,7 @@ void controllerEffects() {
     w.up(Key::W);
     w.tick(80);
     CHECK(w.runtime->scene().findByName("Thud") != nullptr); // A real fall: landing effect...
-    CHECK(w.audio.count("tone:120,0.1") == 1);                // ...and sound, once.
+    CHECK(w.audio.count("tone:120,0.1") == 1);               // ...and sound, once.
     // Stepping down a small height is not a landing.
     World gentle;
     Scene ignored(gentle.registry, 14);

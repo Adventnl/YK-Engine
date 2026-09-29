@@ -122,7 +122,8 @@ std::array<Vec2, 3> wedgePoints(Vec2 halfExtents, Vec2 scaleSign) {
     const float sx = scaleSign.x < 0.0F ? -1.0F : 1.0F;
     const float sy = scaleSign.y < 0.0F ? -1.0F : 1.0F;
     // Right angle at the bottom right; the hypotenuse rises to the right (y is down).
-    return {Vec2{-halfExtents.x * sx, halfExtents.y * sy}, Vec2{halfExtents.x * sx, halfExtents.y * sy},
+    return {Vec2{-halfExtents.x * sx, halfExtents.y * sy},
+            Vec2{halfExtents.x * sx, halfExtents.y * sy},
             Vec2{halfExtents.x * sx, -halfExtents.y * sy}};
 }
 

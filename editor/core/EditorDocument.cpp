@@ -387,6 +387,27 @@ void EditorDocument::setEntityActive(EntityId id, bool active) {
     });
 }
 
+void EditorDocument::setLocked(const std::vector<EntityId> &ids, bool locked) {
+    change(locked ? "Lock" : "Unlock", [&](Scene &scene) {
+        for (const EntityId id : ids)
+            if (Entity *entity = scene.find(id))
+                entity->setLocked(locked);
+    });
+}
+
+void EditorDocument::setEditorHidden(const std::vector<EntityId> &ids, bool hidden) {
+    change(hidden ? "Hide in Editor" : "Show in Editor", [&](Scene &scene) {
+        for (const EntityId id : ids)
+            if (Entity *entity = scene.find(id))
+                entity->setEditorHidden(hidden);
+    });
+}
+
+void EditorDocument::editSettings(const std::string &label,
+                                  const std::function<void(SceneSettings &)> &edit) {
+    change(label, [&](Scene &scene) { edit(scene.settings); });
+}
+
 bool EditorDocument::setProperty(EntityId id, std::size_t componentIndex,
                                  const std::string &property, PropertyValue value) {
     bool written = false;

@@ -100,16 +100,8 @@ void fileRow(EditorState &state, const AssetEntry &entry) {
 } // namespace
 
 void assetsPanel(EditorState &state) {
-    if (!state.showAssets)
-        return;
-    if (!ImGui::Begin("Assets", &state.showAssets)) {
-        ImGui::End();
-        return;
-    }
-    markWindow("panel/Assets");
     if (!state.project) {
         ImGui::TextDisabled("No project is open.");
-        ImGui::End();
         return;
     }
     const float button = ImGui::GetFrameHeight();
@@ -154,6 +146,5 @@ void assetsPanel(EditorState &state) {
         ImGui::PopID();
     }
     ImGui::EndChild();
-    ImGui::End();
 }
 } // namespace yk::editor::ui

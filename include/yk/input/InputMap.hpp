@@ -59,8 +59,8 @@ class InputMap {
     std::vector<std::string> actionNames() const;
     std::vector<std::string> setNames() const;
 
-    // Names must be non-empty and unique (sets, and actions within a set); bindings must be complete;
-    // gamepad slots must exist.
+    // Names must be non-empty and unique (sets, and actions within a set); bindings must be
+    // complete; gamepad slots must exist.
     Status validate() const;
 
     Json toJson() const;

@@ -51,6 +51,15 @@ class Entity {
         locked_ = locked;
     }
     bool lockedInHierarchy() const;
+    // Another editor hint saved with the scene: an entity hidden in the editor (and everything
+    // below it) is not drawn or picked in the scene view. The running game still shows it.
+    bool editorHidden() const {
+        return editorHidden_;
+    }
+    void setEditorHidden(bool hidden) {
+        editorHidden_ = hidden;
+    }
+    bool hiddenInHierarchy() const;
 
     // The project-relative prefab this entity was created from. It is set on the root of an
     // instance and empty everywhere else. The editor uses it to show, revert and apply an instance
@@ -137,6 +146,7 @@ class Entity {
     std::string name_;
     bool active_{true};
     bool locked_{false};
+    bool editorHidden_{false};
     std::string prefabSource_;
     std::vector<std::string> tags_;
     Transform2D local_;

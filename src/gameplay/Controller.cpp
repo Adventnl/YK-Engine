@@ -103,9 +103,10 @@ void PlatformerController::describe(TypeBuilder<PlatformerController> &type) {
     type.field("slideFriction", &PlatformerController::slideFriction).range(0, 10, 0.05);
     type.field("groundSnap", &PlatformerController::groundSnap)
         .range(0, 2, 0.05)
-        .tooltip("Keeps the feet on the ground over ramp crests, slopes and small steps down: after "
-                 "walking off the ground (without jumping), a walkable surface at most this far "
-                 "below pulls the character back. 0 turns it off.");
+        .tooltip(
+            "Keeps the feet on the ground over ramp crests, slopes and small steps down: after "
+            "walking off the ground (without jumping), a walkable surface at most this far "
+            "below pulls the character back. 0 turns it off.");
     type.field("landingSpeed", &PlatformerController::landingSpeed)
         .range(0, 100, 0.1)
         .tooltip("Downward speed at which touching down raises the animation trigger 'landed'.");

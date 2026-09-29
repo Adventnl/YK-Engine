@@ -46,12 +46,14 @@ void checkAnimatedSprite(const Project &project, const AnimatedSprite &animated,
         return; // The animation asset itself is reported once, by its own check.
     if (!animated.controller.path.empty() && fileExists(project, animated.controller.path)) {
         auto controllerDocument = readJson(project, animated.controller.path);
-        auto controller = controllerDocument ? AnimationController::fromJson(controllerDocument.value())
-                                             : Result<AnimationController>(Error{controllerDocument.error()});
+        auto controller = controllerDocument
+                              ? AnimationController::fromJson(controllerDocument.value())
+                              : Result<AnimationController>(Error{controllerDocument.error()});
         if (controller) {
             if (auto fits = controller.value().validateAgainst(set.value()); !fits)
-                issues.push_back({Severity::Error, file,
-                                  where + ": controller does not fit the animation: " + fits.error()});
+                issues.push_back(
+                    {Severity::Error, file,
+                     where + ": controller does not fit the animation: " + fits.error()});
         }
     }
     if (sprite && !set.value().texture.empty() && !sprite->texture.path.empty() &&
@@ -70,9 +72,9 @@ void checkScene(const Project &project, const Scene &scene, const std::string &f
             // The scene holds the instance's whole data, so a missing prefab only breaks
             // Revert/Apply in the editor; still worth knowing about.
             if (!fileExists(project, source))
-                issues.push_back({Severity::Warning, file,
-                                  owner + " is an instance of prefab '" + source +
-                                      "', which does not exist"});
+                issues.push_back(
+                    {Severity::Warning, file,
+                     owner + " is an instance of prefab '" + source + "', which does not exist"});
             else if (source.size() < 9 || source.compare(source.size() - 9, 9, ".ykprefab") != 0)
                 issues.push_back({Severity::Warning, file,
                                   owner + " names '" + source + "' as its prefab, which is not a " +
@@ -181,8 +183,8 @@ std::vector<ProjectIssue> validateProject(const Project &project,
                                  : Result<TextureMeta>(Error{document.error()});
             if (!meta)
                 issues.push_back({Severity::Error, entry.path, meta.error()});
-            const std::string texture =
-                entry.path.substr(0, entry.path.size() - std::string(TextureMeta::extension).size());
+            const std::string texture = entry.path.substr(
+                0, entry.path.size() - std::string(TextureMeta::extension).size());
             if (!fileExists(project, texture))
                 issues.push_back({Severity::Warning, entry.path,
                                   "import settings for '" + texture + "', which does not exist"});

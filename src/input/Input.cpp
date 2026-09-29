@@ -53,9 +53,8 @@ ButtonState Keyboard::state(Key key) const {
 }
 namespace {
 constexpr std::array<std::string_view, gamepadButtonCount> buttonNames = {
-    "South",        "East",         "West",         "North",   "Back",
-    "Start",        "LeftStick",    "RightStick",   "LeftShoulder", "RightShoulder",
-    "DPadUp",       "DPadDown",     "DPadLeft",     "DPadRight"};
+    "South",      "East",         "West",          "North",  "Back",     "Start",    "LeftStick",
+    "RightStick", "LeftShoulder", "RightShoulder", "DPadUp", "DPadDown", "DPadLeft", "DPadRight"};
 constexpr std::array<std::string_view, gamepadAxisCount> axisNames = {
     "LeftX", "LeftY", "RightX", "RightY", "LeftTrigger", "RightTrigger"};
 } // namespace

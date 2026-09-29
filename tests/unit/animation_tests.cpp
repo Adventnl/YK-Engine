@@ -44,7 +44,7 @@ void clipPlayback() {
     CHECK(animator.frame() == 10); // 2 frames of 0.1s: 0.25s wraps back to the first frame.
     animator.tick(0.1F);
     CHECK(animator.frame() == 11);
-    CHECK(animator.play("loop") && animator.frame() == 11); // Re-playing keeps its place.
+    CHECK(animator.play("loop") && animator.frame() == 11);    // Re-playing keeps its place.
     CHECK(animator.restart("loop") && animator.frame() == 10); // restart() does not.
     CHECK(animator.play("once") && animator.frame() == 2);     // Switching restarts.
     animator.tick(-1.0F);
@@ -127,7 +127,8 @@ Result<AnimationSet> parseSet(const char *text) {
 void animationAssets() {
     const auto v1 = parseSet(R"({"format":"yk.animation","version":1,"columns":4,"rows":1,
         "clips":[{"name":"run","first":1,"count":3,"fps":10}]})");
-    CHECK(v1 && v1.value().columns == 4 && v1.value().clips.size() == 1 && v1.value().texture.empty());
+    CHECK(v1 && v1.value().columns == 4 && v1.value().clips.size() == 1 &&
+          v1.value().texture.empty());
     CHECK(v1 && v1.value().clips[0].loop && v1.value().clips[0].length() == 3);
 
     const auto v2 = parseSet(R"({"format":"yk.animation","version":2,"texture":"assets/hero.png",
@@ -155,7 +156,8 @@ void animationAssets() {
         const auto parsed = parseSet(text.c_str());
         return parsed ? std::string{} : parsed.error();
     };
-    CHECK(reason(R"([{"name":"a","first":2,"count":5,"fps":10}])").find("'a'") != std::string::npos);
+    CHECK(reason(R"([{"name":"a","first":2,"count":5,"fps":10}])").find("'a'") !=
+          std::string::npos);
     CHECK(!reason(R"([{"name":"a","first":2,"count":5,"fps":10}])").empty()); // Past the sheet.
     CHECK(!reason(R"([{"name":"a","frames":[0,9]}])").empty());
     CHECK(!reason(R"([{"name":"a","fps":0}])").empty());
@@ -164,10 +166,10 @@ void animationAssets() {
     CHECK(!reason(R"([{"name":"a","durations":"fast"}])").empty());
     CHECK(!reason(R"([{"name":"a","frames":[0,1],"durations":[0.1]}])").empty());
     CHECK(!reason(R"([{"name":"a","events":[{"frame":0}]}])").empty());
-    CHECK(!reason(R"([{"name":"a"},{"name":"a"}])").empty()); // Twice.
+    CHECK(!reason(R"([{"name":"a"},{"name":"a"}])").empty());            // Twice.
     CHECK(!reason(R"([{"name":"a","loop":false,"next":"b"}])").empty()); // Unknown follow-up.
-    CHECK(!reason(R"([{"first":0}])").empty());                // No name.
-    CHECK(!reason(R"([])").empty());                            // No clips.
+    CHECK(!reason(R"([{"first":0}])").empty());                          // No name.
+    CHECK(!reason(R"([])").empty());                                     // No clips.
     CHECK(!parseSet(R"({"format":"yk.animation","version":3,"clips":[{"name":"a"}]})"));
     CHECK(!parseSet(R"({"format":"other","version":1})"));
     CHECK(!parseSet(R"({"format":"yk.animation","version":2,"columns":0,"clips":[{"name":"a"}]})"));
@@ -238,7 +240,8 @@ void controllerDefinitions() {
         const AnimationController &c = controller.value();
         CHECK(c.states.size() == 6 && c.transitions.size() == 10 && c.parameters.size() == 7);
         CHECK(c.entry == "Idle" && c.state("Run")->speedParameter == "speedRatio");
-        CHECK(c.parameter("grounded")->initial == 1.0 && c.parameter("jumped")->type == ParameterType::Trigger);
+        CHECK(c.parameter("grounded")->initial == 1.0 &&
+              c.parameter("jumped")->type == ParameterType::Trigger);
         // "is true" conditions have no operator; "value":false compares to zero.
         CHECK(c.transitions[0].conditions[0].comparison == Comparison::Equal &&
               c.transitions[0].conditions[0].value == 1.0);
@@ -256,25 +259,49 @@ void controllerDefinitions() {
     }
 
     const auto reason = [](const char *body) {
-        const std::string text = std::string(R"({"format":"yk.animator","version":1,)") + body + "}";
+        const std::string text =
+            std::string(R"({"format":"yk.animator","version":1,)") + body + "}";
         const auto parsed = parseController(text.c_str());
         return parsed ? std::string{} : parsed.error();
     };
-    CHECK(!reason(R"("states":[])").empty());                                            // No states.
-    CHECK(!reason(R"("states":[{"name":"A","clip":"a"},{"name":"A","clip":"b"}])").empty()); // Duplicate.
-    CHECK(!reason(R"("states":[{"name":"*","clip":"a"}])").empty());                    // Reserved.
-    CHECK(!reason(R"("states":[{"name":"A"}])").empty());                                // No clip.
+    CHECK(!reason(R"("states":[])").empty()); // No states.
+    CHECK(!reason(R"("states":[{"name":"A","clip":"a"},{"name":"A","clip":"b"}])")
+               .empty());                                            // Duplicate.
+    CHECK(!reason(R"("states":[{"name":"*","clip":"a"}])").empty()); // Reserved.
+    CHECK(!reason(R"("states":[{"name":"A"}])").empty());            // No clip.
     CHECK(!reason(R"("entry":"Nope","states":[{"name":"A","clip":"a"}])").empty());
-    CHECK(!reason(R"("parameters":[{"name":"p","type":"vector"}],"states":[{"name":"A","clip":"a"}])").empty());
-    CHECK(!reason(R"("parameters":[{"name":"p"},{"name":"p"}],"states":[{"name":"A","clip":"a"}])").empty());
-    CHECK(!reason(R"("states":[{"name":"A","clip":"a"}],"transitions":[{"from":"A","to":"Z","exitTime":1}])").empty());
-    CHECK(!reason(R"("states":[{"name":"A","clip":"a"}],"transitions":[{"from":"Z","to":"A","exitTime":1}])").empty());
-    CHECK(!reason(R"("states":[{"name":"A","clip":"a"}],"transitions":[{"from":"A","to":"A"}])").empty()); // Fires at once.
-    CHECK(!reason(R"("states":[{"name":"A","clip":"a"}],"transitions":[{"from":"A","to":"A","exitTime":2}])").empty());
-    CHECK(!reason(R"("states":[{"name":"A","clip":"a"}],"transitions":[{"from":"A","to":"A","when":[{"parameter":"ghost"}]}])").empty());
-    CHECK(!reason(R"("parameters":[{"name":"p"}],"states":[{"name":"A","clip":"a"}],"transitions":[{"from":"A","to":"A","when":[{"parameter":"p","op":"~","value":1}]}])").empty());
+    CHECK(
+        !reason(R"("parameters":[{"name":"p","type":"vector"}],"states":[{"name":"A","clip":"a"}])")
+             .empty());
+    CHECK(!reason(R"("parameters":[{"name":"p"},{"name":"p"}],"states":[{"name":"A","clip":"a"}])")
+               .empty());
+    CHECK(
+        !reason(
+             R"("states":[{"name":"A","clip":"a"}],"transitions":[{"from":"A","to":"Z","exitTime":1}])")
+             .empty());
+    CHECK(
+        !reason(
+             R"("states":[{"name":"A","clip":"a"}],"transitions":[{"from":"Z","to":"A","exitTime":1}])")
+             .empty());
+    CHECK(!reason(R"("states":[{"name":"A","clip":"a"}],"transitions":[{"from":"A","to":"A"}])")
+               .empty()); // Fires at once.
+    CHECK(
+        !reason(
+             R"("states":[{"name":"A","clip":"a"}],"transitions":[{"from":"A","to":"A","exitTime":2}])")
+             .empty());
+    CHECK(
+        !reason(
+             R"("states":[{"name":"A","clip":"a"}],"transitions":[{"from":"A","to":"A","when":[{"parameter":"ghost"}]}])")
+             .empty());
+    CHECK(
+        !reason(
+             R"("parameters":[{"name":"p"}],"states":[{"name":"A","clip":"a"}],"transitions":[{"from":"A","to":"A","when":[{"parameter":"p","op":"~","value":1}]}])")
+             .empty());
     CHECK(!reason(R"("states":[{"name":"A","clip":"a","speedParameter":"ghost"}])").empty());
-    CHECK(!reason(R"("parameters":[{"name":"flag","type":"bool"}],"states":[{"name":"A","clip":"a","speedParameter":"flag"}])").empty());
+    CHECK(
+        !reason(
+             R"("parameters":[{"name":"flag","type":"bool"}],"states":[{"name":"A","clip":"a","speedParameter":"flag"}])")
+             .empty());
     CHECK(!parseController(R"({"format":"yk.animator","version":2})"));
 }
 
@@ -290,7 +317,8 @@ void stateMachine() {
     player.update(1.0F); // Harmless before start.
     CHECK(!player.start(nullptr));
 
-    // Parameters may be published before the player starts; declared defaults do not overwrite them.
+    // Parameters may be published before the player starts; declared defaults do not overwrite
+    // them.
     player.setFloat("speed", 3.0);
     CHECK(player.start(shared(locomotionAsset), sharedController(locomotionController)));
     CHECK(player.ready() && player.state() == "Idle" && player.clip() == "idle");
@@ -307,8 +335,8 @@ void stateMachine() {
     player.setFloat("speedRatio", 1.0);
     player.update(1.0F / 60.0F);
     CHECK(player.state() == "Run" && player.clip() == "run" && player.frame() == 2);
-    // The run clip is 10 fps; at speedRatio 1 it takes 0.1 s to reach its second frame, at 0.5 twice
-    // as long.
+    // The run clip is 10 fps; at speedRatio 1 it takes 0.1 s to reach its second frame, at 0.5
+    // twice as long.
     run(player, 5);
     CHECK(player.frame() == 2);
     run(player, 3);
@@ -394,7 +422,8 @@ void directClipPlayback() {
     AnimationController broken = *sharedController(locomotionController);
     broken.states[2].clip = "hover";
     AnimationPlayer other;
-    CHECK(!other.start(shared(locomotionAsset), std::make_shared<const AnimationController>(broken)));
+    CHECK(
+        !other.start(shared(locomotionAsset), std::make_shared<const AnimationController>(broken)));
     CHECK(!other.ready());
 
     // Frozen (speed 0 state) and exit-time-with-loop behaviours.

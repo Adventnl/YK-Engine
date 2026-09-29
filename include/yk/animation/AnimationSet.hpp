@@ -16,10 +16,11 @@ namespace yk {
 //      {"name":"step","first":24,"count":4,"fps":10,
 //       "events":[{"frame":1,"name":"footstep","sound":"assets/audio/step.wav"}]}]}
 //
-// Version 1 (no texture, only first/count/fps) still loads. Art can be replaced by editing this file
-// and the texture; gameplay only names clips (or drives an AnimationController that does).
+// Version 1 (no texture, only first/count/fps) still loads. Art can be replaced by editing this
+// file and the texture; gameplay only names clips (or drives an AnimationController that does).
 struct AnimationSet {
-    std::string texture; // Project-relative sheet the AnimatedSprite applies; empty keeps the sprite's own.
+    std::string
+        texture; // Project-relative sheet the AnimatedSprite applies; empty keeps the sprite's own.
     int columns{1};
     int rows{1};
     std::vector<AnimationClip> clips;

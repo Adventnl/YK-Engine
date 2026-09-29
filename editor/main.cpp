@@ -1,9 +1,9 @@
 // yk_editor: the YK Engine editor.
-#include "yk/gameplay/Gameplay.hpp"
 #include "ui/EditorApp.hpp"
 #include "ui/EditorDriver.hpp"
 #include "yk/core/Application.hpp"
 #include "yk/core/Log.hpp"
+#include "yk/gameplay/Gameplay.hpp"
 #include "yk/scene/RegistryDocs.hpp"
 #include <cstdio>
 #include <cstdlib>

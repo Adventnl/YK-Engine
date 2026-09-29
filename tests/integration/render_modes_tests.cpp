@@ -3,8 +3,8 @@
 // with .ykmeta sidecars, so the whole asset path (files, metadata, cache, filter) is exercised.
 #include "support/check.hpp"
 #include "yk/assets/AssetSource.hpp"
-#include "yk/core/Application.hpp"
 #include "yk/components/Effects.hpp"
+#include "yk/core/Application.hpp"
 #include "yk/core/FileIO.hpp"
 #include "yk/graphics/SceneRenderer.hpp"
 #include <SDL3/SDL.h>
@@ -31,9 +31,9 @@ bool writeBmp(const std::filesystem::path &path, int width, int height, Color ba
                         SDL_MapSurfaceRGBA(surface, background.r, background.g, background.b, 255));
     for (const Swatch &swatch : swatches) {
         const SDL_Rect rect{swatch.x, swatch.y, swatch.w, swatch.h};
-        SDL_FillSurfaceRect(surface, &rect,
-                            SDL_MapSurfaceRGBA(surface, swatch.color.r, swatch.color.g,
-                                               swatch.color.b, 255));
+        SDL_FillSurfaceRect(
+            surface, &rect,
+            SDL_MapSurfaceRGBA(surface, swatch.color.r, swatch.color.g, swatch.color.b, 255));
     }
     const bool saved = SDL_SaveBMP(surface, path.string().c_str());
     SDL_DestroySurface(surface);
@@ -176,8 +176,7 @@ class ModesLayer final : public ApplicationLayer {
     }
     Status render(Renderer &renderer) override {
         for (Case &c : cases_) {
-            const Camera2D camera =
-                SceneRenderer::cameraFor({c.center, 5.0F}, c.region.size);
+            const Camera2D camera = SceneRenderer::cameraFor({c.center, 5.0F}, c.region.size);
             RenderPass pass{camera, c.region, c.clear};
             if (auto begun = renderer.beginPass(pass); !begun)
                 return begun;
@@ -237,7 +236,10 @@ int main() {
                    {{1, 0, 1, 1, green}, {0, 1, 1, 1, blue}, {1, 1, 1, 1, yellow}}));
     // Nine-slice: red corners, green edges, blue middle (6x6 px, 2 px border).
     CHECK(writeBmp(root / "assets/frame.bmp", 6, 6, green,
-                   {{0, 0, 2, 2, red}, {4, 0, 2, 2, red}, {0, 4, 2, 2, red}, {4, 4, 2, 2, red},
+                   {{0, 0, 2, 2, red},
+                    {4, 0, 2, 2, red},
+                    {0, 4, 2, 2, red},
+                    {4, 4, 2, 2, red},
                     {2, 2, 2, 2, blue}}));
     // Sheet: two 2x2 cells, the left red over blue, the right green over yellow.
     CHECK(writeBmp(root / "assets/sheet.bmp", 4, 2, red,
@@ -245,16 +247,22 @@ int main() {
     const auto sidecar = [&](const char *name, const char *text) {
         CHECK(writeTextFileAtomic(root / "assets" / name, text));
     };
-    sidecar("tile.bmp.ykmeta", R"({"format":"yk.texture","version":1,"pixelsPerUnit":2,"filter":"nearest"})");
-    sidecar("frame.bmp.ykmeta", R"({"format":"yk.texture","version":1,"pixelsPerUnit":2,"filter":"nearest","border":[2,2,2,2]})");
-    sidecar("sheet.bmp.ykmeta", R"({"format":"yk.texture","version":1,"pixelsPerUnit":2,"filter":"nearest","columns":2,"rows":1})");
+    sidecar("tile.bmp.ykmeta",
+            R"({"format":"yk.texture","version":1,"pixelsPerUnit":2,"filter":"nearest"})");
+    sidecar(
+        "frame.bmp.ykmeta",
+        R"({"format":"yk.texture","version":1,"pixelsPerUnit":2,"filter":"nearest","border":[2,2,2,2]})");
+    sidecar(
+        "sheet.bmp.ykmeta",
+        R"({"format":"yk.texture","version":1,"pixelsPerUnit":2,"filter":"nearest","columns":2,"rows":1})");
 
     Project project = Project::create(root, "Render Modes");
     ProjectAssets assets(project);
     const std::filesystem::path capture = root / "modes.bmp";
     std::vector<Case> cases;
     {
-        auto app = Application::create({"render modes test", 4 * regionWidth, 3 * regionHeight, 0, 0});
+        auto app =
+            Application::create({"render modes test", 4 * regionWidth, 3 * regionHeight, 0, 0});
         CHECK(app);
         if (!app)
             return 1;
@@ -280,17 +288,17 @@ int main() {
         return yk::test::finish("render_modes");
 
     // 0: Tiled. Sprite spans x in [-1.75, 1.75], y in [-1, 1]; tiles start at its top-left, so tile
-    // (column, row) covers x = -1.75 + column, y = -1 + row. Each tile is red|green over blue|yellow
-    // (each of those quarter-tiles is 0.5 units).
+    // (column, row) covers x = -1.75 + column, y = -1 + row. Each tile is red|green over
+    // blue|yellow (each of those quarter-tiles is 0.5 units).
     {
         const Probe probe{image, cases[0]};
-        CHECK(probe.at(-1.5F, -0.75F, red));    // Tile 0, top left quarter.
-        CHECK(probe.at(-1.0F, -0.75F, green));  // Tile 0, top right quarter.
+        CHECK(probe.at(-1.5F, -0.75F, red));   // Tile 0, top left quarter.
+        CHECK(probe.at(-1.0F, -0.75F, green)); // Tile 0, top right quarter.
         CHECK(probe.at(-1.5F, -0.25F, blue));
         CHECK(probe.at(-1.0F, -0.25F, yellow));
-        CHECK(probe.at(-0.5F, -0.75F, red));    // Tile 1 repeats it.
-        CHECK(probe.at(-0.5F, 0.25F, red));     // Row 1.
-        CHECK(probe.at(1.0F, 0.75F, yellow));   // Tile 2, bottom right quarter.
+        CHECK(probe.at(-0.5F, -0.75F, red));  // Tile 1 repeats it.
+        CHECK(probe.at(-0.5F, 0.25F, red));   // Row 1.
+        CHECK(probe.at(1.0F, 0.75F, yellow)); // Tile 2, bottom right quarter.
         // The last column is half a tile: only its left half (red over blue) appears, at natural
         // size, not squashed.
         CHECK(probe.at(1.5F, -0.75F, red));
@@ -302,14 +310,14 @@ int main() {
     // 1: Sliced, 5 x 3 units: 1 x 1 corners, edges 3 x 1 (top/bottom) and 1 x 1 (left/right).
     {
         const Probe probe{image, cases[1]};
-        CHECK(probe.at(-2.25F, -1.25F, red));   // Corners.
+        CHECK(probe.at(-2.25F, -1.25F, red)); // Corners.
         CHECK(probe.at(2.25F, -1.25F, red));
         CHECK(probe.at(-2.25F, 1.25F, red));
         CHECK(probe.at(2.25F, 1.25F, red));
-        CHECK(probe.at(0.0F, -1.25F, green));   // Top edge.
-        CHECK(probe.at(0.0F, 1.25F, green));    // Bottom edge.
-        CHECK(probe.at(-2.25F, 0.0F, green));   // Left edge.
-        CHECK(probe.at(0.0F, 0.0F, blue));      // Middle.
+        CHECK(probe.at(0.0F, -1.25F, green)); // Top edge.
+        CHECK(probe.at(0.0F, 1.25F, green));  // Bottom edge.
+        CHECK(probe.at(-2.25F, 0.0F, green)); // Left edge.
+        CHECK(probe.at(0.0F, 0.0F, blue));    // Middle.
         CHECK(probe.at(1.0F, 0.4F, blue));
         // The corners keep their size: a point 1.4 units in from the corner is not red any more.
         CHECK(probe.at(-1.1F, -1.25F, green));
@@ -317,11 +325,11 @@ int main() {
     // 2: Sheet frames come from the texture's metadata; flipX mirrors within the frame.
     {
         const Probe probe{image, cases[2]};
-        CHECK(probe.at(-2.5F, -0.5F, red));     // Frame 0, top row red...
-        CHECK(probe.at(-2.5F, 0.5F, blue));     // ...bottom row blue.
-        CHECK(probe.at(0.0F, -0.5F, green));    // Frame 1: green over yellow.
+        CHECK(probe.at(-2.5F, -0.5F, red));  // Frame 0, top row red...
+        CHECK(probe.at(-2.5F, 0.5F, blue));  // ...bottom row blue.
+        CHECK(probe.at(0.0F, -0.5F, green)); // Frame 1: green over yellow.
         CHECK(probe.at(0.0F, 0.5F, yellow));
-        CHECK(probe.at(3.0F, -0.5F, red));      // Frame 0 mirrored: uniform rows stay as they are.
+        CHECK(probe.at(3.0F, -0.5F, red)); // Frame 0 mirrored: uniform rows stay as they are.
         CHECK(probe.at(3.0F, 0.5F, blue));
     }
     // 3: Additive: 100 + (100, 50, 0) per channel.
@@ -330,7 +338,7 @@ int main() {
     // 4 and 5: parallax. "World" moves with the camera, "Far" stays on the same pixel.
     {
         const Probe near{image, cases[4]}, moved{image, cases[5]};
-        CHECK(near.at(-2.0F, 0.0F, red));    // At its world position with the camera at 0.
+        CHECK(near.at(-2.0F, 0.0F, red)); // At its world position with the camera at 0.
         CHECK(near.at(2.0F, 0.0F, green));
         // The camera moved 6 units right. The world sprite (x = -2) is 8 units left of the camera,
         // outside the 10 unit wide view. The fixed one (parallax 0) is still 2 units right of the

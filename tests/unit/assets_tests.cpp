@@ -61,7 +61,8 @@ void textureMeta() {
     CHECK(merged.pixelsPerUnit == 32.0F && merged.filter == TextureFilter::Nearest);
     CHECK(merged.columns == 4 && merged.rows == 2 && merged.hasBorder());
 
-    const auto parsed = TextureDefaults::fromJson(Json::parse(R"({"pixelsPerUnit":16,"filter":"nearest"})").value());
+    const auto parsed = TextureDefaults::fromJson(
+        Json::parse(R"({"pixelsPerUnit":16,"filter":"nearest"})").value());
     CHECK(parsed && parsed.value().pixelsPerUnit == 16.0F &&
           parsed.value().filter == TextureFilter::Nearest);
     CHECK(!TextureDefaults::fromJson(Json::parse(R"({"filter":"x"})").value()));
@@ -80,7 +81,8 @@ void projectFile() {
     ActionSet set;
     set.name = "Solo";
     set.gamepad = 2;
-    set.actions = {{"Go", {InputBinding::fromKey(Key::Space), InputBinding::fromButton(GamepadButton::East)}}};
+    set.actions = {
+        {"Go", {InputBinding::fromKey(Key::Space), InputBinding::fromButton(GamepadButton::East)}}};
     project.input.sets.push_back(set);
     CHECK(project.save());
 
@@ -90,7 +92,8 @@ void projectFile() {
         CHECK(loaded.value().textures.pixelsPerUnit == 100.0F);
         CHECK(loaded.value().textures.filter == TextureFilter::Nearest);
         CHECK(loaded.value().input.sets.size() == 1);
-        CHECK(loaded.value().input.sets[0].name == "Solo" && loaded.value().input.sets[0].gamepad == 2);
+        CHECK(loaded.value().input.sets[0].name == "Solo" &&
+              loaded.value().input.sets[0].gamepad == 2);
         CHECK(loaded.value().input.sets[0].actions[0].bindings.size() == 2);
     }
 
@@ -106,12 +109,14 @@ void projectFile() {
     }
 
     // Broken sections are reported with the file name, not silently defaulted.
-    CHECK(writeTextFileAtomic(root / "project.ykproj",
-                              R"({"format":"yk.project","version":1,"input":{"sets":[{"name":"P","actions":[{"name":"A","bindings":["Key:Nope"]}]}]}})"));
+    CHECK(writeTextFileAtomic(
+        root / "project.ykproj",
+        R"({"format":"yk.project","version":1,"input":{"sets":[{"name":"P","actions":[{"name":"A","bindings":["Key:Nope"]}]}]}})"));
     const auto badInput = Project::load(root);
     CHECK(!badInput && badInput.error().find("project.ykproj") != std::string::npos);
-    CHECK(writeTextFileAtomic(root / "project.ykproj",
-                              R"({"format":"yk.project","version":1,"textures":{"filter":"blurry"}})"));
+    CHECK(writeTextFileAtomic(
+        root / "project.ykproj",
+        R"({"format":"yk.project","version":1,"textures":{"filter":"blurry"}})"));
     CHECK(!Project::load(root));
     std::filesystem::remove_all(root);
 }

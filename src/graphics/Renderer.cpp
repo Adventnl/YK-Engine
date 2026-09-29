@@ -83,8 +83,8 @@ struct Renderer::Impl {
     Vec2 passSize;        // Size of the viewport the current pass draws into.
     std::array<std::optional<TextureHandle>, 3> builtins;
     std::set<std::size_t> renderTargets; // Texture indices created by createRenderTarget.
-    FrameStats building; // Counted while the current frame is being drawn.
-    FrameStats finished; // The last completed frame.
+    FrameStats building;                 // Counted while the current frame is being drawn.
+    FrameStats finished;                 // The last completed frame.
     bool targetActive{};
     bool nativeResolution{};
     bool passOpen{};
@@ -185,7 +185,8 @@ Result<TextureHandle> Renderer::builtinTexture(BuiltinTexture kind) {
                                        (size / 2.0F);
                 const float falloff = std::clamp(1.0F - distance, 0.0F, 1.0F);
                 pixels[static_cast<std::size_t>(y * size + x)] = {
-                    255, 255, 255, static_cast<std::uint8_t>(std::lround(falloff * falloff * 255.0F))};
+                    255, 255, 255,
+                    static_cast<std::uint8_t>(std::lround(falloff * falloff * 255.0F))};
             }
         created = createTexture(size, size, pixels, TextureFilter::Linear);
     }

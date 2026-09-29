@@ -20,10 +20,10 @@ class ParticleEmitter final : public Component {
     AssetRef texture; // Empty: a placeholder `particleShape`.
     ParticleShape particleShape{ParticleShape::Soft};
     bool playOnStart{true};
-    bool loop{true};         // false: a one-shot that stops after `duration`.
-    float duration{1.0F};    // Seconds a non-looping emitter keeps emitting.
-    float rate{20.0F};       // Particles per second while playing.
-    int burst{0};            // Particles emitted at once when playback starts (and by emitBurst()).
+    bool loop{true};      // false: a one-shot that stops after `duration`.
+    float duration{1.0F}; // Seconds a non-looping emitter keeps emitting.
+    float rate{20.0F};    // Particles per second while playing.
+    int burst{0};         // Particles emitted at once when playback starts (and by emitBurst()).
     int maxParticles{100};
     Vec2 lifetime{0.5F, 1.0F}; // Seconds, minimum and maximum.
     EmitterArea area{EmitterArea::Point};
@@ -34,7 +34,7 @@ class ParticleEmitter final : public Component {
     Vec2 gravity{0.0F, 0.0F};  // m/s^2 (+Y is down).
     float drag{0.0F};          // Fraction of speed lost per second.
     Vec2 startSize{0.1F, 0.2F};
-    float endScale{0.0F}; // Size multiplier reached at the end of a particle's life.
+    float endScale{0.0F};           // Size multiplier reached at the end of a particle's life.
     Vec2 startRotation{0.0F, 0.0F}; // Degrees.
     Vec2 rotationSpeed{0.0F, 0.0F}; // Degrees per second.
     Color startColor{255, 255, 255, 255};

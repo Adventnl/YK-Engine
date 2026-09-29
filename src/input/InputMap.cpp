@@ -124,10 +124,8 @@ InputMap InputMap::standard() {
     first.name = "Player1";
     first.gamepad = 0;
     first.actions = {
-        {"MoveLeft",
-         {key(Key::A), pad(GamepadButton::DPadLeft), axis(GamepadAxis::LeftX, false)}},
-        {"MoveRight",
-         {key(Key::D), pad(GamepadButton::DPadRight), axis(GamepadAxis::LeftX, true)}},
+        {"MoveLeft", {key(Key::A), pad(GamepadButton::DPadLeft), axis(GamepadAxis::LeftX, false)}},
+        {"MoveRight", {key(Key::D), pad(GamepadButton::DPadRight), axis(GamepadAxis::LeftX, true)}},
         {"Jump", {key(Key::W), pad(GamepadButton::South)}},
         {"Interact", {key(Key::S), key(Key::E), pad(GamepadButton::West)}},
     };

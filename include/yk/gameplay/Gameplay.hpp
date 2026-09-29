@@ -54,8 +54,8 @@ void sendSignal(Scene &scene, EntityId source, const std::vector<EntityRef> &tar
 // accident.
 bool matchesActivator(const Entity &entity, const std::vector<std::string> &tags);
 
-// Spawns an effect prefab at `worldPosition` when `prefab` names one; a missing or invalid prefab is
-// reported once by the runtime and otherwise ignored, so effects can never break gameplay.
+// Spawns an effect prefab at `worldPosition` when `prefab` names one; a missing or invalid prefab
+// is reported once by the runtime and otherwise ignored, so effects can never break gameplay.
 void spawnEffect(GameContext &context, const AssetRef &prefab, Vec2 worldPosition);
 
 // Drives a kinematic body toward `worldTarget` within one tick (so riders are carried), or moves
@@ -189,8 +189,8 @@ class PressurePlate final : public Component {
 
 // Flips between on and off. By default that happens when a character touches it; with an
 // `interactAction` it happens when a character standing in it presses that action of its own
-// PlayerInput set (and sets the character's `interact` animation trigger). With an AnimatedSprite it
-// publishes the parameter `on`; without one it tints its sprite.
+// PlayerInput set (and sets the character's `interact` animation trigger). With an AnimatedSprite
+// it publishes the parameter `on`; without one it tints its sprite.
 class Lever final : public Component {
   public:
     std::vector<EntityRef> targets;

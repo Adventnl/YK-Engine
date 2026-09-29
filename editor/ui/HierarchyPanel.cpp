@@ -179,6 +179,58 @@ void drawRename(Tree &tree, EntityId id) {
 
 void drawRow(Tree &tree, EntityId id, bool flat);
 
+// The eye (hide in the editor) and lock (not pickable) buttons at the right end of a row. They
+// show when the row is hovered or when they are on, like the actions in VS Code's trees.
+void rowToggles(Tree &tree, EntityId id, const Entity &entity) {
+    if (!tree.doc)
+        return;
+    const float size = ImGui::GetTextLineHeight() + 2.0F;
+    const float gap = 2.0F;
+    const float left = ImGui::GetWindowContentRegionMax().x - 2.0F * size - gap - 6.0F;
+    const ImVec2 rowMin = ImGui::GetItemRectMin();
+    const bool rowHovered = ImGui::IsMouseHoveringRect(
+        rowMin,
+        {ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x, rowMin.y + size + 2.0F});
+    const struct {
+        const char *id;
+        Icon on, off;
+        bool value;
+        const char *tip;
+    } toggles[2] = {{"hide", Icon::EyeOff, Icon::Eye, entity.editorHidden(),
+                     "Hide in the editor (the running game still shows it)"},
+                    {"lock", Icon::Lock, Icon::Unlock, entity.locked(),
+                     "Lock: not selectable or movable in the scene view"}};
+    ImGui::SameLine(left);
+    const ImVec2 start = ImGui::GetCursorScreenPos();
+    for (int i = 0; i < 2; ++i) {
+        const auto &toggle = toggles[i];
+        ImGui::SetCursorScreenPos({start.x + static_cast<float>(i) * (size + gap), start.y});
+        if (!toggle.value && !rowHovered) {
+            ImGui::Dummy({size, size});
+            continue;
+        }
+        ImGui::PushID(toggle.id);
+        const bool clicked = ImGui::InvisibleButton("##toggle", {size, size});
+        const bool hovered = ImGui::IsItemHovered();
+        drawIcon(
+            *ImGui::GetWindowDrawList(), toggle.value ? toggle.on : toggle.off,
+            {start.x + static_cast<float>(i) * (size + gap) + size * 0.5F, start.y + size * 0.5F},
+            size * 0.8F,
+            packed(toggle.value ? vs::text
+                   : hovered    ? vs::text
+                                : vs::textDim));
+        markItem(std::string("hierarchy/") + toggle.id + "/" + entity.name());
+        tooltip(toggle.tip);
+        ImGui::PopID();
+        if (clicked) {
+            if (i == 0)
+                tree.doc->setEditorHidden({id}, !entity.editorHidden());
+            else
+                tree.doc->setLocked({id}, !entity.locked());
+        }
+    }
+}
+
 void drawChildren(Tree &tree, const Entity &entity) {
     for (const EntityId child : std::vector<EntityId>(entity.childIds()))
         drawRow(tree, child, false);
@@ -191,8 +243,10 @@ void drawRow(Tree &tree, EntityId id, bool flat) {
         return;
     tree.shown.push_back(id);
     const bool hasChildren = !entity->childIds().empty() && !flat;
+    // AllowOverlap: the eye and lock buttons sit on top of the row and must get their own clicks.
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanFullWidth |
-                               ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen;
+                               ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen |
+                               ImGuiTreeNodeFlags_AllowOverlap;
     if (!hasChildren)
         flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
     if (selected(tree, id))
@@ -253,6 +307,7 @@ void drawRow(Tree &tree, EntityId id, bool flat) {
         iconLabel(style.icon, name.c_str(), faded(style.color, alpha));
         ImGui::PopStyleColor();
     }
+    rowToggles(tree, id, *entity);
     if (hasChildren && open) {
         drawChildren(tree, *entity);
         ImGui::TreePop();
@@ -281,17 +336,9 @@ void header(EditorState &state, EditorDocument *doc) {
 } // namespace
 
 void hierarchyPanel(EditorState &state) {
-    if (!state.showHierarchy)
-        return;
-    if (!ImGui::Begin("Hierarchy", &state.showHierarchy)) {
-        ImGui::End();
-        return;
-    }
-    markWindow("panel/Hierarchy");
     const Scene *scene = state.visibleScene();
     if (!scene) {
         ImGui::TextDisabled(state.project ? "No scene is open." : "No project is open.");
-        ImGui::End();
         return;
     }
     EditorDocument *doc = state.playing() ? nullptr : state.document.get();
@@ -368,6 +415,5 @@ void hierarchyPanel(EditorState &state) {
                 doc->moveAmongSiblings(primary, 1);
         }
     }
-    ImGui::End();
 }
 } // namespace yk::editor::ui

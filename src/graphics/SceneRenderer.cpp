@@ -26,11 +26,11 @@ Color colliderColor(const Entity &entity, const Collider &collider) {
 // center, +x right, +y down, unrotated and unflipped; the sink flips, rotates and places them.
 struct QuadSink {
     Renderer &renderer;
-    Sprite proto;       // Texture, tint, blend, layer, depth and rotation are shared by all quads.
-    Vec2 center;        // World position of the sprite's center.
-    float angle{};      // Radians.
+    Sprite proto;  // Texture, tint, blend, layer, depth and rotation are shared by all quads.
+    Vec2 center;   // World position of the sprite's center.
+    float angle{}; // Radians.
     bool flip{};
-    bool culling{};     // Skip quads outside `visible` (only exact for unrotated sprites).
+    bool culling{}; // Skip quads outside `visible` (only exact for unrotated sprites).
     Rect visible;
     std::size_t quads{};
 
@@ -39,8 +39,7 @@ struct QuadSink {
         if (flip)
             middle.x = -middle.x;
         const Vec2 world = center + rotated(middle, angle);
-        if (culling &&
-            !overlaps({world - local.size * 0.5F, local.size}, visible))
+        if (culling && !overlaps({world - local.size * 0.5F, local.size}, visible))
             return success();
         Sprite quad = proto;
         quad.transform.position = world;
@@ -60,8 +59,10 @@ struct QuadSink {
             !(local.size.y > 0.0F))
             return success();
         constexpr float epsilon = 1e-4F;
-        const int columns = std::max(1, static_cast<int>(std::ceil(local.size.x / tileWorld.x - epsilon)));
-        const int rows = std::max(1, static_cast<int>(std::ceil(local.size.y / tileWorld.y - epsilon)));
+        const int columns =
+            std::max(1, static_cast<int>(std::ceil(local.size.x / tileWorld.x - epsilon)));
+        const int rows =
+            std::max(1, static_cast<int>(std::ceil(local.size.y / tileWorld.y - epsilon)));
         int first[2] = {0, 0}, last[2] = {columns - 1, rows - 1};
         if (culling) {
             // The visible rectangle in the sprite's frame (mirrored when flipped).
@@ -93,8 +94,9 @@ struct QuadSink {
                 const float h = std::min(tileWorld.y, local.position.y + local.size.y - y);
                 if (!(w > 0.0F) || !(h > 0.0F))
                     continue;
-                const Rect part{{source.position.x, source.position.y},
-                                {source.size.x * (w / tileWorld.x), source.size.y * (h / tileWorld.y)}};
+                const Rect part{
+                    {source.position.x, source.position.y},
+                    {source.size.x * (w / tileWorld.x), source.size.y * (h / tileWorld.y)}};
                 if (auto done = emit({{x, y}, {w, h}}, part); !done)
                     return done;
             }
@@ -104,9 +106,8 @@ struct QuadSink {
 };
 } // namespace
 
-Result<std::unique_ptr<SceneRenderer>> SceneRenderer::create(Renderer &renderer,
-                                                             const AssetSource *assets,
-                                                             TextureDefaults defaults) {
+Result<std::unique_ptr<SceneRenderer>>
+SceneRenderer::create(Renderer &renderer, const AssetSource *assets, TextureDefaults defaults) {
     auto font = BitmapFont::create(renderer);
     if (!font)
         return Error{font.error()};
@@ -254,22 +255,27 @@ Status SceneRenderer::drawSprite(Renderer &renderer, const Entity &entity,
         }
     }
 
-    QuadSink sink{renderer, {}, center, degreesToRadians(world.rotationDegrees),
+    QuadSink sink{renderer,
+                  {},
+                  center,
+                  degreesToRadians(world.rotationDegrees),
                   sprite.flipX != (world.scale.x < 0.0F),
-                  culling && world.rotationDegrees == 0.0F, visible, 0};
+                  culling && world.rotationDegrees == 0.0F,
+                  visible,
+                  0};
     sink.proto.tint = sprite.color;
     sink.proto.layer = sprite.layer;
     sink.proto.depth = sprite.order;
     sink.proto.transform.rotationDegrees = world.rotationDegrees;
     sink.proto.flipHorizontal = sink.flip;
-    sink.proto.blend = sprite.blend == SpriteBlend::Additive ? BlendMode::Additive : BlendMode::Alpha;
+    sink.proto.blend =
+        sprite.blend == SpriteBlend::Additive ? BlendMode::Additive : BlendMode::Alpha;
     const Rect whole{-size * 0.5F, size};
 
     // Placeholder shapes: no texture at all.
     if (sprite.texture.path.empty()) {
-        auto shape = renderer.builtinTexture(sprite.shape == SpriteShape::Ellipse
-                                                 ? BuiltinTexture::Circle
-                                                 : BuiltinTexture::White);
+        auto shape = renderer.builtinTexture(
+            sprite.shape == SpriteShape::Ellipse ? BuiltinTexture::Circle : BuiltinTexture::White);
         if (!shape)
             return Error{shape.error()};
         sink.proto.texture = shape.value();
@@ -318,8 +324,9 @@ Status SceneRenderer::drawSprite(Renderer &renderer, const Entity &entity,
         done = sink.tiles(whole, cell, tile, tooMany);
         if (done && tooMany) {
             log(LogLevel::Warning, "render",
-                "'" + entity.name() + "': too many tiles to draw (raise the tile size); "
-                                      "drawing it stretched");
+                "'" + entity.name() +
+                    "': too many tiles to draw (raise the tile size); "
+                    "drawing it stretched");
             done = sink.emit(whole, cell);
         }
         break;
@@ -352,13 +359,17 @@ Status SceneRenderer::drawSprite(Renderer &renderer, const Entity &entity,
         const float ys[4] = {whole.position.y, whole.position.y + top,
                              whole.position.y + size.y - bottom, whole.position.y + size.y};
         const float sx[4] = {cell.position.x, cell.position.x + edge(0),
-                             cell.position.x + cell.size.x - edge(2), cell.position.x + cell.size.x};
+                             cell.position.x + cell.size.x - edge(2),
+                             cell.position.x + cell.size.x};
         const float sy[4] = {cell.position.y, cell.position.y + edge(1),
-                             cell.position.y + cell.size.y - edge(3), cell.position.y + cell.size.y};
+                             cell.position.y + cell.size.y - edge(3),
+                             cell.position.y + cell.size.y};
         for (int row = 0; row < 3 && done; ++row) {
             for (int column = 0; column < 3 && done; ++column) {
-                const Rect local{{xs[column], ys[row]}, {xs[column + 1] - xs[column], ys[row + 1] - ys[row]}};
-                const Rect source{{sx[column], sy[row]}, {sx[column + 1] - sx[column], sy[row + 1] - sy[row]}};
+                const Rect local{{xs[column], ys[row]},
+                                 {xs[column + 1] - xs[column], ys[row + 1] - ys[row]}};
+                const Rect source{{sx[column], sy[row]},
+                                  {sx[column + 1] - sx[column], sy[row + 1] - sy[row]}};
                 if (!(local.size.x > 0.0F) || !(local.size.y > 0.0F) || !(source.size.x > 0.0F) ||
                     !(source.size.y > 0.0F))
                     continue;
@@ -387,11 +398,10 @@ Status SceneRenderer::drawParticles(Renderer &renderer, const Entity &entity,
         return success();
     Sprite proto;
     if (emitter.texture.path.empty()) {
-        auto builtin = renderer.builtinTexture(emitter.particleShape == ParticleShape::Soft
-                                                   ? BuiltinTexture::Glow
-                                               : emitter.particleShape == ParticleShape::Circle
-                                                   ? BuiltinTexture::Circle
-                                                   : BuiltinTexture::White);
+        auto builtin = renderer.builtinTexture(
+            emitter.particleShape == ParticleShape::Soft     ? BuiltinTexture::Glow
+            : emitter.particleShape == ParticleShape::Circle ? BuiltinTexture::Circle
+                                                             : BuiltinTexture::White);
         if (!builtin)
             return Error{builtin.error()};
         proto.texture = builtin.value();
@@ -415,9 +425,10 @@ Status SceneRenderer::drawParticles(Renderer &renderer, const Entity &entity,
         const float size = particle.size * lerp(1.0F, emitter.endScale, t);
         if (!(size > 0.0F))
             continue;
-        const Vec2 position = emitter.localSpace ? transformPoint(world, particle.position)
-                                                 : particle.position;
-        if (culling && !overlaps({position - Vec2{size, size} * 0.71F, Vec2{size, size} * 1.42F}, visible))
+        const Vec2 position =
+            emitter.localSpace ? transformPoint(world, particle.position) : particle.position;
+        if (culling &&
+            !overlaps({position - Vec2{size, size} * 0.71F, Vec2{size, size} * 1.42F}, visible))
             continue;
         Sprite quad = proto;
         quad.transform.position = position;
@@ -441,7 +452,8 @@ Status SceneRenderer::drawLight(Renderer &renderer, const Entity &entity, const 
         return success();
     const Transform2D world = entity.worldTransform();
     const Vec2 center = transformPoint(world, light.offset);
-    const float radius = light.radius * std::max(std::fabs(world.scale.x), std::fabs(world.scale.y));
+    const float radius =
+        light.radius * std::max(std::fabs(world.scale.x), std::fabs(world.scale.y));
     if (culling && !overlaps({center - Vec2{radius, radius}, Vec2{radius, radius} * 2.0F}, visible))
         return success();
     auto glow = renderer.builtinTexture(BuiltinTexture::Glow);
@@ -471,7 +483,8 @@ Status SceneRenderer::drawWorld(Renderer &renderer, const Scene &scene, const Wo
     static const std::type_index lightType(typeid(Light2D));
     for (const EntityId id : scene.orderedIds()) {
         const Entity *entity = scene.find(id);
-        if (!entity || !entity->activeInHierarchy())
+        if (!entity || !entity->activeInHierarchy() ||
+            (view.editorView && entity->hiddenInHierarchy()))
             continue;
         for (const auto &component : entity->components()) {
             if (!component->enabled)
@@ -486,9 +499,9 @@ Status SceneRenderer::drawWorld(Renderer &renderer, const Scene &scene, const Wo
                 continue;
             }
             if (type == lightType) {
-                if (auto drawn = drawLight(renderer, *entity,
-                                           static_cast<const Light2D &>(*component), visible,
-                                           culling);
+                if (auto drawn =
+                        drawLight(renderer, *entity, static_cast<const Light2D &>(*component),
+                                  visible, culling);
                     !drawn)
                     return drawn;
                 continue;

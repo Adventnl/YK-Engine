@@ -117,8 +117,8 @@ Status AnimationController::validate() const {
                          " has no condition and no exit time, so it would fire at once"};
         for (const TransitionCondition &condition : transition.conditions)
             if (!parameter(condition.parameter))
-                return Error{"Transition " + label + ": unknown parameter '" +
-                             condition.parameter + "'"};
+                return Error{"Transition " + label + ": unknown parameter '" + condition.parameter +
+                             "'"};
     }
     return success();
 }
@@ -202,7 +202,8 @@ Result<AnimationController> AnimationController::fromJson(const Json &json) {
     for (const Json &item : json.get("parameters").items()) {
         AnimatorParameter parameterValue;
         parameterValue.name = item.get("name").asString();
-        const std::string type = item.get("type").isString() ? item.get("type").asString() : "float";
+        const std::string type =
+            item.get("type").isString() ? item.get("type").asString() : "float";
         if (type == "float")
             parameterValue.type = ParameterType::Float;
         else if (type == "bool")
@@ -213,8 +214,8 @@ Result<AnimationController> AnimationController::fromJson(const Json &json) {
             return Error{"Parameter '" + parameterValue.name + "': unknown type '" + type +
                          "' (use float, bool or trigger)"};
         const Json &initial = item.get("default");
-        parameterValue.initial = initial.isBool() ? (initial.asBool() ? 1.0 : 0.0)
-                                                  : initial.asNumber(0.0);
+        parameterValue.initial =
+            initial.isBool() ? (initial.asBool() ? 1.0 : 0.0) : initial.asNumber(0.0);
         controller.parameters.push_back(std::move(parameterValue));
     }
     for (const Json &item : json.get("states").items()) {
@@ -255,8 +256,8 @@ Result<AnimationController> AnimationController::fromJson(const Json &json) {
             } else {
                 // No operator: a bool or trigger that is true (or, with "value", equal to it).
                 condition.comparison = Comparison::Equal;
-                condition.value = value.isBool() ? (value.asBool() ? 1.0 : 0.0)
-                                                 : value.asNumber(1.0);
+                condition.value =
+                    value.isBool() ? (value.asBool() ? 1.0 : 0.0) : value.asNumber(1.0);
             }
             transition.conditions.push_back(std::move(condition));
         }

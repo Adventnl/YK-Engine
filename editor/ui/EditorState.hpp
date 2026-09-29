@@ -4,12 +4,14 @@
 #include "core/EditorProject.hpp"
 #include "core/PlaySession.hpp"
 #include "core/SceneInteraction.hpp"
+#include "core/WorkbenchLayout.hpp"
 #include "yk/audio/SdlAudio.hpp"
 #include "yk/graphics/GameView.hpp"
 #include "yk/graphics/Renderer.hpp"
 #include "yk/graphics/SceneRenderer.hpp"
 #include <filesystem>
 #include <functional>
+#include <map>
 #include <memory>
 #include <optional>
 #include <string>
@@ -53,8 +55,11 @@ struct ViewOptions {
     bool allLinks{false};
     bool labels{false};
     bool cameraFrame{true};
+    bool spriteBounds{false};
+    bool pivots{false};
     bool gamePhysicsDebug{false};
     bool gameColliders{false};
+    bool gameStats{false};
 };
 
 // A folder listing for the project pickers.
@@ -95,16 +100,33 @@ struct DialogState {
     std::string message; // Body of Message and Unsaved dialogs.
     std::string error;   // Shown in red under the inputs.
     DirectoryBrowser browser;
-    EntityId entity;                    // The entity a prefab is saved from.
-    std::function<void()> continuation; // What the Unsaved dialog resumes.
-    std::vector<ProjectIssue> issues;   // Validation results.
-    std::optional<Project> draft;       // Project settings being edited; applied on Save.
+    EntityId entity;                        // The entity a prefab is saved from.
+    std::function<void()> continuation;     // What the Unsaved dialog resumes.
+    std::vector<std::string> unsavedScenes; // What the Unsaved dialog offers to save.
+    std::vector<ProjectIssue> issues;       // Validation results.
+    std::optional<Project> draft;           // Project settings being edited; applied on Save.
 };
 
 // Something the user asked for that the entity-reference field is waiting on ("click the door").
 struct PickRequest {
     std::string prompt;
     std::function<void(EntityId)> onPick;
+};
+
+// A scene that is open in a tab but is not the one being edited right now. Switching tabs swaps it
+// with EditorState::document, so the rest of the editor only ever deals with one document.
+struct BackgroundScene {
+    std::unique_ptr<EditorDocument> document;
+    ViewCamera camera; // Where its scene view was looking.
+};
+
+// Which editor the first group shows when it has more than one tab.
+enum class EditorFocus { Scene, Game };
+
+// One line of the Build Output panel.
+struct OutputLine {
+    LogLevel level{LogLevel::Info};
+    std::string text;
 };
 
 // Everything the editor knows at run time, and the actions that change it. Panels read this and
@@ -123,7 +145,11 @@ class EditorState {
     RecentProjects recent;
 
     std::unique_ptr<EditorProject> project;
+    // The scene being edited (the active tab). The other open scenes wait in `background`;
+    // `sceneTabs` lists them all, in tab order.
     std::unique_ptr<EditorDocument> document;
+    std::vector<std::string> sceneTabs;
+    std::map<std::string, BackgroundScene> background;
     SceneInteraction interaction; // The scene view's camera, tool and drags; outlives documents.
     std::unique_ptr<PlaySession> play;
     EntityId playSelection; // Inspected entity while playing (read-only).
@@ -132,11 +158,18 @@ class EditorState {
     ViewOptions view;
     DialogState dialog;
     std::optional<PickRequest> pick;
-    std::string focusRequest; // Window to focus next frame ("Game", "Scene").
-    bool showHierarchy{true}, showInspector{true}, showAssets{true}, showConsole{true};
-    bool showScene{true}, showGame{true};
-    bool resetLayout{};
-    bool frameRequested{}; // Frame the whole scene once the scene view knows its size.
+    EditorFocus editorFocus{EditorFocus::Scene};
+    bool focusGame{}; // Play just started: give the game view the keyboard.
+    WorkbenchLayout layout;
+    WorkbenchLayout savedLayout;        // What is on disk; the layout is written when it differs.
+    std::vector<ProjectIssue> problems; // Result of the last project check (Problems panel).
+    bool problemsChecked{};
+    std::vector<float> frameMilliseconds; // Recent editor frame times, for the Profiler.
+    static constexpr std::size_t frameMillisecondsCapacity = 240;
+    std::vector<OutputLine> output; // Build Output panel.
+    std::string componentFilter, prefabFilter;
+    std::string selectedAsset; // Project file picked in the Explorer (Inspector shows it).
+    bool frameRequested{};     // Frame the whole scene once the scene view knows its size.
     bool quit{};
     float framesPerSecond{};
     std::string hierarchyFilter;
@@ -163,13 +196,29 @@ class EditorState {
     Status createProject(const std::filesystem::path &directory, const std::string &name);
     Status openProject(const std::filesystem::path &fileOrDirectory);
     void closeProject();
+    // Opens a scene in a tab (or shows its tab when it is already open).
     Status openScene(const std::string &path);
     Status newScene(const std::string &path);
+    // Makes an open scene the one being edited.
+    Status activateScene(const std::string &path);
+    // Closes a scene's tab, asking about unsaved changes first.
+    void closeScene(const std::string &path);
+    // True when any open scene has changes that are not saved.
+    bool anyDirty() const;
+    std::vector<std::string> dirtyScenes() const;
     Status saveScene();
+    Status saveAll();
+    // Saves the listed open scenes (the ones that have unsaved changes).
+    Status saveScenes(const std::vector<std::string> &paths);
     Status saveSceneAs(const std::string &path);
     Status savePrefab(EntityId entity, const std::string &path);
     Status instantiatePrefab(const std::string &path, Vec2 world);
+    // Checks the project and shows the result in the Problems panel.
     void validateProject();
+    // Checks the project quietly (after opening or saving); the Problems panel and status bar
+    // update.
+    void refreshProblems();
+    void addOutput(LogLevel level, const std::string &text); // A line for the Build Output panel.
     // Copies the project and the player next to it into a new folder (see
     // EditorProject::exportGame).
     Status exportGame(const std::filesystem::path &destination);
@@ -195,6 +244,7 @@ class EditorState {
 
   private:
     void bindDocument();
+    void stashActive();
     Status attachProject(std::unique_ptr<EditorProject> opened);
 };
 

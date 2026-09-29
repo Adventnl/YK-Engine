@@ -226,16 +226,10 @@ void unsavedDialog(EditorState &state) {
             continuation();
     };
     if (ImGui::Button("Save", {110.0F, 0.0F})) {
-        if (state.document && !state.document->path().empty()) {
-            if (auto saved = state.project->saveScene(*state.document); saved) {
-                resume();
-            } else {
-                dialog.error = saved.error();
-            }
-        } else if (state.document) {
-            // An untitled scene needs a name first; ask, then the user repeats the action.
-            closeDialog(state);
-            showDialog(state, DialogKind::SaveSceneAs);
+        if (auto saved = state.saveScenes(dialog.unsavedScenes); saved) {
+            resume();
+        } else {
+            dialog.error = saved.error();
         }
     }
     markItem("dialog/Unsaved/save");

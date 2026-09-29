@@ -26,8 +26,8 @@ class PlayerInput final : public Component {
 
 // ----- Rendering ---------------------------------------------------------------------------
 enum class SpriteShape { Rectangle, Ellipse };
-// Simple stretches the texture over `size`. Tiled repeats it (cropping the last row and column) so a
-// platform can be resized without distorting its art. Sliced keeps the corners of a nine-slice
+// Simple stretches the texture over `size`. Tiled repeats it (cropping the last row and column) so
+// a platform can be resized without distorting its art. Sliced keeps the corners of a nine-slice
 // texture (its .ykmeta `border`) at their natural size and fills the edges and the middle.
 enum class SpriteDrawMode { Simple, Tiled, Sliced };
 enum class SpriteFill { Stretch, Tile }; // How a Sliced sprite fills its edges and middle.
@@ -46,7 +46,8 @@ class SpriteRenderer final : public Component {
     float order{0.0F};
     bool flipX{false};
     bool visible{true};
-    int columns{1}; // Sprite sheet grid; `frame` selects the cell. 1 x 1 defers to the texture's meta.
+    int columns{
+        1}; // Sprite sheet grid; `frame` selects the cell. 1 x 1 defers to the texture's meta.
     int rows{1};
     int frame{0};
     SpriteDrawMode drawMode{SpriteDrawMode::Simple};
@@ -146,7 +147,7 @@ class Collider final : public Component {
     ColliderShape shape{ColliderShape::Box};
     Vec2 size{1.0F, 1.0F};
     Vec2 offset{0.0F, 0.0F};
-    bool isTrigger{false};        // Overlap events only, no physical response.
+    bool isTrigger{false}; // Overlap events only, no physical response.
     // A jump-through platform: it blocks only what comes down onto its top side; things below or
     // beside it, or moving up through it, pass. Not for triggers.
     bool oneWay{false};
@@ -217,7 +218,8 @@ class AnimatedSprite final : public Component {
     float speed{1.0F};   // Playback speed multiplier for everything.
     bool playOnStart{true};
     // The sprite is mirrored when this parameter is negative ("facing" is published by the
-    // platformer controller); empty never flips. Set artFacesLeft when the art is drawn facing left.
+    // platformer controller); empty never flips. Set artFacesLeft when the art is drawn facing
+    // left.
     std::string flipParameter{"facing"};
     bool artFacesLeft{false};
     static void describe(TypeBuilder<AnimatedSprite> &type);

@@ -1,6 +1,7 @@
 #pragma once
 #include "core/EditorDocument.hpp"
 #include "imgui.h"
+#include "ui/Theme.hpp"
 #include "yk/core/Color.hpp"
 #include "yk/core/Math.hpp"
 #include <functional>
@@ -39,7 +40,7 @@ inline ImU32 faded(Color color, float alpha) {
 }
 
 namespace palette {
-inline constexpr Color accent{86, 156, 214, 255};
+inline constexpr Color accent{0, 120, 212, 255};
 inline constexpr Color selection{255, 196, 64, 255};
 inline constexpr Color selectionSecondary{255, 226, 140, 255};
 inline constexpr Color hover{255, 255, 255, 110};
@@ -51,16 +52,14 @@ inline constexpr Color linkOut{90, 210, 255, 255};
 inline constexpr Color linkIn{255, 150, 90, 255};
 inline constexpr Color ghost{120, 230, 170, 255};
 inline constexpr Color camera{200, 200, 255, 200};
-inline constexpr Color info{170, 180, 200, 255};
-inline constexpr Color warning{240, 190, 80, 255};
-inline constexpr Color error{240, 100, 90, 255};
-inline constexpr Color good{110, 210, 130, 255};
-inline constexpr Color dim{140, 146, 160, 255};
+inline constexpr Color info{55, 148, 255, 255};
+inline constexpr Color warning{204, 167, 0, 255};
+inline constexpr Color error{241, 76, 76, 255};
+inline constexpr Color good{115, 201, 145, 255};
+inline constexpr Color dim{157, 157, 157, 255};
 } // namespace palette
 
-// Dark theme, compact spacing.
-void applyTheme();
-
+// Every icon is a Codicons glyph (see Theme.hpp); the enum keeps call sites readable.
 enum class Icon {
     Move,
     Resize,
@@ -70,13 +69,16 @@ enum class Icon {
     Step,
     Stop,
     Restart,
+    Snap,
     Grid,
     Plus,
     Cross,
     Search,
     Eye,
+    EyeOff,
     Link,
     Folder,
+    FolderOpen,
     File,
     Scene,
     Prefab,
@@ -88,17 +90,64 @@ enum class Icon {
     Info,
     Dot,
     Save,
+    SaveAll,
     Undo,
     Redo,
-    Target
+    Target,
+    Explorer,
+    Hierarchy,
+    Prefabs,
+    Components,
+    Build,
+    Settings,
+    SidebarLeft,
+    SidebarLeftOff,
+    Panel,
+    PanelOff,
+    SidebarRight,
+    SidebarRightOff,
+    Lock,
+    Unlock,
+    ChevronRight,
+    ChevronDown,
+    ChevronUp,
+    More,
+    Trash,
+    Copy,
+    Paste,
+    Edit,
+    Filter,
+    Refresh,
+    Output,
+    Console,
+    Profiler,
+    Check,
+    Tag,
+    Layers,
+    ZoomIn,
+    ZoomOut,
+    Split,
+    Animation,
+    Code,
+    Data
 };
-// Draws a vector icon inside a `size` square centered at `center`.
+// The Codicons glyph (UTF-8) for an icon.
+const char *glyphOf(Icon icon);
+// Draws an icon inside a `size` square centered at `center`.
 void drawIcon(ImDrawList &list, Icon icon, ImVec2 center, float size, ImU32 color);
-// Square button showing an icon. `active` draws it as toggled on. Returns true when clicked.
+// Flat square button showing an icon. `active` draws it as toggled on. Returns true when clicked.
 bool iconButton(const char *id, Icon icon, bool active, const char *tooltip, ImU32 tint = 0,
-                float size = 28.0F);
+                float size = 26.0F);
 // Text with a small icon in front, for list rows.
 void iconLabel(Icon icon, const char *text, ImU32 tint = 0);
+
+// Style for the contents of a popup menu: VS Code's solid blue highlight under the pointer.
+struct PopupLook {
+    PopupLook();
+    ~PopupLook();
+    PopupLook(const PopupLook &) = delete;
+    PopupLook &operator=(const PopupLook &) = delete;
+};
 
 // Records where interesting widgets ended up on screen, by stable name, so a scripted driver can
 // click "toolbar/Play" instead of guessing pixels. Recording costs nothing while disabled.

@@ -1,4 +1,5 @@
 #include "ui/EditorState.hpp"
+#include "yk/core/FileIO.hpp"
 #include "yk/core/Log.hpp"
 #include "yk/scene/SceneSerializer.hpp"
 #include <SDL3/SDL.h>
@@ -54,6 +55,12 @@ EditorState::EditorState(const ComponentRegistry &registryRef, EditorOptions opt
     std::error_code error;
     std::filesystem::create_directories(settingsDirectory, error);
     recent.load();
+    if (options.persistLayout) {
+        if (auto text = readTextFile(settingsDirectory / "workbench.json"))
+            if (auto json = Json::parse(text.value()))
+                layout = WorkbenchLayout::fromJson(json.value());
+    }
+    savedLayout = layout;
 }
 
 Status EditorState::initialize(Renderer &rendererRef) {
@@ -102,6 +109,11 @@ Status EditorState::attachProject(std::unique_ptr<EditorProject> opened) {
     stopPlay();
     interaction.bind(nullptr);
     document.reset();
+    background.clear();
+    sceneTabs.clear();
+    problems.clear();
+    problemsChecked = false;
+    selectedAsset.clear();
     project = std::move(opened);
     auto renderers =
         SceneRenderer::create(*renderer, &project->assets(), project->project().textures);
@@ -125,6 +137,7 @@ Status EditorState::attachProject(std::unique_ptr<EditorProject> opened) {
         else
             log(LogLevel::Warning, "editor", "Start scene '" + start + "' does not exist");
     }
+    refreshProblems();
     return success();
 }
 
@@ -150,26 +163,124 @@ void EditorState::closeProject() {
     stopPlay();
     interaction.bind(nullptr);
     document.reset();
+    background.clear();
+    sceneTabs.clear();
+    problems.clear();
+    problemsChecked = false;
+    selectedAsset.clear();
     project.reset();
     audio.reset();
     if (auto created = SceneRenderer::create(*renderer, nullptr))
         sceneRenderer = std::move(created.value());
 }
 
+// Moves the edited scene (if any) to the background so another one can take its place.
+void EditorState::stashActive() {
+    if (!document)
+        return;
+    const std::string key = document->path(); // Read it before the document is moved away.
+    BackgroundScene entry{std::move(document), interaction.camera};
+    background[key] = std::move(entry);
+}
+
 Status EditorState::openScene(const std::string &path) {
     if (!project)
         return Error{"No project is open"};
     stopPlay();
+    if (document && document->path() == path) {
+        editorFocus = EditorFocus::Scene;
+        return success();
+    }
+    if (background.contains(path))
+        return activateScene(path);
     auto opened = project->openScene(path);
     if (!opened) {
         log(LogLevel::Error, "editor", opened.error());
         return Error{opened.error()};
     }
+    stashActive();
     interaction.bind(nullptr);
     document = std::move(opened.value());
     bindDocument();
+    if (std::find(sceneTabs.begin(), sceneTabs.end(), path) == sceneTabs.end())
+        sceneTabs.push_back(path);
+    editorFocus = EditorFocus::Scene;
     log(LogLevel::Info, "editor", "Opened scene " + path);
     return success();
+}
+
+Status EditorState::activateScene(const std::string &path) {
+    if (document && document->path() == path) {
+        editorFocus = EditorFocus::Scene;
+        return success();
+    }
+    const auto found = background.find(path);
+    if (found == background.end())
+        return Error{"'" + path + "' is not open"};
+    stopPlay();
+    BackgroundScene next = std::move(found->second);
+    background.erase(found);
+    stashActive();
+    interaction.bind(nullptr);
+    document = std::move(next.document);
+    bindDocument();
+    interaction.camera = next.camera; // bind() asked for a fresh framing; the tab keeps its view.
+    frameRequested = false;
+    editorFocus = EditorFocus::Scene;
+    return success();
+}
+
+void EditorState::closeScene(const std::string &path) {
+    const auto removeNow = [this, path] {
+        const auto tab = std::find(sceneTabs.begin(), sceneTabs.end(), path);
+        const std::size_t index =
+            tab == sceneTabs.end() ? 0 : static_cast<std::size_t>(tab - sceneTabs.begin());
+        if (tab != sceneTabs.end())
+            sceneTabs.erase(tab);
+        if (document && document->path() == path) {
+            stopPlay();
+            interaction.bind(nullptr);
+            document.reset();
+            if (!sceneTabs.empty())
+                activateScene(sceneTabs[std::min(index, sceneTabs.size() - 1)]);
+        } else {
+            background.erase(path);
+        }
+    };
+    const EditorDocument *target = nullptr;
+    if (document && document->path() == path)
+        target = document.get();
+    else if (const auto found = background.find(path); found != background.end())
+        target = found->second.document.get();
+    if (target && target->dirty() && !(playing() && target == document.get())) {
+        dialog = {};
+        dialog.kind = DialogKind::Unsaved;
+        dialog.title = "Unsaved Changes";
+        dialog.message = "'" + target->displayName() + "' has changes that are not saved.";
+        dialog.unsavedScenes = {path};
+        dialog.continuation = removeNow;
+        dialog.needsOpen = true;
+        return;
+    }
+    removeNow();
+}
+
+bool EditorState::anyDirty() const {
+    return !dirtyScenes().empty();
+}
+
+std::vector<std::string> EditorState::dirtyScenes() const {
+    std::vector<std::string> names;
+    for (const std::string &path : sceneTabs) {
+        const EditorDocument *doc = nullptr;
+        if (document && document->path() == path)
+            doc = document.get();
+        else if (const auto found = background.find(path); found != background.end())
+            doc = found->second.document.get();
+        if (doc && doc->dirty())
+            names.push_back(path);
+    }
+    return names;
 }
 
 Status EditorState::newScene(const std::string &path) {
@@ -181,9 +292,13 @@ Status EditorState::newScene(const std::string &path) {
         log(LogLevel::Error, "editor", created.error());
         return Error{created.error()};
     }
+    stashActive();
     interaction.bind(nullptr);
     document = std::move(created.value());
     bindDocument();
+    if (std::find(sceneTabs.begin(), sceneTabs.end(), document->path()) == sceneTabs.end())
+        sceneTabs.push_back(document->path());
+    editorFocus = EditorFocus::Scene;
     log(LogLevel::Info, "editor", "Created scene " + document->path());
     return success();
 }
@@ -203,16 +318,48 @@ Status EditorState::saveScene() {
     if (!saved) {
         log(LogLevel::Error, "editor", saved.error());
         message("Could not save the scene", saved.error());
+    } else {
+        refreshProblems();
     }
     return saved;
+}
+
+Status EditorState::saveAll() {
+    return saveScenes(dirtyScenes());
+}
+
+Status EditorState::saveScenes(const std::vector<std::string> &paths) {
+    if (!project)
+        return Error{"No project is open"};
+    for (const std::string &path : paths) {
+        EditorDocument *doc = document && document->path() == path ? document.get() : nullptr;
+        if (!doc)
+            if (const auto found = background.find(path); found != background.end())
+                doc = found->second.document.get();
+        if (!doc || !doc->dirty())
+            continue;
+        if (auto saved = project->saveScene(*doc); !saved) {
+            log(LogLevel::Error, "editor", saved.error());
+            return saved;
+        }
+    }
+    refreshProblems();
+    return success();
 }
 
 Status EditorState::saveSceneAs(const std::string &path) {
     if (!project || !document)
         return Error{"There is no scene to save"};
+    const std::string before = document->path();
     auto saved = project->saveSceneAs(*document, path);
-    if (!saved)
+    if (!saved) {
         log(LogLevel::Error, "editor", saved.error());
+        return saved;
+    }
+    const std::string after = document->path();
+    for (std::string &tab : sceneTabs)
+        if (tab == before)
+            tab = after;
     return saved;
 }
 
@@ -241,16 +388,31 @@ Status EditorState::instantiatePrefab(const std::string &path, Vec2 world) {
     return success();
 }
 
+void EditorState::refreshProblems() {
+    if (!project)
+        return;
+    problems = project->validate();
+    problemsChecked = true;
+}
+
 void EditorState::validateProject() {
     if (!project)
         return;
-    dialog = {};
-    dialog.kind = DialogKind::Validation;
-    dialog.title = "Project Validation";
-    dialog.issues = project->validate();
-    dialog.needsOpen = true;
+    refreshProblems();
+    std::size_t errors = 0;
+    for (const ProjectIssue &issue : problems)
+        errors += issue.severity == ProjectIssue::Severity::Error ? 1 : 0;
     log(LogLevel::Info, "editor",
-        "Validated project: " + std::to_string(dialog.issues.size()) + " issue(s)");
+        "Validated project: " + std::to_string(errors) + " error(s), " +
+            std::to_string(problems.size() - errors) + " warning(s)");
+    layout.panelView = PanelView::Problems;
+    layout.panelVisible = true;
+}
+
+void EditorState::addOutput(LogLevel level, const std::string &text) {
+    output.push_back({level, text});
+    if (output.size() > 2000)
+        output.erase(output.begin(), output.begin() + 500);
 }
 
 std::filesystem::path EditorState::playerExecutable() const {
@@ -278,11 +440,20 @@ Status EditorState::exportGame(const std::filesystem::path &destination) {
 }
 
 void EditorState::guarded(std::function<void()> action) {
-    if (document && document->dirty() && !playing()) {
+    if (anyDirty() && !playing()) {
         dialog = {};
         dialog.kind = DialogKind::Unsaved;
         dialog.title = "Unsaved Changes";
-        dialog.message = "'" + document->displayName() + "' has changes that are not saved.";
+        dialog.unsavedScenes = dirtyScenes();
+        if (dialog.unsavedScenes.size() == 1) {
+            dialog.message =
+                "'" + dialog.unsavedScenes.front() + "' has changes that are not saved.";
+        } else {
+            dialog.message = std::to_string(dialog.unsavedScenes.size()) +
+                             " scenes have changes that are not saved:";
+            for (const std::string &path : dialog.unsavedScenes)
+                dialog.message += "\n   " + path;
+        }
         dialog.continuation = std::move(action);
         dialog.needsOpen = true;
         return;
@@ -305,7 +476,8 @@ void EditorState::startPlay() {
     }
     play = std::move(session.value());
     playSelection = {};
-    focusRequest = "Game";
+    editorFocus = EditorFocus::Game;
+    focusGame = true;
     log(LogLevel::Info, "editor", "Play: " + document->displayName());
 }
 
@@ -316,7 +488,7 @@ void EditorState::stopPlay() {
     if (audio)
         audio->stopAll();
     playSelection = {};
-    focusRequest = "Scene";
+    editorFocus = EditorFocus::Scene;
     log(LogLevel::Info, "editor", "Stopped; back to editing");
 }
 

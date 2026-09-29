@@ -725,19 +725,11 @@ void addComponentPopup(Inspect &inspect) {
 } // namespace
 
 void inspectorPanel(EditorState &state) {
-    if (!state.showInspector)
-        return;
-    if (!ImGui::Begin("Inspector", &state.showInspector)) {
-        ImGui::End();
-        return;
-    }
-    markWindow("panel/Inspector");
     const Scene *scene = state.visibleScene();
     const EntityId id = state.inspected();
     const Entity *entity = scene ? scene->find(id) : nullptr;
     if (!entity) {
         ImGui::TextDisabled(scene ? "Select an entity to edit it." : "Nothing to inspect.");
-        ImGui::End();
         return;
     }
     EditorDocument *doc = state.playing() ? nullptr : state.document.get();
@@ -766,6 +758,5 @@ void inspectorPanel(EditorState &state) {
         if (auto removed = doc->removeComponent(id, *removeRequest); !removed)
             log(LogLevel::Warning, "editor", removed.error());
     }
-    ImGui::End();
 }
 } // namespace yk::editor::ui

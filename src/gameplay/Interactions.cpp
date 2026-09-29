@@ -19,8 +19,9 @@ bool hasAnyTag(const Entity &entity, const std::vector<std::string> &tags) {
 
 // ----- Killable -----
 void Killable::describe(TypeBuilder<Killable> &type) {
-    type.category("Gameplay").description(
-        "Can be killed by hazards; plays its death animation, then comes back after a delay.");
+    type.category("Gameplay")
+        .description(
+            "Can be killed by hazards; plays its death animation, then comes back after a delay.");
     type.field("respawn", &Killable::respawn);
     type.field("respawnDelay", &Killable::respawnDelay).range(0, 60, 0.1);
     type.field("deathDuration", &Killable::deathDuration)

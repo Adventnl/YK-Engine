@@ -64,11 +64,13 @@ struct Game {
             runtime->stepOnce(keyboard);
             keyboard.beginFrame();
             for (int who = 0; who < 2; ++who)
-                if (const auto *animated = entity(who ? tide.name : ember.name).get<AnimatedSprite>())
+                if (const auto *animated =
+                        entity(who ? tide.name : ember.name).get<AnimatedSprite>())
                     animationStates[who].insert(animated->state());
             if (trace && runtime->tick() % 15 == 0)
                 std::fprintf(stderr,
-                             "t=%4llu ember=(%.2f,%.2f)%s tide=(%.2f,%.2f)%s lavaShuttle=%.2f gooShuttle=%.2f "
+                             "t=%4llu ember=(%.2f,%.2f)%s tide=(%.2f,%.2f)%s lavaShuttle=%.2f "
+                             "gooShuttle=%.2f "
                              "gate=%.2f plates=%d%d\n",
                              static_cast<unsigned long long>(runtime->tick()), pos(ember).x,
                              pos(ember).y, grounded(ember) ? "g" : " ", pos(tide).x, pos(tide).y,
@@ -225,11 +227,11 @@ void levelIsCompletable() {
     }));
     game.keyboard.set(tide.jump, false);
     game.release(tide);
-        CHECK(game.alive(tide) && game.pos(tide).y < 14.0F); // On the platform, not in the lava.
+    CHECK(game.alive(tide) && game.pos(tide).y < 14.0F); // On the platform, not in the lava.
     CHECK(game.until(600, [&] { return shuttleX() > 12.4F; }));
     CHECK(game.until(300, [&] { return game.walkTo(tide, 15.4F, 0.3F); }));
     CHECK(game.until(200, [&] { return game.grounded(tide); }));
-    CHECK(game.alive(tide) && game.pos(tide).y > 16.0F); // Dropped onto the far side.
+    CHECK(game.alive(tide) && game.pos(tide).y > 16.0F);    // Dropped onto the far side.
     CHECK(runtime.blackboard().number("tide_gems") >= 1.0); // The gem above the lava, on the way.
 
     // 3. Through the open gate to the checkpoint (both) and to the edge of the water.
@@ -256,7 +258,7 @@ void levelIsCompletable() {
     CHECK(runtime.blackboard().number("ember_gems") >= 4.0);
     CHECK(game.until(300, [&] { return game.walkTo(ember, 32.0F, 0.3F); }));
     CHECK(game.alive(ember) && game.alive(tide));
-    
+
     // 5. Up the stairs of jump-through ledges to the upper floor, one after the other.
     const auto climbStairs = [&](const Actor &who) {
         CHECK(game.until(600, [&] { return game.walkTo(who, 41.3F, 0.2F); }));
@@ -296,13 +298,15 @@ void levelIsCompletable() {
     // 7. Into the exits.
     CHECK(game.until(300, [&] { return game.walkTo(tide, 23.6F, 0.2F); }));
     CHECK(game.until(600, [&] { return game.entity("Level Flow").get<LevelFlow>()->completed(); }));
-    CHECK(game.happened("level_completed") && runtime.blackboard().text("level_state") == "complete");
+    CHECK(game.happened("level_completed") &&
+          runtime.blackboard().text("level_state") == "complete");
     CHECK(runtime.blackboard().text("level_message") == "LEVEL COMPLETE!");
     CHECK(!runtime.blackboard().has("deaths")); // Nobody had to die for it.
-    std::fprintf(stderr, "completed in %.1f simulated seconds; gems: ember %.0f/%.0f tide %.0f/%.0f\n",
-                 runtime.time(), runtime.blackboard().number("ember_gems"),
-                 runtime.blackboard().number("ember_gems_total"), runtime.blackboard().number("tide_gems"),
-                 runtime.blackboard().number("tide_gems_total"));
+    std::fprintf(
+        stderr, "completed in %.1f simulated seconds; gems: ember %.0f/%.0f tide %.0f/%.0f\n",
+        runtime.time(), runtime.blackboard().number("ember_gems"),
+        runtime.blackboard().number("ember_gems_total"), runtime.blackboard().number("tide_gems"),
+        runtime.blackboard().number("tide_gems_total"));
 }
 
 void hazardsAreCharacterSpecific() {
@@ -362,7 +366,8 @@ void charactersAnimateFromTheirController() {
     game.tick(120);
     for (const char *state : {"Idle", "Run", "Jump", "Fall", "Land", "Interact", "Death"})
         CHECK(game.animationStates[0].contains(state), state);
-    CHECK(game.entity(ember.name).get<AnimatedSprite>()->state() == "Idle"); // Alive and well again.
+    CHECK(game.entity(ember.name).get<AnimatedSprite>()->state() ==
+          "Idle"); // Alive and well again.
 }
 
 void restartResets() {

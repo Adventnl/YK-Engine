@@ -19,13 +19,15 @@ struct WorldView {
     // Apply SpriteRenderer::parallax. The game view does; the editor's scene view does not, so
     // background pieces stay where the designer put them while the camera pans.
     bool parallax{false};
+    // The editor's scene view: entities the designer hid (Entity::editorHidden) are not drawn.
+    bool editorView{false};
 };
 
 // What the last drawWorld did, for profilers and tests.
 struct SceneRenderStats {
-    std::size_t sprites{}; // SpriteRenderer components considered.
-    std::size_t culled{};  // Skipped because they were entirely outside the view.
-    std::size_t quads{};   // Textured quads submitted (every tile of a tiled sprite counts).
+    std::size_t sprites{};   // SpriteRenderer components considered.
+    std::size_t culled{};    // Skipped because they were entirely outside the view.
+    std::size_t quads{};     // Textured quads submitted (every tile of a tiled sprite counts).
     std::size_t particles{}; // Live particles drawn.
 };
 
@@ -36,9 +38,8 @@ class SceneRenderer {
   public:
     // `assets` resolves texture paths; it may be null when only placeholder shapes are used.
     // `defaults` apply to textures without a .ykmeta sidecar.
-    static Result<std::unique_ptr<SceneRenderer>> create(Renderer &renderer,
-                                                         const AssetSource *assets,
-                                                         TextureDefaults defaults = {});
+    static Result<std::unique_ptr<SceneRenderer>>
+    create(Renderer &renderer, const AssetSource *assets, TextureDefaults defaults = {});
 
     // Sprites of every entity active in the hierarchy, in world units (1 unit = 1 meter).
     Status drawWorld(Renderer &renderer, const Scene &scene, const WorldView &view = {});

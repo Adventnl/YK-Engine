@@ -24,11 +24,11 @@ namespace yk {
 //      {"from":"*","to":"Jump","when":[{"parameter":"jumped"}]},
 //      {"from":"Land","to":"Idle","exitTime":1.0}]}
 //
-// Transitions from "*" (any state) are checked first, then those of the current state, each group in
-// file order; the first whose conditions all hold (and whose exit time has been reached) fires. A
-// condition with no "op" means a bool or trigger parameter is true. A transition with "exitTime"
-// waits until the state's clip has played that fraction (1 = finished; a looping clip counts a whole
-// cycle).
+// Transitions from "*" (any state) are checked first, then those of the current state, each group
+// in file order; the first whose conditions all hold (and whose exit time has been reached) fires.
+// A condition with no "op" means a bool or trigger parameter is true. A transition with "exitTime"
+// waits until the state's clip has played that fraction (1 = finished; a looping clip counts a
+// whole cycle).
 enum class ParameterType { Float, Bool, Trigger };
 struct AnimatorParameter {
     std::string name;

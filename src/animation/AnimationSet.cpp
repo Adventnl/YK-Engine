@@ -43,7 +43,8 @@ Result<AnimationClip> parseClip(const Json &item, int cells) {
         if (!events->isArray())
             return Error{where + "'events' must be an array"};
         for (const Json &event : events->items()) {
-            if (!event.isObject() || !event.get("name").isString() || !event.get("frame").isNumber())
+            if (!event.isObject() || !event.get("name").isString() ||
+                !event.get("frame").isNumber())
                 return Error{where + "each event needs a 'frame' number and a 'name'"};
             clip.events.push_back({static_cast<int>(event.get("frame").asInt()),
                                    event.get("name").asString(), event.get("sound").asString()});

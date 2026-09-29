@@ -277,7 +277,8 @@ std::shared_ptr<const AnimationSet> GameRuntime::animationSet(const std::string 
     impl_->animationSets.emplace(path, loaded);
     return loaded;
 }
-std::shared_ptr<const AnimationController> GameRuntime::animationController(const std::string &path) {
+std::shared_ptr<const AnimationController>
+GameRuntime::animationController(const std::string &path) {
     const auto cached = impl_->animationControllers.find(path);
     if (cached != impl_->animationControllers.end())
         return cached->second;
@@ -372,7 +373,8 @@ Result<EntityId> GameRuntime::spawnPrefab(const std::string &path, Vec2 worldPos
         auto document = readJsonAsset(impl_->options.assets, path);
         if (!document) {
             impl_->failedPrefabs.insert(path);
-            log(LogLevel::Warning, "runtime", "Cannot load prefab " + path + ": " + document.error());
+            log(LogLevel::Warning, "runtime",
+                "Cannot load prefab " + path + ": " + document.error());
             return Error{"Cannot load prefab " + path + ": " + document.error()};
         }
         cached = impl_->prefabDocuments.emplace(path, std::move(document.value())).first;

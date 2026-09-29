@@ -38,7 +38,9 @@ foreach(required
         "${sample}/project.ykproj" "${sample}/scenes/level01.ykscene"
         "${docs}/README.md" "${docs}/THIRD_PARTY.md" "${docs}/editor.md"
         "${docs}/licenses/Box2D-MIT.txt" "${docs}/licenses/SDL3.txt" "${docs}/licenses/DearImGui-MIT.txt"
-        "${docs}/licenses/ProggyForever-MIT.txt" "${docs}/licenses/stb_image-PD.txt")
+        "${docs}/licenses/ProggyForever-MIT.txt" "${docs}/licenses/stb_image-PD.txt"
+        "${docs}/licenses/Inter-OFL-1.1.txt" "${docs}/licenses/JetBrainsMono-OFL-1.1.txt"
+        "${docs}/licenses/Codicons-CC-BY-4.0.txt")
     if(NOT EXISTS "${required}")
         message(FATAL_ERROR "The installation lacks ${required}")
     endif()

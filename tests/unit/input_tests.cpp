@@ -21,7 +21,8 @@ void bindingText() {
     CHECK(formatBinding(InputBinding::fromKey(Key::A)) == "Key:A");
     CHECK(formatBinding(InputBinding::fromButton(GamepadButton::South)) == "Pad:South");
     CHECK(formatBinding(InputBinding::fromAxis(GamepadAxis::LeftX, false)) == "PadAxis:LeftX-");
-    for (const std::string text : {"Key:Space", "Key:F5", "Pad:DPadLeft", "PadAxis:RightTrigger+"}) {
+    for (const std::string text :
+         {"Key:Space", "Key:F5", "Pad:DPadLeft", "PadAxis:RightTrigger+"}) {
         const auto parsed = parseBinding(text);
         CHECK(parsed);
         CHECK(parsed && formatBinding(parsed.value()) == text);
@@ -69,7 +70,9 @@ void mapValidationAndJson() {
     bad = standard;
     bad.sets[0].gamepad = 9;
     CHECK(!bad.validate());
-    CHECK(!InputMap::fromJson(Json::parse(R"({"sets":[{"name":"P","actions":[{"name":"X","bindings":["Key:Zzz"]}]}]})").value()));
+    CHECK(!InputMap::fromJson(
+        Json::parse(R"({"sets":[{"name":"P","actions":[{"name":"X","bindings":["Key:Zzz"]}]}]})")
+            .value()));
     CHECK(!InputMap::fromJson(Json::parse(R"({"sets":"nope"})").value()));
     CHECK(!InputMap::fromJson(Json::parse(R"({"sets":[{"actions":[]}]})").value()));
     const auto empty = InputMap::fromJson(Json::parse(R"({"sets":[]})").value());
@@ -130,9 +133,9 @@ void twoPlayersShareTheKeyboard() {
     ActionInput input(InputMap::standard());
     InputFrame frame;
     tick(input, frame, [](InputFrame &f) {
-        f.keyboard.set(Key::D, true);     // Player1 right.
-        f.keyboard.set(Key::Left, true);  // Player2 left.
-        f.keyboard.set(Key::Up, true);    // Player2 jump.
+        f.keyboard.set(Key::D, true);    // Player1 right.
+        f.keyboard.set(Key::Left, true); // Player2 left.
+        f.keyboard.set(Key::Up, true);   // Player2 jump.
     });
     CHECK_NEAR(input.axis("Player1", "MoveLeft", "MoveRight"), 1.0);
     CHECK_NEAR(input.axis("Player2", "MoveLeft", "MoveRight"), -1.0);

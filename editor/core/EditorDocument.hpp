@@ -129,6 +129,11 @@ class EditorDocument {
     Status moveAmongSiblings(EntityId id, int steps);
     void rename(EntityId id, const std::string &name);
     void setEntityActive(EntityId id, bool active);
+    // Editor hints saved with the scene (see Entity::locked, Entity::editorHidden).
+    void setLocked(const std::vector<EntityId> &ids, bool locked);
+    void setEditorHidden(const std::vector<EntityId> &ids, bool hidden);
+    // Scene-wide settings (name, gravity, background): one undo step per change.
+    void editSettings(const std::string &label, const std::function<void(SceneSettings &)> &edit);
     // Value is validated and clamped like any other property write. False when nothing was written.
     bool setProperty(EntityId id, std::size_t componentIndex, const std::string &property,
                      PropertyValue value);

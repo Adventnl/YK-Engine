@@ -138,8 +138,8 @@ void motion() {
         return runtime.scene().find(id)->get<ParticleEmitter>()->particles().front().position;
     };
     CHECK_NEAR(position(upId).x, 10.0F, 1e-3);
-    CHECK(position(upId).y < 10.0F - 0.9F && position(upId).y > 10.0F - 1.1F);   // ~1 m up.
-    CHECK(position(rightId).x > 10.9F && position(rightId).x < 11.1F);          // ~1 m right.
+    CHECK(position(upId).y < 10.0F - 0.9F && position(upId).y > 10.0F - 1.1F); // ~1 m up.
+    CHECK(position(rightId).x > 10.9F && position(rightId).x < 11.1F);         // ~1 m right.
     CHECK_NEAR(position(rightId).y, 10.0F, 1e-3);
     // Down with gravity, semi-implicit Euler over 31 steps of 1/60 s: sum of (2 + 10 i/60)/60 for
     // i = 1..31 = 1.033 + 1.378 = 2.41 m below (the continuous answer for 0.517 s is 2.40).
@@ -165,10 +165,13 @@ void spaces() {
     runtime.scene().find(worldId)->transform().position = {5.0F, 0.0F};
     runtime.scene().find(localId)->transform().position = {5.0F, 0.0F};
     f.tick(2);
-    const auto &worldParticle = runtime.scene().find(worldId)->get<ParticleEmitter>()->particles().front();
-    const auto &localParticle = runtime.scene().find(localId)->get<ParticleEmitter>()->particles().front();
+    const auto &worldParticle =
+        runtime.scene().find(worldId)->get<ParticleEmitter>()->particles().front();
+    const auto &localParticle =
+        runtime.scene().find(localId)->get<ParticleEmitter>()->particles().front();
     CHECK_NEAR(worldParticle.position.x, 0.0F, 1e-3); // Left behind.
-    CHECK_NEAR(localParticle.position.x, 0.0F, 1e-3); // Local position unchanged: it moves with the entity.
+    CHECK_NEAR(localParticle.position.x, 0.0F,
+               1e-3); // Local position unchanged: it moves with the entity.
 }
 
 void determinism() {
@@ -247,9 +250,10 @@ void cleanup() {
             CHECK(entity && entity->worldPosition() == Vec2{3.0F, 4.0F});
         }
         f.tick(1);
-        CHECK(runtime.scene().findByName("Sparkle")->get<ParticleEmitter>()->particles().size() == 4);
+        CHECK(runtime.scene().findByName("Sparkle")->get<ParticleEmitter>()->particles().size() ==
+              4);
         f.tick(40);
-        CHECK(runtime.scene().findByName("Sparkle") == nullptr); // Cleaned itself up.
+        CHECK(runtime.scene().findByName("Sparkle") == nullptr);        // Cleaned itself up.
         CHECK(runtime.spawnPrefab("effects/sparkle.ykprefab", {0, 0})); // From the cache.
         setLogStderrEnabled(false);
         CHECK(!runtime.spawnPrefab("effects/missing.ykprefab", {0, 0}));
@@ -322,10 +326,12 @@ void savedAndLoaded() {
     CHECK(again != nullptr);
     if (!again)
         return;
-    CHECK(again->get<ParticleEmitter>()->rate == 77.0F && again->get<ParticleEmitter>()->area == EmitterArea::Box);
+    CHECK(again->get<ParticleEmitter>()->rate == 77.0F &&
+          again->get<ParticleEmitter>()->area == EmitterArea::Box);
     CHECK(again->get<ParticleEmitter>()->startColor == Color{1, 2, 3, 4});
     CHECK(again->get<ParticleEmitter>()->lifetime == Vec2{0.25F, 0.75F});
-    CHECK(again->get<Light2D>()->flicker == 0.3F && again->get<Oscillator>()->wave == Wave::Triangle);
+    CHECK(again->get<Light2D>()->flicker == 0.3F &&
+          again->get<Oscillator>()->wave == Wave::Triangle);
     CHECK(again->get<Lifetime>()->untilEmitterFinished);
     CHECK(sceneToJson(*loaded.value()).dump() == saved.dump()); // Stable text.
 }

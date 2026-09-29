@@ -55,7 +55,7 @@ yk_target(yk)
 # No window, no UI toolkit: everything the editor does to a scene is tested headlessly through this.
 add_library(yk_editor_core STATIC editor/core/EditorDocument.cpp editor/core/EditorGeometry.cpp
     editor/core/SceneInteraction.cpp editor/core/EditorProject.cpp editor/core/PlaySession.cpp
-    editor/core/ConsoleLog.cpp)
+    editor/core/ConsoleLog.cpp editor/core/WorkbenchLayout.cpp)
 add_library(yk::editor_core ALIAS yk_editor_core)
 target_link_libraries(yk_editor_core PUBLIC yk_gameplay)
 target_include_directories(yk_editor_core PUBLIC editor)
@@ -76,8 +76,16 @@ if(YK_RUNTIME)
 
     # The editor: Dear ImGui panels over the editor core, the engine's renderer and a play session.
     yk_fetch_imgui()
-    add_library(yk_editor_ui STATIC
-        editor/ui/UiCommon.cpp editor/ui/EditorState.cpp editor/ui/Shell.cpp
+    include(YkEmbed)
+    yk_embed_files("${CMAKE_BINARY_DIR}/generated/EditorFonts.cpp" NAMESPACE yk::editor::ui::fontdata FILES
+        interRegular=${CMAKE_CURRENT_SOURCE_DIR}/editor/resources/fonts/Inter-Regular.ttf
+        interSemiBold=${CMAKE_CURRENT_SOURCE_DIR}/editor/resources/fonts/Inter-SemiBold.ttf
+        jetBrainsMono=${CMAKE_CURRENT_SOURCE_DIR}/editor/resources/fonts/JetBrainsMono-Regular.ttf
+        codicon=${CMAKE_CURRENT_SOURCE_DIR}/editor/resources/fonts/codicon.ttf)
+    add_library(yk_editor_ui STATIC "${CMAKE_BINARY_DIR}/generated/EditorFonts.cpp" editor/ui/Theme.cpp
+        editor/ui/UiCommon.cpp editor/ui/EditorState.cpp editor/ui/Shell.cpp editor/ui/Workbench.cpp
+        editor/ui/Menus.cpp editor/ui/Welcome.cpp editor/ui/ProblemsPanel.cpp editor/ui/ProfilerPanel.cpp
+        editor/ui/SideViews.cpp
         editor/ui/HierarchyPanel.cpp editor/ui/InspectorPanel.cpp editor/ui/SceneViewPanel.cpp
         editor/ui/GameViewPanel.cpp editor/ui/AssetsPanel.cpp editor/ui/ConsolePanel.cpp
         editor/ui/Dialogs.cpp editor/ui/EditorApp.cpp editor/ui/EditorDriver.cpp)
@@ -132,6 +140,23 @@ if(BUILD_TESTING)
                     -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/editor/run_script.cmake)
             set_tests_properties(editor_${script_name} PROPERTIES TIMEOUT 300)
         endforeach()
+        # The window layout survives a restart: one editor process rearranges it, the next one
+        # starts from what was saved.
+        foreach(part write read)
+            set(persist_args -DEDITOR=$<TARGET_FILE:yk_editor>
+                -DSCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/tests/editor/persist/layout_${part}.ykscript
+                -DWORK=${CMAKE_BINARY_DIR}/editor-tests/layout
+                -DPROJECT=${CMAKE_CURRENT_SOURCE_DIR}/YK-DemoGame -DPERSIST=ON)
+            if(part STREQUAL "read")
+                list(APPEND persist_args -DKEEP=ON)
+            endif()
+            add_test(NAME editor_layout_${part}
+                COMMAND ${CMAKE_COMMAND} ${persist_args}
+                    -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/editor/run_script.cmake)
+            set_tests_properties(editor_layout_${part} PROPERTIES TIMEOUT 300)
+        endforeach()
+        set_tests_properties(editor_layout_write PROPERTIES FIXTURES_SETUP editor_layout)
+        set_tests_properties(editor_layout_read PROPERTIES FIXTURES_REQUIRED editor_layout)
         # The installation and its CPack archive: contents, no private dependencies, and the
         # installed programs work where they were put.
         add_test(NAME install
