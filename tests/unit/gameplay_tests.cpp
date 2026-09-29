@@ -1,5 +1,6 @@
 // Plays the gameplay components headlessly: scripted keyboard input against real physics.
 #include "support/check.hpp"
+#include "yk/components/Effects.hpp"
 #include "yk/core/Log.hpp"
 #include "yk/gameplay/Gameplay.hpp"
 #include "yk/runtime/GameRuntime.hpp"
@@ -320,6 +321,332 @@ void oneWayAndWedge() {
         CHECK_NEAR(w.position("Hero").x, 6.3F, 0.1);
         CHECK_NEAR(w.position("Hero").y, restingHeight, 0.06);
     }
+}
+
+// A lever that needs the Interact action: touching it does nothing, pressing the action of the
+// character's own PlayerInput set flips it, and the character is told to play its interact clip.
+void interactLever() {
+    World w;
+    w.ground();
+    Entity &lever = w.box("Lever", {0.0F, floorTop - 0.4F}, {0.6F, 0.8F}, layers::sensor);
+    lever.get<Collider>()->isTrigger = true;
+    lever.add<Lever>().interactAction = "Interact";
+    w.character("One", {-1.5F, restingHeight});                // Player1: Interact is S / E.
+    w.character("Two", {3.0F, restingHeight}, "Player2");      // Player2: Interact is Down.
+    w.character("Nobody", {-3.0F, restingHeight}, "Nobody");   // No such set: cannot interact.
+    w.start();
+    w.tick(30);
+    auto *plate = w.at("Lever").get<Lever>();
+
+    // Walking through it (touching) flips nothing.
+    w.down(Key::D);
+    w.tick(60);
+    w.up(Key::D);
+    w.tick(30);
+    CHECK(!plate->on() && w.count("lever_toggled") == 0);
+    CHECK(w.position("One").x > 1.0F); // It walked past.
+
+    // Stand in it and press Interact (S): it flips once per press, not while held.
+    w.runtime->teleport(w.at("One"), {0.0F, restingHeight});
+    w.tick(30);
+    w.down(Key::S);
+    w.tick(3);
+    CHECK(plate->on() && w.count("lever_toggled") == 1);
+    w.tick(40); // Held: no repeat flips (also inside the cooldown).
+    CHECK(plate->on() && w.count("lever_toggled") == 1);
+    w.up(Key::S);
+    w.tick(30);
+    w.down(Key::S);
+    w.tick(3);
+    w.up(Key::S);
+    CHECK(!plate->on() && w.count("lever_toggled") == 2);
+
+    // Player2's own action works for player2, and pressing another player's action does not.
+    w.runtime->teleport(w.at("One"), {-6.0F, restingHeight}); // Out of the way.
+    w.runtime->teleport(w.at("Two"), {0.0F, restingHeight});
+    w.tick(60);
+    w.down(Key::S); // Player1's key with only Player2 in the lever.
+    w.tick(3);
+    w.up(Key::S);
+    CHECK(!plate->on());
+    w.down(Key::Down);
+    w.tick(3);
+    w.up(Key::Down);
+    CHECK(plate->on() && w.count("lever_toggled") == 3);
+    // A character with no action set never flips it, whatever is pressed.
+    w.runtime->teleport(w.at("Two"), {6.0F, restingHeight});
+    w.runtime->teleport(w.at("Nobody"), {0.0F, restingHeight});
+    w.tick(60);
+    for (const Key key : {Key::S, Key::Down, Key::E})
+        w.down(key);
+    w.tick(5);
+    for (const Key key : {Key::S, Key::Down, Key::E})
+        w.up(key);
+    CHECK(plate->on() && w.count("lever_toggled") == 3);
+}
+
+constexpr const char *actorAnimation = R"({"format":"yk.animation","version":2,"columns":4,"rows":1,
+    "clips":[{"name":"idle","first":0,"count":1},{"name":"interact","first":1,"count":1,"fps":30,"loop":false},
+             {"name":"death","first":2,"count":1,"loop":false},{"name":"back","first":3,"count":1}]})";
+constexpr const char *actorController = R"({"format":"yk.animator","version":1,
+    "parameters":[{"name":"dead","type":"bool"},{"name":"interact","type":"trigger"},
+                  {"name":"respawned","type":"trigger"}],
+    "states":[{"name":"Idle","clip":"idle"},{"name":"Interact","clip":"interact"},
+              {"name":"Death","clip":"death"},{"name":"Back","clip":"back"}],
+    "transitions":[
+      {"from":"*","to":"Death","when":[{"parameter":"dead"}]},
+      {"from":"Death","to":"Back","when":[{"parameter":"dead","value":false}]},
+      {"from":"Back","to":"Idle","exitTime":0.5},
+      {"from":"Idle","to":"Interact","when":[{"parameter":"interact"}]},
+      {"from":"Interact","to":"Idle","exitTime":1.0}]})";
+
+void interactAnimation() {
+    World w;
+    w.assets.files["a.ykanim"] = actorAnimation;
+    w.assets.files["a.ykctl"] = actorController;
+    w.ground();
+    Entity &lever = w.box("Lever", {0.0F, floorTop - 0.4F}, {0.6F, 0.8F}, layers::sensor);
+    lever.get<Collider>()->isTrigger = true;
+    lever.add<Lever>().interactAction = "Interact";
+    Entity &hero = w.character("Hero", {0.0F, restingHeight});
+    auto &animated = hero.add<AnimatedSprite>();
+    animated.animation.path = "a.ykanim";
+    animated.controller.path = "a.ykctl";
+    w.start();
+    w.tick(30);
+    const auto state = [&] { return w.at("Hero").get<AnimatedSprite>()->state(); };
+    CHECK(state() == "Idle");
+    w.down(Key::S);
+    w.tick(2);
+    w.up(Key::S);
+    CHECK(state() == "Interact"); // The lever told the character to play its interact clip...
+    w.tick(10);
+    CHECK(state() == "Idle"); // ...which finishes and returns to Idle.
+}
+
+// Dying: the body leaves the world at once, the sprite stays for the death animation, the
+// respawn brings everything back, and effect prefabs spawn where it happened.
+void deathAndRespawn() {
+    World w;
+    w.assets.files["a.ykanim"] = actorAnimation;
+    w.assets.files["a.ykctl"] = actorController;
+    Scene puffScene(w.registry, 5);
+    Entity &puff = puffScene.createEntity("Puff");
+    puff.add<Lifetime>().seconds = 0.5F;
+    w.assets.files["fx/death.ykprefab"] = subtreeToJson(puffScene, puff.id()).dump();
+    Scene poofScene(w.registry, 6);
+    Entity &poof = poofScene.createEntity("Poof");
+    poof.add<Lifetime>().seconds = 0.5F;
+    w.assets.files["fx/respawn.ykprefab"] = subtreeToJson(poofScene, poof.id()).dump();
+
+    w.ground();
+    Entity &lava = w.box("Lava", {4.0F, floorTop - 0.3F}, {2.0F, 0.6F}, layers::sensor);
+    lava.get<Collider>()->isTrigger = true;
+    lava.add<Hazard>();
+    Entity &hero = w.character("Hero", {0.0F, restingHeight});
+    auto &animated = hero.add<AnimatedSprite>();
+    animated.animation.path = "a.ykanim";
+    animated.controller.path = "a.ykctl";
+    auto *killable = hero.get<Killable>();
+    killable->deathDuration = 0.6F;
+    killable->respawnDelay = 1.5F;
+    killable->deathEffect.path = "fx/death.ykprefab";
+    killable->respawnEffect.path = "fx/respawn.ykprefab";
+    w.start();
+    w.tick(30);
+    CHECK(killable->alive());
+    const auto visible = [&] { return w.at("Hero").get<SpriteRenderer>()->visible; };
+    const auto state = [&] { return w.at("Hero").get<AnimatedSprite>()->state(); };
+
+    // Walk into the lava.
+    w.down(Key::D);
+    for (int i = 0; i < 120 && killable->alive(); ++i)
+        w.tick();
+    w.up(Key::D);
+    CHECK(!killable->alive() && w.happened("entity_died"));
+    const Vec2 diedAt = w.position("Hero");
+    CHECK(w.at("Hero").get<Collider>()->enabled == false); // Nothing collides with it any more.
+    CHECK(visible() && state() == "Death");               // The animation plays in place.
+    CHECK(w.runtime->scene().findByName("Puff") != nullptr);
+    CHECK(w.runtime->scene().findByName("Puff")->worldPosition() == diedAt);
+    w.tick(30); // 0.5 s: still inside the 0.6 s death animation.
+    CHECK(visible());
+    w.tick(10);
+    CHECK(!visible() && !killable->alive()); // Hidden, waiting to come back.
+
+    // Respawn after 1.5 s in total: back at the start, visible, animating again.
+    w.tick(60);
+    CHECK(killable->alive() && visible() && w.happened("entity_respawned"));
+    CHECK(w.position("Hero").x < 1.0F);
+    CHECK(w.at("Hero").get<Collider>()->enabled);
+    CHECK(w.runtime->scene().findByName("Poof") != nullptr);
+    w.tick(20);
+    CHECK(state() == "Idle"); // Death -> Back -> Idle.
+    w.tick(60);
+    CHECK(w.runtime->scene().findByName("Puff") == nullptr &&
+          w.runtime->scene().findByName("Poof") == nullptr); // The effects cleaned themselves up.
+
+    // A missing effect prefab never breaks a death or a respawn.
+    World broken;
+    broken.ground();
+    Entity &pit = broken.box("Lava", {0.0F, floorTop - 0.3F}, {2.0F, 0.6F}, layers::sensor);
+    pit.get<Collider>()->isTrigger = true;
+    pit.add<Hazard>();
+    Entity &victim = broken.character("Victim", {0.0F, restingHeight - 1.0F});
+    victim.get<Killable>()->deathEffect.path = "fx/missing.ykprefab";
+    victim.get<Killable>()->respawnEffect.path = "fx/missing.ykprefab";
+    victim.get<Killable>()->respawnDelay = 0.5F;
+    setLogStderrEnabled(false);
+    broken.start();
+    broken.tick(30);
+    CHECK(broken.happened("entity_died"));
+    broken.tick(60);
+    setLogStderrEnabled(true);
+    CHECK(broken.happened("entity_respawned"));
+}
+
+// Collectibles count themselves for HUD text and can spawn a sparkle where they were picked up.
+void collectTotalsAndEffects() {
+    World w;
+    Scene sparkScene(w.registry, 8);
+    Entity &sparkle = sparkScene.createEntity("Sparkle");
+    sparkle.add<Lifetime>().seconds = 0.3F;
+    w.assets.files["fx/sparkle.ykprefab"] = subtreeToJson(sparkScene, sparkle.id()).dump();
+    w.ground();
+    for (int i = 0; i < 3; ++i) {
+        Entity &gem = w.box(("Gem" + std::to_string(i)).c_str(),
+                            {static_cast<float>(i) * 2.0F + 1.0F, floorTop - 0.4F}, {0.5F, 0.5F},
+                            layers::sensor);
+        gem.get<Collider>()->isTrigger = true;
+        auto &item = gem.add<Collectible>();
+        item.variable = "gems";
+        item.value = i == 2 ? 5.0F : 1.0F; // 1 + 1 + 5.
+        item.collectEffect.path = "fx/sparkle.ykprefab";
+    }
+    w.character("Hero", {-1.0F, restingHeight});
+    w.start();
+    w.tick(1); // Components start during the first tick.
+    CHECK_NEAR(w.runtime->blackboard().number("gems_total"), 7.0);
+    CHECK_NEAR(w.runtime->blackboard().number("gems"), 0.0);
+    CHECK(w.runtime->blackboard().format("{gems:0}/{gems_total}") == "0/7");
+    w.tick(30);
+    w.down(Key::D);
+    w.tick(75);
+    w.up(Key::D);
+    CHECK_NEAR(w.runtime->blackboard().number("gems"), 7.0);
+    CHECK(w.runtime->blackboard().format("{gems:0}/{gems_total}") == "7/7");
+    CHECK(w.runtime->scene().findByName("Sparkle") != nullptr); // Spawned at a pickup...
+    w.tick(60);
+    CHECK(w.runtime->scene().findByName("Sparkle") == nullptr); // ...and gone again.
+    // A restart recounts from scratch instead of piling on.
+    CHECK(w.runtime->restart());
+    CHECK_NEAR(w.runtime->blackboard().number("gems_total"), 0.0); // Not started yet after rebuild.
+    w.tick(1);
+    CHECK_NEAR(w.runtime->blackboard().number("gems_total"), 7.0);
+    CHECK_NEAR(w.runtime->blackboard().number("gems"), 0.0);
+}
+
+// Mechanisms tell their AnimatedSprite what state they are in, instead of tinting the sprite, so
+// art states come from the animation controller.
+constexpr const char *mechanismAnimation = R"({"format":"yk.animation","version":2,"columns":2,"rows":1,
+    "clips":[{"name":"off","first":0,"count":1},{"name":"on","first":1,"count":1}]})";
+constexpr const char *mechanismController = R"({"format":"yk.animator","version":1,
+    "parameters":[{"name":"pressed","type":"bool"},{"name":"on","type":"bool"},
+                  {"name":"satisfied","type":"bool"},{"name":"open","type":"bool"}],
+    "states":[{"name":"Off","clip":"off"},{"name":"On","clip":"on"}],
+    "transitions":[
+      {"from":"Off","to":"On","when":[{"parameter":"pressed"}]},
+      {"from":"Off","to":"On","when":[{"parameter":"on"}]},
+      {"from":"Off","to":"On","when":[{"parameter":"satisfied"}]},
+      {"from":"Off","to":"On","when":[{"parameter":"open"}]},
+      {"from":"On","to":"Off","when":[{"parameter":"pressed","value":false},{"parameter":"on","value":false},
+                                       {"parameter":"satisfied","value":false},{"parameter":"open","value":false}]}]})";
+
+void mechanismsPublishState() {
+    World w;
+    w.assets.files["m.ykanim"] = mechanismAnimation;
+    w.assets.files["m.ykctl"] = mechanismController;
+    w.ground();
+    const auto animate = [&](Entity &entity) {
+        auto &animated = entity.add<AnimatedSprite>();
+        animated.animation.path = "m.ykanim";
+        animated.controller.path = "m.ykctl";
+        entity.get<SpriteRenderer>()->color = {10, 20, 30, 255};
+    };
+    Entity &door = w.box("Door", {8.0F, floorTop - 1.5F}, {0.6F, 3.0F});
+    door.add<Door>().openOffset = {0.0F, -3.0F};
+    Entity &plate = w.box("Plate", {2.0F, floorTop - 0.1F}, {1.0F, 0.2F}, layers::sensor);
+    plate.get<Collider>()->isTrigger = true;
+    plate.add<PressurePlate>().targets = {door.id()};
+    Entity &exit = w.box("Exit", {5.0F, floorTop - 0.9F}, {1.2F, 1.8F}, layers::sensor);
+    exit.get<Collider>()->isTrigger = true;
+    exit.add<Goal>();
+    animate(plate);
+    animate(exit);
+    animate(door);
+    w.character("Hero", {0.0F, restingHeight});
+    w.start();
+    w.tick(30);
+    const auto stateOf = [&](const char *name) { return w.at(name).get<AnimatedSprite>()->state(); };
+    CHECK(stateOf("Plate") == "Off" && stateOf("Exit") == "Off" && stateOf("Door") == "Off");
+    w.down(Key::D);
+    w.tick(20);
+    w.up(Key::D);
+    CHECK(w.at("Plate").get<PressurePlate>()->pressed());
+    CHECK(stateOf("Plate") == "On");                          // pressed
+    CHECK(w.at("Plate").get<SpriteRenderer>()->color == Color{10, 20, 30, 255}); // Not tinted.
+    w.tick(60);
+    CHECK(stateOf("Door") == "On"); // open
+    w.down(Key::D);
+    w.tick(40);
+    w.up(Key::D);
+    CHECK(stateOf("Exit") == "On"); // satisfied
+    CHECK(w.at("Exit").get<SpriteRenderer>()->color == Color{10, 20, 30, 255});
+}
+
+// Jumping and landing spawn effect prefabs at the feet and play a landing sound.
+void controllerEffects() {
+    World w;
+    Scene dustScene(w.registry, 12);
+    Entity &dust = dustScene.createEntity("Dust");
+    dust.add<Lifetime>().seconds = 5.0F;
+    w.assets.files["fx/jump.ykprefab"] = subtreeToJson(dustScene, dust.id()).dump();
+    Scene landScene(w.registry, 13);
+    Entity &thud = landScene.createEntity("Thud");
+    thud.add<Lifetime>().seconds = 5.0F;
+    w.assets.files["fx/land.ykprefab"] = subtreeToJson(landScene, thud.id()).dump();
+    w.ground();
+    Entity &hero = w.character("Hero", {0.0F, restingHeight});
+    auto *controller = hero.get<PlatformerController>();
+    controller->jumpEffect.path = "fx/jump.ykprefab";
+    controller->landEffect.path = "fx/land.ykprefab";
+    controller->landSound.path = "tone:120,0.1";
+    w.start();
+    w.tick(30);
+    CHECK(w.runtime->scene().findByName("Dust") == nullptr);
+    w.down(Key::W);
+    w.tick(3);
+    const Entity *jumpDust = w.runtime->scene().findByName("Dust");
+    CHECK(jumpDust != nullptr);
+    if (jumpDust) // At the feet: the bottom of the 0.95 m collider.
+        CHECK_NEAR(jumpDust->worldPosition().y, floorTop, 0.15);
+    w.tick(50);
+    w.up(Key::W);
+    w.tick(80);
+    CHECK(w.runtime->scene().findByName("Thud") != nullptr); // A real fall: landing effect...
+    CHECK(w.audio.count("tone:120,0.1") == 1);                // ...and sound, once.
+    // Stepping down a small height is not a landing.
+    World gentle;
+    Scene ignored(gentle.registry, 14);
+    Entity &quiet = ignored.createEntity("Thud");
+    quiet.add<Lifetime>().seconds = 5.0F;
+    gentle.assets.files["fx/land.ykprefab"] = subtreeToJson(ignored, quiet.id()).dump();
+    gentle.ground();
+    Entity &walker = gentle.character("Hero", {0.0F, restingHeight - 0.3F});
+    walker.get<PlatformerController>()->landEffect.path = "fx/land.ykprefab";
+    gentle.start();
+    gentle.tick(60);
+    CHECK(gentle.runtime->scene().findByName("Thud") == nullptr);
 }
 
 void controllerBasics() {
@@ -1012,6 +1339,12 @@ int main() {
     controllerBasics();
     characterAnimation();
     oneWayAndWedge();
+    interactLever();
+    interactAnimation();
+    deathAndRespawn();
+    collectTotalsAndEffects();
+    mechanismsPublishState();
+    controllerEffects();
     jumping();
     coyoteAndBuffer();
     wallsAndSlopes();

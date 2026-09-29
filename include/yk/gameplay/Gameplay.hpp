@@ -54,21 +54,30 @@ void sendSignal(Scene &scene, EntityId source, const std::vector<EntityRef> &tar
 // accident.
 bool matchesActivator(const Entity &entity, const std::vector<std::string> &tags);
 
+// Spawns an effect prefab at `worldPosition` when `prefab` names one; a missing or invalid prefab is
+// reported once by the runtime and otherwise ignored, so effects can never break gameplay.
+void spawnEffect(GameContext &context, const AssetRef &prefab, Vec2 worldPosition);
+
 // Drives a kinematic body toward `worldTarget` within one tick (so riders are carried), or moves
 // the entity directly when it has no body.
 void moveKinematic(GameContext &context, Entity &entity, Vec2 worldTarget);
 
 // ----- Character -----------------------------------------------------------------------------
-// Health-less "can be killed, then comes back": disables the entity's body, colliders and sprite
-// while dead and returns it to its spawn point (or last checkpoint) after a delay.
+// Health-less "can be killed, then comes back". Dying takes the entity's body and colliders out of
+// the world at once, keeps its sprite visible for `deathDuration` so a death animation can play
+// (it sets the AnimatedSprite parameter `dead`), then hides it; after `respawnDelay` it returns to
+// its spawn point (or last checkpoint), sets `dead` back and raises the trigger `respawned`.
 class Killable final : public Component {
   public:
     bool respawn{true};
     float respawnDelay{1.0F};
+    float deathDuration{0.6F}; // Seconds the sprite stays visible after dying.
     EntityRef
         spawnPoint; // Where to return; otherwise the last checkpoint, else the start position.
     AssetRef deathSound;
     AssetRef respawnSound;
+    AssetRef deathEffect;   // Prefab spawned where it died.
+    AssetRef respawnEffect; // Prefab spawned where it returns.
     static void describe(TypeBuilder<Killable> &type);
 
     bool alive() const {
@@ -80,8 +89,11 @@ class Killable final : public Component {
     void onFixedUpdate(GameContext &context, float seconds) override;
 
   private:
-    void setPresent(bool present);
+    void setSolid(bool solid);
+    void setVisible(bool visible);
     bool alive_{true};
+    bool dying_{};
+    float dyingTimer_{};
     float timer_{};
     Vec2 home_{};
     Vec2 checkpoint_{};
@@ -117,6 +129,9 @@ class PlatformerController final : public Component {
     float slideFriction{0.0F}; // Friction when moving or airborne (no wall sticking).
     float landingSpeed{4.0F};  // Downward speed (m/s) at which touching down counts as a "landed".
     AssetRef jumpSound;
+    AssetRef landSound;
+    AssetRef jumpEffect; // Prefab spawned at the feet when a jump starts (dust, for example).
+    AssetRef landEffect; // Prefab spawned at the feet after a landing.
     static void describe(TypeBuilder<PlatformerController> &type);
 
     bool grounded() const {
@@ -143,6 +158,8 @@ class PlatformerController final : public Component {
 };
 
 // ----- Mechanisms ----------------------------------------------------------------------------
+// While pressed it drives its targets. With an AnimatedSprite it publishes the parameter `pressed`;
+// without one it tints and sinks its sprite.
 class PressurePlate final : public Component {
   public:
     std::vector<EntityRef> targets;
@@ -167,10 +184,15 @@ class PressurePlate final : public Component {
     Color baseColor_{};
 };
 
+// Flips between on and off. By default that happens when a character touches it; with an
+// `interactAction` it happens when a character standing in it presses that action of its own
+// PlayerInput set (and sets the character's `interact` animation trigger). With an AnimatedSprite it
+// publishes the parameter `on`; without one it tints its sprite.
 class Lever final : public Component {
   public:
     std::vector<EntityRef> targets;
     std::vector<std::string> activatorTags;
+    std::string interactAction; // Empty: flips on touch.
     bool startsOn{false};
     float cooldown{0.4F};             // Seconds before it can be flipped again.
     Color onColor{90, 220, 110, 255}; // The sprite's own color is the off look.
@@ -186,6 +208,7 @@ class Lever final : public Component {
 
   private:
     void applyVisuals();
+    void flip(GameContext &context, Entity &by);
     bool on_{};
     float cooldown_{};
     Color baseColor_{};
@@ -250,7 +273,10 @@ class Collectible final : public Component {
     std::string variable{"score"};          // Blackboard variable to increase.
     float value{1.0F};
     AssetRef sound;
+    AssetRef collectEffect; // Prefab spawned where it was picked up (a sparkle).
     static void describe(TypeBuilder<Collectible> &type);
+    // Adds `value` to `<variable>_total`, so UI text can show "{gems}/{gems_total}".
+    void onStart(GameContext &context) override;
     void onTriggerEnter(GameContext &context, Entity &other) override;
 };
 

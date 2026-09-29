@@ -367,12 +367,20 @@ Result<EntityId> GameRuntime::spawnPrefab(const std::string &path, Vec2 worldPos
                                           EntityId parent) {
     auto cached = impl_->prefabDocuments.find(path);
     if (cached == impl_->prefabDocuments.end()) {
+        if (impl_->failedPrefabs.contains(path))
+            return Error{"Prefab " + path + " could not be loaded"}; // Already reported.
         auto document = readJsonAsset(impl_->options.assets, path);
-        if (!document)
+        if (!document) {
+            impl_->failedPrefabs.insert(path);
+            log(LogLevel::Warning, "runtime", "Cannot load prefab " + path + ": " + document.error());
             return Error{"Cannot load prefab " + path + ": " + document.error()};
+        }
         cached = impl_->prefabDocuments.emplace(path, std::move(document.value())).first;
     }
-    return spawn(cached->second, worldPosition, parent);
+    auto spawned = spawn(cached->second, worldPosition, parent);
+    if (!spawned && impl_->failedPrefabs.insert(path).second)
+        log(LogLevel::Warning, "runtime", "Cannot spawn prefab " + path + ": " + spawned.error());
+    return spawned;
 }
 void GameRuntime::requestRestart() {
     impl_->restartWanted = true;

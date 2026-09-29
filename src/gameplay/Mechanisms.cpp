@@ -54,6 +54,10 @@ void PressurePlate::onStart(GameContext &context) {
     sendSignal(context.scene(), entity().id(), targets, false);
 }
 void PressurePlate::applyVisuals() {
+    if (auto *animated = entity().get<AnimatedSprite>()) {
+        animated->setBool("pressed", pressed_); // Art shows it through its controller.
+        return;
+    }
     if (auto *sprite = entity().get<SpriteRenderer>()) {
         sprite->color = pressed_ ? pressedColor : baseColor_;
         sprite->offset.y = baseOffsetY_ + (pressed_ ? pressDepth : 0.0F);
@@ -80,6 +84,10 @@ void Lever::describe(TypeBuilder<Lever> &type) {
         .onAdd([](Entity &entity, Lever &) { turnIntoTrigger(entity); });
     type.field("targets", &Lever::targets);
     type.field("activatorTags", &Lever::activatorTags);
+    type.field("interactAction", &Lever::interactAction)
+        .inputAction()
+        .tooltip("Flip when a character in it presses this action (for example Interact). Empty: "
+                 "flip on touch.");
     type.field("startsOn", &Lever::startsOn);
     type.field("cooldown", &Lever::cooldown)
         .range(0, 10, 0.05)
@@ -97,23 +105,44 @@ void Lever::onStart(GameContext &context) {
     sendSignal(context.scene(), entity().id(), targets, on_);
 }
 void Lever::applyVisuals() {
-    if (auto *sprite = entity().get<SpriteRenderer>())
+    if (auto *animated = entity().get<AnimatedSprite>())
+        animated->setBool("on", on_); // Art shows it through its controller.
+    else if (auto *sprite = entity().get<SpriteRenderer>())
         sprite->color = on_ ? onColor : baseColor_;
 }
 void Lever::onFixedUpdate(GameContext &context, float seconds) {
     cooldown_ = std::max(0.0F, cooldown_ - seconds);
+    if (!interactAction.empty() && cooldown_ <= 0.0F) {
+        for (const EntityId id : context.overlapping(entity().id())) {
+            Entity *other = context.scene().find(id);
+            if (!other || !matchesActivator(*other, activatorTags))
+                continue;
+            const auto *killable = other->get<Killable>();
+            const auto *player = other->get<PlayerInput>();
+            if ((killable && !killable->alive()) || !player ||
+                !player->button(context, interactAction).pressed)
+                continue;
+            if (auto *animated = other->get<AnimatedSprite>())
+                animated->trigger("interact");
+            flip(context, *other);
+            break; // One flip per press, even if two characters press together.
+        }
+    }
     sendSignal(context.scene(), entity().id(), targets, on_);
 }
-void Lever::onTriggerEnter(GameContext &context, Entity &other) {
-    if (cooldown_ > 0.0F || !matchesActivator(other, activatorTags))
-        return;
-    if (const auto *killable = other.get<Killable>(); killable && !killable->alive())
-        return;
+void Lever::flip(GameContext &context, Entity &by) {
     on_ = !on_;
     cooldown_ = cooldown;
     applyVisuals();
     play(context, sound);
-    context.emit("lever_toggled", entity().id(), other.id());
+    context.emit("lever_toggled", entity().id(), by.id());
+}
+void Lever::onTriggerEnter(GameContext &context, Entity &other) {
+    if (!interactAction.empty() || cooldown_ > 0.0F || !matchesActivator(other, activatorTags))
+        return;
+    if (const auto *killable = other.get<Killable>(); killable && !killable->alive())
+        return;
+    flip(context, other);
 }
 
 // ----- Door -----
@@ -164,6 +193,10 @@ void Door::onFixedUpdate(GameContext &context, float seconds) {
     const float step = speed * seconds / length;
     amount_ = wantOpen ? std::min(1.0F, amount_ + step) : std::max(0.0F, amount_ - step);
     moveKinematic(context, entity(), closedPosition_ + openOffset * amount_);
+    if (auto *animated = entity().get<AnimatedSprite>()) {
+        animated->setFloat("openAmount", amount_);
+        animated->setBool("open", wantOpen);
+    }
     if (before != amount_ && (amount_ == 0.0F || amount_ == 1.0F))
         context.emit(amount_ == 1.0F ? "door_opened" : "door_closed", entity().id());
 }

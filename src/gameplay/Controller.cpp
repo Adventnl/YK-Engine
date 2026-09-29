@@ -8,6 +8,14 @@ float approach(float value, float target, float amount) {
     return value < target ? std::min(value + amount, target) : std::max(value - amount, target);
 }
 
+// Where the character's feet are: the bottom of its first collider.
+Vec2 feetOf(const Entity &entity) {
+    const Vec2 position = entity.worldPosition();
+    if (const auto *collider = entity.get<Collider>())
+        return position + Vec2{0.0F, collider->offset.y + collider->size.y * 0.5F};
+    return position;
+}
+
 struct Ground {
     bool found{};
     Vec2 normal{0.0F, -1.0F}; // Points from the ground toward the character.
@@ -96,6 +104,13 @@ void PlatformerController::describe(TypeBuilder<PlatformerController> &type) {
         .range(0, 100, 0.1)
         .tooltip("Downward speed at which touching down raises the animation trigger 'landed'.");
     type.field("jumpSound", &PlatformerController::jumpSound).asset("sound");
+    type.field("landSound", &PlatformerController::landSound).asset("sound");
+    type.field("jumpEffect", &PlatformerController::jumpEffect)
+        .asset("prefab")
+        .tooltip("Effect prefab spawned at the feet when a jump starts (dust).");
+    type.field("landEffect", &PlatformerController::landEffect)
+        .asset("prefab")
+        .tooltip("Effect prefab spawned at the feet after a landing.");
     type.field("grounded", &PlatformerController::grounded_).readOnly();
 }
 
@@ -171,6 +186,7 @@ void PlatformerController::onFixedUpdate(GameContext &context, float seconds) {
         grounded_ = false;
         jumping_ = true;
         jumpedNow = true;
+        spawnEffect(context, jumpEffect, feetOf(entity()));
         if (!jumpSound.path.empty())
             context.audio().play(jumpSound.path);
     } else if (jump.released && jumping_ && next.y < 0.0F) {
@@ -199,6 +215,13 @@ void PlatformerController::onFixedUpdate(GameContext &context, float seconds) {
     if (!entity().has<AnimatedSprite>())
         if (auto *sprite = entity().get<SpriteRenderer>())
             sprite->flipX = facing_ < 0;
+    // Landing: touching down after a real fall (also drives the `landed` animation trigger).
+    const bool landedNow = grounded_ && !wasGroundedForAnimation_ && fallSpeed_ >= landingSpeed;
+    if (landedNow) {
+        if (!landSound.path.empty())
+            context.audio().play(landSound.path);
+        spawnEffect(context, landEffect, feetOf(entity()));
+    }
     if (auto *animated = entity().get<AnimatedSprite>()) {
         // What the body really did last tick (not what was commanded), so pushing against a wall
         // does not look like running.
@@ -212,14 +235,13 @@ void PlatformerController::onFixedUpdate(GameContext &context, float seconds) {
         if (jumpedNow)
             animated->trigger("jumped");
         // A landing counts only after a real fall, so stepping off a curb does not squash.
-        if (!grounded_) {
-            fallSpeed_ = std::max(fallSpeed_, velocity.y);
-        } else {
-            if (!wasGroundedForAnimation_ && fallSpeed_ >= landingSpeed)
-                animated->trigger("landed");
-            fallSpeed_ = 0.0F;
-        }
-        wasGroundedForAnimation_ = grounded_;
+        if (landedNow)
+            animated->trigger("landed");
     }
+    if (!grounded_)
+        fallSpeed_ = std::max(fallSpeed_, velocity.y);
+    else
+        fallSpeed_ = 0.0F;
+    wasGroundedForAnimation_ = grounded_;
 }
 } // namespace yk

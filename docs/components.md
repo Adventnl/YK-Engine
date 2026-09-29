@@ -93,15 +93,18 @@ Destroys the entity after a while (for effect prefabs).
 
 ### Killable
 
-Can be killed by hazards; comes back after a delay.
+Can be killed by hazards; plays its death animation, then comes back after a delay.
 
 | Property | Type | Default | Notes |
 |---|---|---|---|
 | `respawn` | bool | true |  |
 | `respawnDelay` | float | 1 | (range 0 to 60) |
+| `deathDuration` | float | 0.6 | Seconds the sprite stays visible after dying, for a death animation. (range 0 to 60) |
 | `spawnPoint` | entity | none | Return here; otherwise the last checkpoint, else the start. |
 | `deathSound` | asset | "" |  |
 | `respawnSound` | asset | "" |  |
+| `deathEffect` | asset | "" | Effect prefab spawned where it dies. |
+| `respawnEffect` | asset | "" | Effect prefab spawned where it returns. |
 | `alive` | bool | true | (runtime state, not saved) |
 
 ### PlatformerController
@@ -131,6 +134,9 @@ Requires: `RigidBody` `Collider` `PlayerInput`
 | `slideFriction` | float | 0 | (range 0 to 10) |
 | `landingSpeed` | float | 4 | Downward speed at which touching down raises the animation trigger 'landed'. (range 0 to 100) |
 | `jumpSound` | asset | "" |  |
+| `landSound` | asset | "" |  |
+| `jumpEffect` | asset | "" | Effect prefab spawned at the feet when a jump starts (dust). |
+| `landEffect` | asset | "" | Effect prefab spawned at the feet after a landing. |
 | `grounded` | bool | false | (runtime state, not saved) |
 
 ### PressurePlate
@@ -160,6 +166,7 @@ Requires: `Collider`
 |---|---|---|---|
 | `targets` | entity list | [] |  |
 | `activatorTags` | string list | [] |  |
+| `interactAction` | string | "" | Flip when a character in it presses this action (for example Interact). Empty: flip on touch. |
 | `startsOn` | bool | false |  |
 | `cooldown` | float | 0.4 | Seconds before it can flip again. (range 0 to 10) |
 | `onColor` | color | "#5adc6eff" |  |
@@ -220,6 +227,7 @@ Requires: `Collider`
 | `variable` | string | "score" | Blackboard variable to increase (shown by UI text as {name}). |
 | `value` | float | 1 | (range -1000 to 1000) |
 | `sound` | asset | "" |  |
+| `collectEffect` | asset | "" | Effect prefab spawned where it is picked up. |
 
 ### Checkpoint
 

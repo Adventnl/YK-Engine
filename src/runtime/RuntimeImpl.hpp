@@ -52,6 +52,7 @@ struct GameRuntime::Impl {
     std::map<std::string, std::shared_ptr<const AnimationSet>> animationSets;
     std::map<std::string, std::shared_ptr<const AnimationController>> animationControllers;
     std::map<std::string, Json> prefabDocuments;
+    std::unordered_set<std::string> failedPrefabs; // Reported once, then quietly refused.
 
     // ---- Physics binding (PhysicsBinding.cpp) ----
     struct BodyRecord {
