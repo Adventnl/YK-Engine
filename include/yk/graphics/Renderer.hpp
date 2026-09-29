@@ -9,6 +9,7 @@
 #include <span>
 struct SDL_Window;
 struct SDL_Renderer;
+struct SDL_Texture;
 namespace yk {
 class Application;
 class Renderer;
@@ -47,6 +48,9 @@ struct RenderPass {
     std::optional<Rect>
         viewport;               // Pixels of the render output (or logical units in letterbox mode).
     std::optional<Color> clear; // Fills the viewport before drawing.
+    // Draws into a texture from createRenderTarget instead of the frame. The viewport is then in
+    // texture pixels and defaults to the whole texture.
+    std::optional<TextureHandle> target{};
 };
 
 class Renderer {
@@ -57,6 +61,11 @@ class Renderer {
     Result<TextureHandle> createTexture(int width, int height, std::span<const Color> pixels,
                                         TextureFilter filter = TextureFilter::Nearest);
     Result<TextureHandle> builtinTexture(BuiltinTexture kind);
+    // A texture that passes can render into (linear filtered, alpha blended).
+    Result<TextureHandle> createRenderTarget(int width, int height);
+    // Backend texture, for tools that display a texture through their own UI layer. Null if
+    // invalid.
+    SDL_Texture *nativeTexture(TextureHandle texture) const;
     Vec2 textureSize(TextureHandle texture) const; // Pixels; zero for an invalid handle.
     // Absolute paths only; equivalent paths share a cached resource.
     Result<TextureHandle> loadBmp(const std::filesystem::path &path);

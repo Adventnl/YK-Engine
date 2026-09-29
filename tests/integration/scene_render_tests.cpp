@@ -12,6 +12,66 @@ namespace {
 constexpr Color leftClear{20, 24, 40, 255};
 constexpr Color rightClear{90, 90, 90, 255};
 
+// Draws into a render target, then shows the target as a sprite in the window.
+class TargetTestLayer final : public ApplicationLayer {
+  public:
+    Status initialize(Renderer &renderer) override {
+        auto created = renderer.createRenderTarget(64, 32);
+        if (!created)
+            return Error{created.error()};
+        target_ = created.value();
+        CHECK(renderer.nativeTexture(target_) != nullptr);
+        CHECK(renderer.textureSize(target_).x == 64 && renderer.textureSize(target_).y == 32);
+        CHECK(!renderer.createRenderTarget(0, 10) && !renderer.createRenderTarget(10, 20000));
+        auto plain = renderer.builtinTexture(BuiltinTexture::White);
+        if (!plain)
+            return Error{plain.error()};
+        white_ = plain.value();
+        return success();
+    }
+    bool update(const FrameContext &) override {
+        return true;
+    }
+    Status render(Renderer &renderer) override {
+        RenderPass invalid{Camera2D{}, std::nullopt, std::nullopt, white_};
+        CHECK(!renderer.beginPass(invalid)); // Not a render target.
+        Camera2D camera;
+        camera.position = {32, 16};
+        // Inside the target: a blue field with a red square in its left half.
+        if (auto status =
+                renderer.beginPass({camera, std::nullopt, Color{0, 0, 255, 255}, target_});
+            !status)
+            return status;
+        Sprite square;
+        square.texture = white_;
+        square.size = {16, 16};
+        square.transform.position = {16, 16};
+        square.tint = {255, 0, 0, 255};
+        if (auto status = renderer.submit(square); !status)
+            return status;
+        if (auto status = renderer.endPass(); !status)
+            return status;
+        // In the window: the target drawn at 3x scale with its own top-left at (10, 10).
+        Camera2D screen;
+        screen.position = renderer.viewport() * 0.5F;
+        if (auto status =
+                renderer.beginPass({screen, std::nullopt, Color{10, 10, 10, 255}, std::nullopt});
+            !status)
+            return status;
+        Sprite shown;
+        shown.texture = target_;
+        shown.size = {192, 96};
+        shown.anchor = {0, 0};
+        shown.transform.position = {10, 10};
+        if (auto status = renderer.submit(shown); !status)
+            return status;
+        return renderer.endPass();
+    }
+
+  private:
+    TextureHandle target_, white_;
+};
+
 class RenderTestLayer final : public ApplicationLayer {
   public:
     Status initialize(Renderer &renderer) override {
@@ -163,6 +223,28 @@ int main(int argc, char **argv) {
         CHECK(lit(3, 3) && lit(3, 0) && lit(6, 0)); // Middle bar and left stem.
         CHECK(!lit(5, 2));                          // Bottom rows of F have only the stem.
         SDL_DestroySurface(image);
+    }
+    // Render targets: pass into a texture, then display it.
+    {
+        auto app = Application::create({"target test", 400, 200, 0, 0});
+        CHECK(app);
+        if (app) {
+            TargetTestLayer layer;
+            const auto result = app.value()->run(layer, {2, capture});
+            if (!result)
+                std::fprintf(stderr, "%s\n", result.error().c_str());
+            CHECK(result);
+        }
+        if (SDL_Surface *targetImage = SDL_LoadBMP(capture.string().c_str())) {
+            // Target pixel (16,16) is inside the red square, drawn at (10+48, 10+48) = (58, 58).
+            CHECK(pixelIs(targetImage, 58, 58, {255, 0, 0, 255}));
+            CHECK(pixelIs(targetImage, 10 + 3 * 50, 10 + 3 * 16,
+                          {0, 0, 255, 255}));                     // Blue field to its right.
+            CHECK(pixelIs(targetImage, 5, 5, {10, 10, 10, 255})); // Window clear color outside.
+            SDL_DestroySurface(targetImage);
+        } else {
+            CHECK(false);
+        }
     }
     if (!keep)
         std::filesystem::remove(capture);

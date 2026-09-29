@@ -15,6 +15,7 @@
 #include <cassert>
 #include <limits>
 #include <map>
+#include <set>
 #include <thread>
 #include <variant>
 #include <vector>
@@ -70,6 +71,8 @@ struct Renderer::Impl {
     Vec2 viewport;        // Whole output (logical units in letterbox mode).
     Vec2 passSize;        // Size of the viewport the current pass draws into.
     std::array<std::optional<TextureHandle>, 2> builtins;
+    std::set<std::size_t> renderTargets; // Texture indices created by createRenderTarget.
+    bool targetActive{};
     bool nativeResolution{};
     bool passOpen{};
     bool inFrame{};
@@ -169,6 +172,28 @@ Vec2 Renderer::textureSize(TextureHandle texture) const {
     SDL_GetTextureSize(impl_->textures[texture.index_].get(), &width, &height);
     return {width, height};
 }
+Result<TextureHandle> Renderer::createRenderTarget(int width, int height) {
+    assertThread();
+    if (width <= 0 || height <= 0 || width > 16384 || height > 16384)
+        return Error{"Render target dimensions invalid"};
+    NativeTexture texture(SDL_CreateTexture(impl_->native.get(), SDL_PIXELFORMAT_RGBA32,
+                                            SDL_TEXTUREACCESS_TARGET, width, height));
+    if (!texture)
+        return sdlError("Create render target");
+    if (!SDL_SetTextureBlendMode(texture.get(), SDL_BLENDMODE_BLEND) ||
+        !SDL_SetTextureScaleMode(texture.get(), SDL_SCALEMODE_LINEAR))
+        return sdlError("Configure render target");
+    TextureHandle handle;
+    handle.owner_ = impl_->identity;
+    handle.index_ = impl_->textures.size();
+    impl_->textures.push_back(std::move(texture));
+    impl_->renderTargets.insert(handle.index_);
+    return handle;
+}
+SDL_Texture *Renderer::nativeTexture(TextureHandle texture) const {
+    assertThread();
+    return valid(texture) ? impl_->textures[texture.index_].get() : nullptr;
+}
 SDL_Renderer *Renderer::nativeRenderer() const {
     assertThread();
     return impl_->native.get();
@@ -241,6 +266,7 @@ Status Renderer::release(TextureHandle texture) {
     if (!valid(texture))
         return Error{"Invalid, released, or foreign texture handle"};
     impl_->textures[texture.index_].reset();
+    impl_->renderTargets.erase(texture.index_);
     return success();
 }
 Vec2 Renderer::viewport() const {
@@ -372,6 +398,14 @@ Status Renderer::beginPass(const RenderPass &pass) {
         return Error{"Render passes cannot nest"};
     if (!finite(pass.camera.position))
         return Error{"Invalid pass camera position"};
+    Vec2 surface = impl_->viewport; // Size of what this pass draws onto.
+    SDL_Texture *targetTexture = nullptr;
+    if (pass.target) {
+        if (!valid(*pass.target) || !impl_->renderTargets.contains(pass.target->index_))
+            return Error{"Pass target is not a live render target"};
+        targetTexture = impl_->textures[pass.target->index_].get();
+        surface = textureSize(*pass.target);
+    }
     SDL_Rect area{};
     if (pass.viewport) {
         const Rect &rect = *pass.viewport;
@@ -379,9 +413,9 @@ Status Renderer::beginPass(const RenderPass &pass) {
             return Error{"Invalid pass viewport"};
         const int left = std::max(0, static_cast<int>(std::floor(rect.position.x)));
         const int top = std::max(0, static_cast<int>(std::floor(rect.position.y)));
-        const int right = std::min(static_cast<int>(impl_->viewport.x),
+        const int right = std::min(static_cast<int>(surface.x),
                                    static_cast<int>(std::ceil(rect.position.x + rect.size.x)));
-        const int bottom = std::min(static_cast<int>(impl_->viewport.y),
+        const int bottom = std::min(static_cast<int>(surface.y),
                                     static_cast<int>(std::ceil(rect.position.y + rect.size.y)));
         if (right <= left || bottom <= top)
             return Error{"Pass viewport is empty or outside the frame"};
@@ -389,10 +423,15 @@ Status Renderer::beginPass(const RenderPass &pass) {
     }
     if (auto drawn = flush(); !drawn) // Earlier submissions belong to the previous view.
         return drawn;
+    if (targetTexture) {
+        if (!SDL_SetRenderTarget(impl_->native.get(), targetTexture))
+            return sdlError("Set render target");
+        impl_->targetActive = true;
+    }
     if (!SDL_SetRenderViewport(impl_->native.get(), pass.viewport ? &area : nullptr))
         return sdlError("Set pass viewport");
-    impl_->passSize = pass.viewport ? Vec2{static_cast<float>(area.w), static_cast<float>(area.h)}
-                                    : impl_->viewport;
+    impl_->passSize =
+        pass.viewport ? Vec2{static_cast<float>(area.w), static_cast<float>(area.h)} : surface;
     impl_->camera = pass.camera;
     if (pass.clear) {
         const Color color = *pass.clear;
@@ -410,6 +449,10 @@ Status Renderer::endPass() {
     impl_->passOpen = false;
     auto drawn = flush();
     SDL_SetRenderViewport(impl_->native.get(), nullptr);
+    if (impl_->targetActive) {
+        SDL_SetRenderTarget(impl_->native.get(), nullptr);
+        impl_->targetActive = false;
+    }
     impl_->camera = impl_->frameCamera;
     impl_->passSize = impl_->viewport;
     return drawn;
@@ -423,6 +466,10 @@ Status Renderer::present(const std::optional<std::filesystem::path> &capture) {
     impl_->passOpen = false;
     auto drawn = flush();
     SDL_SetRenderViewport(impl_->native.get(), nullptr);
+    if (impl_->targetActive) {
+        SDL_SetRenderTarget(impl_->native.get(), nullptr);
+        impl_->targetActive = false;
+    }
     impl_->camera = impl_->frameCamera;
     impl_->passSize = impl_->viewport;
     if (!drawn)
