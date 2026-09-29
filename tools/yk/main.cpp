@@ -6,11 +6,15 @@
 //                                  way the editor saves them; --check only reports (exit 1)
 //   yk info     [project]          summarize a project
 //   yk components                  print the component reference (Markdown)
+//   yk targets                     which systems a game can be exported for from here
+//   yk export [project] --target windows|macos|linux --out <folder> [--player <file>] [--zip]
+//                                  package the game: the player, the data and the notices
 //
 // `project` is a directory or a project.ykproj file; it defaults to the current directory.
 #include "yk/animation/AnimationController.hpp"
 #include "yk/animation/AnimationSet.hpp"
 #include "yk/assets/AssetSource.hpp"
+#include "yk/assets/Export.hpp"
 #include "yk/assets/Validation.hpp"
 #include "yk/core/FileIO.hpp"
 #include "yk/core/Log.hpp"
@@ -36,6 +40,14 @@ void usage() {
         "                      editor's canonical form (--check: only list what would change)\n"
         "  info                summarize the project\n"
         "  components          print the component reference (Markdown)\n"
+        "  targets             list the systems a game can be exported for from here\n"
+        "  export              package the game for a system:\n"
+        "      --target <windows|macos|linux>   (default: this system)\n"
+        "      --out <folder>                   where the game folder or bundle is created\n"
+        "      --player <file>                  the player built for the target (default: found\n"
+        "                                       beside yk or in templates/<target>/)\n"
+        "      --zip                            also write a .zip next to it\n"
+        "      --force                          replace an earlier export\n"
         "project: a directory or project.ykproj (default: the current directory)");
 }
 
@@ -44,6 +56,11 @@ struct Args {
     std::filesystem::path project;
     bool check{};
     bool strict{};
+    // export
+    std::string target;
+    std::filesystem::path out, player;
+    bool zip{};
+    bool force{};
 };
 
 std::optional<Args> parse(int argc, char **argv) {
@@ -53,13 +70,30 @@ std::optional<Args> parse(int argc, char **argv) {
     args.command = argv[1];
     for (int i = 2; i < argc; ++i) {
         const std::string arg = argv[i];
-        if (arg == "--check")
+        const auto value = [&]() -> const char * { return i + 1 < argc ? argv[++i] : nullptr; };
+        if (arg == "--check") {
             args.check = true;
-        else if (arg == "--strict")
+        } else if (arg == "--strict") {
             args.strict = true;
-        else if (!arg.empty() && arg[0] != '-' && args.project.empty())
+        } else if (arg == "--zip") {
+            args.zip = true;
+        } else if (arg == "--force") {
+            args.force = true;
+        } else if (arg == "--target" || arg == "--out" || arg == "--player") {
+            const char *text = value();
+            if (!text) {
+                std::fprintf(stderr, "yk: %s needs a value\n", arg.c_str());
+                return std::nullopt;
+            }
+            if (arg == "--target")
+                args.target = text;
+            else if (arg == "--out")
+                args.out = text;
+            else
+                args.player = text;
+        } else if (!arg.empty() && arg[0] != '-' && args.project.empty()) {
             args.project = arg;
-        else {
+        } else {
             std::fprintf(stderr, "yk: unknown argument '%s'\n", arg.c_str());
             return std::nullopt;
         }
@@ -67,6 +101,18 @@ std::optional<Args> parse(int argc, char **argv) {
     if (args.project.empty())
         args.project = std::filesystem::current_path();
     return args;
+}
+
+// The folder this program runs from, to find the player and the notices next to it.
+std::filesystem::path executableDirectory(const char *argv0) {
+    std::error_code error;
+#if defined(__linux__)
+    const auto self = std::filesystem::read_symlink("/proc/self/exe", error);
+    if (!error && !self.empty())
+        return self.parent_path();
+#endif
+    const auto resolved = std::filesystem::weakly_canonical(argv0, error);
+    return error ? std::filesystem::current_path() : resolved.parent_path();
 }
 
 std::optional<Project> openProject(const Args &args) {
@@ -230,6 +276,74 @@ int info(const Args &args) {
     }
     return 0;
 }
+int targets(const std::filesystem::path &here) {
+    for (const BuildTarget target : allBuildTargets) {
+        const auto player = findPlayer(target, here);
+        std::printf("%-8s %s\n", name(target),
+                    player ? player->string().c_str()
+                           : "no player program found (see docs/BUILDING.md)");
+    }
+    if (const auto notices = findNotices(here))
+        std::printf("notices  %s\n", notices->string().c_str());
+    else
+        std::printf("notices  not found (exported games will carry none)\n");
+    return 0;
+}
+
+int exportProject(const Args &args, const std::filesystem::path &here) {
+    const auto project = openProject(args);
+    if (!project)
+        return 2;
+    ExportOptions options;
+    if (!args.target.empty()) {
+        const auto target = buildTargetFromName(args.target);
+        if (!target) {
+            std::fprintf(stderr, "yk: unknown target '%s' (windows, macos or linux)\n",
+                         args.target.c_str());
+            return 2;
+        }
+        options.target = *target;
+    }
+    if (args.out.empty()) {
+        std::fprintf(stderr, "yk export: --out <folder> is required\n");
+        return 2;
+    }
+    options.destination = args.out;
+    if (!args.player.empty()) {
+        options.player = args.player;
+    } else if (const auto found = findPlayer(options.target, here)) {
+        options.player = *found;
+    } else {
+        std::fprintf(stderr,
+                     "yk export: no %s player program found. Build yk_player for that system and "
+                     "pass --player <file>, or put it in templates/%s/ beside yk.\n",
+                     displayName(options.target), name(options.target));
+        return 1;
+    }
+    if (const auto notices = findNotices(here))
+        options.notices = *notices;
+    options.archive = args.zip;
+    options.overwrite = args.force;
+    options.progress = [](const std::string &line) { std::printf("  %s\n", line.c_str()); };
+    ComponentRegistry registry;
+    registerStandardComponents(registry);
+    std::printf("Exporting %s for %s\n", productName(*project).c_str(),
+                displayName(options.target));
+    const auto report = exportGame(*project, registry, options);
+    if (!report) {
+        std::fprintf(stderr, "yk export: %s\n", report.error().c_str());
+        return 1;
+    }
+    for (const std::string &warning : report.value().warnings)
+        std::printf("warning: %s\n", warning.c_str());
+    std::printf("%zu file(s), %.1f MB\n  program: %s\n  data:    %s\n", report.value().files,
+                static_cast<double>(report.value().bytes) / 1048576.0,
+                report.value().executable.string().c_str(),
+                report.value().dataFolder.string().c_str());
+    if (!report.value().archive.empty())
+        std::printf("  archive: %s\n", report.value().archive.string().c_str());
+    return 0;
+}
 } // namespace
 
 int main(int argc, char **argv) {
@@ -250,6 +364,10 @@ int main(int argc, char **argv) {
         return format(*args);
     if (args->command == "info")
         return info(*args);
+    if (args->command == "targets")
+        return targets(executableDirectory(argv[0]));
+    if (args->command == "export")
+        return exportProject(*args, executableDirectory(argv[0]));
     std::fprintf(stderr, "yk: unknown command '%s'\n\n", args->command.c_str());
     usage();
     return 2;

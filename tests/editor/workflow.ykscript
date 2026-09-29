@@ -210,6 +210,7 @@ expect clean
 log "== 8. Export the game (needs the player next to the editor)"
 menu "Build/Export Game"
 expect dialog export
+click dialog/Export/target/${YK_TARGET}
 click dialog/Export/path
 key ctrl+a
 type ${YK_TEST_TMP}
@@ -218,6 +219,8 @@ click dialog/Export/export
 expect dialog message
 click dialog/Message/ok
 expect no-dialog
-expect file ${YK_TEST_TMP}/Platformer-game/README.txt exists
-expect file ${YK_TEST_TMP}/Platformer-game/project/scenes/main.ykscene exists
+expect file ${YK_TEST_TMP}/${YK_EXPORT_DATA}/../README.txt exists
+expect file ${YK_TEST_TMP}/${YK_EXPORT_DATA}/project.ykproj exists
+expect file ${YK_TEST_TMP}/${YK_EXPORT_DATA}/scenes/main.ykscene exists
+expect panel-view output
 log "workflow finished"

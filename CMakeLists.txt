@@ -27,7 +27,8 @@ add_library(yk_engine STATIC src/core/Log.cpp src/core/Time.cpp src/core/Color.c
     src/scene/EntityId.cpp src/scene/Property.cpp src/scene/Registry.cpp src/scene/Entity.cpp
     src/scene/Scene.cpp src/scene/SceneSerializer.cpp src/scene/RegistryDocs.cpp src/animation/AnimationSet.cpp
     src/animation/AnimationController.cpp
-    src/assets/Project.cpp src/assets/TextureMeta.cpp src/assets/AssetSource.cpp src/components/Components.cpp
+    src/assets/Project.cpp src/assets/TextureMeta.cpp src/assets/AssetSource.cpp src/assets/Zip.cpp
+    src/assets/Export.cpp src/components/Components.cpp
     src/components/Effects.cpp
     src/runtime/Blackboard.cpp src/runtime/EventBus.cpp src/runtime/GameRuntime.cpp
     src/runtime/PhysicsBinding.cpp src/assets/Validation.cpp
@@ -36,6 +37,7 @@ add_library(yk::engine ALIAS yk_engine)
 target_include_directories(yk_engine PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
     PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/third_party")
 target_link_libraries(yk_engine PRIVATE box2d)
+target_compile_definitions(yk_engine PRIVATE YK_VERSION="${PROJECT_VERSION}")
 yk_target(yk_engine)
 
 # Reusable gameplay components (plates, doors, controllers...). Depends only on the engine.
@@ -85,7 +87,7 @@ if(YK_RUNTIME)
     add_library(yk_editor_ui STATIC "${CMAKE_BINARY_DIR}/generated/EditorFonts.cpp" editor/ui/Theme.cpp
         editor/ui/UiCommon.cpp editor/ui/EditorState.cpp editor/ui/Shell.cpp editor/ui/Workbench.cpp
         editor/ui/Menus.cpp editor/ui/Welcome.cpp editor/ui/ProblemsPanel.cpp editor/ui/ProfilerPanel.cpp
-        editor/ui/SideViews.cpp
+        editor/ui/SideViews.cpp editor/ui/ProjectSettings.cpp
         editor/ui/HierarchyPanel.cpp editor/ui/InspectorPanel.cpp editor/ui/SceneViewPanel.cpp
         editor/ui/GameViewPanel.cpp editor/ui/AssetsPanel.cpp editor/ui/ConsolePanel.cpp
         editor/ui/Dialogs.cpp editor/ui/EditorApp.cpp editor/ui/EditorDriver.cpp)
@@ -106,6 +108,7 @@ if(BUILD_TESTING)
         yk_add_test(${suite} tests/unit/${suite}_tests.cpp LIBS yk::engine TIMEOUT 30)
     endforeach()
     yk_add_test(gameplay tests/unit/gameplay_tests.cpp LIBS yk::gameplay TIMEOUT 120)
+    yk_add_test(export tests/unit/export_tests.cpp LIBS yk::gameplay TIMEOUT 60)
     # The demo game is a separate project (YK-DemoGame) that only consumes the engine; this plays it.
     yk_add_test(demo tests/unit/demo_tests.cpp LIBS yk::gameplay TIMEOUT 120
         DEFINITIONS YK_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")

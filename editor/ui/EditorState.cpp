@@ -415,28 +415,50 @@ void EditorState::addOutput(LogLevel level, const std::string &text) {
         output.erase(output.begin(), output.begin() + 500);
 }
 
-std::filesystem::path EditorState::playerExecutable() const {
-    std::filesystem::path base = ".";
+std::filesystem::path EditorState::executableDirectory() const {
     if (const char *path = SDL_GetBasePath())
-        base = path;
-#ifdef _WIN32
-    return base / "yk_player.exe";
-#else
-    return base / "yk_player";
-#endif
+        return path;
+    return ".";
 }
 
-Status EditorState::exportGame(const std::filesystem::path &destination) {
+std::optional<std::filesystem::path> EditorState::playerFor(BuildTarget target) const {
+    return findPlayer(target, executableDirectory());
+}
+
+std::filesystem::path EditorState::playerExecutable() const {
+    if (const auto found = playerFor(hostTarget()))
+        return *found;
+    return executableDirectory() / playerFileName(hostTarget());
+}
+
+Result<ExportReport> EditorState::exportGame(ExportOptions request) {
     if (!project)
         return Error{"No project is open"};
-    auto exported = project->exportGame(destination, playerExecutable());
+    if (request.notices.empty())
+        if (const auto notices = findNotices(executableDirectory()))
+            request.notices = *notices;
+    request.progress = [this](const std::string &line) {
+        addOutput(LogLevel::Info, line);
+        log(LogLevel::Info, "export", line);
+    };
+    layout.panelView = PanelView::Output;
+    layout.panelVisible = true;
+    addOutput(LogLevel::Info,
+              std::string("--- Export for ") + displayName(request.target) + " ---");
+    auto exported = project->exportGame(request);
     if (!exported) {
-        log(LogLevel::Error, "editor", exported.error());
+        addOutput(LogLevel::Error, exported.error());
+        log(LogLevel::Error, "export", exported.error());
         return Error{exported.error()};
     }
-    message("Game exported", "The game is in:\n" + exported.value().string() +
-                                 "\n\nRun yk_player from that folder to play it.");
-    return success();
+    for (const std::string &warning : exported.value().warnings) {
+        addOutput(LogLevel::Warning, warning);
+        log(LogLevel::Warning, "export", warning);
+    }
+    addOutput(LogLevel::Info, std::to_string(exported.value().files) + " files, " +
+                                  std::to_string(exported.value().bytes / 1024) +
+                                  " KB of game data");
+    return exported;
 }
 
 void EditorState::guarded(std::function<void()> action) {

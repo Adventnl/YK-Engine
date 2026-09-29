@@ -34,6 +34,11 @@ void prefabsPanel(EditorState &state);
 void componentsPanel(EditorState &state);
 void buildPanel(EditorState &state);
 void drawDialogs(EditorState &state);
+// Tabs of the Project Settings dialog that edit the project's data (ProjectSettings.cpp); they work
+// on the dialog's draft. `error` is shown under the tabs.
+void settingsInputTab(Project &draft, std::string &error);
+void settingsRenderingTab(Project &draft);
+void settingsBuildTab(Project &draft);
 // Opens a dialog with sensible defaults. `entity` is the entity a prefab is saved from.
 void showDialog(EditorState &state, DialogKind kind, EntityId entity = {});
 

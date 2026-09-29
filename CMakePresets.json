@@ -39,6 +39,15 @@
       "cacheVariables": {
         "YK_RUNTIME": "OFF"
       }
+    },
+    {
+      "name": "windows-cross",
+      "inherits": "release",
+      "binaryDir": "${sourceDir}/build/windows-cross",
+      "toolchainFile": "${sourceDir}/cmake/toolchains/mingw-w64-x86_64.cmake",
+      "cacheVariables": {
+        "BUILD_TESTING": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -57,6 +66,10 @@
     {
       "name": "headless",
       "configurePreset": "headless"
+    },
+    {
+      "name": "windows-cross",
+      "configurePreset": "windows-cross"
     }
   ],
   "testPresets": [

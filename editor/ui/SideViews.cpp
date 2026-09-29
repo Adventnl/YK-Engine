@@ -236,6 +236,21 @@ void buildPanel(EditorState &state) {
         if (action("build/export", Icon::Build, "Export Game...",
                    "Package the game for another computer", !state.playing()))
             showDialog(state, DialogKind::Export);
+        // Which systems can be exported for from this installation.
+        ImGui::PushFont(fonts().ui, 12.5F);
+        for (const BuildTarget target : allBuildTargets) {
+            const auto player = state.playerFor(target);
+            ImGui::Indent(12.0F);
+            ImGui::TextColored(imColor(vs::text), "%s", displayName(target));
+            ImGui::SameLine(110.0F);
+            ImGui::TextColored(imColor(player ? vs::success : vs::textFaint), "%s",
+                               player ? "player ready" : "no player program");
+            tooltip(player ? player->string()
+                           : std::string("Build yk_player for ") + displayName(target) +
+                                 " (docs/BUILDING.md) and export with its path.");
+            ImGui::Unindent(12.0F);
+        }
+        ImGui::PopFont();
         sectionGap();
     }
     if (section("Last Output", "build/output")) {

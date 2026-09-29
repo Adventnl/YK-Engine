@@ -106,6 +106,46 @@ Result<LayerConfig> LayerConfig::fromJson(const Json &json) {
     return config;
 }
 
+Json BuildSettings::toJson() const {
+    Json json = Json::object();
+    json.set("productName", productName);
+    json.set("executable", executable);
+    json.set("version", version);
+    json.set("identifier", identifier);
+    Json list = Json::array();
+    for (const std::string &path : exclude)
+        list.push(path);
+    json.set("exclude", list);
+    return json;
+}
+Result<BuildSettings> BuildSettings::fromJson(const Json &json) {
+    if (!json.isObject())
+        return Error{"'build' must be an object"};
+    BuildSettings settings;
+    const auto text = [&](const char *key, std::string &into) -> Status {
+        const Json &value = json.get(key);
+        if (value.isNull())
+            return success();
+        if (!value.isString())
+            return Error{std::string("'build.") + key + "' must be a string"};
+        into = value.asString();
+        return success();
+    };
+    for (const auto &[key, into] :
+         {std::pair<const char *, std::string *>{"productName", &settings.productName},
+          {"executable", &settings.executable},
+          {"version", &settings.version},
+          {"identifier", &settings.identifier}})
+        if (auto status = text(key, *into); !status)
+            return Error{status.error()};
+    for (const Json &path : json.get("exclude").items()) {
+        if (!path.isString() || path.asString().empty())
+            return Error{"'build.exclude' must list non-empty paths"};
+        settings.exclude.push_back(path.asString());
+    }
+    return settings;
+}
+
 Project Project::create(const std::filesystem::path &directory, std::string projectName) {
     Project project;
     project.name = std::move(projectName);
@@ -157,6 +197,12 @@ Result<Project> Project::load(const std::filesystem::path &fileOrDirectory) {
             return Error{file.string() + ": " + parsed.error()};
         project.textures = parsed.value();
     }
+    if (const Json *build = json.find("build")) {
+        auto parsed = BuildSettings::fromJson(*build);
+        if (!parsed)
+            return Error{file.string() + ": " + parsed.error()};
+        project.build = std::move(parsed.value());
+    }
     if (const Json *input = json.find("input")) {
         auto parsed = InputMap::fromJson(*input);
         if (!parsed)
@@ -182,6 +228,8 @@ Json Project::toJson() const {
     json.set("layers", layers.toJson());
     json.set("textures", textures.toJson());
     json.set("input", input.toJson());
+    if (build != BuildSettings{}) // Projects that never touched the settings keep a small file.
+        json.set("build", build.toJson());
     return json;
 }
 Result<std::filesystem::path> Project::resolve(std::string_view relative) const {
@@ -198,7 +246,7 @@ Result<std::filesystem::path> Project::resolve(std::string_view relative) const 
 std::optional<std::string> Project::relativize(const std::filesystem::path &absolute) const {
     std::error_code error;
     const auto relative = std::filesystem::relative(absolute, root, error);
-    if (error || relative.empty() || relative.native().starts_with(".."))
+    if (error || relative.empty() || *relative.begin() == "..")
         return std::nullopt;
     return toPortablePath(relative);
 }

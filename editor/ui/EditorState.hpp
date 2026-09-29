@@ -105,6 +105,13 @@ struct DialogState {
     std::vector<std::string> unsavedScenes; // What the Unsaved dialog offers to save.
     std::vector<ProjectIssue> issues;       // Validation results.
     std::optional<Project> draft;           // Project settings being edited; applied on Save.
+    // The Export dialog.
+    BuildTarget exportTarget{hostTarget()};
+    std::string exportPlayer; // Player program override; empty: the one found for the target.
+    bool exportZip{true};
+    bool exportReplace{};
+    // A folder the Message dialog offers to show in the file manager.
+    std::filesystem::path revealPath;
 };
 
 // Something the user asked for that the entity-reference field is waiting on ("click the door").
@@ -219,10 +226,14 @@ class EditorState {
     // update.
     void refreshProblems();
     void addOutput(LogLevel level, const std::string &text); // A line for the Build Output panel.
-    // Copies the project and the player next to it into a new folder (see
-    // EditorProject::exportGame).
-    Status exportGame(const std::filesystem::path &destination);
-    std::filesystem::path playerExecutable() const;
+    // The folder the editor runs from: the player, `yk` and export templates live beside it.
+    std::filesystem::path executableDirectory() const;
+    // The player program for `target`, when one can be found (Export.hpp: findPlayer).
+    std::optional<std::filesystem::path> playerFor(BuildTarget target) const;
+    std::filesystem::path playerExecutable() const; // The one for this system (may not exist).
+    // Packages the game (see yk/assets/Export.hpp). Every step goes to the Build Output panel and
+    // the console; the panel opens so the result is seen.
+    Result<ExportReport> exportGame(ExportOptions request);
     // Runs `action` now, or after the user decides what to do with unsaved changes.
     void guarded(std::function<void()> action);
 

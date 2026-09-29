@@ -1,6 +1,7 @@
 #pragma once
 #include "core/EditorDocument.hpp"
 #include "yk/assets/AssetSource.hpp"
+#include "yk/assets/Export.hpp"
 #include "yk/assets/Project.hpp"
 #include "yk/assets/Validation.hpp"
 #include <filesystem>
@@ -61,11 +62,9 @@ class EditorProject {
     // Loads every scene and prefab and reports what a game would trip over.
     std::vector<ProjectIssue> validate() const;
 
-    // Copies the project and the player executable into <destination>/<project name>-game/, the
-    // player beside a project/ folder: everything needed to run the game. Refuses a project with
-    // errors and never overwrites an existing folder. Returns the folder that was created.
-    Result<std::filesystem::path> exportGame(const std::filesystem::path &destination,
-                                             const std::filesystem::path &player) const;
+    // Packages the project as a game for `options.target` (see yk/assets/Export.hpp): the player
+    // program, the project's data, notices and a README. Refuses a project with errors.
+    Result<ExportReport> exportGame(const ExportOptions &options) const;
 
     // "scenes/level 1" or "level.txt" -> a path with the wanted extension, or an error when the
     // result would leave the project.

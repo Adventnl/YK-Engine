@@ -803,6 +803,18 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
         return report(lower(w[3]) == "exists" ? exists : !exists,
                       "'" + path.string() + (exists ? "' exists" : "' does not exist"));
     }
+    if (what == "file-contains" || what == "file-lacks") { // expect file-contains PATH TEXT
+        if (!need(2))
+            return -1;
+        std::filesystem::path path = arg;
+        if (path.is_relative() && state.project)
+            path = state.project->project().root / path;
+        const auto text = readTextFile(path);
+        const bool found = text && text.value().find(w[3]) != std::string::npos;
+        return report(what == "file-contains" ? found : !found,
+                      "'" + path.string() + (found ? "' contains '" : "' does not contain '") +
+                          w[3] + "'");
+    }
     if (what == "start-scene")
         return report(state.project && state.project->project().startScene == arg,
                       "the start scene differs");

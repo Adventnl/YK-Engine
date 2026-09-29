@@ -28,7 +28,7 @@ struct Options {
 void usage() {
     std::puts(
         "usage: yk_player [options] [project]\n"
-        "  --project <dir|file>   project to run (default: ./project beside the executable, else "
+        "  --project <dir|file>   project to run (default: ./data beside the executable, else "
         "here)\n"
         "  --scene <path>         project-relative scene to start with (default: the start scene)\n"
         "  --frames <n>           exit after n frames\n"
@@ -77,13 +77,25 @@ std::optional<Options> parse(int argc, char **argv) {
     return options;
 }
 
+// A game started by double-click has no console: say what went wrong in a message box as well.
+int fatal(const std::string &message) {
+    std::fprintf(stderr, "%s\n", message.c_str());
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "The game cannot start", message.c_str(),
+                             nullptr);
+    return 1;
+}
+
 std::filesystem::path locateProject(const Options &options) {
     if (!options.project.empty())
         return options.project;
+    // An exported game keeps its project in data/ beside the program (inside Resources/ in a macOS
+    // bundle, which is what SDL reports as the base path); project/ is the older name.
     if (const char *base = SDL_GetBasePath()) {
-        const std::filesystem::path beside = std::filesystem::path(base) / "project";
-        if (std::filesystem::exists(beside / Project::fileName))
-            return beside;
+        for (const char *folder : {"data", "project"}) {
+            const std::filesystem::path beside = std::filesystem::path(base) / folder;
+            if (std::filesystem::exists(beside / Project::fileName))
+                return beside;
+        }
     }
     return std::filesystem::current_path();
 }
@@ -205,10 +217,8 @@ int main(int argc, char **argv) {
         return 1;
     }
     auto project = Project::load(locateProject(*options));
-    if (!project) {
-        std::fprintf(stderr, "%s\n", project.error().c_str());
-        return 1;
-    }
+    if (!project)
+        return fatal(project.error());
     if (!options->capture.empty() && options->frames == 0) {
         std::fprintf(stderr, "--capture needs --frames\n");
         return 2;
@@ -221,19 +231,15 @@ int main(int argc, char **argv) {
     config.logicalWidth = loaded.window.width;
     config.logicalHeight = loaded.window.height;
     auto app = Application::create(config);
-    if (!app) {
-        std::fprintf(stderr, "%s\n", app.error().c_str());
-        return 1;
-    }
+    if (!app)
+        return fatal(app.error());
     PlayerLayer layer(loaded, registry, *options);
     RunOptions run;
     run.frameLimit = options->frames;
     if (!options->capture.empty())
         run.captureLastFrame = options->capture;
     const auto result = app.value()->run(layer, run);
-    if (!result) {
-        std::fprintf(stderr, "%s\n", result.error().c_str());
-        return 1;
-    }
+    if (!result)
+        return fatal(result.error());
     return 0;
 }

@@ -1,0 +1,103 @@
+# Project Settings and Export, through the real dialogs: the input map (sets, actions, bindings),
+# rendering defaults, the build settings, and exporting the game with those settings.
+timeout 300
+expect project "Cinder Vale"
+expect file-lacks project.ykproj "Dash"
+
+log "== the input map"
+menu "File/Project Settings"
+expect dialog settings
+click dialog/Settings/tab/Input
+expect widget dialog/Settings/input/set/Player1
+expect widget dialog/Settings/input/set/Player2
+expect widget dialog/Settings/input/set/Global
+click dialog/Settings/input/set/Player2
+expect widget dialog/Settings/input/binding/Player2/Jump/Up
+capture ${SHOT_DIR}/settings-01-input.bmp
+# A new action, given a key by pressing it.
+click dialog/Settings/input/newaction
+type Dash
+click dialog/Settings/input/addaction
+expect widget dialog/Settings/input/action/Player2/4
+click dialog/Settings/input/add/Player2/4
+click dialog/Settings/input/listen
+expect widget dialog/Settings/input/listening
+key x
+expect widget dialog/Settings/input/binding/Player2/Dash/X
+# A gamepad button from the menu, then remove the key again.
+click dialog/Settings/input/add/Player2/4
+click dialog/Settings/input/menu/GamepadButton
+click dialog/Settings/input/pad/East
+expect widget "dialog/Settings/input/binding/Player2/Dash/Pad East"
+click dialog/Settings/input/binding/Player2/Dash/X
+expect no-widget dialog/Settings/input/binding/Player2/Dash/X
+capture ${SHOT_DIR}/settings-02-dash.bmp
+# A whole new set.
+click dialog/Settings/input/newset
+type Menu
+click dialog/Settings/input/addset
+expect widget dialog/Settings/input/set/Menu
+# Names must stay unique.
+click dialog/Settings/input/newset
+type Menu
+click dialog/Settings/input/addset
+click dialog/Settings/input/removeset
+expect no-widget dialog/Settings/input/set/Menu
+
+log "== rendering defaults and build settings"
+click dialog/Settings/tab/Rendering
+expect widget dialog/Settings/rendering/ppu
+expect widget dialog/Settings/rendering/filter
+click dialog/Settings/tab/Build
+click dialog/Settings/build/product
+key ctrl+a
+type "Cinder Vale Deluxe"
+click dialog/Settings/build/version
+key ctrl+a
+type 2.5.0
+capture ${SHOT_DIR}/settings-03-build.bmp
+click dialog/Settings/save
+expect no-dialog
+expect file-contains project.ykproj "Dash"
+expect file-contains project.ykproj "Pad:East"
+expect file-lacks project.ykproj "Key:X"
+expect file-contains project.ykproj "Cinder Vale Deluxe"
+expect file-contains project.ykproj "2.5.0"
+
+log "== Cancel discards the draft"
+menu "File/Project Settings"
+expect dialog settings
+wait 5
+click dialog/Settings/tab/Input
+expect widget dialog/Settings/input/set/Player1
+click dialog/Settings/input/set/Player1
+click dialog/Settings/input/newaction
+type Nothing
+click dialog/Settings/input/addaction
+click dialog/Settings/cancel
+expect no-dialog
+expect file-lacks project.ykproj "Nothing"
+
+log "== export with the new names"
+menu "Build/Export Game"
+expect dialog export
+expect widget dialog/Export/target/windows
+expect widget dialog/Export/target/macos
+expect widget dialog/Export/target/linux
+click dialog/Export/target/${YK_TARGET}
+click dialog/Export/path
+key ctrl+a
+type ${YK_TEST_TMP}
+key enter
+capture ${SHOT_DIR}/settings-04-export.bmp
+click dialog/Export/export
+expect dialog message
+click dialog/Message/ok
+expect no-dialog
+expect file ${YK_TEST_TMP}/${YK_EXPORT_FOLDER}/CinderValeDeluxe${YK_EXE_SUFFIX} exists
+expect file ${YK_TEST_TMP}/${YK_DELUXE_DATA}/project.ykproj exists
+expect file ${YK_TEST_TMP}/${YK_DELUXE_DATA}/scenes/level01.ykscene exists
+expect file ${YK_TEST_TMP}/${YK_DELUXE_DATA}/assets/tiles exists
+# Development files never ship.
+expect file ${YK_TEST_TMP}/${YK_DELUXE_DATA}/tools missing
+expect file ${YK_TEST_TMP}/${YK_DELUXE_DATA}/README.md missing
