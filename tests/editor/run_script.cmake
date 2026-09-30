@@ -66,7 +66,7 @@ if(RAW_PROJECT)
     list(APPEND arguments "${RAW_PROJECT}")
 endif()
 execute_process(COMMAND "${EDITOR}" ${arguments}
-    RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE errors TIMEOUT 240)
+    RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE errors TIMEOUT 540)
 if(NOT result EQUAL 0)
     message("${output}")
     message("${errors}")

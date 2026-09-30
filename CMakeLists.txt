@@ -218,7 +218,7 @@ if(BUILD_TESTING)
                 COMMAND ${CMAKE_COMMAND} -DEDITOR=$<TARGET_FILE:yk_editor> -DSCRIPT=${script}
                     -DWORK=${CMAKE_BINARY_DIR}/editor-tests/${script_name} ${script_project}
                     -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/editor/run_script.cmake)
-            set_tests_properties(editor_${script_name} PROPERTIES TIMEOUT 300)
+            set_tests_properties(editor_${script_name} PROPERTIES TIMEOUT 600)
         endforeach()
         # The example game's own editor, built with yk_add_game_hosts, shows and edits its component.
         add_test(NAME editor_game_module
@@ -226,7 +226,7 @@ if(BUILD_TESTING)
                 -DSCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/tests/game_module/editor.ykscript
                 -DWORK=${CMAKE_BINARY_DIR}/editor-tests/game_module -DPROJECT=${YK_SPINNER_PROJECT}
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/editor/run_script.cmake)
-        set_tests_properties(editor_game_module PROPERTIES TIMEOUT 300)
+        set_tests_properties(editor_game_module PROPERTIES TIMEOUT 600)
         # An editor started with a project that is not there reports it and stays open.
         add_test(NAME editor_bad_project
             COMMAND ${CMAKE_COMMAND} -DEDITOR=$<TARGET_FILE:yk_editor>
@@ -251,7 +251,7 @@ if(BUILD_TESTING)
             add_test(NAME editor_layout_${part}
                 COMMAND ${CMAKE_COMMAND} ${persist_args}
                     -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/editor/run_script.cmake)
-            set_tests_properties(editor_layout_${part} PROPERTIES TIMEOUT 300)
+            set_tests_properties(editor_layout_${part} PROPERTIES TIMEOUT 600)
         endforeach()
         if(YK_HAVE_DEMO)
             set_tests_properties(editor_layout_write PROPERTIES FIXTURES_SETUP editor_layout)
@@ -263,7 +263,7 @@ if(BUILD_TESTING)
             COMMAND ${CMAKE_COMMAND} -DTOOL=$<TARGET_FILE:yk> -DPLAYER=$<TARGET_FILE:yk_player>
                 -DDEMO=${YK_DEMO_PROJECT} -DWORK=${CMAKE_BINARY_DIR}/external-project-test
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/project/check_external.cmake)
-        set_tests_properties(external_project PROPERTIES TIMEOUT 300)
+        set_tests_properties(external_project PROPERTIES TIMEOUT 600)
         endif()
         # "YK Engine.app" assembled somewhere else and used from there (see packaging/macos).
         if(NOT WIN32 AND YK_HAVE_DEMO) # Paths and program names are checked as text; the layout logic is the same everywhere.
@@ -273,7 +273,7 @@ if(BUILD_TESTING)
                 -DDEMO=${YK_DEMO_PROJECT}
                 -DVERSION=${PROJECT_VERSION} -DWORK=${CMAKE_BINARY_DIR}/macos-bundle-test
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/macos/check_bundle.cmake)
-        set_tests_properties(macos_bundle PROPERTIES TIMEOUT 300)
+        set_tests_properties(macos_bundle PROPERTIES TIMEOUT 600)
         endif()
         # A crash leaves a log, a report with a stack trace and a notice on the next start.
         if(NOT WIN32 AND YK_HAVE_DEMO) # The Windows crash handler compiles but has not been run yet.
@@ -292,7 +292,7 @@ if(BUILD_TESTING)
             COMMAND ${CMAKE_COMMAND} -DBUILD_DIR=${CMAKE_BINARY_DIR} -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
                 -DWORK=${CMAKE_BINARY_DIR}/install-test -DCONFIG=$<CONFIG>
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/install/check_install.cmake)
-        set_tests_properties(install PROPERTIES TIMEOUT 300)
+        set_tests_properties(install PROPERTIES TIMEOUT 600)
         endif()
     endif()
 endif()

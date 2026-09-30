@@ -25,7 +25,7 @@ export YK_DEPS_DIR=/path/to/deps             # or -DYK_DEPS_DIR=... on the cmake
 ```sh
 cmake --preset dev                            # Debug, tests on: build/dev
 cmake --build --preset dev
-ctest --preset dev                            # 39 tests, about six minutes (Debug)
+ctest --preset dev                            # 39 tests, about twelve minutes on four cores (Debug; CI takes about 17)
 ```
 
 | Preset | What it is |

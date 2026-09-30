@@ -19,7 +19,7 @@ endif()
 
 function(run description)
     execute_process(COMMAND ${ARGN} RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE errors
-        TIMEOUT 240)
+        TIMEOUT 540)
     if(NOT result EQUAL 0)
         message(FATAL_ERROR "${description} failed (${result}):\n${output}\n${errors}")
     endif()

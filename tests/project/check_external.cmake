@@ -37,7 +37,7 @@ set(ENV{YK_NO_DIALOGS} 1)
 
 function(run description directory)
     execute_process(COMMAND ${ARGN} WORKING_DIRECTORY "${directory}"
-        RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE errors TIMEOUT 240)
+        RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE errors TIMEOUT 540)
     if(NOT result EQUAL 0)
         file(REMOVE_RECURSE "${root}")
         message(FATAL_ERROR "${description} failed (${result}):\n${output}\n${errors}")
