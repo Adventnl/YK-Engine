@@ -43,12 +43,13 @@ column names what would fail without the change.
 
 ### On real runners (GitHub Actions, `.github/workflows/ci.yml`)
 
-CI run 28, commit `c584052` (the last commit of this pass): all three jobs green. Getting there took
-three earlier runs, which are part of the record: two failed on the editor scripts whose expected
-entity counts had not followed the plates that now have a pad (`editor_demo_edit`, `editor_demo_assets`;
-fixed), and one on macOS alone, where Apple clang rejected a size-to-signed conversion in a new test
-that GCC and MSVC accept (`-Wsign-conversion`; fixed, and Clang 18 now builds the whole tree without
-a warning).
+CI run 29, commit `40e47b5` (the last commit that changes code, tests or scripts; a later one only
+corrects this document): all three jobs green, as they were in run 28 on `c584052`, the same code
+without the pause step in `demo_play.ykscript`. Getting there took three earlier runs, which are part
+of the record: two failed on the editor scripts whose expected entity counts had not followed the
+plates that now have a pad (`editor_demo_edit`, `editor_demo_assets`; fixed), and one on macOS alone,
+where Apple clang rejected a size-to-signed conversion in a new test that GCC and MSVC accept
+(`-Wsign-conversion`; fixed, and Clang 18 now builds the whole tree without a warning).
 
 | Runner | Result |
 |---|---|
