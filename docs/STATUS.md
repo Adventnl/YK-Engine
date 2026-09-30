@@ -30,9 +30,9 @@ column names what would fail without the change.
 | Area | What changed | Checked by |
 |---|---|---|
 | **Pressure plates** | A plate is a kinematic pad with a solid collider: characters and crates land on it, stand on it and sink with it, it stops at an exact depth and rises when the load leaves. Weight sensing reads the pad's own contacts; a trigger region is a separate option. A chamfered rim lets a crate be pushed up onto it. Pressed at 85% of the travel, released below 70%. ([ADR 0013](decisions/0013-pressure-plates-are-solid-pads-that-carry-their-load.md)) | `mechanisms` (a character dropped from a height, walking over, standing, jumping again and again; a crate; a stack; the stops; tags and minimum mass; region plates), `demo` |
-| **Moving, rotating and tilting surfaces** | Characters ride the velocity of the ground *point* (linear, angular and centripetal), so sliding, spinning, tilting and sinking surfaces carry them. Platforms and doors ease in and out and hold still when something is squeezed. Characters are bullets (continuous collision against kinematic bodies). New: `Door.openRotation`, `MovingPlatform.spinSpeed`, `HingeJoint` (limits, spring, motor), `Collider.cornerRadius` and `chamfer`, `World::pointVelocity`, `setBullet`, `onCollisionExit`. ([ADR 0014](decisions/0014-characters-ride-the-velocity-of-the-ground-point.md)) | `mechanisms` (rotating and tilting platforms, hinged doors, a seesaw, crush protection, riders on a platform that starts downward, the frame rate not changing the result) |
+| **Moving, rotating and tilting surfaces** | Characters ride the velocity of the ground *point* (linear, angular and centripetal), so sliding, spinning, tilting and sinking surfaces carry them. Platforms and doors ease in and out and hold still when something is squeezed. Characters are bullets (continuous collision against kinematic bodies). New: `Door.openRotation`, `MovingPlatform.spinSpeed`, `HingeJoint` (limits, spring, motor), `Collider.cornerRadius` and `chamfer`, `World::pointVelocity`, `setBullet`, `onCollisionExit`. ([ADR 0014](decisions/0014-characters-ride-the-velocity-of-the-ground-point.md)) | `mechanisms` (elevators, platforms that start downward, gates and platforms that do not crush, rotating platforms, angled surfaces, a hinged seesaw and door, crates as solid props, fast things not tunneling, collision enter and exit, the frame rate not changing the result) |
 | **Level flow** | `LevelFlow` is a state machine (intro, playing, complete, failed) with goals, a time limit, retry, continue, the next scene and variables carried over; `Goal` exits are walked into; controls lock while a level ends; restarts and scene changes fade; `GameSession` is the one place scenes are switched, for the player and the editor's Play alike; `EventAction` connects events to consequences with delays and timers; the pause action works. ([ADR 0015](decisions/0015-level-flow-and-transitions-belong-to-the-runtime.md)) | `level_flow`, `demo` (room 1, the practice room, room 1 again through a session) |
-| **Validation** | A component can say what is wrong with itself (a plate with nothing to stand on, a lever with no trigger, a hinge on a body that cannot swing, a next scene that is not in the project); the Problems panel goes to the entity. | `mechanisms`, `assets`, `editor_demo_edit` |
+| **Validation** | A component can say what is wrong with itself (a plate with nothing to stand on, a lever with no trigger, a hinge on a body that cannot swing, a next scene that is not in the project); the Problems panel goes to the entity. | `mechanisms`, `editor_demo_edit` |
 | **Scene view** | Zoom out / level menu / zoom in / fit / focus on the toolbar, Ctrl+= Ctrl+- Ctrl+0, a sideways wheel pans, a narrow group folds the toolbar into a menu, draggable pins for hinge anchors, a context menu with stable ids. Works while the game plays. | `editor_core` (the zoom ladder, pins), `editor_demo_view` (all of it through the real UI) |
 | **Fewer dead controls** | The Game tab's Restart is disabled until a game runs; Move Up and Move Down in the Hierarchy and the Entity menu are offered only when they move something. | `editor_core`, `editor_demo_edit` |
 | **Timing and camera** | A frame within 0.4 ms of a tick (or half, two, three) counts as exact, so a 60 or 120 Hz screen does not turn its uneven frames into a hitch; the camera follows once per tick. | `game_runtime` |
@@ -43,31 +43,59 @@ column names what would fail without the change.
 
 ### On real runners (GitHub Actions, `.github/workflows/ci.yml`)
 
-CI run 15, commit `6a6e139`: all three jobs green.
+CI run 28, commit `c584052` (the last commit of this pass): all three jobs green. Getting there took
+three earlier runs, which are part of the record: two failed on the editor scripts whose expected
+entity counts had not followed the plates that now have a pad (`editor_demo_edit`, `editor_demo_assets`;
+fixed), and one on macOS alone, where Apple clang rejected a size-to-signed conversion in a new test
+that GCC and MSVC accept (`-Wsign-conversion`; fixed, and Clang 18 now builds the whole tree without
+a warning).
 
 | Runner | Result |
 |---|---|
-| **macOS 14, Apple silicon, Apple clang, `release`** | Build clean (warnings are errors). Full test suite passed, **including all editor UI scripts in a real Mac build** (the first run there failed 8 of them: Dear ImGui swaps Control and Command on macOS; fixed, see [EDITOR.md](EDITOR.md#keyboard-shortcuts)). `scripts/package-macos.sh` produced `YK Engine.app` and the `.dmg`; `scripts/verify-macos-app.sh` passed: the image mounts and holds the app and an Applications link, the app copied to a path with a space verifies its signature, `iconutil` accepts `AppIcon.icns`, a game exported with `--dmg` and an ad hoc signature verifies and its `.dmg` mounts and holds the app, the exported game started through Launch Services (`open`) from another folder runs, writes `~/Library/Logs/CinderVale/player.log` and closes cleanly, and the editor opens a `.ykproj` document through Launch Services and quits on request with a clean shutdown and no process left. The `.dmg`, screenshots and logs are kept as the run's artifact `macos-engine`. |
-| **Windows Server 2022, MSVC (VS 2022, x64), Release** | Build clean; every registered test passed (37 of 39: `macos_bundle` and `diagnostics_crash` are not registered on Windows), including all editor UI scripts, `external_project` and the install/CPack test. An earlier run failed `demo` only because Git turned the generated component reference into CRLF on checkout; `.gitattributes` (LF everywhere) fixed it. |
-| **Ubuntu 24.04, GCC, `dev` (Debug)** | clang-format check, build and all 39 tests passed (about 17 minutes of tests in Debug). |
+| **macOS 14, Apple silicon, Apple clang, `release`** | Build clean (warnings are errors). Full test suite passed, **including all editor UI scripts in a real Mac build**. `scripts/package-macos.sh` produced `YK Engine.app` and the `.dmg`; `scripts/verify-macos-app.sh` passed: the image mounts and holds the app and an Applications link, the app copied to a path with a space verifies its signature, `iconutil` accepts `AppIcon.icns`, a game exported with `--dmg` and an ad hoc signature verifies and its `.dmg` mounts and holds the app, the exported game started through Launch Services (`open`) from another folder runs, writes `~/Library/Logs/CinderVale/player.log` and closes cleanly, and the editor opens a `.ykproj` document through Launch Services and quits on request with a clean shutdown and no process left. The `.dmg`, screenshots and logs are kept as the run's artifact `macos-engine`. |
+| **Windows Server 2022, MSVC (VS 2022, x64), Release** | Build clean; every registered test passed (the whole suite except `macos_bundle` and `diagnostics_crash`, which do not exist on Windows), including all editor UI scripts, `external_project` and the install/CPack test. |
+| **Ubuntu 24.04, GCC, `dev` (Debug)** | clang-format check, build and all 42 tests passed (about 20 minutes of tests in Debug). |
 
 ### Locally
 
 | Check | Result |
 |---|---|
-| `ctest` on `dev` (Debug, GCC 13) | 39 of 39 passed (about 12 minutes) |
-| `ctest` on `release` | 39 of 39 passed (about 4 minutes) |
-| `ctest` on `asan` (address + undefined behavior sanitizers, including the editor UI scripts, the crash test and the bundle test) | 39 of 39 passed (about 17 minutes) |
-| `ctest` on `clang` (Clang 18 and libc++, what a Mac uses; sign conversions count as errors) | 39 of 39 passed. This preset found a sign conversion in the crash handler that Apple's headers hide (fixed in `6a6e139`). |
-| `ctest` on `headless` (`YK_RUNTIME=OFF`: no SDL, no window; the tests that need none) | 18 of 18 passed (run before the one-line crash-handler cast fix; that code is compiled in this preset too but the fix does not change behavior) |
-| `format-check` (clang-format over the tree), `git diff --check` | clean |
-| Windows cross-build (MinGW-w64) under Wine | passed in the previous pass (`scripts/verify-windows.sh`); not re-run in this one, the native MSVC run above replaces it |
+| `ctest` on `dev` (Debug, GCC 13) | 42 of 42 passed (6 minutes with three tests at a time) |
+| `ctest` on `release` | 42 of 42 passed (4 minutes) |
+| `ctest` on `asan` (address + undefined behavior sanitizers, including the editor UI scripts, the crash test and the bundle test) | 42 of 42 passed (21 minutes) |
+| `ctest` on `headless` (`YK_RUNTIME=OFF`: no SDL, no window; the tests that need none) | 20 of 20 passed |
+| Clang 18 (with libstdc++), `release` | the whole tree builds with every warning an error and none raised; the `clang` preset itself (libc++) is not available on this machine, see "Not verified" |
+| `format-check` (clang-format over the tree), `git diff --check` | clean (`scripts/verify.sh`) |
+| Windows cross-build (MinGW-w64) under Wine | passed in the earlier pass (`scripts/verify-windows.sh`); not re-run in this one, the native MSVC run above replaces it |
+| The standalone player | started with the demo project under the software renderer for 90 frames and captured (the level, the HUD, the characters); again with a scripted P press (the picture dims and says PAUSED). Nobody played it. |
 | The installed programs work where they were put | part of the `install` test |
 | A game with C++ of its own | `game_module*`, `editor_game_module` |
-| A 41,500-entity scene (40,000 sprites, 1,500 falling boxes) | Release, one 2.1 GHz Xeon core: building about 20 ms, drawing a frame about 8 ms (view culling skips 39,411 of 40,000 sprites), one physics step with 1,500 active bodies about 22 ms; a scene that must hold 60 Hz should keep its simultaneously active bodies to a few hundred. |
+| A 41,500-entity scene (40,000 sprites, 1,500 falling boxes) | Release, one 2.1 GHz Xeon core: building about 20 ms, drawing a frame about 8 ms (view culling skips 39,411 of 40,000 sprites), one physics step with 1,500 active bodies about 22 ms; a scene that must hold 60 Hz should keep its simultaneously active bodies to a few hundred. (Measured in an earlier pass; the `stress` test still passes its budgets.) |
 
 What the newest tests cover:
 
+- **`mechanisms`** (947 checks): real physics and real input against the mechanisms. A character
+  dropped onto a plate from several heights, walking over one, standing on one, jumping on it again
+  and again; a crate pushed up onto a plate, a stack on it; the plate's stops and how it presses and
+  releases; elevators, platforms that start downward, gates and platforms that hold still when
+  something is in the way, rotating platforms and angled surfaces carrying riders, a hinged seesaw
+  and door, crates as solid props, fast things that must not tunnel, collision enter and exit, the
+  same result at 20, 60 and 144 frames a second, and the messages validation gives.
+- **`level_flow`** (116 checks): the intro, the completion sequence (input locked, both characters
+  walk into their exits and vanish, the level moves on after its delay), failure and retry, the time
+  limit, the fade between scenes and the session that follows a scene change (a scene that cannot be
+  loaded leaves the game where it was), variables carried over, reactions to events with delays,
+  chains and timers, and the pause key.
+- **`gameplay`** (356 checks): also every registered component saved and loaded field by field, and a
+  scene written before the newer fields existed.
+- **`game_runtime`** (384 checks): also the frame-time snapping and the camera following per tick.
+- **`editor_core`** (616 checks): also the zoom ladder and levels, pins, and which sibling moves are
+  offered.
+- **`editor_demo_view`**: zoom out, in, the level menu, fit, focus, the keys and the View menu, the
+  wheel, panning with Space and a drag, dragging a hinge's pin, the right-click menu, the folded
+  toolbar in a split editor, all of it while the game plays too. **`editor_demo_edit`** also goes to
+  the entity a problem is about and picks a next scene; **`editor_demo_play`** also pauses the game
+  with its own key.
 - **`diagnostics`**: paths (bundle detection, per-system folders, `YK_LOG_DIR`), log rotation and
   flushing, the running marker and unclean-exit detection; real child processes crash by `abort`,
   uncaught exception and invalid memory access, and the report and the next start's notice are read.
@@ -87,9 +115,9 @@ What the newest tests cover:
   button, Open Scenes.
 
 The earlier suites are unchanged in what they cover: the demo is completable by a bot through the
-real runtime and input actions (`demo`, 35.2 simulated seconds, 119 checks); the editor is driven
+real runtime and input actions (`demo`, 42.0 simulated seconds, 136 checks, and then through the two rooms); the editor is driven
 through its real UI by injected mouse and keyboard events (`editor_workflow` from an empty project to
-an exported game, `editor_demo_edit/play/settings/assets/workbench`, `editor_layout_*`,
+an exported game, `editor_demo_edit/play/settings/assets/workbench/view`, `editor_layout_*`,
 `editor_bad_project`, `editor_game_module`); non-visual systems have unit tests (input, animation,
 serialization, projects, validation, export and zip, editor documents, selection, gizmos, layout
 arithmetic including the cards, file operations, physics, runtime, gameplay, effects, audio);
