@@ -6,8 +6,8 @@
 # application (docs/BUILDING.md, macOS).
 #
 #   cmake -DEDITOR=<yk_editor> -DPLAYER=<yk_player> -DTOOL=<yk> -DSOURCE_DIR=<repo> -DVERSION=<x.y.z>
-#         -DWORK=<scratch dir> -P check_bundle.cmake
-foreach(variable EDITOR PLAYER TOOL SOURCE_DIR VERSION WORK)
+#         -DDEMO=<a project folder> -DWORK=<scratch dir> -P check_bundle.cmake
+foreach(variable EDITOR PLAYER TOOL SOURCE_DIR VERSION DEMO WORK)
     if(NOT ${variable})
         message(FATAL_ERROR "${variable} is required")
     endif()
@@ -30,7 +30,7 @@ endfunction()
 
 set(app "${WORK}/Some Folder/YK Engine.app")
 run("assembling the bundle" "${CMAKE_COMMAND}" "-DOUT=${app}" "-DEDITOR=${EDITOR}" "-DPLAYER=${PLAYER}"
-    "-DTOOL=${TOOL}" "-DSOURCE_DIR=${SOURCE_DIR}" "-DVERSION=${VERSION}"
+    "-DTOOL=${TOOL}" "-DSOURCE_DIR=${SOURCE_DIR}" "-DVERSION=${VERSION}" "-DDEMO=${DEMO}"
     -P "${SOURCE_DIR}/packaging/macos/assemble-app.cmake")
 
 get_filename_component(editor_name "${EDITOR}" NAME)

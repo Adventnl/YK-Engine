@@ -13,6 +13,7 @@
 #include "yk/gameplay/Gameplay.hpp"
 #include "yk/scene/SceneSerializer.hpp"
 #include <cmath>
+#include <cstdio>
 #include <filesystem>
 #include <set>
 
@@ -1101,11 +1102,14 @@ void projectFiles() {
 }
 
 void sampleProject() {
+    if (!std::filesystem::exists(std::filesystem::path(YK_DEMO_PROJECT_DIR) / "project.ykproj")) {
+        std::puts("no demo project here: skipped");
+        return;
+    }
     setLogStderrEnabled(false);
     ComponentRegistry registry;
     registerStandardComponents(registry);
-    auto opened =
-        EditorProject::open(std::filesystem::path(YK_SOURCE_DIR) / "YK-DemoGame", registry);
+    auto opened = EditorProject::open(std::filesystem::path(YK_DEMO_PROJECT_DIR), registry);
     CHECK(opened);
     if (!opened)
         return;
@@ -1144,11 +1148,14 @@ Keyboard held(std::initializer_list<Key> keys) {
 }
 
 void playing() {
+    if (!std::filesystem::exists(std::filesystem::path(YK_DEMO_PROJECT_DIR) / "project.ykproj")) {
+        std::puts("no demo project here: skipped");
+        return;
+    }
     setLogStderrEnabled(false);
     ComponentRegistry registry;
     registerStandardComponents(registry);
-    auto opened =
-        EditorProject::open(std::filesystem::path(YK_SOURCE_DIR) / "YK-DemoGame", registry);
+    auto opened = EditorProject::open(std::filesystem::path(YK_DEMO_PROJECT_DIR), registry);
     CHECK(opened);
     if (!opened)
         return;

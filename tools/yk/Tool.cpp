@@ -1,6 +1,7 @@
 // yk: command-line tools for YK projects. Headless (no window, no audio): meant for developers,
 // build scripts and CI.
 //
+//   yk new <folder> [--name <name>]  create a project (its own folder, or its own repository)
 //   yk validate [project]          check every scene, prefab and asset (exit 1 on errors)
 //   yk format   [project] [--check]  rewrite scenes, prefabs, animations and the project file the
 //                                  way the editor saves them; --check only reports (exit 1)
@@ -40,6 +41,9 @@ namespace {
 void usage() {
     std::puts(
         "usage: yk <command> [options] [project]\n"
+        "  new <folder>        create a project in <folder> (--name <name>: its name, default: "
+        "the\n"
+        "                      folder's name): a first scene, the standard layers and input sets\n"
         "  validate            check every scene, prefab and asset; exit 1 on errors\n"
         "  format [--check]    write scenes, prefabs, animations and the project file in the\n"
         "                      editor's canonical form (--check: only list what would change)\n"
@@ -74,6 +78,9 @@ struct Args {
     bool dmg{};
     bool noSign{};
     std::string sign;
+    // new
+    std::string name;
+    bool projectGiven{};
 };
 
 std::optional<Args> parse(int argc, char **argv) {
@@ -96,7 +103,8 @@ std::optional<Args> parse(int argc, char **argv) {
             args.dmg = true;
         } else if (arg == "--no-sign") {
             args.noSign = true;
-        } else if (arg == "--target" || arg == "--out" || arg == "--player" || arg == "--sign") {
+        } else if (arg == "--target" || arg == "--out" || arg == "--player" || arg == "--sign" ||
+                   arg == "--name") {
             const char *text = value();
             if (!text) {
                 std::fprintf(stderr, "yk: %s needs a value\n", arg.c_str());
@@ -108,10 +116,13 @@ std::optional<Args> parse(int argc, char **argv) {
                 args.out = text;
             else if (arg == "--sign")
                 args.sign = text;
+            else if (arg == "--name")
+                args.name = text;
             else
                 args.player = text;
         } else if (!arg.empty() && arg[0] != '-' && args.project.empty()) {
             args.project = arg;
+            args.projectGiven = true;
         } else {
             std::fprintf(stderr, "yk: unknown argument '%s'\n", arg.c_str());
             return std::nullopt;
@@ -139,6 +150,28 @@ std::optional<Project> openProject(const Args &args) {
         return std::nullopt;
     }
     return std::move(project.value());
+}
+
+int newProject(const Args &args, const ComponentRegistry &registry) {
+    if (!args.projectGiven) {
+        std::fprintf(stderr,
+                     "yk new: say where the project goes: yk new <folder> [--name <name>]\n");
+        return 2;
+    }
+    const std::filesystem::path folder = std::filesystem::absolute(args.project).lexically_normal();
+    const std::string name = args.name.empty() ? folder.filename().string() : args.name;
+    const auto project = createProject(folder, name, registry);
+    if (!project) {
+        std::fprintf(stderr, "yk new: %s\n", project.error().c_str());
+        return 1;
+    }
+    std::printf("Created the project '%s' in %s\n"
+                "  edit it:  yk_editor \"%s\"\n"
+                "  play it:  yk_player \"%s\"\n"
+                "  package:  yk export \"%s\" --target <windows|macos|linux> --out dist\n",
+                name.c_str(), folder.string().c_str(), folder.string().c_str(),
+                folder.string().c_str(), folder.string().c_str());
+    return 0;
 }
 
 int validate(const Args &args, const ComponentRegistry &registry) {
@@ -390,6 +423,8 @@ int runTool(int argc, char **argv, const RegisterComponents &registerGame) {
         std::fputs(describeRegistryMarkdown(registry).c_str(), stdout);
         return 0;
     }
+    if (args->command == "new")
+        return newProject(*args, registry);
     if (args->command == "validate")
         return validate(*args, registry);
     if (args->command == "format")

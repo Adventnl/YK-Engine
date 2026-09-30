@@ -1,4 +1,5 @@
 #pragma once
+#include "yk/assets/Project.hpp"
 #include "yk/components/Components.hpp"
 #include "yk/runtime/GameContext.hpp"
 #include <map>
@@ -21,6 +22,13 @@ inline constexpr const char *prop = "Prop";     // Pushable objects.
 // which keeps two-player puzzles from jamming; enable it in the layer matrix to let them collide.
 LayerConfig standard();
 } // namespace layers
+
+// Creates a project folder ready to work in: `scenes/main.ykscene` (an empty scene with the camera
+// the game looks through), `prefabs/`, `assets/`, the standard collision layers, the standard input
+// sets (WASD and pad 1, arrows and pad 2, restart and pause) and the project file. The editor's
+// New Project and `yk new` both call this. Fails when the folder already holds a project.
+Result<Project> createProject(const std::filesystem::path &directory, const std::string &name,
+                              const ComponentRegistry &registry);
 
 // ----- Signals -----------------------------------------------------------------------------
 // Sources (plates, levers, goals, zones) list `targets`; receivers (doors, platforms) combine all

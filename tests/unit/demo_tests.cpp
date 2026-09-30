@@ -55,7 +55,7 @@ struct Game {
         }
     }
     static Project loadProject() {
-        auto loaded = Project::load(std::filesystem::path(YK_SOURCE_DIR) / "YK-DemoGame");
+        auto loaded = Project::load(std::filesystem::path(YK_DEMO_PROJECT_DIR));
         CHECK(loaded);
         return loaded ? loaded.value() : Project{};
     }

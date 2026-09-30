@@ -36,9 +36,12 @@ endforeach()
 configure_file("${SOURCE_DIR}/packaging/macos/Info.plist.in" "${OUT}/Contents/Info.plist" @ONLY)
 file(COPY "${SOURCE_DIR}/packaging/icons/YKEngine.icns" DESTINATION "${OUT}/Contents/Resources")
 file(RENAME "${OUT}/Contents/Resources/YKEngine.icns" "${OUT}/Contents/Resources/AppIcon.icns")
-# Whatever the folder is called, the welcome screen looks for Resources/YK-DemoGame.
-file(COPY "${DEMO}/" DESTINATION "${OUT}/Contents/Resources/YK-DemoGame"
-    PATTERN "tools" EXCLUDE PATTERN "__pycache__" EXCLUDE PATTERN ".DS_Store" EXCLUDE)
+# Whatever the folder is called, the welcome screen looks for Resources/YK-DemoGame. A build with
+# no demo project (YK_DEMO_PROJECT) simply has no sample to offer.
+if(EXISTS "${DEMO}/project.ykproj")
+    file(COPY "${DEMO}/" DESTINATION "${OUT}/Contents/Resources/YK-DemoGame"
+        PATTERN "tools" EXCLUDE PATTERN "__pycache__" EXCLUDE PATTERN ".DS_Store" EXCLUDE)
+endif()
 file(COPY "${SOURCE_DIR}/LICENSES/" DESTINATION "${OUT}/Contents/Resources/licenses")
 file(COPY "${SOURCE_DIR}/README.md" "${SOURCE_DIR}/THIRD_PARTY.md" DESTINATION
     "${OUT}/Contents/Resources/docs")
