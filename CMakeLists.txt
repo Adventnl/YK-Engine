@@ -50,7 +50,7 @@ add_library(yk_engine STATIC src/core/Log.cpp src/core/Time.cpp src/core/Color.c
     src/assets/Project.cpp src/assets/TextureMeta.cpp src/assets/AssetSource.cpp src/assets/Zip.cpp
     src/assets/Export.cpp src/assets/Icon.cpp src/components/Components.cpp
     src/components/Effects.cpp
-    src/runtime/Blackboard.cpp src/runtime/EventBus.cpp src/runtime/GameRuntime.cpp
+    src/runtime/Blackboard.cpp src/runtime/EventBus.cpp src/runtime/GameRuntime.cpp src/runtime/GameSession.cpp
     src/runtime/PhysicsBinding.cpp src/assets/Validation.cpp
     src/physics/World.cpp src/physics/Queries.cpp src/physics/Joints.cpp)
 add_library(yk::engine ALIAS yk_engine)
@@ -62,7 +62,7 @@ yk_target(yk_engine)
 
 # Reusable gameplay components (plates, doors, controllers...). Depends only on the engine.
 add_library(yk_gameplay STATIC src/gameplay/Signals.cpp src/gameplay/Controller.cpp
-    src/gameplay/Mechanisms.cpp src/gameplay/Interactions.cpp src/gameplay/Level.cpp
+    src/gameplay/Mechanisms.cpp src/gameplay/Interactions.cpp src/gameplay/Level.cpp src/gameplay/Events.cpp
     src/gameplay/Registration.cpp)
 add_library(yk::gameplay ALIAS yk_gameplay)
 target_link_libraries(yk_gameplay PUBLIC yk_engine)
@@ -144,6 +144,7 @@ if(BUILD_TESTING)
     endforeach()
     yk_add_test(gameplay tests/unit/gameplay_tests.cpp LIBS yk::gameplay TIMEOUT 120)
     yk_add_test(mechanisms tests/unit/mechanisms_tests.cpp LIBS yk::gameplay TIMEOUT 120)
+    yk_add_test(level_flow tests/unit/level_flow_tests.cpp LIBS yk::gameplay TIMEOUT 120)
     yk_add_test(export tests/unit/export_tests.cpp LIBS yk::gameplay TIMEOUT 60)
     # The demo game is a separate project (YK-DemoGame) that only consumes the engine; this plays it.
     if(YK_HAVE_DEMO)

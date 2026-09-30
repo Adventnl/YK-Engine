@@ -72,6 +72,7 @@
             "spinSpeed": 0,
             "pause": 0.8,
             "requireSignal": false,
+            "stopWhenBlocked": true,
             "logic": "Any",
             "invert": false
           }

@@ -8,6 +8,7 @@
 #include "yk/core/Log.hpp"
 #include "yk/gameplay/Gameplay.hpp"
 #include "yk/runtime/GameRuntime.hpp"
+#include "yk/runtime/GameSession.hpp"
 #include "yk/scene/RegistryDocs.hpp"
 #include "yk/scene/SceneSerializer.hpp"
 #include <algorithm>
@@ -305,11 +306,82 @@ void levelIsCompletable() {
           runtime.blackboard().text("level_state") == "complete");
     CHECK(runtime.blackboard().text("level_message") == "LEVEL COMPLETE!");
     CHECK(!runtime.blackboard().has("deaths")); // Nobody had to die for it.
+    // The completion sequence: nobody can be steered, both walk into their exits and vanish, and
+    // the game moves on to the next room after the delay.
+    CHECK(runtime.inputLocked());
+    game.tick(45);
+    CHECK(game.entity("Ember").get<SpriteRenderer>()->color.a == 0);
+    CHECK(game.entity("Tide").get<SpriteRenderer>()->color.a == 0);
+    CHECK(runtime.sceneChangeRequested().empty());
+    game.tick(240);
+    CHECK(runtime.sceneChangeRequested() == "scenes/practice.ykscene");
     std::fprintf(
         stderr, "completed in %.1f simulated seconds; gems: ember %.0f/%.0f tide %.0f/%.0f\n",
         runtime.time(), runtime.blackboard().number("ember_gems"),
         runtime.blackboard().number("ember_gems_total"), runtime.blackboard().number("tide_gems"),
         runtime.blackboard().number("tide_gems_total"));
+}
+
+// The two rooms of the demo lead into each other through the session, with the screen fading
+// between them: room 1 -> the practice room -> room 1.
+void roomsFollowEachOther() {
+    ComponentRegistry registry;
+    registerStandardComponents(registry);
+    Project project = Game::loadProject();
+    ProjectAssets assets(project);
+    const auto read = [&](const std::string &file) -> Result<std::unique_ptr<Scene>> {
+        auto path = project.resolve(file);
+        if (!path)
+            return Error{path.error()};
+        return loadScene(path.value(), registry);
+    };
+    auto first = read("scenes/level01.ykscene");
+    CHECK(first);
+    if (!first)
+        return;
+    RuntimeOptions options;
+    options.layers = project.layers;
+    options.inputMap = project.input;
+    options.assets = &assets;
+    options.transitionSeconds = 0.35F;
+    auto created =
+        GameSession::create(std::move(first.value()), "scenes/level01.ykscene", options, read);
+    CHECK(created);
+    if (!created)
+        return;
+    GameSession &session = *created.value();
+    InputFrame none;
+    // Put both characters into their exits; the level is complete, and the session moves on.
+    const auto finishLevel = [&] {
+        GameRuntime &runtime = session.runtime();
+        for (const char *who : {"Ember", "Tide"}) {
+            const std::string exit = std::string(who) + " Exit";
+            Entity *door = runtime.scene().findByName(exit);
+            CHECK(door != nullptr);
+            if (door)
+                runtime.teleport(*runtime.scene().findByName(who),
+                                 door->worldPosition() + Vec2{0.0F, 0.6F});
+        }
+    };
+    const auto runUntilSceneChanges = [&](const std::string &wanted) {
+        bool changed = false;
+        for (int i = 0; i < 1200 && !changed; ++i)
+            changed = session.update(1.0 / 60.0, none);
+        return changed && session.scenePath() == wanted;
+    };
+    for (int i = 0; i < 20; ++i)
+        session.update(1.0 / 60.0, none);
+    finishLevel();
+    CHECK(runUntilSceneChanges("scenes/practice.ykscene"));
+    CHECK(session.runtime().screenFade() > 0.9F); // The next room starts covered...
+    for (int i = 0; i < 40; ++i)
+        session.update(1.0 / 60.0, none);
+    CHECK(session.runtime().screenFade() < 0.01F); // ...and is shown.
+    CHECK(session.runtime().scene().findByName("Plate") != nullptr);
+    for (int i = 0; i < 20; ++i)
+        session.update(1.0 / 60.0, none);
+    finishLevel();
+    CHECK(runUntilSceneChanges("scenes/level01.ykscene"));
 }
 
 void hazardsAreCharacterSpecific() {
@@ -409,6 +481,7 @@ void componentReferenceIsCurrent() {
 int main() {
     projectIsValid();
     levelIsCompletable();
+    roomsFollowEachOther();
     hazardsAreCharacterSpecific();
     charactersAnimateFromTheirController();
     restartResets();

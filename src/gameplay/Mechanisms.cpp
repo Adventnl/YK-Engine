@@ -37,6 +37,32 @@ void PressurePlate::describe(TypeBuilder<PressurePlate> &type) {
     type.category("Gameplay")
         .description("Pressed while something stands on it (or in its zone); drives its targets. "
                      "With a kinematic pad it is a real surface that sinks under its load.")
+        .check([](const Entity &entity, const PressurePlate &plate, const CheckContext &context,
+                  std::vector<std::string> &problems) {
+            const Entity *padEntity = plate.pad ? entity.scene().find(plate.pad) : &entity;
+            if (!padEntity) {
+                problems.push_back("its pad refers to a missing entity");
+                return;
+            }
+            const auto *body = padEntity->get<RigidBody>();
+            const bool solid = [&] {
+                for (const Collider *collider : padEntity->getAll<Collider>())
+                    if (!collider->isTrigger)
+                        return true;
+                return false;
+            }();
+            const bool zone = hasTriggerCollider(entity) || hasTriggerCollider(*padEntity);
+            if (plate.sensing != PlateSensing::Region && !zone &&
+                (!body || body->type != RigidBodyType::Kinematic || !solid))
+                problems.push_back("weight sensing needs a pad ('" + padEntity->name() +
+                                   "') with a Kinematic RigidBody and a solid Collider to stand "
+                                   "on; or give the plate a trigger Collider and use Region");
+            if (plate.sensing == PlateSensing::Region && !zone)
+                problems.push_back("region sensing needs a trigger Collider on the plate or its "
+                                   "pad, and it has none");
+            if (plate.targets.empty() && !context.prefab)
+                problems.push_back("has no targets, so pressing it does nothing");
+        })
         .onAdd([](Entity &entity, PressurePlate &) {
             // A new plate is a real object: a low, wide, solid pad on a kinematic body that sinks.
             // An entity that is already a zone (it has a trigger collider) stays one, and a plate
@@ -283,6 +309,13 @@ void Lever::describe(TypeBuilder<Lever> &type) {
         .description("Flips between on and off each time a character touches its trigger; drives "
                      "its targets.")
         .dependsOn("Collider")
+        .check([](const Entity &entity, const Lever &lever, const CheckContext &context,
+                  std::vector<std::string> &problems) {
+            if (!hasTriggerCollider(entity))
+                problems.push_back("needs a trigger Collider to notice who is at it");
+            if (lever.targets.empty() && !context.prefab)
+                problems.push_back("has no targets, so flipping it does nothing");
+        })
         .onAdd([](Entity &entity, Lever &) { turnIntoTrigger(entity); });
     type.field("targets", &Lever::targets);
     type.field("activatorTags", &Lever::activatorTags);
@@ -354,6 +387,16 @@ void Door::describe(TypeBuilder<Door> &type) {
             "Slides open while signalled by plates, levers or goals that list it as a target.")
         .dependsOn("RigidBody")
         .dependsOn("Collider")
+        .check([](const Entity &entity, const Door &door, const CheckContext &,
+                  std::vector<std::string> &problems) {
+            const auto *body = entity.get<RigidBody>();
+            if (body && body->type != RigidBodyType::Kinematic)
+                problems.push_back("needs a Kinematic RigidBody to carry and block characters "
+                                   "as it moves");
+            if (yk::length(door.openOffset) < 1e-4F && std::fabs(door.openRotation) < 1e-3F)
+                problems.push_back("neither slides (openOffset) nor turns (openRotation), so it "
+                                   "never moves");
+        })
         .onAdd([](Entity &entity, Door &) {
             if (auto *body = entity.get<RigidBody>())
                 body->type = RigidBodyType::Kinematic;
@@ -371,6 +414,9 @@ void Door::describe(TypeBuilder<Door> &type) {
         .range(1, 1440, 1)
         .tooltip("Turn speed, degrees per second.");
     type.field("startsOpen", &Door::startsOpen).tooltip("Open until signalled, then closes.");
+    type.field("stopWhenBlocked", &Door::stopWhenBlocked)
+        .tooltip("Hold still while a character or prop is caught between the door and something "
+                 "solid, instead of pushing it through the floor.");
     type.field("logic", &Door::logic)
         .options(signalLogicNames())
         .tooltip("How several sources combine.");
@@ -410,7 +456,13 @@ void Door::onFixedUpdate(GameContext &context, float seconds) {
         std::max(slide > 1e-4F ? slide / speed : 0.0F, turn > 1e-3F ? turn / rotationSpeed : 0.0F);
     const float before = amount_;
     const float step = seconds / duration;
-    amount_ = wantOpen ? std::min(1.0F, amount_ + step) : std::max(0.0F, amount_ - step);
+    const float target = wantOpen ? 1.0F : 0.0F;
+    // Which way the leading face moves this tick (opening or closing along the offset).
+    const Vec2 heading = openOffset * (wantOpen ? 1.0F : -1.0F);
+    const bool blocked = stopWhenBlocked && amount_ != target && slide > 1e-4F &&
+                         pathBlocked(context, entity(), heading);
+    if (!blocked)
+        amount_ = wantOpen ? std::min(1.0F, amount_ + step) : std::max(0.0F, amount_ - step);
     if (turn > 1e-3F)
         moveKinematic(context, entity(), closedPosition_ + openOffset * amount_,
                       closedRotation_ + openRotation * amount_);
@@ -430,6 +482,14 @@ void MovingPlatform::describe(TypeBuilder<MovingPlatform> &type) {
         .description("Shuttles between its start and start + travel, carrying riders.")
         .dependsOn("RigidBody")
         .dependsOn("Collider")
+        .check([](const Entity &entity, const MovingPlatform &platform, const CheckContext &,
+                  std::vector<std::string> &problems) {
+            const auto *body = entity.get<RigidBody>();
+            if (body && body->type != RigidBodyType::Kinematic)
+                problems.push_back("needs a Kinematic RigidBody to carry riders");
+            if (yk::length(platform.travel) < 1e-4F && std::fabs(platform.spinSpeed) < 1e-4F)
+                problems.push_back("neither travels nor spins, so it never moves");
+        })
         .onAdd([](Entity &entity, MovingPlatform &) {
             if (auto *body = entity.get<RigidBody>())
                 body->type = RigidBodyType::Kinematic;
@@ -452,6 +512,9 @@ void MovingPlatform::describe(TypeBuilder<MovingPlatform> &type) {
         .tooltip("Seconds to wait at each end.");
     type.field("requireSignal", &MovingPlatform::requireSignal)
         .tooltip("Only move while signalled.");
+    type.field("stopWhenBlocked", &MovingPlatform::stopWhenBlocked)
+        .tooltip("Hold still while a character or prop is squeezed between the platform and "
+                 "something solid (a rising platform under a ceiling).");
     type.field("logic", &MovingPlatform::logic).options(signalLogicNames());
     type.field("invert", &MovingPlatform::invert);
 }
@@ -491,6 +554,11 @@ void MovingPlatform::onFixedUpdate(GameContext &context, float seconds) {
     // exactly; when the signal goes away, slow to a stop where it is instead of stopping dead
     // (which would leave whatever rides it behind).
     const float remaining = (direction_ > 0.0F ? 1.0F - t_ : t_) * length;
+    if (stopWhenBlocked && active && pathBlocked(context, entity(), travel * direction_)) {
+        speed_ = 0.0F; // Something is caught in the way: wait for it to get clear.
+        place();
+        return;
+    }
     float wanted = 0.0F;
     if (active)
         wanted = std::max(std::min(speed, std::sqrt(2.0F * acceleration * remaining)), 0.05F);

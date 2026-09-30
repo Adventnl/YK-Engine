@@ -83,6 +83,7 @@ void registerGameplayComponents(ComponentRegistry &registry) {
     registry.add<Goal>("Goal");
     registry.add<TriggerZone>("TriggerZone");
     registry.add<LevelFlow>("LevelFlow");
+    registry.add<EventAction>("EventAction");
 
     registry.addTemplate(
         {"Platform", "Level", [](Scene &scene, Vec2 at) {
@@ -172,6 +173,11 @@ void registerGameplayComponents(ComponentRegistry &registry) {
                               Entity &flow = place(scene, "Level Flow", at);
                               flow.add<LevelFlow>();
                               return flow.id();
+                          }});
+    registry.addTemplate({"Event Action", "Gameplay", [](Scene &scene, Vec2 at) {
+                              Entity &action = place(scene, "Event Action", at);
+                              action.add<EventAction>();
+                              return action.id();
                           }});
     registry.addTemplate({"Character", "Gameplay", [](Scene &scene, Vec2 at) {
                               Entity &character = place(scene, "Character", at);

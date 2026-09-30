@@ -7,6 +7,7 @@
 #include "yk/gameplay/Gameplay.hpp"
 #include "yk/runtime/GameRuntime.hpp"
 #include <algorithm>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -47,6 +48,8 @@ struct World {
     MemoryAssets assets;
     Keyboard keyboard;
     std::vector<std::string> events;
+    float transitionSeconds{0.0F};                      // See RuntimeOptions.
+    std::map<std::string, Blackboard::Value> variables; // What the scene starts with.
 
     Entity &box(const char *name, Vec2 center, Vec2 size, const char *layer = layers::solid) {
         Entity &entity = scene->createEntity(name);
@@ -78,6 +81,8 @@ struct World {
         options.layers = testLayers();
         options.audio = &audio;
         options.assets = &assets;
+        options.transitionSeconds = transitionSeconds;
+        options.variables = variables;
         auto created = GameRuntime::create(std::move(scene), options);
         CHECK(created);
         runtime = std::move(created.value());

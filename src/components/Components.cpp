@@ -21,10 +21,16 @@ void PlayerInput::describe(TypeBuilder<PlayerInput> &type) {
         .tooltip("Set of the project's input map, for example Player1.");
 }
 ButtonState PlayerInput::button(const GameContext &context, std::string_view action) const {
-    return enabled ? context.input().state(actionSet, action) : ButtonState{};
+    return enabled && !context.inputLocked() ? context.input().state(actionSet, action)
+                                             : ButtonState{};
 }
 float PlayerInput::value(const GameContext &context, std::string_view action) const {
-    return enabled ? context.input().value(actionSet, action) : 0.0F;
+    return enabled && !context.inputLocked() ? context.input().value(actionSet, action) : 0.0F;
+}
+float PlayerInput::axis(const GameContext &context, std::string_view negative,
+                        std::string_view positive) const {
+    return enabled && !context.inputLocked() ? context.input().axis(actionSet, negative, positive)
+                                             : 0.0F;
 }
 
 void SpriteRenderer::describe(TypeBuilder<SpriteRenderer> &type) {
@@ -106,8 +112,29 @@ void UiPanel::describe(TypeBuilder<UiPanel> &type) {
     type.field("layer", &UiPanel::layer).range(-1000, 1000);
 }
 
+namespace {
+// The colliders that belong to `entity`'s body: its own and those of descendants that have no body
+// of their own.
+bool hasCollider(const Entity &entity) {
+    if (entity.has<Collider>())
+        return true;
+    for (const EntityId child : entity.childIds())
+        if (const Entity *node = entity.scene().find(child);
+            node && !node->has<RigidBody>() && hasCollider(*node))
+            return true;
+    return false;
+}
+} // namespace
+
 void RigidBody::describe(TypeBuilder<RigidBody> &type) {
-    type.category("Physics").description("Gives the entity a physics body.");
+    type.category("Physics")
+        .description("Gives the entity a physics body.")
+        .check([](const Entity &entity, const RigidBody &body, const CheckContext &,
+                  std::vector<std::string> &problems) {
+            if (body.type != RigidBodyType::Static && !hasCollider(entity))
+                problems.push_back("has a body but no Collider on it or its children, so nothing "
+                                   "can touch it; add a Collider");
+        });
     type.field("type", &RigidBody::type)
         .options({"Static", "Kinematic", "Dynamic"})
         .tooltip("Static never moves; Kinematic moves by script; Dynamic is fully simulated.");
@@ -128,8 +155,16 @@ std::array<Vec2, 3> wedgePoints(Vec2 halfExtents, Vec2 scaleSign) {
 }
 
 void Collider::describe(TypeBuilder<Collider> &type) {
-    type.category("Physics").description(
-        "Collision or trigger geometry attached to the nearest RigidBody.");
+    type.category("Physics")
+        .description("Collision or trigger geometry attached to the nearest RigidBody.")
+        .check([](const Entity &, const Collider &collider, const CheckContext &,
+                  std::vector<std::string> &problems) {
+            if (collider.isTrigger && collider.oneWay)
+                problems.push_back("is a trigger and one-way; a trigger blocks nothing, so "
+                                   "one-way has no effect");
+            if (!(collider.size.x > 0.0F && collider.size.y > 0.0F))
+                problems.push_back("has no area (its size must be positive)");
+        });
     type.field("shape", &Collider::shape)
         .options({"Box", "Circle", "Capsule", "Wedge"})
         .tooltip("Wedge is a right triangle (a ramp rising to the right); mirror the entity for "
@@ -168,6 +203,20 @@ void HingeJoint::describe(TypeBuilder<HingeJoint> &type) {
         .onAdd([](Entity &entity, HingeJoint &) {
             if (auto *body = entity.get<RigidBody>())
                 body->type = RigidBodyType::Dynamic;
+        })
+        .check([](const Entity &entity, const HingeJoint &hinge, const CheckContext &,
+                  std::vector<std::string> &problems) {
+            const auto *body = entity.get<RigidBody>();
+            if (body && body->type != RigidBodyType::Dynamic)
+                problems.push_back(
+                    "needs a Dynamic RigidBody to swing (it is " +
+                    std::string(body->type == RigidBodyType::Static ? "Static" : "Kinematic") +
+                    ")");
+            if (hinge.connectedBody == entity.id())
+                problems.push_back("is connected to itself; name another entity, or leave "
+                                   "connectedBody empty to pin it in the world");
+            if (hinge.limits && hinge.lowerAngle > hinge.upperAngle)
+                problems.push_back("has lowerAngle above upperAngle");
         });
     type.field("connectedBody", &HingeJoint::connectedBody)
         .tooltip("The entity whose body the hinge is fixed to. Empty: fixed in the world.");

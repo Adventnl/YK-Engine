@@ -233,8 +233,10 @@ class Level:
                                        playOnStart=True)
         s.add(audio)
         rules = Node("Level Flow")
+        # Both characters walk into their exits, the level shows LEVEL COMPLETE, and after a few
+        # seconds (or Enter) the game fades to the next room.
         rules.add("LevelFlow", goals=[ref("Ember Exit"), ref("Tide Exit")], completeSound="assets/audio/complete.wav",
-                  completeDelay=4.0)
+                  completeDelay=4.0, nextScene="scenes/practice.ykscene", continueAction="Continue")
         s.add(rules)
         s.place(P + "level/hud.ykprefab", "HUD", (0, 0))
 
@@ -298,7 +300,8 @@ class Practice(Level):
         s.place(P + "level/spawn_point.ykprefab", "Tide Spawn", (3.8, y), parent="Characters",
                 overrides={"SpawnPoint": {"character": ref("Tide")}})
         rules = Node("Level Flow")
-        rules.add("LevelFlow", goals=[ref("Ember Exit"), ref("Tide Exit")], completeSound="assets/audio/complete.wav")
+        rules.add("LevelFlow", goals=[ref("Ember Exit"), ref("Tide Exit")], completeSound="assets/audio/complete.wav",
+                  completeDelay=3.0, nextScene="scenes/level01.ykscene", continueAction="Continue")
         s.add(rules)
         s.place(P + "level/hud.ykprefab", "HUD", (0, 0))
         s.write("scenes/practice.ykscene")

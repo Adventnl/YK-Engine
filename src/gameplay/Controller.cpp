@@ -169,10 +169,9 @@ void PlatformerController::onFixedUpdate(GameContext &context, float seconds) {
     const auto *player = entity().get<PlayerInput>();
     float move = 0.0F;
     ButtonState jump;
-    if (player && player->enabled) {
-        const ActionInput &input = context.input();
-        move = input.axis(player->actionSet, moveLeftAction, moveRightAction);
-        jump = input.state(player->actionSet, jumpAction);
+    if (player) { // Reads nothing while the game's input is locked (a fade, a level-complete).
+        move = player->axis(context, moveLeftAction, moveRightAction);
+        jump = player->button(context, jumpAction);
     }
     const float cosMaxSlope = std::cos(degreesToRadians(maxSlopeDegrees));
 

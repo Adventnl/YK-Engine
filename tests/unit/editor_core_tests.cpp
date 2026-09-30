@@ -1175,7 +1175,7 @@ void playing() {
     doc.beginChange("busy");
     CHECK(!PlaySession::start(doc, project, nullptr, {1280, 720}));
     doc.endChange();
-    auto started = PlaySession::start(doc, project, nullptr, {1280, 720});
+    auto started = PlaySession::start(doc, project, nullptr, {1280, 720}, 0.0F); // Instant.
     CHECK(started);
     if (!started)
         return;

@@ -1,5 +1,7 @@
 #include "yk/gameplay/Gameplay.hpp"
 #include <algorithm>
+#include <cmath>
+#include <cstdint>
 
 namespace yk {
 namespace {
@@ -115,6 +117,11 @@ void Hazard::describe(TypeBuilder<Hazard> &type) {
     type.category("Gameplay")
         .description("Kills Killable entities that touch its trigger collider.")
         .dependsOn("Collider")
+        .check([](const Entity &entity, const Hazard &, const CheckContext &,
+                  std::vector<std::string> &problems) {
+            if (!hasTriggerCollider(entity))
+                problems.push_back("needs a trigger Collider to notice what enters it");
+        })
         .onAdd([](Entity &entity, Hazard &) { turnIntoTrigger(entity); });
     type.field("affectsTags", &Hazard::affectsTags)
         .tooltip("Only entities with one of these tags are hurt. Empty: everything Killable.");
@@ -133,6 +140,11 @@ void Collectible::describe(TypeBuilder<Collectible> &type) {
     type.category("Gameplay")
         .description("Picked up when touched: adds `value` to a game variable and disappears.")
         .dependsOn("Collider")
+        .check([](const Entity &entity, const Collectible &, const CheckContext &,
+                  std::vector<std::string> &problems) {
+            if (!hasTriggerCollider(entity))
+                problems.push_back("needs a trigger Collider to notice what enters it");
+        })
         .onAdd([](Entity &entity, Collectible &) { turnIntoTrigger(entity); });
     type.field("collectorTags", &Collectible::collectorTags)
         .tooltip("Who can collect it. Empty: any movable body.");
@@ -165,6 +177,11 @@ void Checkpoint::describe(TypeBuilder<Checkpoint> &type) {
     type.category("Gameplay")
         .description("Sets where a character respawns after it is touched.")
         .dependsOn("Collider")
+        .check([](const Entity &entity, const Checkpoint &, const CheckContext &,
+                  std::vector<std::string> &problems) {
+            if (!hasTriggerCollider(entity))
+                problems.push_back("needs a trigger Collider to notice what enters it");
+        })
         .onAdd([](Entity &entity, Checkpoint &) { turnIntoTrigger(entity); });
     type.field("activatorTags", &Checkpoint::activatorTags);
     type.field("respawnOffset", &Checkpoint::respawnOffset).range(-100, 100, 0.1);
@@ -205,12 +222,21 @@ void Goal::describe(TypeBuilder<Goal> &type) {
         .description(
             "An exit: satisfied while a living entity with the required tag stands inside.")
         .dependsOn("Collider")
+        .check([](const Entity &entity, const Goal &, const CheckContext &,
+                  std::vector<std::string> &problems) {
+            if (!hasTriggerCollider(entity))
+                problems.push_back("needs a trigger Collider to notice what enters it");
+        })
         .onAdd([](Entity &entity, Goal &) { turnIntoTrigger(entity); });
     type.field("requiredTag", &Goal::requiredTag)
         .tooltip("Only entities with this tag count. Empty: any movable body.");
     type.field("targets", &Goal::targets).tooltip("Receivers driven while the goal is satisfied.");
     type.field("satisfiedColor", &Goal::satisfiedColor);
     type.field("sound", &Goal::sound).asset("sound");
+    type.field("enterOnComplete", &Goal::enterOnComplete)
+        .tooltip("When the level completes, whoever stands in the exit walks into it and vanishes "
+                 "(the animation parameter `exiting` is set on them meanwhile).");
+    type.field("exitDuration", &Goal::exitDuration).range(0.05, 10, 0.05);
     type.field("satisfied", &Goal::satisfied_).readOnly();
 }
 void Goal::onStart(GameContext &context) {
@@ -226,16 +252,59 @@ void Goal::applyVisuals() {
     else if (auto *sprite = entity().get<SpriteRenderer>())
         sprite->color = satisfied_ ? satisfiedColor : baseColor_;
 }
-void Goal::onFixedUpdate(GameContext &context, float) {
+namespace {
+bool eligibleForGoal(const Goal &goal, const Entity &other) {
+    const bool eligible =
+        goal.requiredTag.empty() ? matchesActivator(other, {}) : other.hasTag(goal.requiredTag);
+    const auto *killable = other.get<Killable>();
+    return eligible && !(killable && !killable->alive());
+}
+} // namespace
+
+void Goal::beginExit(GameContext &context) {
+    if (!enterOnComplete || exiting_ || exitDuration <= 0.0F)
+        return;
+    leaving_.clear();
+    for (const EntityId id : context.overlapping(entity().id())) {
+        Entity *other = context.scene().find(id);
+        if (!other || !eligibleForGoal(*this, *other))
+            continue;
+        leaving_.push_back({id, other->worldPosition()});
+        if (auto *player = other->get<PlayerInput>())
+            player->enabled = false; // Nobody steers a character that is going through the door.
+        if (auto *animated = other->get<AnimatedSprite>())
+            animated->setBool("exiting", true);
+    }
+    leavingTime_ = 0.0F;
+    exiting_ = true;
+}
+
+void Goal::onFixedUpdate(GameContext &context, float seconds) {
+    if (exiting_) {
+        // The characters slide to the middle of the exit and fade away; the goal stays satisfied.
+        leavingTime_ += seconds;
+        const float t = std::min(1.0F, leavingTime_ / exitDuration);
+        const float walk = t * t * (3.0F - 2.0F * t);
+        const float fadeT = std::clamp((t - 0.4F) / 0.6F, 0.0F, 1.0F);
+        Vec2 middle = entity().worldPosition();
+        if (const auto *collider = entity().get<Collider>())
+            middle = transformPoint(entity().worldTransform(), collider->offset);
+        for (const Visitor &visitor : leaving_) {
+            Entity *other = context.scene().find(visitor.entity);
+            if (!other)
+                continue;
+            context.teleport(*other, {lerp(visitor.from.x, middle.x, walk), visitor.from.y});
+            if (auto *sprite = other->get<SpriteRenderer>())
+                sprite->color.a = static_cast<std::uint8_t>(
+                    std::lround(255.0F * (1.0F - fadeT * fadeT * (3.0F - 2.0F * fadeT))));
+        }
+        sendSignal(context.scene(), entity().id(), targets, true);
+        return;
+    }
     bool occupied = false;
     for (const EntityId id : context.overlapping(entity().id())) {
         const Entity *other = context.scene().find(id);
-        if (!other)
-            continue;
-        const bool eligible =
-            requiredTag.empty() ? matchesActivator(*other, {}) : other->hasTag(requiredTag);
-        const auto *killable = other->get<Killable>();
-        if (eligible && !(killable && !killable->alive())) {
+        if (other && eligibleForGoal(*this, *other)) {
             occupied = true;
             break;
         }
@@ -255,6 +324,11 @@ void TriggerZone::describe(TypeBuilder<TriggerZone> &type) {
     type.category("Gameplay")
         .description("A trigger region that raises named events and drives targets while occupied.")
         .dependsOn("Collider")
+        .check([](const Entity &entity, const TriggerZone &, const CheckContext &,
+                  std::vector<std::string> &problems) {
+            if (!hasTriggerCollider(entity))
+                problems.push_back("needs a trigger Collider to notice what enters it");
+        })
         .onAdd([](Entity &entity, TriggerZone &) { turnIntoTrigger(entity); });
     type.field("filterTags", &TriggerZone::filterTags).tooltip("Empty: any movable body.");
     type.field("enterEvent", &TriggerZone::enterEvent)

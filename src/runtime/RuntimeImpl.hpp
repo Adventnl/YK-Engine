@@ -4,6 +4,7 @@
 #include "yk/scene/SceneSerializer.hpp"
 #include <array>
 #include <map>
+#include <set>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -45,6 +46,16 @@ struct GameRuntime::Impl {
     bool paused{};
     bool restartWanted{};
     std::string sceneChange;
+    // A restart or scene change fades the screen out, does its work while it is covered, and fades
+    // back in. It outlives rebuild(): the restart happens in the middle of it.
+    enum class Phase { Idle, Out, Covered, In };
+    Phase phase{Phase::Idle};
+    float phaseTime{};
+    float fade{};
+    bool restartAfterFade{};
+    std::string sceneAfterFade;
+    std::set<std::string> inputLocks; // Reasons the game is locked (see GameContext::lockInput).
+    bool announced{};                 // "scene_started" has been raised.
     Vec2 viewport{1280, 720};
     std::vector<EntityId> destroyQueue;
     std::unordered_set<const Component *> started;
@@ -97,6 +108,8 @@ struct GameRuntime::Impl {
     void shutdown();
     void startPending();
     void fixedTick();
+    void advanceTransition(float seconds);
+    void beginTransition(bool restart, std::string nextScene);
     void variableUpdate(float seconds);
     void flushDestroys();
     void finishFrame();

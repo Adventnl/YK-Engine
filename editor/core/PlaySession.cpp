@@ -5,7 +5,8 @@
 namespace yk::editor {
 Result<std::unique_ptr<PlaySession>> PlaySession::start(const EditorDocument &document,
                                                         const EditorProject &project,
-                                                        AudioSink *audio, Vec2 viewport) {
+                                                        AudioSink *audio, Vec2 viewport,
+                                                        float transitionSeconds) {
     if (document.inChange())
         return Error{"Finish the current edit before playing"};
     // The copy goes through the same save format a real game load uses, so Play shows exactly what
@@ -13,47 +14,27 @@ Result<std::unique_ptr<PlaySession>> PlaySession::start(const EditorDocument &do
     auto copy = sceneFromJson(sceneToJson(document.scene()), project.registry());
     if (!copy)
         return Error{"Cannot copy the scene for play mode: " + copy.error()};
-    std::unique_ptr<PlaySession> session(new PlaySession());
-    session->project_ = &project;
-    session->audio_ = audio;
-    session->viewport_ = viewport;
-    session->scenePath_ = document.path();
-    if (auto status = session->load(std::move(copy.value())); !status)
-        return Error{status.error()};
-    return session;
-}
-
-Status PlaySession::load(std::unique_ptr<Scene> scene) {
     RuntimeOptions options;
-    options.layers = project_->project().layers;
-    options.inputMap = project_->project().input;
-    options.viewportSize = viewport_;
-    options.audio = audio_;
-    options.assets = &project_->assets();
-    auto runtime = GameRuntime::create(std::move(scene), options);
-    if (!runtime)
-        return Error{runtime.error()};
-    runtime_ = std::move(runtime.value());
-    runtime_->setPaused(paused_);
-    return success();
-}
-
-Status PlaySession::followSceneChange() {
-    const std::string next = runtime_->sceneChangeRequested();
-    if (next.empty())
-        return success();
-    runtime_->clearSceneChangeRequest();
-    auto absolute = project_->project().resolve(next);
-    if (!absolute)
-        return Error{absolute.error()};
-    auto scene = loadScene(absolute.value(), project_->registry());
-    if (!scene)
-        return Error{scene.error()};
-    if (auto status = load(std::move(scene.value())); !status)
-        return status;
-    scenePath_ = next;
-    log(LogLevel::Info, "play", "Loaded scene " + next);
-    return success();
+    options.layers = project.project().layers;
+    options.inputMap = project.project().input;
+    options.viewportSize = viewport;
+    options.audio = audio;
+    options.assets = &project.assets();
+    options.transitionSeconds = transitionSeconds;
+    // Scenes the game asks for are read from the project, as the standalone player does.
+    const auto loader = [&project](const std::string &path) -> Result<std::unique_ptr<Scene>> {
+        auto absolute = project.project().resolve(path);
+        if (!absolute)
+            return Error{absolute.error()};
+        return loadScene(absolute.value(), project.registry());
+    };
+    auto session =
+        GameSession::create(std::move(copy.value()), document.path(), std::move(options), loader);
+    if (!session)
+        return Error{session.error()};
+    std::unique_ptr<PlaySession> play(new PlaySession());
+    play->session_ = std::move(session.value());
+    return play;
 }
 
 void PlaySession::update(double seconds, const Keyboard &keyboard) {
@@ -63,10 +44,7 @@ void PlaySession::update(double seconds, const Keyboard &keyboard) {
 }
 
 void PlaySession::update(double seconds, const InputFrame &input) {
-    if (!paused_)
-        runtime_->update(seconds, input);
-    if (auto status = followSceneChange(); !status)
-        log(LogLevel::Error, "play", status.error()); // Keep playing the current scene.
+    session_->update(seconds, input);
 }
 
 void PlaySession::step(const Keyboard &keyboard) {
@@ -76,24 +54,18 @@ void PlaySession::step(const Keyboard &keyboard) {
 }
 
 void PlaySession::step(const InputFrame &input) {
-    if (!paused_)
-        return;
-    runtime_->setPaused(false);
-    runtime_->stepOnce(input);
-    runtime_->setPaused(true);
+    session_->step(input);
 }
 
 void PlaySession::setPaused(bool paused) {
-    paused_ = paused;
-    runtime_->setPaused(paused);
+    session_->setPaused(paused);
 }
 
 Status PlaySession::restart() {
-    return runtime_->restart();
+    return session_->restart();
 }
 
 void PlaySession::setViewportSize(Vec2 pixels) {
-    viewport_ = pixels;
-    runtime_->setViewportSize(pixels);
+    session_->setViewportSize(pixels);
 }
 } // namespace yk::editor

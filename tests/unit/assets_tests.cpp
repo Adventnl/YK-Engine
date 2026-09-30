@@ -183,6 +183,17 @@ void validation() {
     Entity &player = scene.createEntity("Ghost");
     player.add<PlayerInput>().actionSet = "Ghosts";
     player.add<Binding>().action = "Teleport";
+    // Physics setups that cannot work are reported with what to change.
+    Entity &hollow = scene.createEntity("Hollow Crate");
+    hollow.add<RigidBody>();
+    Entity &stiff = scene.createEntity("Stiff Hinge");
+    stiff.add<RigidBody>().type = RigidBodyType::Dynamic;
+    stiff.add<Collider>();
+    stiff.add<HingeJoint>();
+    stiff.get<RigidBody>()->type = RigidBodyType::Kinematic; // Changed after adding: cannot swing.
+    Entity &confused = scene.createEntity("Confused Trigger");
+    confused.add<Collider>().isTrigger = true;
+    confused.get<Collider>()->oneWay = true;
     Entity &fine = scene.createEntity("Fine");
     fine.add<PlayerInput>().actionSet = "Player1";
     fine.add<Binding>().action = "Jump";
@@ -205,6 +216,13 @@ void validation() {
     CHECK(mentions(issues, Severity::Warning, "the animation's sheet wins"));
     CHECK(mentions(issues, Severity::Warning, "input set 'Ghosts'"));
     CHECK(mentions(issues, Severity::Warning, "input action 'Teleport'"));
+    CHECK(mentions(issues, Severity::Warning,
+                   "'Hollow Crate' RigidBody: has a body but no Collider"));
+    CHECK(
+        mentions(issues, Severity::Warning, "'Stiff Hinge' HingeJoint: needs a Dynamic RigidBody"));
+    CHECK(mentions(issues, Severity::Warning,
+                   "'Confused Trigger' Collider: is a trigger and one-way"));
+    CHECK(!mentions(issues, Severity::Warning, "'Fine' RigidBody"));
     // Nothing is said about the entity that is fine, or about known input names.
     CHECK(!mentions(issues, Severity::Warning, "input action 'Jump'"));
     CHECK(!mentions(issues, Severity::Warning, "input set 'Player1'"));

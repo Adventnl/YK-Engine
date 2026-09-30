@@ -83,6 +83,7 @@
             "speed": 4,
             "rotationSpeed": 90,
             "startsOpen": false,
+            "stopWhenBlocked": true,
             "logic": "Any",
             "invert": false,
             "openSound": "assets/audio/gate_open.wav",

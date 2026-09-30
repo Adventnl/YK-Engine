@@ -20,8 +20,14 @@ class PlayerInput final : public Component {
     std::string actionSet{"Player1"};
     static void describe(TypeBuilder<PlayerInput> &type);
 
+    // What the person is doing: nothing while this component is disabled, or while the game's
+    // input is locked (GameContext::lockInput: a level-complete sequence, a fade between scenes).
+    // Components that answer to a person read their actions through here, not from the raw input.
     ButtonState button(const GameContext &context, std::string_view action) const;
     float value(const GameContext &context, std::string_view action) const;
+    // value(positive) - value(negative), in -1..+1.
+    float axis(const GameContext &context, std::string_view negative,
+               std::string_view positive) const;
 };
 
 // ----- Rendering ---------------------------------------------------------------------------

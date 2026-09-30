@@ -69,7 +69,9 @@
             "requiredTag": "Tide",
             "targets": [],
             "satisfiedColor": "#5adc6eff",
-            "sound": "assets/audio/exit.wav"
+            "sound": "assets/audio/exit.wav",
+            "enterOnComplete": true,
+            "exitDuration": 0.6
           }
         }
       ]

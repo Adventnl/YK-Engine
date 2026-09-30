@@ -49,8 +49,8 @@ class InputMap {
     std::vector<ActionSet> sets;
 
     // What a new project starts with: Player1 (WASD, gamepad 0), Player2 (arrow keys, gamepad 1)
-    // and Global (restart, pause), each with MoveLeft, MoveRight, Jump and Interact where they make
-    // sense.
+    // and Global (restart, pause, continue), each with MoveLeft, MoveRight, Jump and Interact where
+    // they make sense.
     static InputMap standard();
 
     const ActionSet *findSet(std::string_view name) const;

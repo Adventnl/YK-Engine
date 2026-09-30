@@ -179,14 +179,21 @@
           "type": "LevelFlow",
           "properties": {
             "goals": ["3bd3efe60c6b8079", "6c68fab426ef8845"],
+            "introDuration": 0,
+            "introMessage": "",
             "restartOnDeath": false,
+            "timeLimit": 0,
+            "lockInputOnComplete": true,
             "restartDelay": 1.5,
             "completeDelay": 4,
-            "nextScene": "",
+            "nextScene": "scenes/practice.ykscene",
             "restartSet": "Global",
             "restartAction": "Restart",
+            "continueAction": "Continue",
             "completeMessage": "LEVEL COMPLETE!",
             "failMessage": "TRY AGAIN",
+            "timeUpMessage": "TIME'S UP!",
+            "keepVariables": [],
             "completeSound": "assets/audio/complete.wav",
             "failSound": ""
           }
@@ -2867,6 +2874,7 @@
             "speed": 4,
             "rotationSpeed": 90,
             "startsOpen": false,
+            "stopWhenBlocked": true,
             "logic": "Any",
             "invert": false,
             "openSound": "assets/audio/gate_open.wav",
@@ -2946,6 +2954,7 @@
             "spinSpeed": 0,
             "pause": 1.4,
             "requireSignal": false,
+            "stopWhenBlocked": true,
             "logic": "Any",
             "invert": false
           }
@@ -3023,6 +3032,7 @@
             "spinSpeed": 0,
             "pause": 0.6,
             "requireSignal": true,
+            "stopWhenBlocked": true,
             "logic": "Any",
             "invert": false
           }
@@ -3455,7 +3465,9 @@
             "requiredTag": "Ember",
             "targets": [],
             "satisfiedColor": "#5adc6eff",
-            "sound": "assets/audio/exit.wav"
+            "sound": "assets/audio/exit.wav",
+            "enterOnComplete": true,
+            "exitDuration": 0.6
           }
         }
       ]
@@ -3596,7 +3608,9 @@
             "requiredTag": "Tide",
             "targets": [],
             "satisfiedColor": "#5adc6eff",
-            "sound": "assets/audio/exit.wav"
+            "sound": "assets/audio/exit.wav",
+            "enterOnComplete": true,
+            "exitDuration": 0.6
           }
         }
       ]

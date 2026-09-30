@@ -854,6 +854,7 @@
             "speed": 4,
             "rotationSpeed": 90,
             "startsOpen": false,
+            "stopWhenBlocked": true,
             "logic": "Any",
             "invert": false,
             "openSound": "assets/audio/gate_open.wav",
@@ -1013,7 +1014,9 @@
             "requiredTag": "Ember",
             "targets": [],
             "satisfiedColor": "#5adc6eff",
-            "sound": "assets/audio/exit.wav"
+            "sound": "assets/audio/exit.wav",
+            "enterOnComplete": true,
+            "exitDuration": 0.6
           }
         }
       ]
@@ -1154,7 +1157,9 @@
             "requiredTag": "Tide",
             "targets": [],
             "satisfiedColor": "#5adc6eff",
-            "sound": "assets/audio/exit.wav"
+            "sound": "assets/audio/exit.wav",
+            "enterOnComplete": true,
+            "exitDuration": 0.6
           }
         }
       ]
@@ -1906,14 +1911,21 @@
           "type": "LevelFlow",
           "properties": {
             "goals": ["dae4e601e1c55541", "ef12b0ae57159e92"],
+            "introDuration": 0,
+            "introMessage": "",
             "restartOnDeath": false,
+            "timeLimit": 0,
+            "lockInputOnComplete": true,
             "restartDelay": 1.5,
-            "completeDelay": 2.5,
-            "nextScene": "",
+            "completeDelay": 3,
+            "nextScene": "scenes/level01.ykscene",
             "restartSet": "Global",
             "restartAction": "Restart",
+            "continueAction": "Continue",
             "completeMessage": "LEVEL COMPLETE!",
             "failMessage": "TRY AGAIN",
+            "timeUpMessage": "TIME'S UP!",
+            "keepVariables": [],
             "completeSound": "assets/audio/complete.wav",
             "failSound": ""
           }

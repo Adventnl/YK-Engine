@@ -66,7 +66,7 @@ void checkAnimatedSprite(const Project &project, const AnimatedSprite &animated,
 }
 
 void checkScene(const Project &project, const Scene &scene, const std::string &file,
-                std::vector<ProjectIssue> &issues) {
+                std::vector<ProjectIssue> &issues, bool prefab) {
     scene.forEach([&](const Entity &entity) {
         const std::string owner = "'" + entity.name() + "'";
         if (const std::string &source = entity.prefabSource(); !source.empty()) {
@@ -83,6 +83,12 @@ void checkScene(const Project &project, const Scene &scene, const std::string &f
         }
         for (const auto &component : entity.components()) {
             const std::string where = owner + " " + component->type().name;
+            if (component->type().check) {
+                std::vector<std::string> problems;
+                component->type().check(entity, *component, CheckContext{prefab}, problems);
+                for (const std::string &problem : problems)
+                    issues.push_back({Severity::Warning, file, where + ": " + problem});
+            }
             if (const auto *animated = dynamic_cast<const AnimatedSprite *>(component.get()))
                 checkAnimatedSprite(project, *animated, entity.get<SpriteRenderer>(), where, file,
                                     issues);
@@ -227,7 +233,7 @@ std::vector<ProjectIssue> validateProject(const Project &project,
             if (!scene)
                 issues.push_back({Severity::Error, entry.path, scene.error()});
             else
-                checkScene(project, *scene.value(), entry.path, issues);
+                checkScene(project, *scene.value(), entry.path, issues, false);
         } else {
             auto prefab = loadPrefabDocument(absolute);
             if (!prefab) {
@@ -239,7 +245,7 @@ std::vector<ProjectIssue> validateProject(const Project &project,
             if (!instance)
                 issues.push_back({Severity::Error, entry.path, instance.error()});
             else
-                checkScene(project, scratch, entry.path, issues);
+                checkScene(project, scratch, entry.path, issues, true);
         }
     }
     return issues;

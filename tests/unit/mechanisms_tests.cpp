@@ -3,9 +3,12 @@
 // that stack, and things that move fast. Each test states what a player would see.
 #include "support/check.hpp"
 #include "support/world.hpp"
+#include "yk/assets/Validation.hpp"
+#include "yk/core/FileIO.hpp"
 #include "yk/core/Log.hpp"
 #include "yk/gameplay/Gameplay.hpp"
 #include "yk/runtime/GameRuntime.hpp"
+#include "yk/scene/SceneSerializer.hpp"
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -405,6 +408,100 @@ void platformsGoingDown() {
     CHECK(grounded);
 }
 
+// A gate closing on a character stops at the character's head instead of pushing it through the
+// floor, and finishes closing once the way is clear. A crate under it holds it open the same way.
+void gatesDoNotCrush() {
+    World w;
+    w.ground();
+    Entity &gate = w.body("Gate", {0.0F, floorTop - 1.5F}, {0.8F, 3.0F}, RigidBodyType::Kinematic);
+    auto &door = gate.add<Door>();
+    door.openOffset = {0.0F, -3.2F};
+    door.speed = 4.0F;
+    door.startsOpen = true; // Open until something signals it: then it closes.
+    Entity &lever = w.box("Lever", {-12.0F, floorTop - 0.4F}, {0.5F, 0.8F}, layers::sensor);
+    lever.get<Collider>()->isTrigger = true;
+    auto &pull = lever.add<Lever>();
+    pull.targets = {gate.id()};
+    pull.startsOn = true;
+    w.character("Hero", {0.0F, restingHeight});
+    w.start();
+    w.tick(120); // The gate has been closing for two seconds.
+    const float head = w.position("Hero").y - 0.475F;
+    const float bottom = w.position("Gate").y + 1.5F;
+    if (tracing())
+        std::printf("gate: head=%.3f bottom=%.3f amount=%.3f feet=%.3f\n",
+                    static_cast<double>(head), static_cast<double>(bottom),
+                    static_cast<double>(w.at("Gate").get<Door>()->openAmount()),
+                    static_cast<double>(feet(w, "Hero")));
+    CHECK_NEAR(feet(w, "Hero"), floorTop, 0.04); // Not pushed into the floor.
+    CHECK(w.at("Hero").get<Killable>()->alive());
+    CHECK(bottom < head + 0.10F && bottom > head - 0.15F); // It stopped on the character's head.
+    CHECK(w.at("Gate").get<Door>()->openAmount() > 0.05F); // Not closed.
+    CHECK(!w.happened("door_closed"));
+    // The character walks away and the gate finishes closing.
+    w.runtime->teleport(w.at("Hero"), {-6.0F, restingHeight});
+    w.tick(90);
+    CHECK_NEAR(w.at("Gate").get<Door>()->openAmount(), 0.0, 1e-6);
+    CHECK_NEAR(w.position("Gate").y, floorTop - 1.5F, 0.02);
+    CHECK(w.happened("door_closed"));
+}
+
+void gatesAreHeldOpenByCrates() {
+    World w;
+    w.ground();
+    Entity &gate = w.body("Gate", {0.0F, floorTop - 1.5F}, {0.8F, 3.0F}, RigidBodyType::Kinematic);
+    auto &door = gate.add<Door>();
+    door.openOffset = {0.0F, -3.2F};
+    door.speed = 4.0F;
+    door.startsOpen = true;
+    Entity &lever = w.box("Lever", {-12.0F, floorTop - 0.4F}, {0.5F, 0.8F}, layers::sensor);
+    lever.get<Collider>()->isTrigger = true;
+    auto &pull = lever.add<Lever>();
+    pull.targets = {gate.id()};
+    pull.startsOn = true;
+    Entity &crate = w.box("Crate", {0.0F, floorTop - 0.5F}, {0.8F, 0.8F}, layers::prop);
+    crate.add<RigidBody>();
+    w.start();
+    w.tick(180);
+    if (tracing())
+        std::printf("crate: y=%.3f gate bottom=%.3f amount=%.3f\n",
+                    static_cast<double>(w.position("Crate").y),
+                    static_cast<double>(w.position("Gate").y + 1.5F),
+                    static_cast<double>(w.at("Gate").get<Door>()->openAmount()));
+    CHECK_NEAR(w.position("Crate").y, floorTop - 0.4F, 0.03); // Not crushed, not pushed down.
+    CHECK(w.at("Gate").get<Door>()->openAmount() > 0.2F);     // Held open by the crate.
+    CHECK(w.position("Gate").y + 1.5F < w.position("Crate").y - 0.4F + 0.10F);
+}
+
+// A platform that rises under a ceiling with someone on it stops there: the rider is not crushed
+// into the ceiling, and the platform goes on when the rider is gone.
+void platformsDoNotCrush() {
+    World w;
+    w.ground();
+    w.body("Ceiling", {0.0F, floorTop - 6.0F}, {8.0F, 1.0F}, RigidBodyType::Static);
+    Entity &lift = w.body("Lift", {0.0F, floorTop - 1.0F}, {3.0F, 0.4F}, RigidBodyType::Kinematic);
+    auto &platform = lift.add<MovingPlatform>();
+    platform.travel = {0.0F, -8.0F}; // Farther than the ceiling allows.
+    platform.speed = 3.0F;
+    platform.pause = 0.0F;
+    w.character("Rider", {0.0F, floorTop - 1.0F - 0.2F - 0.475F});
+    w.start();
+    w.tick(200);
+    const float ceilingBottom = floorTop - 6.0F + 0.5F;
+    const float head = w.position("Rider").y - 0.475F;
+    CHECK(head > ceilingBottom - 0.05F);           // The rider's head never went into the ceiling.
+    CHECK(head < ceilingBottom + 0.12F);           // It rose right up to it.
+    CHECK(w.position("Lift").y > floorTop - 5.5F); // ...and the platform waited there, high up.
+    CHECK(w.at("Rider").get<Killable>()->alive());
+    const float waiting = w.position("Lift").y;
+    w.tick(60);
+    CHECK_NEAR(w.position("Lift").y, waiting, 0.02); // Still waiting under the ceiling.
+    w.runtime->teleport(w.at("Rider"), {-10.0F, restingHeight});
+    w.tick(60);
+    CHECK(w.position("Lift").y < waiting - 0.1F ||
+          w.position("Lift").y > waiting + 0.1F); // Moving on.
+}
+
 // A rotating platform carries a character that stands away from its center: after several seconds
 // the character is still where a point painted on the platform would be.
 void rotatingPlatformsCarryRiders() {
@@ -623,6 +720,49 @@ void collisionEnterAndExit() {
     CHECK(probe->entered >= 2); // And a new contact on landing.
 }
 
+// A scene whose mechanisms cannot work is reported, with what to change; a well-formed one is not.
+void mechanismsAreValidated() {
+    using Severity = ProjectIssue::Severity;
+    const std::filesystem::path root =
+        std::filesystem::current_path() / "mechanism-validation-project";
+    std::filesystem::remove_all(root);
+    std::filesystem::create_directories(root / "scenes");
+    Project project = Project::create(root, "Mechanism Validation");
+    project.startScene = "scenes/main.ykscene";
+    project.layers = layers::standard();
+
+    World w;
+    Entity &bare = w.scene->createEntity("Bare Plate");
+    bare.addComponent("PressurePlate", false); // No pad, no collider: nothing can press it.
+    Entity &softDoor = w.body("Soft Door", {0.0F, 0.0F}, {1.0F, 3.0F}, RigidBodyType::Dynamic);
+    softDoor.addComponent("Door", false);
+    Entity &deaf = w.scene->createEntity("Deaf Lever");
+    deaf.addComponent("Lever", false); // Needs a trigger collider and targets.
+    Entity &still = w.body("Still Platform", {0.0F, 0.0F}, {3.0F, 0.4F}, RigidBodyType::Kinematic);
+    still.addComponent("MovingPlatform", false);
+    static_cast<MovingPlatform *>(still.findComponent("MovingPlatform"))->travel = {0.0F, 0.0F};
+    const BuiltPlate good = buildPlate(w, 5.0F, plateRise, plateDepth, "Good Plate");
+    good.root->get<PressurePlate>()->targets = {softDoor.id()};
+    CHECK(saveScene(*w.scene, root / "scenes/main.ykscene"));
+    setLogStderrEnabled(false);
+    const auto issues = validateProject(project, w.registry);
+    setLogStderrEnabled(true);
+    const auto mentions = [&](Severity severity, const std::string &text) {
+        return std::any_of(issues.begin(), issues.end(), [&](const ProjectIssue &issue) {
+            return issue.severity == severity && issue.message.find(text) != std::string::npos;
+        });
+    };
+    CHECK(mentions(Severity::Warning, "'Bare Plate' PressurePlate: weight sensing needs a pad"));
+    CHECK(mentions(Severity::Warning, "'Bare Plate' PressurePlate: has no targets"));
+    CHECK(mentions(Severity::Warning, "'Soft Door' Door: needs a Kinematic RigidBody"));
+    CHECK(mentions(Severity::Warning, "'Deaf Lever' Lever: needs a trigger Collider"));
+    CHECK(
+        mentions(Severity::Warning, "'Still Platform' MovingPlatform: neither travels nor spins"));
+    CHECK(!mentions(Severity::Warning, "'Good Plate'"));
+    CHECK(!mentions(Severity::Warning, "'Pad'"));
+    std::filesystem::remove_all(root);
+}
+
 // Speeds and frame rates: the same play is the same result however the frames are cut.
 void frameRateDoesNotChangeTheResult() {
     const auto run = [](double frameSeconds) {
@@ -660,6 +800,9 @@ int main() {
     stackOnAPlate();
     elevatorsCarryUpAndDown();
     platformsGoingDown();
+    gatesDoNotCrush();
+    gatesAreHeldOpenByCrates();
+    platformsDoNotCrush();
     rotatingPlatformsCarryRiders();
     angledSurfaces();
     hingedSeesaw();
@@ -667,6 +810,7 @@ int main() {
     propsAreSolidObjects();
     fastThingsDoNotTunnel();
     collisionEnterAndExit();
+    mechanismsAreValidated();
     frameRateDoesNotChangeTheResult();
     return yk::test::finish("mechanisms");
 }

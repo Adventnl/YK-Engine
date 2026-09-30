@@ -36,9 +36,64 @@ bool matchesActivator(const Entity &entity, const std::vector<std::string> &tags
     return body && body->type != RigidBodyType::Static;
 }
 
+bool hasTriggerCollider(const Entity &entity) {
+    const auto colliders = entity.getAll<Collider>();
+    return std::any_of(colliders.begin(), colliders.end(),
+                       [](const Collider *collider) { return collider->isTrigger; });
+}
+
 void spawnEffect(GameContext &context, const AssetRef &prefab, Vec2 worldPosition) {
     if (!prefab.path.empty())
         context.spawnPrefab(prefab.path, worldPosition); // Failure is reported once by the runtime.
+}
+
+bool pathBlocked(GameContext &context, const Entity &entity, Vec2 direction) {
+    const auto body = context.bodyOf(entity.id());
+    const float span = length(direction);
+    if (!body || span < 1e-6F)
+        return false;
+    const Vec2 heading = direction / span;
+    auto &world = context.physics();
+    const auto contacts = world.contacts(*body);
+    if (!contacts)
+        return false;
+    constexpr float skin = 0.04F;
+    const auto closer = [](const physics::Contact &contact, float distance) {
+        float closest = 1e9F;
+        for (const physics::ContactPoint &point : contact.points)
+            closest = std::min(closest, point.separation);
+        return closest < distance;
+    };
+    for (const physics::Contact &contact : contacts.value()) {
+        const auto firstBody = world.bodyOf(contact.first);
+        const bool entityFirst = firstBody && firstBody.value() == *body;
+        const Vec2 toOther = entityFirst ? contact.normal : -contact.normal;
+        if (dot(toOther, heading) < 0.7F || !closer(contact, skin))
+            continue; // Not on the leading face.
+        const auto otherBody = world.bodyOf(entityFirst ? contact.second : contact.first);
+        if (!otherBody)
+            continue;
+        const Entity *owner = context.entityOfBody(otherBody.value());
+        const auto *rigid = owner ? owner->get<RigidBody>() : nullptr;
+        if (!rigid || rigid->type != RigidBodyType::Dynamic)
+            continue; // Only what can be crushed is protected.
+        // Is that body pressed against something else from the far side?
+        const auto others = world.contacts(otherBody.value());
+        if (!others)
+            continue;
+        for (const physics::Contact &farther : others.value()) {
+            const auto owner1 = world.bodyOf(farther.first);
+            const bool bodyFirst = owner1 && owner1.value() == otherBody.value();
+            const auto partner = world.bodyOf(bodyFirst ? farther.second : farther.first);
+            if (!partner || partner.value() == *body || !closer(farther, skin))
+                continue;
+            // From the partner toward the squeezed body: opposite to where the entity is going.
+            const Vec2 fromPartner = bodyFirst ? -farther.normal : farther.normal;
+            if (dot(fromPartner, heading) < -0.7F)
+                return true;
+        }
+    }
+    return false;
 }
 
 namespace {

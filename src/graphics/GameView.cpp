@@ -1,5 +1,7 @@
 #include "yk/graphics/GameView.hpp"
 #include "yk/graphics/PhysicsDebug.hpp"
+#include <algorithm>
+#include <cstdint>
 
 namespace yk {
 namespace {
@@ -39,6 +41,20 @@ Status drawAsPlayed(Renderer &renderer, SceneRenderer &sceneRenderer, const Scen
             drawn = sceneRenderer.font().draw(renderer, options.overlay, origin, scale,
                                               {255, 255, 120, 255}, 9001);
     }
+    if (drawn && options.fade > 0.001F) {
+        auto white = renderer.builtinTexture(BuiltinTexture::White);
+        if (!white)
+            return Error{white.error()};
+        Sprite cover;
+        cover.texture = white.value();
+        cover.size = viewport.size;
+        cover.anchor = {0.0F, 0.0F};
+        cover.transform.position = {0.0F, 0.0F};
+        cover.tint = {0, 0, 0,
+                      static_cast<std::uint8_t>(std::clamp(options.fade, 0.0F, 1.0F) * 255.0F)};
+        cover.layer = 9500; // Over the HUD text and the debug overlay.
+        drawn = renderer.submit(cover);
+    }
     if (auto ended = renderer.endPass(); drawn && !ended)
         drawn = ended;
     return drawn;
@@ -47,8 +63,10 @@ Status drawAsPlayed(Renderer &renderer, SceneRenderer &sceneRenderer, const Scen
 
 Status drawGameView(Renderer &renderer, SceneRenderer &sceneRenderer, GameRuntime &runtime,
                     Rect viewport, const GameViewOptions &options) {
+    GameViewOptions shown = options;
+    shown.fade = std::max(options.fade, runtime.screenFade());
     return drawAsPlayed(renderer, sceneRenderer, runtime.scene(), &runtime.physics(),
-                        &runtime.blackboard(), viewport, options);
+                        &runtime.blackboard(), viewport, shown);
 }
 
 Status drawScenePreview(Renderer &renderer, SceneRenderer &sceneRenderer, const Scene &scene,

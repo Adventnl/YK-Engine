@@ -1,6 +1,6 @@
 #pragma once
 #include "core/EditorProject.hpp"
-#include "yk/runtime/GameRuntime.hpp"
+#include "yk/runtime/GameSession.hpp"
 #include <memory>
 #include <string>
 
@@ -11,15 +11,19 @@ namespace yk::editor {
 class PlaySession {
   public:
     // `audio` may be null (silent play). `viewport` is the size of the game view in pixels.
+    // `transitionSeconds` is how long a restart or a change of scene fades out (and back in), as in
+    // the player; zero switches at once.
     static Result<std::unique_ptr<PlaySession>> start(const EditorDocument &document,
                                                       const EditorProject &project,
-                                                      AudioSink *audio, Vec2 viewport);
+                                                      AudioSink *audio, Vec2 viewport,
+                                                      float transitionSeconds = 0.35F);
 
+    // The scene being played (a new runtime replaces it when the game moves to another scene).
     GameRuntime &runtime() {
-        return *runtime_;
+        return session_->runtime();
     }
     const GameRuntime &runtime() const {
-        return *runtime_;
+        return session_->runtime();
     }
     // Advances by real elapsed time (unless paused) and follows the game's scene-change requests.
     void update(double seconds, const InputFrame &input);
@@ -29,26 +33,19 @@ class PlaySession {
     void step(const Keyboard &keyboard);
     void setPaused(bool paused);
     bool paused() const {
-        return paused_;
+        return session_->paused();
     }
     // Starts the current scene over.
     Status restart();
     void setViewportSize(Vec2 pixels);
     // Project-relative scene being played ("" for the editor's unsaved copy).
     const std::string &scenePath() const {
-        return scenePath_;
+        return session_->scenePath();
     }
 
   private:
     PlaySession() = default;
-    Status load(std::unique_ptr<Scene> scene);
-    Status followSceneChange();
 
-    const EditorProject *project_{};
-    AudioSink *audio_{};
-    Vec2 viewport_;
-    std::unique_ptr<GameRuntime> runtime_;
-    std::string scenePath_;
-    bool paused_{};
+    std::unique_ptr<GameSession> session_;
 };
 } // namespace yk::editor

@@ -44,7 +44,7 @@ void mapValidationAndJson() {
     CHECK(standard.findSet("Player1")->find("Jump") != nullptr);
     CHECK(standard.findSet("Player1")->find("Fly") == nullptr);
     const auto actions = standard.actionNames();
-    CHECK(actions.size() == 6); // MoveLeft, MoveRight, Jump, Interact, Restart, Pause.
+    CHECK(actions.size() == 7); // MoveLeft, MoveRight, Jump, Interact, Restart, Pause, Continue.
     CHECK(standard.setNames().size() == 3);
 
     // Round trip through text, byte for byte.
