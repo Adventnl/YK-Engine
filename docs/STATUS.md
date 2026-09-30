@@ -26,13 +26,13 @@ in [AUDIT.md](AUDIT.md).
 
 ### On real runners (GitHub Actions, `.github/workflows/ci.yml`)
 
-Latest runs on the branch: run 12 (commit `b3735b1`) and run 13 (`b98af85`).
+CI run 15, commit `6a6e139`: all three jobs green.
 
 | Runner | Result |
 |---|---|
-| **macOS 14, Apple silicon, Apple clang, `release`** | Build clean (warnings are errors). Full test suite passed, **including all editor UI scripts in a real Mac build** (the first run there failed 8 of them: Dear ImGui swaps Control and Command on macOS; fixed, see [EDITOR.md](EDITOR.md#keyboard-shortcuts)). `scripts/package-macos.sh` produced `YK Engine.app` and the `.dmg`; `scripts/verify-macos-app.sh` passed: the image mounts and holds the app and an Applications link, the app copied to a path with a space verifies its signature, `iconutil` accepts `AppIcon.icns`, a game exported with `--dmg` and ad hoc signature verifies and its `.dmg` mounts, the exported game started through Launch Services (`open`) from another folder runs, writes `~/Library/Logs/<game>/player.log` and shuts down cleanly when asked to quit, and the editor opens a `.ykproj` document through Launch Services and quits cleanly. The `.dmg`, screenshots and logs are kept as the run's artifact `macos-engine`. |
-| **Windows Server 2022, MSVC (VS 2022, x64), Release** | Build clean; 36 of 37 tests passed, including every editor UI script, `external_project` and the install/CPack test. The one failure, `demo`, was the generated component reference compared byte for byte after Git turned it into CRLF on checkout; fixed with a `.gitattributes` (LF everywhere), which the next run confirms (see below). `macos_bundle` and `diagnostics_crash` are not registered on Windows. |
-| **Ubuntu 24.04, GCC, `dev` (Debug)** | Format check, build and full suite passed on earlier runs; see the latest run for the current commit. |
+| **macOS 14, Apple silicon, Apple clang, `release`** | Build clean (warnings are errors). Full test suite passed, **including all editor UI scripts in a real Mac build** (the first run there failed 8 of them: Dear ImGui swaps Control and Command on macOS; fixed, see [EDITOR.md](EDITOR.md#keyboard-shortcuts)). `scripts/package-macos.sh` produced `YK Engine.app` and the `.dmg`; `scripts/verify-macos-app.sh` passed: the image mounts and holds the app and an Applications link, the app copied to a path with a space verifies its signature, `iconutil` accepts `AppIcon.icns`, a game exported with `--dmg` and an ad hoc signature verifies and its `.dmg` mounts and holds the app, the exported game started through Launch Services (`open`) from another folder runs, writes `~/Library/Logs/CinderVale/player.log` and closes cleanly, and the editor opens a `.ykproj` document through Launch Services and quits on request with a clean shutdown and no process left. The `.dmg`, screenshots and logs are kept as the run's artifact `macos-engine`. |
+| **Windows Server 2022, MSVC (VS 2022, x64), Release** | Build clean; every registered test passed (37 of 39: `macos_bundle` and `diagnostics_crash` are not registered on Windows), including all editor UI scripts, `external_project` and the install/CPack test. An earlier run failed `demo` only because Git turned the generated component reference into CRLF on checkout; `.gitattributes` (LF everywhere) fixed it. |
+| **Ubuntu 24.04, GCC, `dev` (Debug)** | clang-format check, build and all 39 tests passed (about 17 minutes of tests in Debug). |
 
 ### Locally
 
