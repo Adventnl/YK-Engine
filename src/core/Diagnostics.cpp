@@ -208,7 +208,10 @@ void installSignalHandlers() {
     struct sigaction action {};
     action.sa_sigaction = onFatalSignal;
     sigemptyset(&action.sa_mask);
-    action.sa_flags = SA_SIGINFO | SA_ONSTACK | SA_RESETHAND;
+    // glibc defines SA_RESETHAND as an unsigned constant, the field is an int.
+    action.sa_flags =
+        static_cast<int>(static_cast<unsigned>(SA_SIGINFO) | static_cast<unsigned>(SA_ONSTACK) |
+                         static_cast<unsigned>(SA_RESETHAND));
     for (const int number : {SIGSEGV, SIGABRT, SIGBUS, SIGILL, SIGFPE})
         sigaction(number, &action, nullptr);
 }

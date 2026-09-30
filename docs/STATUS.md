@@ -83,7 +83,8 @@ rendering is checked against real pixels.
   Gatekeeper's warning on another Mac (Control-click > Open once).
 - **Universal or Intel macOS builds.** CI builds for Apple silicon only.
 - **High-DPI displays.** Scaling follows SDL's display scale (and `--ui-scale`), but the interface
-  was never looked at on a Retina display; the CI screenshots are from a virtual display.
+  was never looked at on a Retina display, and the screenshots the macOS job keeps were not viewed
+  (the environment this was developed in cannot download run artifacts).
 - **Real GPUs and native file dialogs.** UI runs use SDL's dummy video driver and the software
   renderer. The macOS job additionally opens a real window through Launch Services, but nobody
   looked at hardware-accelerated presentation, native open/save dialogs or OS drag-and-drop.

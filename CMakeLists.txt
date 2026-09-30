@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(YKEngine VERSION 0.2.0 LANGUAGES C CXX)
+project(YKEngine VERSION 0.3.0 LANGUAGES C CXX)
 set(CMAKE_CXX_EXTENSIONS OFF)
 if(WIN32 AND NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
     message(FATAL_ERROR "Windows builds require a 64-bit toolchain")
