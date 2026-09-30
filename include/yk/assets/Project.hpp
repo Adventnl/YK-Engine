@@ -50,6 +50,10 @@ struct BuildSettings {
     std::string executable; // Program file name without extension. Empty: derived from the product.
     std::string version{"1.0.0"};
     std::string identifier; // macOS bundle identifier ("com.studio.game"). Empty: derived.
+    // Project-relative square PNG (512 or 1024 pixels is best): the macOS app icon, and the window
+    // icon of the Windows and Linux games. Empty: the system's default icon.
+    std::string icon;
+    std::string copyright; // Shown in the macOS bundle's info ("(c) 2026 My Studio"). Optional.
     // Project-relative files or folders left out of the game, on top of the ones that are never
     // shipped (tools/, docs/, scripts, notes, backup files).
     std::vector<std::string> exclude;

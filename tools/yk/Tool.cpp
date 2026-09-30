@@ -8,7 +8,10 @@
 //   yk components                  print the component reference (Markdown)
 //   yk targets                     which systems a game can be exported for from here
 //   yk export [project] --target windows|macos|linux --out <folder> [--player <file>] [--zip]
-//                                  package the game: the player, the data and the notices
+//                     [--dmg] [--sign <identity>|--no-sign]
+//                                  package the game: the player, the data and the notices; on a Mac
+//                                  the app is code signed (ad hoc unless --sign) and --dmg adds a
+//                                  disk image
 //
 // `project` is a directory or a project.ykproj file; it defaults to the current directory.
 #include "yk/animation/AnimationController.hpp"
@@ -49,6 +52,11 @@ void usage() {
         "      --player <file>                  the player built for the target (default: found\n"
         "                                       beside yk or in templates/<target>/)\n"
         "      --zip                            also write a .zip next to it\n"
+        "      --dmg                            macOS app only, on a Mac: also write a .dmg\n"
+        "      --sign <identity>                macOS app only, on a Mac: sign with this identity\n"
+        "                                       ('-' or the default: ad hoc; e.g. \"Developer ID\n"
+        "                                       Application: Studio (TEAMID)\" for distribution)\n"
+        "      --no-sign                        leave the macOS app unsigned\n"
         "      --force                          replace an earlier export\n"
         "project: a directory or project.ykproj (default: the current directory)");
 }
@@ -63,6 +71,9 @@ struct Args {
     std::filesystem::path out, player;
     bool zip{};
     bool force{};
+    bool dmg{};
+    bool noSign{};
+    std::string sign;
 };
 
 std::optional<Args> parse(int argc, char **argv) {
@@ -81,7 +92,11 @@ std::optional<Args> parse(int argc, char **argv) {
             args.zip = true;
         } else if (arg == "--force") {
             args.force = true;
-        } else if (arg == "--target" || arg == "--out" || arg == "--player") {
+        } else if (arg == "--dmg") {
+            args.dmg = true;
+        } else if (arg == "--no-sign") {
+            args.noSign = true;
+        } else if (arg == "--target" || arg == "--out" || arg == "--player" || arg == "--sign") {
             const char *text = value();
             if (!text) {
                 std::fprintf(stderr, "yk: %s needs a value\n", arg.c_str());
@@ -91,6 +106,8 @@ std::optional<Args> parse(int argc, char **argv) {
                 args.target = text;
             else if (arg == "--out")
                 args.out = text;
+            else if (arg == "--sign")
+                args.sign = text;
             else
                 args.player = text;
         } else if (!arg.empty() && arg[0] != '-' && args.project.empty()) {
@@ -319,6 +336,18 @@ int exportProject(const Args &args, const std::filesystem::path &here,
         options.notices = *notices;
     options.archive = args.zip;
     options.overwrite = args.force;
+    options.dmg = args.dmg;
+    if (args.noSign && !args.sign.empty()) {
+        std::fprintf(stderr, "yk export: --sign and --no-sign contradict each other\n");
+        return 2;
+    }
+    // On a Mac the app is signed by default (ad hoc: it verifies and runs there); elsewhere the
+    // tools for it do not exist, so nothing is asked of them unless the user insists.
+    if (!args.sign.empty())
+        options.codesign = args.sign;
+    else if (!args.noSign && options.target == BuildTarget::MacOS &&
+             hostTarget() == BuildTarget::MacOS)
+        options.codesign = "-";
     options.progress = [](const std::string &line) { std::printf("  %s\n", line.c_str()); };
     std::printf("Exporting %s for %s\n", productName(*project).c_str(),
                 displayName(options.target));
@@ -335,6 +364,8 @@ int exportProject(const Args &args, const std::filesystem::path &here,
                 report.value().dataFolder.string().c_str());
     if (!report.value().archive.empty())
         std::printf("  archive: %s\n", report.value().archive.string().c_str());
+    if (!report.value().diskImage.empty())
+        std::printf("  disk image: %s\n", report.value().diskImage.string().c_str());
     return 0;
 }
 } // namespace

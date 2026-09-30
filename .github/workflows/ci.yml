@@ -1,11 +1,19 @@
 # Builds and tests the engine on the systems a game ships to. The Linux job repeats what
-# scripts/verify.sh does locally; the Windows (MSVC) and macOS (Apple clang) jobs are the checks
-# that could not be run where the engine was developed (docs/STATUS.md, "Not verified").
+# scripts/verify.sh does locally; the Windows (MSVC) and macOS (Apple clang) jobs are the checks that
+# cannot be run where the engine is usually developed. The macOS job also packages "YK Engine.app"
+# and its disk image, and exercises them the way a user would (scripts/verify-macos-app.sh).
 name: CI
 
 on:
   push:
   pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   linux:
@@ -49,5 +57,27 @@ jobs:
         run: cmake --preset release
       - name: Build
         run: cmake --build --preset release
+      # The tests run, but a failure must not hide whether the application can be packaged and
+      # launched: the job fails at the end if they failed.
       - name: Test
+        id: tests
+        continue-on-error: true
         run: ctest --preset release
+      - name: Package YK Engine.app and the disk image
+        run: scripts/package-macos.sh --no-build
+      - name: Verify the packaged application
+        run: scripts/verify-macos-app.sh
+      - name: Keep the disk image, screenshots and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-engine
+          path: |
+            build/macos-dist/*.dmg
+            build/macos-verify/shots
+            build/macos-verify/logs
+            build/release/Testing/Temporary/LastTest.log
+          if-no-files-found: warn
+      - name: Fail if the tests failed
+        if: steps.tests.outcome == 'failure'
+        run: exit 1

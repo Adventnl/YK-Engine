@@ -1,5 +1,6 @@
 #pragma once
 #include "yk/assets/Project.hpp"
+#include "yk/core/Process.hpp"
 #include "yk/scene/Registry.hpp"
 #include <cstdint>
 #include <filesystem>
@@ -21,6 +22,7 @@
 //                        MacOS/<executable>   the player
 //                        Resources/data/      the project (SDL reports Resources as the base path)
 //                        Resources/licenses/  README.txt  yk-export.json
+//                        Resources/AppIcon.icns  (when the project sets an icon)
 //                        Info.plist
 //
 // The player has to be built for the target: exportGame() copies it, it does not compile anything.
@@ -59,6 +61,16 @@ struct ExportOptions {
     std::filesystem::path notices;
     bool archive{false};   // Also write <folder>.zip beside the game.
     bool overwrite{false}; // Replace an earlier export made by this tool.
+    // macOS bundles only. Both use Apple's tools (codesign, hdiutil), so they need a Mac; asking
+    // for them elsewhere is an error before anything is written. Code signing: empty leaves the
+    // player's own signature alone, "-" signs ad hoc (a bundle that verifies and runs on the Mac
+    // that made it), anything else is a signing identity such as "Developer ID Application: Studio
+    // (TEAMID)", signed with the hardened runtime and a timestamp.
+    std::string codesign;
+    bool dmg{
+        false}; // Also write <Product>.dmg: a disk image with the app and an Applications link.
+    ToolRunner
+        runTool; // Runs codesign and hdiutil; empty runs the real ones (tests hand in a stand-in).
     std::function<void(const std::string &)> progress; // One line per step.
 };
 struct ExportReport {
@@ -66,6 +78,7 @@ struct ExportReport {
     std::filesystem::path executable; // The player inside it.
     std::filesystem::path dataFolder; // Where the project's files went.
     std::filesystem::path archive;    // Empty unless ExportOptions::archive.
+    std::filesystem::path diskImage;  // Empty unless ExportOptions::dmg.
     std::size_t files{};              // Project files copied.
     std::uintmax_t bytes{};           // Their total size.
     std::vector<std::string> warnings;

@@ -1,4 +1,5 @@
 #include "yk/core/Application.hpp"
+#include "stb_image.h"
 #include "yk/core/FileIO.hpp"
 #include "yk/core/Log.hpp"
 #include <SDL3/SDL.h>
@@ -199,6 +200,31 @@ Result<std::unique_ptr<Application>> Application::create(const ApplicationConfig
                                         SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY));
     if (!state.window)
         return sdlError("Create window");
+    if (!config.iconFile.empty() || !config.iconPng.empty()) {
+        int width = 0, height = 0, channels = 0;
+        unsigned char *pixels = nullptr;
+        std::string source = "the window icon";
+        if (!config.iconFile.empty()) {
+            source = config.iconFile.string();
+            pixels = stbi_load(source.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+        } else {
+            pixels = stbi_load_from_memory(
+                reinterpret_cast<const unsigned char *>(config.iconPng.data()),
+                static_cast<int>(config.iconPng.size()), &width, &height, &channels,
+                STBI_rgb_alpha);
+        }
+        if (pixels != nullptr) {
+            SDL_Surface *icon =
+                SDL_CreateSurfaceFrom(width, height, SDL_PIXELFORMAT_RGBA32, pixels, width * 4);
+            if (icon != nullptr) {
+                SDL_SetWindowIcon(state.window.get(), icon);
+                SDL_DestroySurface(icon);
+            }
+            stbi_image_free(pixels);
+        } else {
+            log(LogLevel::Warning, "application", "Cannot read " + source);
+        }
+    }
     auto renderer = Renderer::create(state.window.get(), config.logicalWidth, config.logicalHeight);
     if (!renderer)
         return Error{renderer.error()};

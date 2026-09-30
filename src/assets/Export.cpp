@@ -1,5 +1,6 @@
 #include "yk/assets/Export.hpp"
 #include "yk/assets/AssetSource.hpp"
+#include "yk/assets/Icon.hpp"
 #include "yk/assets/Validation.hpp"
 #include "yk/assets/Zip.hpp"
 #include "yk/core/FileIO.hpp"
@@ -115,7 +116,10 @@ std::string readmeFor(const Project &project, BuildTarget target, const std::str
     const std::string product = productName(project);
     std::string text = product + " " + project.build.version + "\n\n";
     if (target == BuildTarget::MacOS)
-        text += "Open " + bundleSafe(product) + ".app to play.\n";
+        text += "Open " + bundleSafe(product) +
+                ".app to play.\nIf macOS says it cannot check the app for malicious software (it "
+                "has not been notarized by its author), Control-click the app, choose Open, then "
+                "Open once; after that it starts normally.\n";
     else
         text +=
             "Run " + executable + (target == BuildTarget::Windows ? ".exe" : "") +
@@ -126,7 +130,7 @@ std::string readmeFor(const Project &project, BuildTarget target, const std::str
     return text;
 }
 
-std::string infoPlist(const Project &project, const std::string &executable) {
+std::string infoPlist(const Project &project, const std::string &executable, bool hasIcon) {
     const std::string product = xmlEscape(productName(project));
     const std::string version = xmlEscape(project.build.version);
     std::string text = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -140,6 +144,10 @@ std::string infoPlist(const Project &project, const std::string &executable) {
     entry("CFBundleExecutable", xmlEscape(executable));
     entry("CFBundleIdentifier", xmlEscape(bundleIdentifier(project)));
     entry("CFBundleInfoDictionaryVersion", "6.0");
+    if (hasIcon)
+        entry("CFBundleIconFile", "AppIcon"); // Resources/AppIcon.icns
+    if (!project.build.copyright.empty())
+        entry("NSHumanReadableCopyright", xmlEscape(project.build.copyright));
     entry("CFBundleName", product);
     entry("CFBundleDisplayName", product);
     entry("CFBundlePackageType", "APPL");
@@ -150,6 +158,32 @@ std::string infoPlist(const Project &project, const std::string &executable) {
     entry("NSPrincipalClass", "NSApplication");
     text += "  <key>NSHighResolutionCapable</key>\n  <true/>\n</dict>\n</plist>\n";
     return text;
+}
+
+// Runs an external tool and turns a failure into a message with the tool's own words.
+Status runChecked(const ToolRunner &runner, const std::vector<std::string> &arguments) {
+    auto result = runner(arguments);
+    if (!result)
+        return Error{result.error()};
+    if (result.value().exitCode != 0) {
+        std::string output = result.value().output;
+        while (!output.empty() && (output.back() == '\n' || output.back() == '\r'))
+            output.pop_back();
+        return Error{arguments.front() + " failed (exit code " +
+                     std::to_string(result.value().exitCode) + ")" +
+                     (output.empty() ? std::string() : ": " + output)};
+    }
+    return success();
+}
+
+// A disk image volume name: no slashes or colons, short enough for every file system.
+std::string volumeName(const std::string &product) {
+    std::string name;
+    for (const char c : product)
+        name.push_back(c == '/' || c == ':' || c == '\\' ? '-' : c);
+    if (name.size() > 27)
+        name.resize(27);
+    return name.empty() ? std::string("Game") : name;
 }
 
 Status copyFile(const fs::path &from, const fs::path &to) {
@@ -306,6 +340,14 @@ Result<ExportReport> exportGame(const Project &project, const ComponentRegistry 
                      "). Build yk_player for that system first; see docs/BUILDING.md."};
     if (options.destination.empty())
         return Error{"Choose a folder to export into"};
+    const bool wantsAppleTools = options.dmg || !options.codesign.empty();
+    if (wantsAppleTools && options.target != BuildTarget::MacOS)
+        return Error{"Code signing and disk images are only for the macOS target"};
+    if (wantsAppleTools && hostTarget() != BuildTarget::MacOS && !options.runTool)
+        return Error{"Code signing and disk images use Apple's codesign and hdiutil, so they need "
+                     "a Mac. Export the .app here and sign it and create the .dmg on a Mac "
+                     "(docs/BUILDING.md, macOS)."};
+    const ToolRunner runner = options.runTool ? options.runTool : ToolRunner(runProcess);
 
     say(options, "Checking the project '" + project.name + "'");
     const std::vector<ProjectIssue> issues = validateProject(project, registry);
@@ -411,11 +453,33 @@ Result<ExportReport> exportGame(const Project &project, const ComponentRegistry 
     if (auto status = writeTextFileAtomic(resources / "yk-export.json", marker.dump(2) + "\n");
         !status)
         return fail(status.error());
-    if (bundle)
+    if (bundle) {
+        bool hasIcon = false;
+        if (!project.build.icon.empty()) {
+            // The project's PNG, wrapped as the .icns a bundle wants (no image tool needed).
+            const auto iconFile = project.resolve(project.build.icon);
+            auto png = iconFile ? readTextFile(iconFile.value())
+                                : Result<std::string>(Error{iconFile.error()});
+            if (!png)
+                return fail("The app icon cannot be read: " + png.error());
+            auto icns = makeIcns(png.value());
+            if (!icns)
+                return fail(icns.error());
+            if (auto status = writeTextFileAtomic(resources / "AppIcon.icns", icns.value());
+                !status)
+                return fail(status.error());
+            hasIcon = true;
+            if (const auto size = pngSize(png.value());
+                size && size.value().width < recommendedIconSize)
+                report.warnings.push_back("The app icon is only " +
+                                          std::to_string(size.value().width) +
+                                          " pixels wide; 512 or 1024 looks sharper");
+        }
         if (auto status = writeTextFileAtomic(output / "Contents" / "Info.plist",
-                                              infoPlist(project, executable));
+                                              infoPlist(project, executable, hasIcon));
             !status)
             return fail(status.error());
+    }
 
     // The copy has to stand on its own: load it as a project of its own and check it again, so
     // an exclude rule that removed a file the game needs shows up now, not on a player's machine.
@@ -428,6 +492,23 @@ Result<ExportReport> exportGame(const Project &project, const ComponentRegistry 
         if (issue.severity == ProjectIssue::Severity::Error)
             return fail("The exported game would be incomplete: " + issue.path + ": " +
                         issue.message + " (check Build > exclude in the project settings)");
+
+    if (bundle && !options.codesign.empty()) {
+        // Seal the whole bundle (executable, Info.plist, icon, data) so it verifies as one thing.
+        const bool adHoc = options.codesign == "-";
+        say(options,
+            adHoc ? "Signing the app (ad hoc)" : "Signing the app as '" + options.codesign + "'");
+        std::vector<std::string> sign = {"codesign", "--force", "--deep"};
+        if (!adHoc)
+            sign.insert(sign.end(), {"--options", "runtime", "--timestamp"});
+        sign.insert(sign.end(), {"--sign", options.codesign, output.string()});
+        if (auto status = runChecked(runner, sign); !status)
+            return fail(status.error());
+        if (auto status =
+                runChecked(runner, {"codesign", "--verify", "--deep", "--strict", output.string()});
+            !status)
+            return fail("The signed app does not verify: " + status.error());
+    }
 
     if (options.archive) {
         const fs::path zip =
@@ -449,6 +530,32 @@ Result<ExportReport> exportGame(const Project &project, const ComponentRegistry 
         if (auto status = writeZip(zip, entries); !status)
             return Error{status.error()};
         report.archive = zip;
+    }
+    if (options.dmg) {
+        // A disk image holding the app and a link to /Applications: open it, drag, done.
+        const fs::path image = options.destination / (bundleSafe(productLabel) + ".dmg");
+        say(options, "Writing " + image.filename().string());
+        const fs::path stage = options.destination / ".yk-dmg-staging";
+        fs::remove_all(stage, error);
+        fs::create_directories(stage, error);
+        fs::copy(output, stage / output.filename(),
+                 fs::copy_options::recursive | fs::copy_options::copy_symlinks, error);
+        if (error)
+            return Error{"Cannot prepare the disk image: " + error.message()};
+        fs::create_directory_symlink("/Applications", stage / "Applications", error);
+        fs::remove(image, error);
+        auto status = runChecked(runner, {"hdiutil", "create", "-volname", volumeName(productLabel),
+                                          "-srcfolder", stage.string(), "-ov", "-format", "UDZO",
+                                          image.string()});
+        fs::remove_all(stage, error);
+        if (!status)
+            return Error{"The app was exported but the disk image failed: " + status.error()};
+        if (!options.codesign.empty() && options.codesign != "-")
+            if (auto signedImage = runChecked(runner, {"codesign", "--force", "--timestamp",
+                                                       "--sign", options.codesign, image.string()});
+                !signedImage)
+                return Error{"The disk image could not be signed: " + signedImage.error()};
+        report.diskImage = image;
     }
     say(options, "Exported to " + output.string());
     return report;

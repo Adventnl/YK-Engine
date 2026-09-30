@@ -2,6 +2,8 @@
 // exportGame() for every target against a stand-in player program.
 #include "support/check.hpp"
 #include "yk/assets/Export.hpp"
+#include "yk/assets/Icon.hpp"
+#include "yk/assets/Validation.hpp"
 #include "yk/assets/Zip.hpp"
 #include "yk/components/Components.hpp"
 #include "yk/core/FileIO.hpp"
@@ -96,6 +98,8 @@ void buildSettingsRoundTrip() {
     settings.executable = "shiny";
     settings.version = "2.1.0";
     settings.identifier = "org.example.shiny";
+    settings.icon = "assets/icon.png";
+    settings.copyright = "(c) 2026 Shiny Studio";
     settings.exclude = {"art/source", "notes.txt"};
     const auto again = BuildSettings::fromJson(settings.toJson());
     CHECK(again && again.value() == settings);
@@ -402,6 +406,208 @@ void findingPlayers() {
     setEnvironment("YK_TEMPLATES", "");
     CHECK(!findPlayer(other, dir.path / "nowhere"));
 }
+// The header of a PNG of the given size; enough for pngSize() and makeIcns(), which never decode.
+std::string fakePng(int width, int height) {
+    std::string png("\x89PNG\r\n\x1a\n", 8);
+    const auto be = [&](int value) {
+        for (int shift = 24; shift >= 0; shift -= 8)
+            png.push_back(static_cast<char>((value >> shift) & 0xFF));
+    };
+    be(13);
+    png += "IHDR";
+    be(width);
+    be(height);
+    png += std::string("\x08\x06\x00\x00\x00", 5);
+    png += "pixels would follow";
+    return png;
+}
+
+void appIcons() {
+    CHECK(pngSize(fakePng(512, 512)) && pngSize(fakePng(512, 256)).value().height == 256);
+    CHECK(!pngSize("not a png at all, just some text here"));
+    CHECK(!pngSize(""));
+    CHECK(!pngSize(fakePng(0, 10)));
+
+    // .icns: "icns", total length, then one entry (type, length, the PNG itself).
+    for (const auto &[edge, type] :
+         {std::pair{128, "ic07"}, {300, "ic08"}, {512, "ic09"}, {1024, "ic10"}, {2048, "ic10"}}) {
+        const std::string png = fakePng(edge, edge);
+        const auto icns = makeIcns(png);
+        CHECK(icns);
+        if (!icns)
+            continue;
+        const std::string &file = icns.value();
+        CHECK(file.substr(0, 4) == "icns" && file.substr(8, 4) == type);
+        CHECK(file.size() == 16 + png.size() && file.substr(16) == png);
+        const auto length = [&](std::size_t at) {
+            return (static_cast<unsigned char>(file[at]) << 24) |
+                   (static_cast<unsigned char>(file[at + 1]) << 16) |
+                   (static_cast<unsigned char>(file[at + 2]) << 8) |
+                   static_cast<unsigned char>(file[at + 3]);
+        };
+        CHECK(static_cast<std::size_t>(length(4)) == file.size());
+        CHECK(static_cast<std::size_t>(length(12)) == file.size() - 8);
+    }
+    CHECK(!makeIcns(fakePng(512, 256))); // not square
+    CHECK(!makeIcns(fakePng(64, 64)));   // too small
+    CHECK(!makeIcns("GIF89a....................."));
+
+    // Validation: a missing, broken or unsuitable icon is reported before an export fails on it.
+    TempDir dir("yk-export-icons");
+    ComponentRegistry registry;
+    registerStandardComponents(registry);
+    Project project = makeProject(dir.path / "project", registry);
+    const auto errors = [&] {
+        std::string all;
+        for (const ProjectIssue &issue : validateProject(project, registry))
+            if (issue.message.find("icon") != std::string::npos)
+                all += (issue.severity == ProjectIssue::Severity::Error ? "E:" : "W:") +
+                       issue.message + "\n";
+        return all;
+    };
+    CHECK(errors().empty());
+    project.build.icon = "assets/icon.png";
+    CHECK(errors().starts_with("E:") && errors().find("does not exist") != std::string::npos);
+    put(dir.path / "project" / "assets" / "icon.png", "this is text");
+    CHECK(errors().find("not a PNG") != std::string::npos);
+    put(dir.path / "project" / "assets" / "icon.png", fakePng(512, 256));
+    CHECK(errors().find("square") != std::string::npos);
+    put(dir.path / "project" / "assets" / "icon.png", fakePng(256, 256));
+    CHECK(errors().starts_with("W:"));
+    put(dir.path / "project" / "assets" / "icon.png", fakePng(1024, 1024));
+    CHECK(errors().empty());
+}
+
+// codesign and hdiutil are stood in for by a recorder, so the steps and their order are checked
+// on any system; the real tools run in the macOS CI job.
+void macOsBundleTools() {
+    TempDir dir("yk-export-mac");
+    ComponentRegistry registry;
+    registerStandardComponents(registry);
+    Project project = makeProject(dir.path / "project", registry);
+    project.build.icon = "assets/icon.png";
+    project.build.copyright = "(c) 2026 Cinder & Co";
+    put(dir.path / "project" / "assets" / "icon.png", fakePng(1024, 1024));
+    put(dir.path / "player", "player program");
+
+    std::vector<std::vector<std::string>> calls;
+    bool stageHadApp = false, stageHadLink = false;
+    int failOn = -1; // The index of a call to make fail.
+    ExportOptions options;
+    options.target = BuildTarget::MacOS;
+    options.destination = dir.path / "out";
+    options.player = dir.path / "player";
+    options.codesign = "-";
+    options.dmg = true;
+    options.runTool = [&](const std::vector<std::string> &arguments) -> Result<ProcessResult> {
+        calls.push_back(arguments);
+        if (arguments.front() == "hdiutil") {
+            const fs::path stage = arguments[5]; // hdiutil create -volname N -srcfolder <stage> ...
+            stageHadApp = fs::is_directory(stage / "Cinder Vale.app" / "Contents");
+            stageHadLink = fs::is_symlink(stage / "Applications");
+            put(arguments.back(), "disk image");
+        }
+        if (static_cast<int>(calls.size()) - 1 == failOn)
+            return ProcessResult{1, "the tool said no\n"};
+        return ProcessResult{};
+    };
+    auto result = exportGame(project, registry, options);
+    CHECK(result);
+    if (result) {
+        const fs::path app = result.value().output;
+        // Icon and metadata.
+        const std::string icns = readTextFile(app / "Contents/Resources/AppIcon.icns").value();
+        CHECK(icns.substr(0, 4) == "icns" && icns.find("ic10") == 8);
+        const std::string plist = readTextFile(app / "Contents/Info.plist").value();
+        CHECK(plist.find("<key>CFBundleIconFile</key>") != std::string::npos);
+        CHECK(plist.find("<string>AppIcon</string>") != std::string::npos);
+        CHECK(plist.find("(c) 2026 Cinder &amp; Co") != std::string::npos);
+        // Steps: sign, verify, then the disk image; the .app is untouched beside the image.
+        CHECK(calls.size() == 3);
+        if (calls.size() == 3) {
+            CHECK((calls[0] == std::vector<std::string>{"codesign", "--force", "--deep", "--sign",
+                                                        "-", app.string()}));
+            CHECK((calls[1] == std::vector<std::string>{"codesign", "--verify", "--deep",
+                                                        "--strict", app.string()}));
+            CHECK(calls[2][0] == "hdiutil" && calls[2][1] == "create" &&
+                  calls[2][2] == "-volname" && calls[2][3] == "Cinder Vale");
+        }
+        CHECK(stageHadApp && stageHadLink);
+        CHECK(result.value().diskImage == dir.path / "out" / "Cinder Vale.dmg");
+        CHECK(fs::is_regular_file(result.value().diskImage));
+        CHECK(!fs::exists(dir.path / "out" / ".yk-dmg-staging"));
+    }
+
+    // A signing identity means the hardened runtime and a time stamp, and the image is signed too.
+    calls.clear();
+    options.codesign = "Developer ID Application: Cinder Co (ABCDE12345)";
+    options.overwrite = true;
+    result = exportGame(project, registry, options);
+    CHECK(result && calls.size() == 4);
+    if (calls.size() == 4) {
+        const std::vector<std::string> &sign = calls[0];
+        CHECK(std::find(sign.begin(), sign.end(), "runtime") != sign.end());
+        CHECK(std::find(sign.begin(), sign.end(), "--timestamp") != sign.end());
+        CHECK(std::find(sign.begin(), sign.end(), options.codesign) != sign.end());
+        CHECK(calls[3][0] == "codesign" && calls[3].back().ends_with("Cinder Vale.dmg"));
+    }
+
+    // A signing failure leaves nothing half-made and carries the tool's own words.
+    calls.clear();
+    options.dmg = false;
+    failOn = 0;
+    const auto failed = exportGame(project, registry, options);
+    CHECK(!failed && failed.error().find("the tool said no") != std::string::npos);
+    CHECK(!fs::exists(dir.path / "out" / "Cinder Vale.app"));
+
+    // A failed disk image is reported, the app itself stays.
+    calls.clear();
+    options.dmg = true;
+    options.codesign.clear();
+    failOn = 0;
+    const auto noImage = exportGame(project, registry, options);
+    CHECK(!noImage && noImage.error().find("disk image") != std::string::npos);
+    CHECK(fs::is_directory(dir.path / "out" / "Cinder Vale.app"));
+    failOn = -1;
+
+    // Only macOS bundles are signed or imaged, and only where Apple's tools exist.
+    ExportOptions linux = options;
+    linux.target = BuildTarget::Linux;
+    linux.overwrite = true;
+    CHECK(!exportGame(project, registry, linux));
+    if (hostTarget() != BuildTarget::MacOS) {
+        ExportOptions bare;
+        bare.target = BuildTarget::MacOS;
+        bare.destination = dir.path / "out2";
+        bare.player = dir.path / "player";
+        bare.dmg = true;
+        const auto noTools = exportGame(project, registry, bare);
+        CHECK(!noTools && noTools.error().find("need a Mac") != std::string::npos);
+        CHECK(!fs::exists(dir.path / "out2"));
+    }
+    // A bad icon stops the export and cleans up.
+    put(dir.path / "project" / "assets" / "icon.png", fakePng(500, 300));
+    options.dmg = false;
+    options.runTool = {};
+    options.overwrite = true;
+    CHECK(!exportGame(project, registry, options));
+}
+
+void runningProcesses() {
+#if !defined(_WIN32)
+    const auto echoed = runProcess({"sh", "-c", "echo out; echo err >&2; exit 3"});
+    CHECK(echoed && echoed.value().exitCode == 3);
+    CHECK(echoed && echoed.value().output.find("out") != std::string::npos &&
+          echoed.value().output.find("err") != std::string::npos);
+    // Arguments are passed as they are, no shell in between.
+    const auto quoted = runProcess({"printf", "%s|", "a b", "$HOME", "'q'"});
+    CHECK(quoted && quoted.value().output == "a b|$HOME|'q'|"); // Nothing was expanded.
+    CHECK(!runProcess({"yk-no-such-program-9f3a"}));
+    CHECK(!runProcess({}));
+#else
+    CHECK(!runProcess({"cmd"}));
+#endif
+}
 } // namespace
 
 int main() {
@@ -412,5 +618,8 @@ int main() {
     exportsForEveryTarget();
     exportRefusals();
     findingPlayers();
+    appIcons();
+    macOsBundleTools();
+    runningProcesses();
     return yk::test::finish("export");
 }

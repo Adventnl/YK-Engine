@@ -124,6 +124,9 @@ struct DialogState {
     std::string exportPlayer; // Player program override; empty: the one found for the target.
     bool exportZip{true};
     bool exportReplace{};
+    bool exportSign{true};      // macOS target on a Mac: sign the app.
+    std::string exportIdentity; // Signing identity; empty: ad hoc.
+    bool exportDmg{};           // macOS target on a Mac: also write a .dmg.
     // A folder the Message dialog offers to show in the file manager.
     std::filesystem::path revealPath;
     // The Rename or Move dialog: the file or folder being moved (`text` holds the new path).

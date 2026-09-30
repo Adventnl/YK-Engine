@@ -14,6 +14,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <vector>
 
 using namespace yk;
 
@@ -265,6 +266,8 @@ int runPlayer(int argc, char **argv, const RegisterComponents &registerGame) {
     config.height = loaded.window.height;
     config.logicalWidth = loaded.window.width;
     config.logicalHeight = loaded.window.height;
+    if (!loaded.build.icon.empty())
+        config.iconFile = loaded.root / loaded.build.icon;
     auto app = Application::create(config);
     if (!app)
         return fatal(app.error());

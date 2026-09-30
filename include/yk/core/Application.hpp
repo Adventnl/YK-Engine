@@ -3,8 +3,10 @@
 #include "yk/core/Time.hpp"
 #include "yk/graphics/Renderer.hpp"
 #include "yk/input/Input.hpp"
+#include <filesystem>
 #include <memory>
 #include <string>
+#include <string_view>
 union SDL_Event;
 namespace yk {
 class Renderer;
@@ -14,6 +16,12 @@ struct ApplicationConfig {
     // A fixed, letterboxed logical resolution. Both zero selects native resolution instead: drawing
     // coordinates are output pixels and Renderer::viewport() follows the window (used by tools).
     int logicalWidth{960}, logicalHeight{540};
+    // A PNG for the window's icon (taskbar and title bar on Windows and Linux; macOS shows the
+    // bundle's icon instead). Unreadable files are logged and ignored.
+    std::filesystem::path iconFile{};
+    // The same from memory (the editor embeds its icon in the executable). Used when iconFile is
+    // empty; the bytes must outlive Application::create.
+    std::string_view iconPng{};
 };
 struct RunOptions {
     unsigned frameLimit{}; // Zero runs until layer/window requests exit.

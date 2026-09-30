@@ -19,6 +19,12 @@
 using namespace yk;
 using namespace yk::editor;
 
+// The editor's window icon (packaging/icons), embedded by cmake/YkEmbed.cmake.
+namespace yk::editor::icondata {
+extern const unsigned char engine256[];
+extern const std::size_t engine256Size;
+} // namespace yk::editor::icondata
+
 namespace {
 struct Options {
     EditorOptions editor;
@@ -182,6 +188,7 @@ int runEditor(int argc, char **argv, const RegisterComponents &registerGame) {
     config.height = options->height;
     config.logicalWidth = 0; // Native resolution: the editor lays out in real pixels.
     config.logicalHeight = 0;
+    config.iconPng = {reinterpret_cast<const char *>(icondata::engine256), icondata::engine256Size};
     auto app = Application::create(config);
     if (!app) {
         showFatalError("The editor cannot start", app.error());

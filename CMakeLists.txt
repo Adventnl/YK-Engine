@@ -28,13 +28,13 @@ include(YkGame)
 yk_sanitize(box2d)
 
 add_library(yk_engine STATIC src/core/Log.cpp src/core/Time.cpp src/core/Color.cpp src/core/Json.cpp
-    src/core/FileIO.cpp src/core/AppPaths.cpp src/core/Diagnostics.cpp src/audio/Tone.cpp
+    src/core/FileIO.cpp src/core/AppPaths.cpp src/core/Diagnostics.cpp src/core/Process.cpp src/audio/Tone.cpp
     src/animation/Animator.cpp src/input/Input.cpp src/input/InputMap.cpp src/input/ActionInput.cpp
     src/scene/EntityId.cpp src/scene/Property.cpp src/scene/Registry.cpp src/scene/Entity.cpp
     src/scene/Scene.cpp src/scene/SceneSerializer.cpp src/scene/RegistryDocs.cpp src/animation/AnimationSet.cpp
     src/animation/AnimationController.cpp
     src/assets/Project.cpp src/assets/TextureMeta.cpp src/assets/AssetSource.cpp src/assets/Zip.cpp
-    src/assets/Export.cpp src/components/Components.cpp
+    src/assets/Export.cpp src/assets/Icon.cpp src/components/Components.cpp
     src/components/Effects.cpp
     src/runtime/Blackboard.cpp src/runtime/EventBus.cpp src/runtime/GameRuntime.cpp
     src/runtime/PhysicsBinding.cpp src/assets/Validation.cpp
@@ -112,7 +112,9 @@ if(YK_RUNTIME)
     target_include_directories(yk_editor_ui PUBLIC editor)
     target_compile_definitions(yk_editor_ui PRIVATE YK_VERSION="${PROJECT_VERSION}")
     yk_target(yk_editor_ui)
-    add_library(yk_editor_host STATIC editor/Host.cpp)
+    yk_embed_files("${CMAKE_CURRENT_BINARY_DIR}/generated/EditorIcon.cpp" NAMESPACE yk::editor::icondata
+        FILES engine256=${CMAKE_CURRENT_SOURCE_DIR}/packaging/icons/YKEngine-256.png)
+    add_library(yk_editor_host STATIC editor/Host.cpp "${CMAKE_CURRENT_BINARY_DIR}/generated/EditorIcon.cpp")
     add_library(yk::editor_host ALIAS yk_editor_host)
     target_link_libraries(yk_editor_host PUBLIC yk::editor_ui)
     yk_target(yk_editor_host)
@@ -231,7 +233,17 @@ if(BUILD_TESTING)
         endforeach()
         set_tests_properties(editor_layout_write PROPERTIES FIXTURES_SETUP editor_layout)
         set_tests_properties(editor_layout_read PROPERTIES FIXTURES_REQUIRED editor_layout)
+        # "YK Engine.app" assembled somewhere else and used from there (see packaging/macos).
+        if(NOT WIN32) # Paths and program names are checked as text; the layout logic is the same everywhere.
+        add_test(NAME macos_bundle
+            COMMAND ${CMAKE_COMMAND} -DEDITOR=$<TARGET_FILE:yk_editor> -DPLAYER=$<TARGET_FILE:yk_player>
+                -DTOOL=$<TARGET_FILE:yk> -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+                -DVERSION=${PROJECT_VERSION} -DWORK=${CMAKE_BINARY_DIR}/macos-bundle-test
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/macos/check_bundle.cmake)
+        set_tests_properties(macos_bundle PROPERTIES TIMEOUT 300)
+        endif()
         # A crash leaves a log, a report with a stack trace and a notice on the next start.
+        if(NOT WIN32) # The Windows crash handler compiles but has not been run yet.
         add_test(NAME diagnostics_crash
             COMMAND ${CMAKE_COMMAND} -DPLAYER=$<TARGET_FILE:yk_player> -DEDITOR=$<TARGET_FILE:yk_editor>
                 -DPROJECT=${CMAKE_CURRENT_SOURCE_DIR}/YK-DemoGame
@@ -239,6 +251,7 @@ if(BUILD_TESTING)
                 -DWORK=${CMAKE_BINARY_DIR}/diagnostics-test
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/diagnostics/check_crash.cmake)
         set_tests_properties(diagnostics_crash PROPERTIES TIMEOUT 240)
+        endif()
         # The installation and its CPack archive: contents, no private dependencies, and the
         # installed programs work where they were put.
         add_test(NAME install
@@ -267,6 +280,19 @@ if(YK_RUNTIME AND PROJECT_IS_TOP_LEVEL)
         set(CPACK_GENERATOR "ZIP")
     endif()
     include(CPack)
+endif()
+
+# macOS: `cmake --build --preset release --target yk_engine_app` assembles "YK Engine.app" in the
+# build folder; scripts/package-macos.sh signs it and makes the disk image (docs/BUILDING.md).
+if(APPLE AND YK_RUNTIME AND PROJECT_IS_TOP_LEVEL)
+    add_custom_target(yk_engine_app ALL
+        COMMAND ${CMAKE_COMMAND} "-DOUT=${CMAKE_BINARY_DIR}/YK Engine.app"
+            -DEDITOR=$<TARGET_FILE:yk_editor> -DPLAYER=$<TARGET_FILE:yk_player>
+            -DTOOL=$<TARGET_FILE:yk> -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+            -DVERSION=${PROJECT_VERSION}
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/packaging/macos/assemble-app.cmake
+        DEPENDS yk_editor yk_player yk
+        COMMENT "Assembling YK Engine.app" VERBATIM)
 endif()
 
 find_program(YK_CLANG_FORMAT NAMES clang-format)
