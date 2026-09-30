@@ -542,6 +542,49 @@ void smoothCamera() {
     CHECK_NEAR(runtime.scene().find(id)->get<Camera>()->view().position.x, 200.0, 0.01);
 }
 
+// The camera follows once per tick, however many frames are drawn in between: on a display faster
+// than the simulation it would otherwise glide against the characters it follows. The same
+// simulated time ends in the same place whether the frames are a tick or a quarter of one long.
+void cameraFollowsPerTick() {
+    const auto build = [](Fixture &f) {
+        Entity &target = f.scene->createEntity("T");
+        target.transform().position = {100, 0};
+        Entity &cameraEntity = f.scene->createEntity("Cam");
+        auto &camera = cameraEntity.add<Camera>();
+        camera.mode = CameraMode::Follow;
+        camera.targets = {target.id()};
+        camera.smoothTime = 0.5F;
+        return std::pair{cameraEntity.id(), target.id()};
+    };
+    Fixture slow, fast;
+    const auto [slowCamera, slowTarget] = build(slow);
+    const auto [fastCamera, fastTarget] = build(fast);
+    GameRuntime &steady = slow.start();
+    GameRuntime &quick = fast.start();
+    steady.stepOnce(nothing());
+    quick.stepOnce(nothing());
+    steady.scene().find(slowTarget)->transform().position = {200, 0};
+    quick.scene().find(fastTarget)->transform().position = {200, 0};
+    const auto cameraX = [](GameRuntime &runtime, EntityId id) {
+        return runtime.scene().find(id)->get<Camera>()->view().position.x;
+    };
+    // Frames a quarter of a tick long: the camera moves on the frame a tick happens, not between.
+    int moves = 0;
+    float last = cameraX(quick, fastCamera);
+    for (int frame = 0; frame < 8; ++frame) {
+        quick.update(1.0 / 240.0, nothing());
+        const float now = cameraX(quick, fastCamera);
+        moves += now != last ? 1 : 0;
+        last = now;
+    }
+    CHECK(moves == 2); // Eight quarter ticks are two ticks.
+    for (int frame = 0; frame < 112; ++frame)
+        quick.update(1.0 / 240.0, nothing());
+    run(steady, 30);
+    CHECK(quick.tick() == steady.tick());
+    CHECK_NEAR(cameraX(quick, fastCamera), cameraX(steady, slowCamera), 1e-3);
+}
+
 void blackboardAndEvents() {
     Blackboard board;
     board.set("gems", 3.0);
@@ -660,6 +703,7 @@ int main() {
     teleportAndCollisions();
     cameraBehaviour();
     smoothCamera();
+    cameraFollowsPerTick();
     blackboardAndEvents();
     animationAndAudio();
     invalidOptions();

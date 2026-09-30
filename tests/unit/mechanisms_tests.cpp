@@ -743,6 +743,9 @@ void mechanismsAreValidated() {
     static_cast<MovingPlatform *>(still.findComponent("MovingPlatform"))->travel = {0.0F, 0.0F};
     const BuiltPlate good = buildPlate(w, 5.0F, plateRise, plateDepth, "Good Plate");
     good.root->get<PressurePlate>()->targets = {softDoor.id()};
+    // A level that leads on to a scene the project does not have.
+    Entity &ending = w.scene->createEntity("Ending");
+    ending.add<LevelFlow>().nextScene = AssetRef{"scenes/missing.ykscene"};
     CHECK(saveScene(*w.scene, root / "scenes/main.ykscene"));
     setLogStderrEnabled(false);
     const auto issues = validateProject(project, w.registry);
@@ -752,6 +755,8 @@ void mechanismsAreValidated() {
             return issue.severity == severity && issue.message.find(text) != std::string::npos;
         });
     };
+    CHECK(mentions(Severity::Error,
+                   "'Ending' LevelFlow.nextScene: missing asset 'scenes/missing.ykscene'"));
     CHECK(mentions(Severity::Warning, "'Bare Plate' PressurePlate: weight sensing needs a pad"));
     CHECK(mentions(Severity::Warning, "'Bare Plate' PressurePlate: has no targets"));
     CHECK(mentions(Severity::Warning, "'Soft Door' Door: needs a Kinematic RigidBody"));

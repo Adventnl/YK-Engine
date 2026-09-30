@@ -50,7 +50,7 @@ cards on a darker canvas, a cool neutral palette, small type, no decoration.
 | | t  |                     | Console  Problems  Build Output  Profiler |                  | |
 | | y  |                     |  [info] Opened scene scenes/level01.ykscene|                  | |
 | +----+---------------------+-------------------------------------------+------------------+ |
-|  Cinder Vale   level01.ykscene *   0 problems             171 entities  Snap 0.50 m  60 fps  |  status bar
+|  Cinder Vale   level01.ykscene *   0 problems             173 entities  Snap 0.50 m  60 fps  |  status bar
 +--------------------------------------------------------------------------------------------+
 ```
 
@@ -313,7 +313,7 @@ belongs to the system.
 | Arrow keys, Shift+arrows | nudge the selection |
 | F2 | rename the selected entity (in the Hierarchy) or rename or move the selected file (in the Explorer) |
 | Alt+Up, Alt+Down | move among siblings |
-| F5, Shift+F5, F6, F10, Ctrl+Shift+F5 | play, stop, pause, step, restart |
+| F5, Shift+F5, F6, F10, Ctrl+Shift+F5 | play, stop, pause, step, restart (the game's own pause key, **P** in the demo, pauses too while the Game view has focus) |
 | Ctrl+F5 | run in the standalone player |
 | Ctrl+B, Ctrl+Alt+B, Ctrl+J | toggle side bar, inspector, panel |
 | Ctrl+Shift+E, H, K, X, B | Explorer, Scene, Prefabs, Components, Build view |
@@ -352,8 +352,9 @@ turns it. Characters standing on it are carried by the point they stand on.
 
 Add **Level Flow** (**+ > Gameplay**). List the **Goals**; set **Intro Duration** and **Intro
 Message** for a "get ready", **Time Limit**, **Restart On Death**, the **Complete Message**,
-**Complete Delay**, **Next Scene** and the variables to carry into it (**Keep Variables**: a gem
-count). While the level ends, controls are locked and whoever stands in an exit walks into it.
+**Complete Delay**, **Next Scene** (picked from the project's scenes with the folder button; a scene
+that does not exist shows in red and as an error in Problems) and the variables to carry into it
+(**Keep Variables**: a gem count). While the level ends, controls are locked and whoever stands in an exit walks into it.
 **Continue Action** (an action of the global set, such as Enter) skips the wait. For things that
 should happen *because* of something (open a hatch two seconds after the third gem, restart a
 platform every ten seconds), use **+ > Gameplay > Event Action**: pick the event, the delay and what

@@ -115,9 +115,11 @@ void contextMenu(Tree &tree, EntityId id) {
     if (ImGui::MenuItem("Delete", "Del"))
         tree.doc->deleteSelection();
     ImGui::Separator();
-    if (ImGui::MenuItem("Move Up", shortcutText("Alt+Up")))
+    if (ImGui::MenuItem("Move Up", shortcutText("Alt+Up"), false,
+                        tree.doc->canMoveAmongSiblings(id, -1)))
         tree.doc->moveAmongSiblings(id, -1);
-    if (ImGui::MenuItem("Move Down", shortcutText("Alt+Down")))
+    if (ImGui::MenuItem("Move Down", shortcutText("Alt+Down"), false,
+                        tree.doc->canMoveAmongSiblings(id, 1)))
         tree.doc->moveAmongSiblings(id, 1);
     if (ImGui::MenuItem("Move to Top Level", nullptr, false,
                         tree.scene.find(id)->parentId().value != 0))

@@ -41,6 +41,29 @@ Status drawAsPlayed(Renderer &renderer, SceneRenderer &sceneRenderer, const Scen
             drawn = sceneRenderer.font().draw(renderer, options.overlay, origin, scale,
                                               {255, 255, 120, 255}, 9001);
     }
+    if (drawn && options.paused) {
+        auto white = renderer.builtinTexture(BuiltinTexture::White);
+        if (!white)
+            return Error{white.error()};
+        Sprite dim;
+        dim.texture = white.value();
+        dim.size = viewport.size;
+        dim.anchor = {0.0F, 0.0F};
+        dim.transform.position = {0.0F, 0.0F};
+        dim.tint = {0, 0, 0, 130};
+        dim.layer = 9400; // Over the HUD, under the fade.
+        drawn = renderer.submit(dim);
+        const char *word = "PAUSED";
+        const float scale = std::clamp(std::floor(viewport.size.y / 120.0F), 3.0F, 10.0F);
+        const Vec2 size = BitmapFont::measure(word, scale);
+        const Vec2 origin = (viewport.size - size) * 0.5F;
+        if (drawn)
+            drawn = sceneRenderer.font().draw(renderer, word, origin + Vec2{scale, scale}, scale,
+                                              {0, 0, 0, 220}, 9410);
+        if (drawn)
+            drawn = sceneRenderer.font().draw(renderer, word, origin, scale, {255, 255, 255, 255},
+                                              9411);
+    }
     if (drawn && options.fade > 0.001F) {
         auto white = renderer.builtinTexture(BuiltinTexture::White);
         if (!white)

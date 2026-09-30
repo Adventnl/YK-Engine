@@ -278,7 +278,15 @@ CameraView Camera::view() const {
         return {position_, height_};
     return {entity().worldPosition(), orthographicHeight};
 }
-void Camera::onLateUpdate(GameContext &context, float seconds) {
+void Camera::onLateUpdate(GameContext &context, float) {
+    // What the camera follows moves in ticks, so the camera follows in ticks too: one that glided
+    // at the display's rate (a 120 or 144 Hz screen) would slip against the characters, which makes
+    // them shimmer against the background. On a 60 Hz screen this is every frame, as before.
+    const double now = context.time();
+    if (initialized_ && !(now > lastTime_))
+        return;
+    const float seconds = initialized_ ? static_cast<float>(now - lastTime_) : 0.0F;
+    lastTime_ = now;
     const Vec2 viewport = context.viewportSize();
     const float aspect = viewport.y > 0 ? viewport.x / viewport.y : 16.0F / 9.0F;
     Vec2 goal = entity().worldPosition();

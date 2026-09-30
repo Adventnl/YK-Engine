@@ -305,7 +305,7 @@ Level rules: an optional intro, complete when every goal is satisfied, fail on a
 | `lockInputOnComplete` | bool | true | Ignore the players' input once the level is complete or has failed. |
 | `restartDelay` | float | 1.5 | (range 0 to 30) |
 | `completeDelay` | float | 2.5 | Seconds between completing the level and moving on to the next scene. (range 0 to 30) |
-| `nextScene` | string | "" | Project-relative scene to load after completion (empty: stay on this one). |
+| `nextScene` | asset | "" | The scene to load after completion (none: stay on this one). |
 | `restartSet` | string | "Global" |  |
 | `restartAction` | string | "Restart" |  |
 | `continueAction` | string | "" | An action (of restartSet) that skips the wait on the complete or failed screen. |
@@ -342,7 +342,7 @@ Several instances may be added to one entity.
 | `amount` | float | 1 | (range -100000 to 100000) |
 | `sound` | asset | "" |  |
 | `restartLevel` | bool | false |  |
-| `changeScene` | string | "" | Project-relative scene to go to. |
+| `changeScene` | asset | "" | A scene to go to. |
 | `signalOn` | bool | false | (runtime state, not saved) |
 
 ## Input

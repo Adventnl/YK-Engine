@@ -7,6 +7,7 @@ Result<std::unique_ptr<GameSession>> GameSession::create(std::unique_ptr<Scene> 
                                                          SceneLoader loader) {
     std::unique_ptr<GameSession> session(new GameSession());
     session->options_ = std::move(options);
+    session->pauseInput_ = ActionInput(session->options_.inputMap);
     session->loader_ = std::move(loader);
     session->path_ = std::move(path);
     auto runtime = GameRuntime::create(std::move(scene), session->options_);
@@ -42,6 +43,11 @@ bool GameSession::followSceneChange() {
 }
 
 bool GameSession::update(double seconds, const InputFrame &input) {
+    if (!options_.pauseAction.empty()) {
+        pauseInput_.update(input);
+        if (pauseInput_.state(options_.pauseSet, options_.pauseAction).pressed)
+            setPaused(!paused_);
+    }
     if (!paused_)
         runtime_->update(seconds, input);
     return followSceneChange();

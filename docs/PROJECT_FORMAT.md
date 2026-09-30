@@ -117,8 +117,9 @@ An **action set** is one controller: a person on the keyboard, a gamepad, a seco
   set through a `PlayerInput` component and to actions by name (`Lever.interactAction`).
 
 A new project starts with `Player1` (WASD, pad 0), `Player2` (arrow keys, pad 1) and `Global`
-(restart, pause, continue: Enter or the pad's East button, which `LevelFlow.continueAction` uses to
-skip the wait after a level ends). Edit the map in the editor: **File > Project Settings > Input**.
+(restart; pause, which the game session handles for the player and the editor's Play mode alike;
+continue: Enter or the pad's East button, which `LevelFlow.continueAction` uses to skip the wait
+after a level ends). Edit the map in the editor: **File > Project Settings > Input**.
 A project saved before `Continue` existed simply has no such action; asking for an action a project
 does not define reads as "not pressed", so nothing breaks.
 

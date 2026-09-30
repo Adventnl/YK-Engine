@@ -386,6 +386,7 @@ void assetField(const PropertyView &view, const AssetRef &current) {
                     any = true;
                     if (ImGui::Selectable(entry.path.c_str()))
                         chosen = entry.path;
+                    markItem("pick/" + entry.path);
                 }
             if (!any && kind != "texture" && kind != "sound")
                 ImGui::TextDisabled("No %s assets in this project.", kind.c_str());

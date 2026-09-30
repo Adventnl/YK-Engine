@@ -261,9 +261,11 @@ void menuEntity(EditorState &state) {
              entity != nullptr))
         state.document->setLocked(state.document->selectionRoots(), !entity->locked());
     ImGui::Separator();
-    if (item("Entity/Move Up", "Move Up", "Alt+Up", entity != nullptr))
+    if (item("Entity/Move Up", "Move Up", "Alt+Up",
+             entity != nullptr && state.document->canMoveAmongSiblings(selected, -1)))
         state.document->moveAmongSiblings(selected, -1);
-    if (item("Entity/Move Down", "Move Down", "Alt+Down", entity != nullptr))
+    if (item("Entity/Move Down", "Move Down", "Alt+Down",
+             entity != nullptr && state.document->canMoveAmongSiblings(selected, 1)))
         state.document->moveAmongSiblings(selected, 1);
 }
 

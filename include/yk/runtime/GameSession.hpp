@@ -35,7 +35,8 @@ class GameSession {
 
     // Advances by `seconds` of real time (unless paused) and follows the game's request to change
     // scene. A scene that cannot be loaded is logged and the current one goes on playing. Returns
-    // true when a new scene started during this call.
+    // true when a new scene started during this call. The pause action of the options toggles the
+    // pause, and is heard while paused, which the runtime itself could not.
     bool update(double seconds, const InputFrame &input);
     // One fixed tick, for stepping while paused; scene changes are followed too.
     bool step(const InputFrame &input);
@@ -52,6 +53,7 @@ class GameSession {
     bool followSceneChange();
 
     RuntimeOptions options_;
+    ActionInput pauseInput_; // Reads only the pause action, so it keeps working while paused.
     SceneLoader loader_;
     std::unique_ptr<GameRuntime> runtime_;
     std::string path_;

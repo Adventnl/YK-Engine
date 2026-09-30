@@ -26,7 +26,8 @@ void LevelFlow::describe(TypeBuilder<LevelFlow> &type) {
         .range(0, 30, 0.1)
         .tooltip("Seconds between completing the level and moving on to the next scene.");
     type.field("nextScene", &LevelFlow::nextScene)
-        .tooltip("Project-relative scene to load after completion (empty: stay on this one).");
+        .asset("scene")
+        .tooltip("The scene to load after completion (none: stay on this one).");
     type.field("restartSet", &LevelFlow::restartSet).inputSet();
     type.field("restartAction", &LevelFlow::restartAction).inputAction();
     type.field("continueAction", &LevelFlow::continueAction)
@@ -142,8 +143,8 @@ void LevelFlow::onFixedUpdate(GameContext &context, float seconds) {
         timer_ = 1e9F; // Ask once; the runtime does the rest (and fades while it does it).
         if (state_ == State::Failed)
             context.requestRestart();
-        else if (!nextScene.empty())
-            context.requestSceneChange(nextScene);
+        else if (!nextScene.path.empty())
+            context.requestSceneChange(nextScene.path);
         return;
     }
     }

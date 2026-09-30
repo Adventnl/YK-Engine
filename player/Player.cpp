@@ -171,6 +171,7 @@ class PlayerLayer final : public ApplicationLayer {
         GameViewOptions view;
         view.physicsDebug = physicsDebug_;
         view.colliders = colliders_;
+        view.paused = session_->paused();
         if (stats_)
             view.overlay = "TICK " + std::to_string(runtime.tick()) + "  BODIES " +
                            std::to_string(runtime.physics().stats().bodies);

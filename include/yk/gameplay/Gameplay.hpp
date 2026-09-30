@@ -460,7 +460,7 @@ class LevelFlow final : public Component {
     bool lockInputOnComplete{true};
     float restartDelay{1.5F};
     float completeDelay{2.5F};
-    std::string nextScene; // Project-relative scene to load after completion; empty stays.
+    AssetRef nextScene; // The scene to load after completion (a picker in the editor); none stays.
     std::string restartSet{"Global"};
     std::string restartAction{"Restart"};
     std::string continueAction; // Skips the wait on the complete or failed screen. Empty: none.
@@ -526,7 +526,7 @@ class EventAction final : public Component {
     float amount{1.0F};
     AssetRef sound;
     bool restartLevel{false};
-    std::string changeScene;
+    AssetRef changeScene; // A scene to go to.
     static void describe(TypeBuilder<EventAction> &type);
 
     // The signal it holds right now (what `targets` follow).

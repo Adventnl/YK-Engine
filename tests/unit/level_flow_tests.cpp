@@ -46,7 +46,7 @@ void completionSequence() {
     World w;
     LevelFlow &rules = twoCharacterLevel(w);
     rules.completeDelay = 1.0F;
-    rules.nextScene = "scenes/next.ykscene";
+    rules.nextScene = AssetRef{"scenes/next.ykscene"};
     w.start();
     w.tick(30);
     CHECK(state(w) == "playing" && w.happened("level_started") && !w.happened("level_completed"));
@@ -97,7 +97,7 @@ void completionWithoutNextSceneAndContinue() {
         World w;
         LevelFlow &rules = twoCharacterLevel(w, -4.0F, 10.0F);
         rules.completeDelay = 100.0F;
-        rules.nextScene = "scenes/next.ykscene";
+        rules.nextScene = AssetRef{"scenes/next.ykscene"};
         rules.continueAction = "Continue";
         w.start();
         w.tick(60);
@@ -283,7 +283,7 @@ void sessionFollowsScenes() {
         auto &rules = flow.add<LevelFlow>();
         rules.goals = {exit.id()};
         rules.completeDelay = 0.5F;
-        rules.nextScene = "scenes/second.ykscene";
+        rules.nextScene = AssetRef{"scenes/second.ykscene"};
         rules.keepVariables = {"score"};
         return scene;
     };
@@ -363,6 +363,60 @@ void sessionKeepsPauseAndViewport() {
     CHECK(session.scenePath() == "b" && session.paused());
     CHECK(session.runtime().viewportSize() == Vec2{640.0F, 360.0F});
     CHECK(session.runtime().paused());
+}
+
+// The pause action of the input map pauses and resumes the game through the session, and is heard
+// while paused (the runtime alone could not: a paused runtime reads no input).
+void pauseAction() {
+    ComponentRegistry registry = makeRegistry();
+    const GameSession::SceneLoader loader = [&](const std::string &) {
+        return Result<std::unique_ptr<Scene>>(std::make_unique<Scene>(registry, 3));
+    };
+    RuntimeOptions options;
+    options.layers = testLayers(); // The standard input map: Global/Pause is P.
+    auto created = GameSession::create(std::make_unique<Scene>(registry, 2), "a", options, loader);
+    CHECK(created);
+    if (!created)
+        return;
+    GameSession &session = *created.value();
+    const auto tick = [&](bool pressP) {
+        Keyboard keyboard;
+        keyboard.beginFrame();
+        if (pressP)
+            keyboard.set(Key::P, true);
+        InputFrame frame;
+        frame.keyboard = keyboard;
+        session.update(1.0 / 60.0, frame);
+    };
+    tick(false);
+    tick(false);
+    const auto running = session.runtime().tick();
+    CHECK(running >= 2 && !session.paused());
+    tick(true); // P goes down: the game pauses.
+    CHECK(session.paused());
+    const auto stopped = session.runtime().tick();
+    tick(false);
+    tick(false);
+    CHECK(session.runtime().tick() == stopped && session.paused()); // Nothing advances.
+    tick(true); // Heard while paused: the game goes on.
+    CHECK(!session.paused());
+    tick(false);
+    CHECK(session.runtime().tick() > stopped);
+
+    // A game can turn the action off.
+    RuntimeOptions deaf = options;
+    deaf.pauseAction.clear();
+    auto other = GameSession::create(std::make_unique<Scene>(registry, 4), "b", deaf, loader);
+    CHECK(other);
+    if (!other)
+        return;
+    Keyboard keyboard;
+    keyboard.beginFrame();
+    keyboard.set(Key::P, true);
+    InputFrame frame;
+    frame.keyboard = keyboard;
+    other.value()->update(1.0 / 60.0, frame);
+    CHECK(!other.value()->paused());
 }
 
 // Reactions: a delay, a signal that a door follows, a chain of events, a timer, one-shots, and a
@@ -494,7 +548,7 @@ void eventActionsReact() {
         action.delay = 0.2F;
         action.animate = {prop.id()};
         action.animationTrigger = "pop";
-        action.changeScene = "scenes/elsewhere.ykscene";
+        action.changeScene = AssetRef{"scenes/elsewhere.ykscene"};
         w.start();
         w.tick(5);
         CHECK(w.at("Prop").get<AnimatedSprite>()->state() == "Idle");
@@ -514,6 +568,7 @@ int main() {
     nextSceneStartsCovered();
     sessionFollowsScenes();
     sessionKeepsPauseAndViewport();
+    pauseAction();
     eventActionsReact();
     return yk::test::finish("level_flow");
 }

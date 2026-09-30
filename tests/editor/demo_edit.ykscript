@@ -271,6 +271,19 @@ click dialog/Settings/save
 expect no-dialog
 capture ${SHOT_DIR}/edit-03-playground.bmp
 
+log "== the next scene is picked from the project's scenes"
+click "hierarchy/Level Flow"
+expect selected "Level Flow"
+expect prop "Level Flow" LevelFlow.nextScene scenes/practice.ykscene
+expect widget prop/nextScene/browse
+click prop/nextScene/browse
+expect widget pick/scenes/level01.ykscene
+expect widget pick/scenes/practice.ykscene
+click pick/scenes/level01.ykscene
+expect prop "Level Flow" LevelFlow.nextScene scenes/level01.ykscene
+key ctrl+z
+expect prop "Level Flow" LevelFlow.nextScene scenes/practice.ykscene
+
 log "== closing the window with unsaved changes asks first"
 create Level/Platform
 expect dirty

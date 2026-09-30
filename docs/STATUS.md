@@ -10,17 +10,34 @@ in [AUDIT.md](AUDIT.md).
 
 | Area | State |
 |---|---|
-| **Engine core** | Entities, reflection-driven components (one declaration drives files, Inspector, prefabs, undo, docs, validation), scene/prefab/project files, headless fixed-step runtime, Box2D physics (one-way platforms, wedge ramps, triggers, kinematic carriers), SDL3 renderer (layers, view culling, tiled and nine-slice sprites, alpha and additive blending, parallax, render passes and targets), particles, glows, oscillators, audio (procedural tones and WAV). |
+| **Engine core** | Entities, reflection-driven components (one declaration drives files, Inspector, prefabs, undo, docs, validation and what a component says is wrong with itself), scene/prefab/project files, headless fixed-step runtime with frame-time snapping, screen fades and input locks, `GameSession` (the one place scenes are switched, shared by the player and the editor), Box2D physics (one-way platforms, wedge ramps, rounded and chamfered colliders, triggers, kinematic carriers that carry by the velocity of the point under each rider, hinge joints with limits, spring and motor, bullets, collision enter and exit), SDL3 renderer (layers, view culling, tiled and nine-slice sprites, alpha and additive blending, parallax, render passes and targets), particles, glows, oscillators, audio (procedural tones and WAV). |
 | **Input** | Named actions in per-player action sets stored in the project (WASD for Player1, arrows for Player2, gamepad bindings and axes), evaluated once per tick; edited in the editor. Nothing in the engine or gameplay names a key. |
 | **Animation** | Clips with frame lists, per-frame timing, events and follow-up clips; a data-driven state machine (parameters, conditions, any-state transitions, exit times); sprite flipping from a parameter; previews and timing edits in the editor. Gameplay publishes generic parameters only. |
-| **Gameplay library** | Platformer controller (acceleration, variable jump, coyote time, jump buffering, slopes with ground snapping, moving-platform riding), plates, levers (touch or an interact action), doors, moving platforms, hazards with tag filters, collectibles, checkpoints, spawn points, goals, trigger zones, killable with death animation and respawn, level rules with HUD variables. Camera: fixed, follow, fit targets, smoothing, zoom limits, world bounds. |
-| **Editor** | VS Code-style workbench drawn as outlined cards on a dark canvas like the reference (title bar with menus and a Play/project capsule, activity bar + side bar with Explorer / Scene / Prefabs / Components / Build views and an Open Scenes list, scene tabs, split editor, right card with **Inspector** and **Debug** tabs (live state of the running game), Console / Problems / Build Output / Profiler panel, status bar; every region resizable and collapsible, sizes remembered; Cmd shortcuts on a Mac; `--ui-scale`). Level editing: pan, zoom, marquee and multi-select, move/resize/rotate gizmos, snapping, duplicate, copy/paste, delete, reparent by drag, lock and hide, undo/redo, links and door-target ghosts, overlays. Inspector for entities (multi-selection edits), files (texture import settings, animation preview and timing, controllers, sounds, scenes, prefabs) and the scene's settings. Prefab instances: revert, apply, update others, unpack. Asset import (dialog and drag-and-drop) and file operations that rewrite references (rename, move, delete). Project settings: layers, input map, rendering defaults, build settings. Play/Pause/Step/Stop on a copy of the scene. Validation with a Problems panel. Export dialog. |
-| **Demo game** | *Cinder Vale* in `YK-DemoGame/`: a two-player puzzle platformer with original generated art and audio, 36 prefabs, a 171-entity level and a practice room, made only of engine components and prefabs. It contains no C++. |
+| **Gameplay library** | Platformer controller (acceleration, variable jump, coyote time, jump buffering, slopes with ground snapping, riding sliding, rotating, tilting and sinking surfaces), **physical pressure plates** (a kinematic pad characters and crates stand on and sink with, weight or region sensing), levers (touch or an interact action), doors that slide and/or turn, eased and spinning moving platforms (all stop when something is squeezed), hazards with tag filters, collectibles, checkpoints, spawn points, goals (exits that whoever stands in walks into), trigger zones, killable with death animation and respawn, **`LevelFlow`** (intro, time limit, failure and retry, completion sequence with locked input, continue, next scene, variables carried over) and **`EventAction`** (events to consequences, with delays and timers). Camera: fixed, follow, fit targets, smoothing, zoom limits, world bounds. |
+| **Editor** | VS Code-style workbench drawn as outlined cards on a dark canvas like the reference (title bar with menus and a Play/project capsule, activity bar + side bar with Explorer / Scene / Prefabs / Components / Build views and an Open Scenes list, scene tabs, split editor, right card with **Inspector** and **Debug** tabs (live state of the running game), Console / Problems / Build Output / Profiler panel, status bar; every region resizable and collapsible, sizes remembered; Cmd shortcuts on a Mac; `--ui-scale`). Level editing: pan, zoom (buttons, a menu of round levels, keys, wheel about the pointer, fit and focus; a narrow group folds the toolbar into a "..." menu), marquee and multi-select, move/resize/rotate gizmos, draggable pins (a hinge's anchor), snapping, duplicate, copy/paste, delete, reparent by drag, lock and hide, undo/redo, links and door-target ghosts, overlays, a right-click menu; the Problems panel selects the entity a finding is about. Inspector for entities (multi-selection edits), files (texture import settings, animation preview and timing, controllers, sounds, scenes, prefabs) and the scene's settings. Prefab instances: revert, apply, update others, unpack. Asset import (dialog and drag-and-drop) and file operations that rewrite references (rename, move, delete). Project settings: layers, input map, rendering defaults, build settings. Play/Pause/Step/Stop on a copy of the scene. Validation with a Problems panel. Export dialog. |
+| **Demo game** | *Cinder Vale* in `YK-DemoGame/`: a two-player puzzle platformer with original generated art and audio, 36 prefabs, a 173-entity level and a practice room that lead into each other (completing one fades into the other), made only of engine components and prefabs. Its plates are real buttons. It contains no C++. |
 | **Application lifecycle** | Per-user log files with rotation, a crash reporter (report + stack trace, next start says so), a running marker for unclean-exit detection, `SIGPIPE`/`SIGHUP` ignored, fatal start-up errors shown in a dialog (never a silent exit), OS-asked executable and bundle paths (nothing depends on the working directory or the source tree), the editor tracks the player it starts and ends it on quit, **Help > Open Logs Folder**. |
 | **macOS distribution** | `scripts/package-macos.sh` builds **`YK Engine.app`** (editor, player, `yk`, icon, demo game, notices, `.ykproj` document type) and **`YKEngine-<version>-macos-<arch>.dmg`**, signs ad hoc or with a Developer ID (`YK_CODESIGN_IDENTITY`, hardened runtime) and optionally notarizes and staples (`YK_NOTARY_PROFILE`); `scripts/verify-macos-app.sh` checks the result like a user would. |
 | **Export pipeline** | `yk export` and the Export dialog write Windows, macOS and Linux games: player renamed after the game, data, notices, README, `Info.plist`, project icon (`AppIcon.icns` from a PNG), copyright, optional reproducible zip; on a Mac also code signing and a `.dmg` (`--sign`, `--dmg`). The exported game has no editor. |
 | **Build and packaging** | CMake presets `dev`, `release`, `asan`, `headless`, `clang`, `windows-cross`; install and CPack archives; the `yk` command line (`new`, `validate`, `format`, `info`, `components`, `export`, `targets`); game modules through `yk_add_game_hosts`; a game can live in its own repository (`yk new`, `YK_DEMO_PROJECT`). |
 | **Documentation** | This folder: [ARCHITECTURE](ARCHITECTURE.md), [BUILDING](BUILDING.md), [EDITOR](EDITOR.md), [PROJECT_FORMAT](PROJECT_FORMAT.md), the generated [component reference](components.md), [physics API](physics.md), [decisions](decisions/). |
+
+## The latest pass: mechanisms, level flow and getting around the editor
+
+A production-readiness pass over an engine that already worked, in the order it was done. The last
+column names what would fail without the change.
+
+| Area | What changed | Checked by |
+|---|---|---|
+| **Pressure plates** | A plate is a kinematic pad with a solid collider: characters and crates land on it, stand on it and sink with it, it stops at an exact depth and rises when the load leaves. Weight sensing reads the pad's own contacts; a trigger region is a separate option. A chamfered rim lets a crate be pushed up onto it. Pressed at 85% of the travel, released below 70%. ([ADR 0013](decisions/0013-pressure-plates-are-solid-pads-that-carry-their-load.md)) | `mechanisms` (a character dropped from a height, walking over, standing, jumping again and again; a crate; a stack; the stops; tags and minimum mass; region plates), `demo` |
+| **Moving, rotating and tilting surfaces** | Characters ride the velocity of the ground *point* (linear, angular and centripetal), so sliding, spinning, tilting and sinking surfaces carry them. Platforms and doors ease in and out and hold still when something is squeezed. Characters are bullets (continuous collision against kinematic bodies). New: `Door.openRotation`, `MovingPlatform.spinSpeed`, `HingeJoint` (limits, spring, motor), `Collider.cornerRadius` and `chamfer`, `World::pointVelocity`, `setBullet`, `onCollisionExit`. ([ADR 0014](decisions/0014-characters-ride-the-velocity-of-the-ground-point.md)) | `mechanisms` (rotating and tilting platforms, hinged doors, a seesaw, crush protection, riders on a platform that starts downward, the frame rate not changing the result) |
+| **Level flow** | `LevelFlow` is a state machine (intro, playing, complete, failed) with goals, a time limit, retry, continue, the next scene and variables carried over; `Goal` exits are walked into; controls lock while a level ends; restarts and scene changes fade; `GameSession` is the one place scenes are switched, for the player and the editor's Play alike; `EventAction` connects events to consequences with delays and timers; the pause action works. ([ADR 0015](decisions/0015-level-flow-and-transitions-belong-to-the-runtime.md)) | `level_flow`, `demo` (room 1, the practice room, room 1 again through a session) |
+| **Validation** | A component can say what is wrong with itself (a plate with nothing to stand on, a lever with no trigger, a hinge on a body that cannot swing, a next scene that is not in the project); the Problems panel goes to the entity. | `mechanisms`, `assets`, `editor_demo_edit` |
+| **Scene view** | Zoom out / level menu / zoom in / fit / focus on the toolbar, Ctrl+= Ctrl+- Ctrl+0, a sideways wheel pans, a narrow group folds the toolbar into a menu, draggable pins for hinge anchors, a context menu with stable ids. Works while the game plays. | `editor_core` (the zoom ladder, pins), `editor_demo_view` (all of it through the real UI) |
+| **Fewer dead controls** | The Game tab's Restart is disabled until a game runs; Move Up and Move Down in the Hierarchy and the Entity menu are offered only when they move something. | `editor_core`, `editor_demo_edit` |
+| **Timing and camera** | A frame within 0.4 ms of a tick (or half, two, three) counts as exact, so a 60 or 120 Hz screen does not turn its uneven frames into a hitch; the camera follows once per tick. | `game_runtime` |
+| **Save and load** | Every registered component keeps every editable field (compared field by field with non-default values); a scene written before the newer fields existed loads with their defaults and plays as it did. | `gameplay` |
+| **Demo** | Plates are real buttons (a root and a `Pad`); room 1 and the practice room lead into each other; P pauses, Enter continues. | `demo`, `editor_demo_*` |
 
 ## Verified
 
@@ -96,7 +113,18 @@ rendering is checked against real pixels.
 - **Linux desktop integration.** No `.desktop` file, icon theme entry or AppImage; a Linux export is
   a folder or zip.
 - **Gamepads and audio output**: bindings and mixing are tested with synthetic input and SDL's
-  dummy devices; no controller was connected and nothing was listened to.
+  dummy devices; no controller was connected and nothing was listened to (the new `Continue` and
+  `Pause` actions have pad bindings, East and Start, that no pad has pressed).
+- **How the game and the new editor controls feel on a real display.** The mechanisms, the level
+  flow and the scene view were exercised headlessly (real physics, scripted input, real UI events
+  under the software renderer), and the standalone player was started and captured (the level, then
+  the paused overlay). Nobody played the demo with a keyboard, moved the mouse wheel over the scene
+  view, or looked at the plates and platforms at a display's own refresh rate. Rendering the whole
+  editor at high zoom levels is slow under the software renderer, so the UI scripts stay at 100% and
+  below; a GPU does not have that problem, but it was not tried.
+- **The `clang` preset** (Clang with libc++) could not run on the machine used for this pass (no
+  libc++). Clang 18 with libstdc++ built everything without a warning, and the macOS job on GitHub
+  (Apple clang and libc++) is the check that stands in for it.
 
 ## Known limitations
 
@@ -118,19 +146,38 @@ rendering is checked against real pixels.
 - **The editor cannot notarize** an exported game and does not manage signing identities; the export
   dialog signs with an identity you type (or ad hoc).
 - **Exported data is not packed or encrypted**: `data/` is the project's files.
+- **Motion is drawn at the simulation rate.** Nothing is interpolated between fixed ticks, so on a
+  display faster than 60 Hz the picture changes 60 times a second (a 120 Hz screen shows each tick
+  twice). Frame times are snapped to the tick and the camera follows per tick, so nothing shimmers
+  against anything else, but it is not 144 fps motion. Interpolating costs a tick of latency; it is
+  the next step for a game that wants it.
+- **Mechanisms notice things within the solver's speculative margin (about 2 cm).** A door or plate
+  can overlap what it presses on or crushes by a few centimeters before it knows, and the tests allow
+  for that. A step higher than about 15 cm is a wall to the character controller (its slope limit
+  is 55 degrees) unless it has a chamfer or a ramp, which is why plates have a sloped rim.
+- **The scene view draws a hinge's pin but not its swing, and a hinged door's open pose is edited as
+  a number** (the ghost of a door that only slides is drawn and draggable).
+- **`EventAction` has no conditions** (this event AND that one): anything a chain of events,
+  delays and signals cannot say is a component in a game module, as before.
+- **Ctrl+= and Ctrl+-** zoom the scene view on keyboards where "=" and "-" are keys; SDL 3.2 reports
+  no trackpad pinch gesture, so there is no pinch-to-zoom (a two-finger scroll zooms and a sideways
+  swipe pans; the toolbar's buttons and menu are always there).
 - Physics and rendering limits are documented where they apply (CCD and sensor limits in
   [physics.md](physics.md); bitwise cross-platform determinism is not claimed).
 
 ## Highest-value next pass
 
-1. **Notarized releases**: run `scripts/package-macos.sh` with a Developer ID and a notary profile
+1. **Render interpolation** for displays faster than 60 Hz (see the limitation above), together
+   with a tilted preview of a hinged door's open pose and the swing range of a hinge in the scene
+   view.
+2. **Notarized releases**: run `scripts/package-macos.sh` with a Developer ID and a notary profile
    in CI secrets, staple, and verify with `spctl` on a clean Mac; add a universal (arm64 + x86_64)
    build. This is the step between "works on the developer's Mac" and "opens on anyone's Mac".
-2. **See it on a Retina display** and fix what only shows there (icon sizes, 1-pixel borders,
+3. **See it on a Retina display** and fix what only shows there (icon sizes, 1-pixel borders,
    font weight); add screenshot review of the CI artifact to the release checklist.
-3. **An embedded scripting language** with per-instance exposed variables, so behaviors are data
+4. **An embedded scripting language** with per-instance exposed variables, so behaviors are data
    too and games need no C++ (needs dynamic reflection: the biggest cross-cutting change).
-4. **Prefab overrides** and **a tilemap layer**, the two things a 2D level author still works
+5. **Prefab overrides** and **a tilemap layer**, the two things a 2D level author still works
    around by hand.
-5. **Editor recovery**: periodic snapshots of unsaved scenes so a crash does not lose work, and
+6. **Editor recovery**: periodic snapshots of unsaved scenes so a crash does not lose work, and
    Windows crash-report verification plus an icon/version resource for exported `.exe` files.

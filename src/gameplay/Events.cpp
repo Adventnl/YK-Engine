@@ -28,11 +28,12 @@ void EventAction::describe(TypeBuilder<EventAction> &type) {
                 problems.push_back("sets an animation trigger but names no entities to animate");
             if (action.variableChange != VariableChange::None && action.variable.empty())
                 problems.push_back("changes a variable but names none");
-            const bool acts =
-                action.signal != SignalChange::None || !action.raiseEvent.empty() ||
-                !action.activate.empty() || !action.deactivate.empty() ||
-                !action.animationTrigger.empty() || action.variableChange != VariableChange::None ||
-                !action.sound.path.empty() || action.restartLevel || !action.changeScene.empty();
+            const bool acts = action.signal != SignalChange::None || !action.raiseEvent.empty() ||
+                              !action.activate.empty() || !action.deactivate.empty() ||
+                              !action.animationTrigger.empty() ||
+                              action.variableChange != VariableChange::None ||
+                              !action.sound.path.empty() || action.restartLevel ||
+                              !action.changeScene.path.empty();
             if (!acts)
                 problems.push_back("does nothing when it runs: give it something to do");
         });
@@ -70,7 +71,8 @@ void EventAction::describe(TypeBuilder<EventAction> &type) {
     type.field("sound", &EventAction::sound).asset("sound");
     type.field("restartLevel", &EventAction::restartLevel);
     type.field("changeScene", &EventAction::changeScene)
-        .tooltip("Project-relative scene to go to.");
+        .asset("scene")
+        .tooltip("A scene to go to.");
     type.field("signalOn", &EventAction::signal_).readOnly();
 }
 
@@ -164,7 +166,7 @@ void EventAction::run(GameContext &context, EntityId other) {
         context.audio().play(sound.path);
     if (restartLevel)
         context.requestRestart();
-    if (!changeScene.empty())
-        context.requestSceneChange(changeScene);
+    if (!changeScene.path.empty())
+        context.requestSceneChange(changeScene.path);
 }
 } // namespace yk

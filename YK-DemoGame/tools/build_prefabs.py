@@ -345,7 +345,7 @@ def build_level_parts():
                 color=rgba(255, 240, 170), layer=6)
     hud.child(message)
     help_text = Node("Controls")
-    help_text.add("UiText", text="EMBER: A D MOVE  W JUMP  S USE      TIDE: ARROWS MOVE  UP JUMP  DOWN USE      R RESTART",
+    help_text.add("UiText", text="EMBER: A D MOVE  W JUMP  S USE      TIDE: ARROWS MOVE  UP JUMP  DOWN USE      R RESTART  P PAUSE",
                   anchor="Bottom", offset=[0, 16], scale=1, color=rgba(190, 205, 205, 200), layer=3)
     hud.child(help_text)
     out["level/hud"] = hud

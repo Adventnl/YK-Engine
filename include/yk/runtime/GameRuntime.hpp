@@ -21,6 +21,11 @@ struct RuntimeOptions {
     // The variables the scene starts with: what the previous scene kept (Blackboard::keep). They
     // are back after a restart of this scene too.
     std::map<std::string, Blackboard::Value> variables;
+    // The action of the project's input map that pauses and resumes the game, which a GameSession
+    // handles for its host (so the player and the editor's Play mode pause alike). No action name:
+    // the game cannot be paused by its player.
+    std::string pauseSet{"Global"};
+    std::string pauseAction{"Pause"};
 };
 
 // Executes a scene: builds the physics world from RigidBody/Collider components, then runs fixed

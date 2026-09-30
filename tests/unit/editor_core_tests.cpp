@@ -335,6 +335,12 @@ void hierarchyEdits() {
     CHECK(doc.moveAmongSiblings(child, 50) && doc.scene().roots().back() == child); // Clamped.
     CHECK(doc.moveAmongSiblings(child, -1) && doc.scene().roots()[1] == child);
     CHECK(!doc.moveAmongSiblings(EntityId{77}, 1));
+    // Menus offer a move only when it does something.
+    CHECK(doc.canMoveAmongSiblings(child, -1) && doc.canMoveAmongSiblings(child, 1));
+    CHECK(!doc.canMoveAmongSiblings(doc.scene().roots().front(), -1)); // Already first.
+    CHECK(doc.canMoveAmongSiblings(doc.scene().roots().front(), 1));
+    CHECK(!doc.canMoveAmongSiblings(doc.scene().roots().back(), 1)); // Already last.
+    CHECK(!doc.canMoveAmongSiblings(child, 0) && !doc.canMoveAmongSiblings(EntityId{77}, 1));
     (void)second;
 }
 

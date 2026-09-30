@@ -194,7 +194,10 @@ the tests run the same code. Given a scene it builds a Box2D world from `RigidBo
 components (colliders with no body become static geometry; colliders on descendants join their
 nearest body), then per frame accumulates time into fixed ticks: input actions are evaluated,
 component fixed updates run, the physics steps, transforms are written back, trigger overlaps and
-collision callbacks fire, events are dispatched; then one variable update and late update.
+collision callbacks fire, events are dispatched; then one variable update and late update. A frame
+time within 0.4 ms of one, two or three ticks (or half of one, a 120 Hz screen) counts as exactly
+that, so a display's slightly uneven frames do not turn into a tick less on one frame and two on
+the next.
 Deferred `destroyLater`, prefab `spawn`, `restart()` (rebuild from the start snapshot),
 scene-change requests, a `Blackboard` of named variables (`{name}` placeholders in UI text) and a
 bounded `EventBus` complete the `GameContext` components see. Collision layers are stored by name
@@ -208,7 +211,9 @@ while a level ends and the raw input is untouched). `Blackboard::keep` marks var
 into the next scene. **`GameSession`** (`runtime/GameSession.hpp`) is the one place scenes are
 switched: it owns the current `GameRuntime`, loads the scene a component asked for, carries the kept
 variables over, starts it covered so it fades in, and stays on the current scene (logging why) when
-the load fails. The standalone player and the editor's Play mode both drive a session, so they cannot
+the load fails. It also handles the pause action (`RuntimeOptions::pauseSet/pauseAction`, Global/Pause
+by default), which a paused runtime could not hear itself; the player dims the picture and says
+PAUSED (`GameViewOptions::paused`). The standalone player and the editor's Play mode both drive a session, so they cannot
 disagree ([ADR 0015](decisions/0015-level-flow-and-transitions-belong-to-the-runtime.md)).
 
 ## Gameplay library (`gameplay/`)
@@ -284,7 +289,10 @@ its scene and game views into panels. `SceneRenderer` turns scene data into subm
 with shapes, tint, sheet frame, **tiled** and **nine-slice** draw modes, alpha and additive
 blending, **parallax** layers, **view culling**; particles and glows; screen-space UI text,
 panels and images; collider outlines. The `Camera` component follows or frames its targets
-(`Fixed`, `Follow`, `FitTargets`) with smoothing, padding, zoom limits and world bounds.
+(`Fixed`, `Follow`, `FitTargets`) with smoothing, padding, zoom limits and world bounds, one step per
+fixed tick: what it follows moves in ticks, and a camera that glided at the display's rate (120 or
+144 Hz) would slip against it. Nothing is interpolated between ticks, so on a display faster than
+60 Hz the picture changes at 60 Hz (see [STATUS.md](STATUS.md#known-limitations)).
 `drawGameView` shows a running game as a player sees it, `drawScenePreview` the same for a scene
 that is not running. `SdlAudio` mixes procedural or `.wav` sounds behind the `AudioSink`
 interface; without a device it plays nothing and never fails the game.

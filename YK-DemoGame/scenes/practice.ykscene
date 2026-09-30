@@ -2177,7 +2177,7 @@
         {
           "type": "UiText",
           "properties": {
-            "text": "EMBER: A D MOVE  W JUMP  S USE      TIDE: ARROWS MOVE  UP JUMP  DOWN USE      R RESTART",
+            "text": "EMBER: A D MOVE  W JUMP  S USE      TIDE: ARROWS MOVE  UP JUMP  DOWN USE      R RESTART  P PAUSE",
             "anchor": "Bottom",
             "offset": [0, 16],
             "scale": 1,

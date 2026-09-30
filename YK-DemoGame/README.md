@@ -24,7 +24,8 @@ yk_player YK-DemoGame          play it without the editor
 | Jump | W | Up |
 | Use (lever) | S or E | Down or Right Ctrl |
 
-R restarts the level; Enter (pad: East) skips the wait after a level is completed. Gamepads work too:
+R restarts the level; P (pad: Start) pauses and resumes; Enter (pad: East) skips the wait after a
+level is completed. Gamepads work too:
 pad 1 drives Ember, pad 2 drives Tide (edit the bindings in `project.ykproj`, section `input`).
 
 ## What is in it
