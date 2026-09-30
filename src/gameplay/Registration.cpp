@@ -1,3 +1,4 @@
+#include "yk/gameplay/Exploration.hpp"
 #include "yk/gameplay/Gameplay.hpp"
 #include "yk/scene/SceneSerializer.hpp"
 #include <filesystem>
@@ -84,6 +85,7 @@ void registerGameplayComponents(ComponentRegistry &registry) {
     registry.add<TriggerZone>("TriggerZone");
     registry.add<LevelFlow>("LevelFlow");
     registry.add<EventAction>("EventAction");
+    registerExplorationComponents(registry);
 
     registry.addTemplate(
         {"Platform", "Level", [](Scene &scene, Vec2 at) {

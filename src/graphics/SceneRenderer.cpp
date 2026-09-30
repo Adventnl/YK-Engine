@@ -273,7 +273,8 @@ Status SceneRenderer::drawSprite(Renderer &renderer, const Entity &entity,
                   0};
     sink.proto.tint = sprite.color;
     sink.proto.layer = sprite.layer;
-    sink.proto.depth = sprite.order;
+    sink.proto.depth =
+        sprite.ySort ? entity.worldPosition().y + sprite.sortOffset + sprite.order : sprite.order;
     sink.proto.transform.rotationDegrees = world.rotationDegrees;
     sink.proto.flipHorizontal = sink.flip;
     sink.proto.blend =
@@ -678,6 +679,71 @@ Status SceneRenderer::drawUi(Renderer &renderer, const Scene &scene, Vec2 viewpo
                 !drawn)
                 return drawn;
         }
+    }
+    // Conversations are screen-space presentations, independent of an NPC's world sprite.
+    // Only the first active dialogue is shown; gameplay owns its pages and input lifecycle.
+    for (const EntityId id : scene.orderedIds()) {
+        const Entity *entity = scene.find(id);
+        const auto *dialogue =
+            entity && entity->activeInHierarchy() ? entity->get<Dialogue>() : nullptr;
+        if (!dialogue || !dialogue->enabled || !dialogue->active())
+            continue;
+        const float margin = std::max(16.0F, viewport.x * 0.025F);
+        const float height = std::min(210.0F, viewport.y * 0.34F);
+        const Vec2 boxPos{margin, viewport.y - height - margin};
+        const Vec2 boxSize{viewport.x - margin * 2.0F, height};
+        Sprite panel;
+        panel.texture = white.value();
+        panel.anchor = {0, 0};
+        panel.transform.position = boxPos;
+        panel.size = boxSize;
+        panel.tint = {15, 20, 33, 240};
+        panel.layer = 8000;
+        if (auto submitted = renderer.submit(panel); !submitted)
+            return submitted;
+        const DialoguePage &page = dialogue->currentPage();
+        float textX = boxPos.x + 24.0F;
+        if (!page.portrait.path.empty()) {
+            const TextureInfo &portrait = textureFor(renderer, page.portrait.path);
+            if (portrait.handle && portrait.pixels.x > 0 && portrait.pixels.y > 0) {
+                const float portraitHeight = std::min(viewport.y * 0.58F, height * 2.0F);
+                const float portraitWidth = portraitHeight * portrait.pixels.x / portrait.pixels.y;
+                Sprite artwork;
+                artwork.texture = *portrait.handle;
+                artwork.anchor = {0, 0};
+                artwork.transform.position = {boxPos.x + 10.0F, boxPos.y + height - portraitHeight};
+                artwork.size = {portraitWidth, portraitHeight};
+                artwork.layer = 8001;
+                if (auto submitted = renderer.submit(artwork); !submitted)
+                    return submitted;
+                textX += std::min(portraitWidth + 18.0F, boxSize.x * 0.42F);
+            }
+        }
+        const float scale = viewport.y < 500.0F ? 2.0F : 3.0F;
+        const float maxWidth = std::max(60.0F, boxPos.x + boxSize.x - textX - 24.0F);
+        const std::size_t columns = std::max<std::size_t>(
+            1, static_cast<std::size_t>(maxWidth / (BitmapFont::advance * scale)));
+        std::string wrapped;
+        std::size_t column = 0;
+        for (char ch : dialogue->visibleText()) {
+            if (ch == '\n' || column >= columns) {
+                wrapped.push_back('\n');
+                column = 0;
+                if (ch == ' ' || ch == '\n')
+                    continue;
+            }
+            wrapped.push_back(ch);
+            ++column;
+        }
+        if (auto drawn = font_->draw(renderer, page.speaker, {textX, boxPos.y + 17.0F}, scale,
+                                     {255, 220, 116, 255}, 8002);
+            !drawn)
+            return drawn;
+        if (auto drawn = font_->draw(renderer, wrapped, {textX, boxPos.y + 52.0F}, scale,
+                                     {245, 246, 252, 255}, 8002);
+            !drawn)
+            return drawn;
+        break;
     }
     return success();
 }

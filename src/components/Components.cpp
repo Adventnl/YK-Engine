@@ -51,6 +51,9 @@ void SpriteRenderer::describe(TypeBuilder<SpriteRenderer> &type) {
     type.field("order", &SpriteRenderer::order)
         .range(-1000, 1000, 0.1)
         .tooltip("Draw order within a layer.");
+    type.field("ySort", &SpriteRenderer::ySort)
+        .tooltip("Sort this sprite by its world Y position within its layer.");
+    type.field("sortOffset", &SpriteRenderer::sortOffset).range(-1000, 1000, 0.05);
     type.field("flipX", &SpriteRenderer::flipX);
     type.field("visible", &SpriteRenderer::visible);
     type.field("columns", &SpriteRenderer::columns).range(1, 256).tooltip("Sprite sheet columns.");
@@ -424,6 +427,7 @@ void registerEngineComponents(ComponentRegistry &registry) {
     registry.add<UiText>("UiText");
     registry.add<UiPanel>("UiPanel");
     registry.add<UiImage>("UiImage");
+    registry.add<Dialogue>("Dialogue");
     registry.add<PlayerInput>("PlayerInput");
     registry.add<RigidBody>("RigidBody");
     registry.add<Collider>("Collider").allowMultiple();

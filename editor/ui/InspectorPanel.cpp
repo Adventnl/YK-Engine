@@ -379,6 +379,8 @@ void assetField(const PropertyView &view, const AssetRef &current) {
             wanted = AssetKind::Animation;
         else if (kind == "scene")
             wanted = AssetKind::Scene;
+        else if (kind == "dialogue")
+            wanted = AssetKind::Dialogue;
         if (state.project) {
             bool any = false;
             for (const AssetEntry &entry : state.project->files())

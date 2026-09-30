@@ -8,21 +8,24 @@ a standalone player and can be exported as a desktop game.
 two-player puzzle platformer (two characters, two hazards, gems, levers, gates, plates you can stand
 on and sink, a moving platform, checkpoints, exits, two rooms that lead into each other) built only
 from the engine's components and prefabs, with original generated art, and no code of its own.
+*Castle Paths* in `YK-ExplorationDemo/` is a second data-only test: top-down movement, NPC
+conversation, a switch and locked gate, and travel between a courtyard and hall.
 
 | Part | What it is | Where |
 |---|---|---|
-| **Engine** | Entities and components with reflection, scene/prefab/project files, input actions, animation clips and state machines, a headless fixed-step runtime on Box2D, an SDL3 renderer (layers, culling, tiling, nine-slice, parallax, particles), audio, validation, export. No game rules. | `include/`, `src/` |
-| **Gameplay library** | Reusable mechanics as components: platformer controller, physical plates, levers, doors, moving and rotating platforms, hinges, hazards, collectibles, checkpoints, goals, level flow (intro, retry, completion, next scene), event reactions. | `include/yk/gameplay`, `src/gameplay` |
+| **Engine** | Entities and components with reflection, scene/prefab/project files, input actions, animation clips and state machines, dialogue with portraits, a headless fixed-step runtime on Box2D, an SDL3 renderer (layers, Y sorting, culling, tiling, nine-slice, parallax, particles), audio, validation, export. No game rules. | `include/`, `src/` |
+| **Gameplay library** | Reusable mechanics as components: platformer and top-down controllers, NPC paths, proximity interactions, gates, portals and map spawns, plus plates, levers, doors, hazards, collectibles, checkpoints, goals, level flow and event reactions. | `include/yk/gameplay`, `src/gameplay` |
 | **Editor** | Workbench with an Explorer, scene hierarchy, prefabs, component catalog, inspector, a Debug view of the running game, tabs and split views, console, problems, profiler; real level editing; Play on a copy of the scene. | `editor/` |
 | **Player and tools** | `yk_player` runs any project; `yk` creates, validates, formats, inspects and exports projects. | `player/`, `tools/yk/` |
 | **Packaging** | `YK Engine.app` and its `.dmg` for macOS; the exporter writes a standalone `Game.app` (or Windows/Linux folder) without the editor, with icon, signing and a `.dmg` on a Mac. | `packaging/`, `scripts/`, `src/assets/Export.cpp` |
 | **Demo game** | *Cinder Vale*: a project folder (data) that consumes the engine, and the scripts that generate its art. It is a sample and a test; a game can live in a repository of its own. | `YK-DemoGame/` |
+| **Exploration test** | *Castle Paths*: two small top-down scenes and placeholder artwork that exercise the new reusable exploration systems. | `YK-ExplorationDemo/` |
 
 ## Use it (macOS)
 
 Open the `YKEngine-<version>-macos-<arch>.dmg` (built by `scripts/package-macos.sh`, and kept as the
 `macos-engine` artifact of every CI run), drag **YK Engine** to Applications and open it. The
-welcome screen offers New Project, Open Project, recent projects and the demo game. **Build >
+welcome screen offers New Project, Open Project, recent projects and both demo games. **Build >
 Export Game** writes a standalone `GameName.app`, optionally signed and in a `.dmg`. No terminal is
 involved; logs and crash reports are in `~/Library/Logs/`. Until the app is notarized with a
 Developer ID (needs an Apple account; see [docs/BUILDING.md](docs/BUILDING.md#macos)), another Mac
@@ -40,9 +43,10 @@ cmake --preset dev
 cmake --build --preset dev
 ctest --preset dev --output-on-failure
 
-./build/dev/yk_editor                       # welcome screen: New Project, Open Project, the demo game
+./build/dev/yk_editor                       # welcome screen: projects and both demos
 ./build/dev/yk_editor YK-DemoGame           # open the demo game in the editor
 ./build/dev/yk_player YK-DemoGame           # play it without the editor
+./build/dev/yk_player YK-ExplorationDemo     # play the top-down exploration test
 ./build/dev/yk export YK-DemoGame --target linux --out dist --zip     # package it
 ./build/dev/yk new ~/Games/MyGame --name "My Game"                    # a new project anywhere
 ```
@@ -76,6 +80,7 @@ docs/  cmake/  scripts/   documentation, CMake modules and toolchains, verificat
 ## Documentation
 
 - [Architecture](docs/ARCHITECTURE.md): modules, systems, rules of the codebase
+- [Exploration pass](docs/EXPLORATION.md): audit, new systems, authoring the second demo
 - [Building, testing and shipping](docs/BUILDING.md): presets, tests, macOS app and disk image, export, signing, Windows
 - [Editor guide](docs/EDITOR.md): the workbench, level editing, prefabs, assets, play, export, shortcuts
 - [Project format](docs/PROJECT_FORMAT.md): every file the engine reads and writes

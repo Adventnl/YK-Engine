@@ -34,6 +34,8 @@ AssetKind classifyAsset(const std::string &path) {
         return AssetKind::Animation;
     if (extension == ".ykctl")
         return AssetKind::Controller;
+    if (extension == ".ykdialogue")
+        return AssetKind::Dialogue;
     if (extension == ".ykmeta")
         return AssetKind::TextureMeta;
     return AssetKind::Other;

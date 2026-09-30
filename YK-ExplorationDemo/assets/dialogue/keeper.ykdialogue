@@ -1,0 +1,14 @@
+{
+  "pages": [
+    {
+      "speaker": "Keeper Mara",
+      "text": "The inner courtyard is sealed. Find the brass switch near the trees, then open the gate.",
+      "portrait": "assets/portraits/keeper.png"
+    },
+    {
+      "speaker": "Keeper Mara",
+      "text": "The gate remembers your progress. Follow the path into the hall when it opens.",
+      "portrait": "assets/portraits/keeper_smile.png"
+    }
+  ]
+}

@@ -44,6 +44,8 @@ Icon iconOf(AssetKind kind) {
         return Icon::Animation;
     case AssetKind::Controller:
         return Icon::Code;
+    case AssetKind::Dialogue:
+        return Icon::Code;
     case AssetKind::TextureMeta:
         return Icon::Settings;
     case AssetKind::Other:
@@ -66,6 +68,8 @@ const char *kindName(AssetKind kind) {
         return "Animation clips";
     case AssetKind::Controller:
         return "Animation controller";
+    case AssetKind::Dialogue:
+        return "Dialogue";
     case AssetKind::TextureMeta:
         return "Texture import settings";
     case AssetKind::Other:
@@ -848,6 +852,9 @@ void assetInspector(EditorState &state) {
         break;
     case AssetKind::Prefab:
         prefabAssetInspector(state, path);
+        break;
+    case AssetKind::Dialogue:
+        info("Path", path);
         break;
     case AssetKind::TextureMeta:
     case AssetKind::Other:

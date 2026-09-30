@@ -26,6 +26,8 @@ Icon iconFor(AssetKind kind) {
         return Icon::Animation;
     case AssetKind::Controller:
         return Icon::Code;
+    case AssetKind::Dialogue:
+        return Icon::Code;
     case AssetKind::TextureMeta:
         return Icon::Settings;
     case AssetKind::Other:
@@ -48,6 +50,8 @@ Color colorFor(AssetKind kind) {
         return {240, 130, 160, 255};
     case AssetKind::Controller:
         return {240, 165, 90, 255};
+    case AssetKind::Dialogue:
+        return {198, 170, 235, 255};
     case AssetKind::TextureMeta:
     case AssetKind::Other:
         break;

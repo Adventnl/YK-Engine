@@ -1,0 +1,1060 @@
+{
+  "format": "yk.scene",
+  "version": 1,
+  "settings": {
+    "name": "Castle Courtyard",
+    "gravity": [0, 0],
+    "background": "#283c39ff"
+  },
+  "entities": [
+    {
+      "id": "0000000000000002",
+      "name": "Ground",
+      "transform": {
+        "position": [16, 11],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "",
+            "shape": "Rectangle",
+            "size": [32, 22],
+            "offset": [0, 0],
+            "color": "#536b51ff",
+            "layer": -20,
+            "order": 0,
+            "ySort": false,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000001",
+      "name": "Explorer",
+      "tags": ["player"],
+      "transform": {
+        "position": [4, 11],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "",
+            "shape": "Rectangle",
+            "size": [0.8, 1.2],
+            "offset": [0, -0.25],
+            "color": "#6bc0e8ff",
+            "layer": 10,
+            "order": 0,
+            "ySort": true,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Dynamic",
+            "gravityScale": 0,
+            "linearDamping": 8,
+            "angularDamping": 0.05,
+            "fixedRotation": true,
+            "bullet": false,
+            "allowSleep": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.55, 0.45],
+            "offset": [0, 0.28],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Player",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        },
+        {
+          "type": "PlayerInput",
+          "properties": {
+            "actionSet": "Player1"
+          }
+        },
+        {
+          "type": "TopDownController",
+          "properties": {
+            "leftAction": "MoveLeft",
+            "rightAction": "MoveRight",
+            "upAction": "MoveUp",
+            "downAction": "MoveDown",
+            "speed": 4,
+            "acceleration": 35
+          }
+        },
+        {
+          "type": "Interactor",
+          "properties": {
+            "action": "Interact"
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000003",
+      "name": "Camera",
+      "transform": {
+        "position": [16, 11],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Camera",
+          "properties": {
+            "primary": true,
+            "mode": "Follow",
+            "orthographicHeight": 14,
+            "targets": ["0000000000000001"],
+            "padding": 3,
+            "smoothTime": 0.18,
+            "minHeight": 8,
+            "maxHeight": 60,
+            "clampToBounds": true,
+            "boundsMin": [0, 0],
+            "boundsMax": [32, 22]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000004",
+      "name": "Interaction Prompt",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "{interaction_prompt}",
+            "anchor": "Bottom",
+            "offset": [0, 24],
+            "scale": 2.5,
+            "color": "#fff1bcff",
+            "shadow": true,
+            "layer": 100
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000005",
+      "name": "North boundary",
+      "transform": {
+        "position": [16, 0.25],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "",
+            "shape": "Rectangle",
+            "size": [32, 0.5],
+            "offset": [0, 0],
+            "color": "#536574ff",
+            "layer": 10,
+            "order": 0,
+            "ySort": false,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [32, 0.5],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000006",
+      "name": "South boundary",
+      "transform": {
+        "position": [16, 21.75],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "",
+            "shape": "Rectangle",
+            "size": [32, 0.5],
+            "offset": [0, 0],
+            "color": "#536574ff",
+            "layer": 10,
+            "order": 0,
+            "ySort": false,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [32, 0.5],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000007",
+      "name": "West boundary",
+      "transform": {
+        "position": [0.25, 11],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "",
+            "shape": "Rectangle",
+            "size": [0.5, 22],
+            "offset": [0, 0],
+            "color": "#536574ff",
+            "layer": 10,
+            "order": 0,
+            "ySort": false,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.5, 22],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000008",
+      "name": "East boundary",
+      "transform": {
+        "position": [31.75, 11],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "",
+            "shape": "Rectangle",
+            "size": [0.5, 22],
+            "offset": [0, 0],
+            "color": "#536574ff",
+            "layer": 10,
+            "order": 0,
+            "ySort": false,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.5, 22],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000009",
+      "name": "Castle wall upper",
+      "transform": {
+        "position": [19, 4.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "",
+            "shape": "Rectangle",
+            "size": [0.7, 9],
+            "offset": [0, 0],
+            "color": "#536574ff",
+            "layer": 10,
+            "order": 0,
+            "ySort": false,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.7, 9],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        }
+      ]
+    },
+    {
+      "id": "000000000000000a",
+      "name": "Castle wall lower",
+      "transform": {
+        "position": [19, 17],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "",
+            "shape": "Rectangle",
+            "size": [0.7, 10],
+            "offset": [0, 0],
+            "color": "#536574ff",
+            "layer": 10,
+            "order": 0,
+            "ySort": false,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.7, 10],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        }
+      ]
+    },
+    {
+      "id": "000000000000000b",
+      "name": "Tree",
+      "transform": {
+        "position": [6, 5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "",
+            "shape": "Rectangle",
+            "size": [2.5, 3.4],
+            "offset": [0, -0.8],
+            "color": "#326b55ff",
+            "layer": 10,
+            "order": 0,
+            "ySort": true,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.85, 0.55],
+            "offset": [0, 0.1],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        }
+      ]
+    },
+    {
+      "id": "000000000000000c",
+      "name": "Tree",
+      "transform": {
+        "position": [12, 6],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "",
+            "shape": "Rectangle",
+            "size": [2.5, 3.4],
+            "offset": [0, -0.8],
+            "color": "#326b55ff",
+            "layer": 10,
+            "order": 0,
+            "ySort": true,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.85, 0.55],
+            "offset": [0, 0.1],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        }
+      ]
+    },
+    {
+      "id": "000000000000000d",
+      "name": "Tree",
+      "transform": {
+        "position": [8, 17],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "",
+            "shape": "Rectangle",
+            "size": [2.5, 3.4],
+            "offset": [0, -0.8],
+            "color": "#326b55ff",
+            "layer": 10,
+            "order": 0,
+            "ySort": true,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.85, 0.55],
+            "offset": [0, 0.1],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        }
+      ]
+    },
+    {
+      "id": "000000000000000e",
+      "name": "Tree",
+      "transform": {
+        "position": [15, 17],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "",
+            "shape": "Rectangle",
+            "size": [2.5, 3.4],
+            "offset": [0, -0.8],
+            "color": "#326b55ff",
+            "layer": 10,
+            "order": 0,
+            "ySort": true,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.85, 0.55],
+            "offset": [0, 0.1],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        }
+      ]
+    },
+    {
+      "id": "000000000000000f",
+      "name": "Stone path",
+      "transform": {
+        "position": [12, 11],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "",
+            "shape": "Rectangle",
+            "size": [24, 2.4],
+            "offset": [0, 0],
+            "color": "#a8a083ff",
+            "layer": -10,
+            "order": 0,
+            "ySort": false,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000010",
+      "name": "Mara",
+      "transform": {
+        "position": [9, 9],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/characters/keeper.png",
+            "shape": "Rectangle",
+            "size": [0.8, 1.2],
+            "offset": [0, -0.25],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "ySort": true,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Dynamic",
+            "gravityScale": 0,
+            "linearDamping": 0,
+            "angularDamping": 0.05,
+            "fixedRotation": true,
+            "bullet": false,
+            "allowSleep": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.55, 0.45],
+            "offset": [0, 0.28],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Prop",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        },
+        {
+          "type": "NpcPath",
+          "properties": {
+            "waypoints": ["00000000000001f4", "00000000000001f5"],
+            "speed": 1.2,
+            "waitSeconds": 0.4,
+            "loop": true,
+            "requiredFlag": "courtyard_switch"
+          }
+        },
+        {
+          "type": "Interactable",
+          "properties": {
+            "prompt": "E  Talk to Mara",
+            "range": 1.8,
+            "requiredFlag": "",
+            "setFlag": "met_mara",
+            "once": false,
+            "hideWhenUsed": false,
+            "event": ""
+          }
+        },
+        {
+          "type": "Dialogue",
+          "properties": {
+            "sequence": "assets/dialogue/keeper.ykdialogue",
+            "speaker": "Keeper Mara",
+            "pages": [],
+            "portrait": "",
+            "advanceSet": "Player1",
+            "advanceAction": "Interact",
+            "charactersPerSecond": 42
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000011",
+      "name": "Brass switch",
+      "transform": {
+        "position": [13, 15],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "",
+            "shape": "Rectangle",
+            "size": [0.7, 0.7],
+            "offset": [0, 0],
+            "color": "#e5ba58ff",
+            "layer": 10,
+            "order": 0,
+            "ySort": true,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Interactable",
+          "properties": {
+            "prompt": "E  Activate switch",
+            "range": 1.4,
+            "requiredFlag": "",
+            "setFlag": "courtyard_switch",
+            "once": true,
+            "hideWhenUsed": false,
+            "event": "switch_activated"
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000012",
+      "name": "Castle gate",
+      "transform": {
+        "position": [19, 11],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "",
+            "shape": "Rectangle",
+            "size": [0.7, 2.5],
+            "offset": [0, 0],
+            "color": "#b97d43ff",
+            "layer": 10,
+            "order": 0,
+            "ySort": true,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.7, 2.5],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        },
+        {
+          "type": "StateGate",
+          "properties": {
+            "startsOpen": false,
+            "startsLocked": true,
+            "unlockFlag": "courtyard_switch",
+            "persistFlag": "courtyard_gate",
+            "animationSeconds": 0.4,
+            "logic": "Any",
+            "invert": false
+          }
+        },
+        {
+          "type": "Interactable",
+          "properties": {
+            "prompt": "E  Open gate",
+            "range": 1.8,
+            "requiredFlag": "",
+            "setFlag": "",
+            "once": false,
+            "hideWhenUsed": false,
+            "event": ""
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000013",
+      "name": "Hall entrance",
+      "transform": {
+        "position": [24, 11],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "",
+            "shape": "Rectangle",
+            "size": [2, 2.5],
+            "offset": [0, 0],
+            "color": "#394452ff",
+            "layer": 8,
+            "order": 0,
+            "ySort": false,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.2, 1.7],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        },
+        {
+          "type": "MapPortal",
+          "properties": {
+            "destination": "scenes/hall.ykscene",
+            "spawn": "from_courtyard",
+            "requiredFlag": "courtyard_gate",
+            "onTouch": true,
+            "activatorTags": ["player"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000014",
+      "name": "Return from hall",
+      "transform": {
+        "position": [22, 11],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "MapSpawn",
+          "properties": {
+            "name": "from_hall",
+            "actorTag": "player"
+          }
+        }
+      ]
+    },
+    {
+      "id": "00000000000001f4",
+      "name": "Mara patrol point 1",
+      "transform": {
+        "position": [10, 9],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001f5",
+      "name": "Mara patrol point 2",
+      "transform": {
+        "position": [13, 9],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": []
+    }
+  ]
+}

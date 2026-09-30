@@ -1,0 +1,24 @@
+# The exploration project uses the stock editor's hierarchy, inspector, asset picker and Play.
+timeout 180
+expect project "Castle Paths"
+expect scene scenes/courtyard.ykscene
+expect problems 0
+expect entity Mara
+expect entity "Castle gate"
+click "hierarchy/Mara"
+expect selected Mara
+expect widget prop/sequence/browse
+click prop/sequence/browse
+expect widget pick/assets/dialogue/keeper.ykdialogue
+key escape
+click "hierarchy/Castle gate"
+expect selected "Castle gate"
+expect widget prop/unlockFlag
+expect widget prop/persistFlag
+click toolbar/Play
+expect playing
+wait 10
+click toolbar/Stop
+expect editing
+expect clean
+quit

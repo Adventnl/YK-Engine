@@ -212,6 +212,32 @@ std::vector<ProjectIssue> validateProject(const Project &project,
                                        : Result<AnimationController>(Error{document.error()});
             if (!controller)
                 issues.push_back({Severity::Error, entry.path, controller.error()});
+        } else if (entry.kind == AssetKind::Dialogue) {
+            auto document = readJson(project, entry.path);
+            if (!document) {
+                issues.push_back({Severity::Error, entry.path, document.error()});
+                continue;
+            }
+            const Json &pages = document.value().get("pages");
+            if (!pages.isArray() || pages.size() == 0) {
+                issues.push_back(
+                    {Severity::Error, entry.path, "dialogue needs a nonempty pages array"});
+                continue;
+            }
+            for (std::size_t i = 0; i < pages.size(); ++i) {
+                const Json &page = pages.at(i);
+                const Json &body = page.isObject() ? page.get("text") : page;
+                if (!body.isString() || body.asString().empty())
+                    issues.push_back({Severity::Error, entry.path,
+                                      "page " + std::to_string(i + 1) + " needs text"});
+                if (page.isObject() && page.contains("portrait")) {
+                    const std::string &portrait = page.get("portrait").asString();
+                    if (!portrait.empty() && !fileExists(project, portrait))
+                        issues.push_back({Severity::Error, entry.path,
+                                          "page " + std::to_string(i + 1) +
+                                              " has missing portrait '" + portrait + "'"});
+                }
+            }
         } else if (entry.kind == AssetKind::TextureMeta) {
             auto document = readJson(project, entry.path);
             auto meta = document ? TextureMeta::fromJson(document.value())

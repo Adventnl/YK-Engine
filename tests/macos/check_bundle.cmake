@@ -82,6 +82,10 @@ if(found EQUAL -1)
     message(FATAL_ERROR "yk targets did not find the licenses in Resources:\n${last_output}")
 endif()
 run("yk validate" "${macos}/${tool_name}" validate "${resources}/YK-DemoGame")
+if(EXISTS "${SOURCE_DIR}/YK-ExplorationDemo/project.ykproj")
+    run("yk validate exploration" "${macos}/${tool_name}" validate
+        "${resources}/YK-ExplorationDemo")
+endif()
 
 # An export for macOS made by the bundle's own tool: an app with Info.plist, the icon, the data in
 # Resources/data and the notices. The player inside is this system's player (the only one there is

@@ -5,19 +5,17 @@
 
 namespace yk::editor::ui {
 namespace {
-// The demo game that ships with the engine: in the Resources of an application bundle, beside the
-// editor or in the share folder of an installation, or the checkout a build tree sits in. Nothing
-// here points at the machine the program was built on.
-std::optional<std::filesystem::path> findDemoProject() {
+// Bundled sample projects may live in an app, an installation, or the checkout.
+std::optional<std::filesystem::path> findBundledProject(const char *folder) {
     std::vector<std::filesystem::path> candidates;
     const std::filesystem::path here = yk::executableDirectory();
     if (const auto resources = yk::bundleResourcesFor(here); !resources.empty())
-        candidates.push_back(resources / "YK-DemoGame");
-    candidates.push_back(here / "YK-DemoGame");
-    candidates.push_back(here / ".." / "YK-DemoGame");
-    candidates.push_back(here / ".." / ".." / "YK-DemoGame");
-    candidates.push_back(here / ".." / "share" / "yk-engine" / "YK-DemoGame");
-    candidates.push_back("YK-DemoGame");
+        candidates.push_back(resources / folder);
+    candidates.push_back(here / folder);
+    candidates.push_back(here / ".." / folder);
+    candidates.push_back(here / ".." / ".." / folder);
+    candidates.push_back(here / ".." / "share" / "yk-engine" / folder);
+    candidates.push_back(folder);
     for (const auto &candidate : candidates) {
         std::error_code error;
         if (std::filesystem::exists(candidate / Project::fileName, error))
@@ -73,11 +71,15 @@ void welcomePage(EditorState &state) {
     if (startAction("welcome/Open Project", Icon::FolderOpen, "Open Project...",
                     "Open a folder that holds a project.ykproj"))
         showDialog(state, DialogKind::OpenProject);
-    if (const auto demo = findDemoProject())
+    if (const auto demo = findBundledProject("YK-DemoGame"))
         if (startAction(
                 "welcome/Open Sample", Icon::Play, "Open the Demo Game",
                 "Cinder Vale: a two-player co-op puzzle level built from the engine's components"))
             state.openProject(*demo);
+    if (const auto exploration = findBundledProject("YK-ExplorationDemo"))
+        if (startAction("welcome/Open Exploration Sample", Icon::Play, "Open the Exploration Demo",
+                        "Castle Paths: NPCs, dialogue, gates and connected top-down maps"))
+            state.openProject(*exploration);
 
     if (!state.recent.paths().empty()) {
         ImGui::Dummy({1.0F, 18.0F});

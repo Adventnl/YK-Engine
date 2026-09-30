@@ -68,7 +68,7 @@ Result<std::string> cleanAssetPath(std::string text) {
 // The files that name other files: everything a scene, prefab or animation can point at.
 bool isDataFile(AssetKind kind) {
     return kind == AssetKind::Scene || kind == AssetKind::Prefab || kind == AssetKind::Animation ||
-           kind == AssetKind::Controller;
+           kind == AssetKind::Controller || kind == AssetKind::Dialogue;
 }
 
 // Does `value` name `from` (a file), or something inside it (a folder)?

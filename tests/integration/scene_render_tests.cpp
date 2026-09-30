@@ -101,6 +101,10 @@ class RenderTestLayer final : public ApplicationLayer {
         sprite("Inactive", {0, -3}, {2, 2}, {255, 255, 255, 255}).setActive(false);
         sprite("Mirrored", {-6, 0}, {1, 1}, {255, 128, 0, 255}).transform().scale = {
             -1, 1}; // Must not error.
+        auto &lower = sprite("Lower foot", {5, 3.2F}, {1, 1}, {255, 60, 60, 255}, 5);
+        lower.get<SpriteRenderer>()->ySort = true;
+        auto &upper = sprite("Upper foot", {5, 2.8F}, {1, 1}, {60, 220, 255, 255}, 5);
+        upper.get<SpriteRenderer>()->ySort = true; // Submitted later, but drawn behind lower.
         Entity &panel = scene_->createEntity("Panel");
         auto &ui = panel.add<UiPanel>();
         ui.anchor = UiAnchor::BottomRight;
@@ -197,6 +201,7 @@ int main(int argc, char **argv) {
         // Left pass: 30 px per unit, world origin at pixel (200, 150).
         CHECK(pixelIs(image, 185, 150, {255, 0, 0, 255}));   // Red square.
         CHECK(pixelIs(image, 225, 150, {255, 255, 0, 255})); // Higher layer draws over it.
+        CHECK(pixelIs(image, 350, 240, {255, 60, 60, 255})); // Y depth beats entity order.
         CHECK(pixelIs(image, 290, 150, {0, 0, 255, 255}));   // Ellipse center.
         CHECK(pixelIs(image, 316, 124, leftClear));        // Ellipse corner is empty: it is round.
         CHECK(pixelIs(image, 148, 150, {0, 255, 0, 255})); // Rotated square reaches 38 px sideways.

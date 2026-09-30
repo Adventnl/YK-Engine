@@ -50,6 +50,8 @@ class SpriteRenderer final : public Component {
     Color color{255, 255, 255, 255};
     int layer{0};
     float order{0.0F};
+    bool ySort{false};      // Within a layer, lower feet draw in front of higher feet.
+    float sortOffset{0.0F}; // Adjust the ground contact point without moving the artwork.
     bool flipX{false};
     bool visible{true};
     int columns{
@@ -118,6 +120,44 @@ class UiPanel final : public Component {
     Color color{0, 0, 0, 140};
     int layer{-1};
     static void describe(TypeBuilder<UiPanel> &type);
+};
+
+// A conversation belongs to an entity but is presented in screen space by SceneRenderer.
+// Pages may be authored inline or loaded from a dialogue JSON asset. The runtime owns playback;
+// the renderer only reads the current page, so any interactive entity can reuse it.
+struct DialoguePage {
+    std::string speaker;
+    std::string text;
+    AssetRef portrait;
+};
+class Dialogue final : public Component {
+  public:
+    AssetRef sequence;
+    std::string speaker;
+    std::vector<std::string> pages;
+    AssetRef portrait;
+    std::string advanceSet{"Player1"};
+    std::string advanceAction{"Interact"};
+    float charactersPerSecond{45.0F}; // Zero shows the whole page immediately.
+    static void describe(TypeBuilder<Dialogue> &type);
+    void begin(GameContext &context);
+    bool active() const {
+        return active_;
+    }
+    const DialoguePage &currentPage() const {
+        return loaded_[page_];
+    }
+    std::string visibleText() const;
+    void onFixedUpdate(GameContext &context, float seconds) override;
+    void onDestroy(GameContext &context) override;
+
+  private:
+    void end(GameContext &context);
+    std::vector<DialoguePage> loaded_;
+    std::size_t page_{};
+    float visibleCharacters_{};
+    std::uint64_t startedTick_{};
+    bool active_{};
 };
 
 // ----- Physics -----------------------------------------------------------------------------

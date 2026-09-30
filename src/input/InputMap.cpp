@@ -126,6 +126,8 @@ InputMap InputMap::standard() {
     first.actions = {
         {"MoveLeft", {key(Key::A), pad(GamepadButton::DPadLeft), axis(GamepadAxis::LeftX, false)}},
         {"MoveRight", {key(Key::D), pad(GamepadButton::DPadRight), axis(GamepadAxis::LeftX, true)}},
+        {"MoveUp", {key(Key::W), pad(GamepadButton::DPadUp), axis(GamepadAxis::LeftY, false)}},
+        {"MoveDown", {key(Key::S), pad(GamepadButton::DPadDown), axis(GamepadAxis::LeftY, true)}},
         {"Jump", {key(Key::W), pad(GamepadButton::South)}},
         {"Interact", {key(Key::S), key(Key::E), pad(GamepadButton::West)}},
     };
@@ -137,6 +139,9 @@ InputMap InputMap::standard() {
          {key(Key::Left), pad(GamepadButton::DPadLeft), axis(GamepadAxis::LeftX, false)}},
         {"MoveRight",
          {key(Key::Right), pad(GamepadButton::DPadRight), axis(GamepadAxis::LeftX, true)}},
+        {"MoveUp", {key(Key::Up), pad(GamepadButton::DPadUp), axis(GamepadAxis::LeftY, false)}},
+        {"MoveDown",
+         {key(Key::Down), pad(GamepadButton::DPadDown), axis(GamepadAxis::LeftY, true)}},
         {"Jump", {key(Key::Up), pad(GamepadButton::South)}},
         {"Interact", {key(Key::Down), key(Key::RightCtrl), pad(GamepadButton::West)}},
     };

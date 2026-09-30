@@ -1,0 +1,10 @@
+# Both distinct game structures are available from the editor's start page.
+timeout 120
+expect widget "welcome/Open Sample"
+expect widget "welcome/Open Exploration Sample"
+click "welcome/Open Exploration Sample"
+expect project "Castle Paths"
+expect scene scenes/courtyard.ykscene
+expect entity Mara
+expect problems 0
+quit

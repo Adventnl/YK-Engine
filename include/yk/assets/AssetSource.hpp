@@ -35,7 +35,17 @@ class MemoryAssets final : public AssetSource {
     }
 };
 
-enum class AssetKind { Scene, Prefab, Texture, Sound, Animation, Controller, TextureMeta, Other };
+enum class AssetKind {
+    Scene,
+    Prefab,
+    Texture,
+    Sound,
+    Animation,
+    Controller,
+    Dialogue,
+    TextureMeta,
+    Other
+};
 struct AssetEntry {
     std::string path; // Project-relative, '/' separated.
     AssetKind kind{AssetKind::Other};

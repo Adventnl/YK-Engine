@@ -32,12 +32,15 @@ if(WIN32)
     set(exe ".exe")
 endif()
 set(sample "${prefix}/share/yk-engine/YK-DemoGame")
+set(exploration_sample "${prefix}/share/yk-engine/YK-ExplorationDemo")
 set(docs "${prefix}/share/doc/YKEngine")
 foreach(required
         "${prefix}/bin/yk_editor${exe}" "${prefix}/bin/yk_player${exe}" "${prefix}/bin/yk${exe}"
         "${sample}/project.ykproj" "${sample}/scenes/level01.ykscene"
+        "${exploration_sample}/project.ykproj" "${exploration_sample}/scenes/courtyard.ykscene"
         "${docs}/README.md" "${docs}/THIRD_PARTY.md" "${docs}/EDITOR.md" "${docs}/ARCHITECTURE.md"
         "${docs}/BUILDING.md" "${docs}/PROJECT_FORMAT.md" "${docs}/STATUS.md"
+        "${docs}/EXPLORATION.md"
         "${docs}/licenses/Box2D-MIT.txt" "${docs}/licenses/SDL3.txt" "${docs}/licenses/DearImGui-MIT.txt"
         "${docs}/licenses/ProggyForever-MIT.txt" "${docs}/licenses/stb_image-PD.txt"
         "${docs}/licenses/Inter-OFL-1.1.txt" "${docs}/licenses/JetBrainsMono-OFL-1.1.txt"
@@ -71,6 +74,7 @@ set(ENV{SDL_VIDEODRIVER} dummy)
 set(ENV{SDL_RENDER_DRIVER} software)
 set(ENV{SDL_AUDIODRIVER} dummy)
 run("the installed yk validate" "${prefix}/bin/yk${exe}" validate "${sample}")
+run("the installed exploration validate" "${prefix}/bin/yk${exe}" validate "${exploration_sample}")
 run("the installed player" "${prefix}/bin/yk_player${exe}" --frames 90 --fixed --no-audio
     --capture "${WORK}/player.bmp" "${sample}")
 if(NOT EXISTS "${WORK}/player.bmp")

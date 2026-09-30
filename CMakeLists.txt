@@ -48,7 +48,7 @@ add_library(yk_engine STATIC src/core/Log.cpp src/core/Time.cpp src/core/Color.c
     src/scene/Scene.cpp src/scene/SceneSerializer.cpp src/scene/RegistryDocs.cpp src/animation/AnimationSet.cpp
     src/animation/AnimationController.cpp
     src/assets/Project.cpp src/assets/TextureMeta.cpp src/assets/AssetSource.cpp src/assets/Zip.cpp
-    src/assets/Export.cpp src/assets/Icon.cpp src/components/Components.cpp
+    src/assets/Export.cpp src/assets/Icon.cpp src/components/Components.cpp src/components/Dialogue.cpp
     src/components/Effects.cpp
     src/runtime/Blackboard.cpp src/runtime/EventBus.cpp src/runtime/GameRuntime.cpp src/runtime/GameSession.cpp
     src/runtime/PhysicsBinding.cpp src/assets/Validation.cpp
@@ -63,7 +63,7 @@ yk_target(yk_engine)
 # Reusable gameplay components (plates, doors, controllers...). Depends only on the engine.
 add_library(yk_gameplay STATIC src/gameplay/Signals.cpp src/gameplay/Controller.cpp
     src/gameplay/Mechanisms.cpp src/gameplay/Interactions.cpp src/gameplay/Level.cpp src/gameplay/Events.cpp
-    src/gameplay/Registration.cpp)
+    src/gameplay/Registration.cpp src/gameplay/Exploration.cpp)
 add_library(yk::gameplay ALIAS yk_gameplay)
 target_link_libraries(yk_gameplay PUBLIC yk_engine)
 yk_target(yk_gameplay)
@@ -151,6 +151,8 @@ if(BUILD_TESTING)
         yk_add_test(demo tests/unit/demo_tests.cpp LIBS yk::gameplay TIMEOUT 120
             DEFINITIONS YK_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}" YK_DEMO_PROJECT_DIR="${YK_DEMO_PROJECT}")
     endif()
+    yk_add_test(exploration tests/unit/exploration_tests.cpp LIBS yk::gameplay TIMEOUT 60
+        DEFINITIONS YK_EXPLORATION_PROJECT_DIR="${CMAKE_CURRENT_SOURCE_DIR}/YK-ExplorationDemo")
     yk_add_test(editor_core tests/unit/editor_core_tests.cpp LIBS yk::editor_core TIMEOUT 120
         DEFINITIONS YK_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}" YK_DEMO_PROJECT_DIR="${YK_DEMO_PROJECT}")
     # An example game module (one component) and the programs built for it with yk_add_game_hosts:
@@ -215,6 +217,8 @@ if(BUILD_TESTING)
                     continue()
                 endif()
                 set(script_project -DPROJECT=${YK_DEMO_PROJECT})
+            elseif(script_name MATCHES "^exploration_")
+                set(script_project -DPROJECT=${CMAKE_CURRENT_SOURCE_DIR}/YK-ExplorationDemo)
             endif()
             add_test(NAME editor_${script_name}
                 COMMAND ${CMAKE_COMMAND} -DEDITOR=$<TARGET_FILE:yk_editor> -DSCRIPT=${script}
@@ -307,6 +311,10 @@ if(YK_RUNTIME AND PROJECT_IS_TOP_LEVEL)
     if(YK_HAVE_DEMO)
         install(DIRECTORY "${YK_DEMO_PROJECT}/" DESTINATION ${CMAKE_INSTALL_DATADIR}/yk-engine/YK-DemoGame
             PATTERN "tools" EXCLUDE PATTERN "__pycache__" EXCLUDE)
+    endif()
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/YK-ExplorationDemo/project.ykproj")
+        install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/YK-ExplorationDemo/"
+            DESTINATION ${CMAKE_INSTALL_DATADIR}/yk-engine/YK-ExplorationDemo)
     endif()
     install(DIRECTORY docs/ DESTINATION ${CMAKE_INSTALL_DOCDIR})
     install(DIRECTORY LICENSES/ DESTINATION ${CMAKE_INSTALL_DOCDIR}/licenses)

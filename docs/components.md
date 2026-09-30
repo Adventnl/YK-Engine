@@ -89,6 +89,98 @@ Destroys the entity after a while (for effect prefabs).
 | `seconds` | float | 1.5 | (range 0 to 3600) |
 | `untilEmitterFinished` | bool | false | Also destroy as soon as this entity's particle emitter has finished. |
 
+## Exploration
+
+### TopDownController
+
+Four-way, normalized diagonal movement on a zero-gravity body.
+
+Requires: `PlayerInput` `RigidBody` `Collider`
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `leftAction` | string | "MoveLeft" |  |
+| `rightAction` | string | "MoveRight" |  |
+| `upAction` | string | "MoveUp" |  |
+| `downAction` | string | "MoveDown" |  |
+| `speed` | float | 4 | (range 0 to 50) |
+| `acceleration` | float | 30 | (range 0 to 300) |
+
+### NpcPath
+
+Moves an NPC between waypoint entities, or stands still.
+
+Requires: `RigidBody` `Collider`
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `waypoints` | entity list | [] |  |
+| `speed` | float | 1.5 | (range 0 to 30) |
+| `waitSeconds` | float | 0.5 | (range 0 to 30) |
+| `loop` | bool | true |  |
+| `requiredFlag` | string | "" |  |
+
+### Interactor
+
+Uses the nearest available interactive object and publishes its prompt.
+
+Requires: `PlayerInput`
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `action` | string | "Interact" |  |
+
+### Interactable
+
+Proximity action with condition, state, dialogue, gate and portal hooks.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `prompt` | string | "Interact" |  |
+| `range` | float | 1.5 | (range 0.1 to 20) |
+| `requiredFlag` | string | "" |  |
+| `setFlag` | string | "" |  |
+| `once` | bool | false |  |
+| `hideWhenUsed` | bool | false |  |
+| `event` | string | "" |  |
+
+### StateGate
+
+Openable solid barrier with optional state lock and persistence.
+
+Requires: `Collider`
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `startsOpen` | bool | false |  |
+| `startsLocked` | bool | false |  |
+| `unlockFlag` | string | "" |  |
+| `persistFlag` | string | "" |  |
+| `animationSeconds` | float | 0.35 | (range 0 to 10) |
+| `logic` | enum | "Any" | Options: Any All |
+| `invert` | bool | false |  |
+
+### MapPortal
+
+Transfers an actor to a named spawn in another scene.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `destination` | asset | "" |  |
+| `spawn` | string | "" |  |
+| `requiredFlag` | string | "" |  |
+| `onTouch` | bool | false |  |
+| `activatorTags` | string list | [] |  |
+
+### MapSpawn
+
+Entry point selected by a map portal.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `name` | string | "entry" |  |
+| `actorTag` | string | "player" |  |
+
 ## Gameplay
 
 ### Killable
@@ -429,6 +521,8 @@ Draws a texture or a colored placeholder shape.
 | `color` | color | "#ffffffff" |  |
 | `layer` | int | 0 | Higher layers draw on top. (range -1000 to 1000) |
 | `order` | float | 0 | Draw order within a layer. (range -1000 to 1000) |
+| `ySort` | bool | false | Sort this sprite by its world Y position within its layer. |
+| `sortOffset` | float | 0 | (range -1000 to 1000) |
 | `flipX` | bool | false |  |
 | `visible` | bool | true |  |
 | `columns` | int | 1 | Sprite sheet columns. (range 1 to 256) |
@@ -525,6 +619,20 @@ Screen space: placed in pixels on the screen, not in the world.
 | `frame` | int | 0 | (range 0 to 65535) |
 | `fillScreen` | bool | false | Stretch over the whole screen: vignettes, fades and backdrops. |
 
+### Dialogue
+
+Screen-space conversation with optional portrait and JSON pages.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `sequence` | asset | "" | Optional .ykdialogue JSON asset with pages of {speaker, text, portrait} objects. |
+| `speaker` | string | "" |  |
+| `pages` | string list | [] | Inline pages used when sequence is empty. |
+| `portrait` | asset | "" | Default high-resolution portrait for every page. |
+| `advanceSet` | string | "Player1" |  |
+| `advanceAction` | string | "Interact" |  |
+| `charactersPerSecond` | float | 45 | (range 0 to 300) |
+
 ## Entity templates
 
 Offered by the editor's Create menu.
@@ -532,6 +640,8 @@ Offered by the editor's Create menu.
 - **Basic**: Empty; Sprite; Camera;
 
 - **Effects**: Particle Emitter; Glow;
+
+- **Exploration**: Top-Down Player; NPC; Interactive Object; Gate; Map Portal; Map Spawn;
 
 - **Gameplay**: Hazard; Collectible; Checkpoint; Goal; Trigger Zone; Spawn Point; Level Flow; Event Action; Character;
 
