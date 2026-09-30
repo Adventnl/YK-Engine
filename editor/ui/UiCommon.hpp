@@ -146,7 +146,8 @@ void iconLabel(Icon icon, const char *text, ImU32 tint = 0);
 // text passes through unchanged everywhere else. Every label that names keys goes through this.
 const char *shortcutText(const char *text);
 
-// The display scale (1 on a normal display, 2 on Retina): metrics are given in points at 1.
+// The interface scale (the system's, or --ui-scale; 1 on a Mac, where Retina pixels are handled by
+// the render scale): metrics are given in points at 1.
 float displayScale();
 inline float dp(float points) {
     return points * displayScale();

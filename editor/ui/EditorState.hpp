@@ -31,7 +31,7 @@ struct EditorOptions {
     bool testHooks{false}; // Record widget rectangles so a scripted driver can find them.
     bool persistLayout{true};
     float uiScale{
-        0.0F}; // The size of the whole interface; 0 follows the display (2 on a Retina Mac).
+        0.0F}; // The size of the whole interface; 0 follows the system (1 on a Mac, Retina or not).
     // Play advances exactly one 1/60 s tick per editor frame, however long the frame took, so a
     // scripted run is deterministic (a script's "hold d 45" is 0.75 s of game time on any machine).
     bool fixedStep{false};

@@ -39,8 +39,14 @@ Status EditorApp::initialize(Renderer &renderer) {
     ui::applyTheme();
     ImGuiStyle &style = ImGui::GetStyle();
     style.FontSizeBase = ui::metrics::fontSize;
-    const float displayScale =
-        state_.options.uiScale > 0.0F ? state_.options.uiScale : SDL_GetWindowDisplayScale(window_);
+    // ImGui lays out in the window's coordinates (points on a Mac) and render() maps them to the
+    // framebuffer's pixels, so a Retina display needs no enlargement here: only the system's
+    // interface scale (150 % on Windows, a desktop's scale factor on Linux) or --ui-scale.
+    float displayScale = state_.options.uiScale;
+    if (displayScale <= 0.0F) {
+        const float density = SDL_GetWindowPixelDensity(window_);
+        displayScale = density > 0.0F ? SDL_GetWindowDisplayScale(window_) / density : 1.0F;
+    }
     if (displayScale > 1.01F) {
         style.ScaleAllSizes(displayScale);
         style.FontScaleDpi = displayScale;
@@ -126,7 +132,13 @@ bool EditorApp::update(const FrameContext &frame) {
 Status EditorApp::render(Renderer &renderer) {
     if (auto viewports = ui::renderViewports(state_); !viewports)
         return viewports;
-    ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer.nativeRenderer());
+    // The backend leaves scaling ImGui's points to pixels to SDL (a Retina framebuffer has two per
+    // point). The engine's own passes draw in pixels, so the scale holds only for this call.
+    ImDrawData *drawData = ImGui::GetDrawData();
+    SDL_Renderer *native = renderer.nativeRenderer();
+    SDL_SetRenderScale(native, drawData->FramebufferScale.x, drawData->FramebufferScale.y);
+    ImGui_ImplSDLRenderer3_RenderDrawData(drawData, native);
+    SDL_SetRenderScale(native, 1.0F, 1.0F);
     if (capture_) {
         if (auto saved = renderer.capture(*capture_); !saved) {
             captureError_ = saved.error();
