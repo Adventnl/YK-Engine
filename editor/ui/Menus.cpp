@@ -10,7 +10,8 @@ namespace {
 // A menu entry that records where it is under "menu/<path>" for scripts and tests.
 bool item(const std::string &path, const char *label, const char *shortcut = nullptr,
           bool enabled = true, bool selected = false) {
-    const bool clicked = ImGui::MenuItem(label, shortcut, selected, enabled);
+    const bool clicked =
+        ImGui::MenuItem(label, shortcut ? shortcutText(shortcut) : nullptr, selected, enabled);
     markItem("menu/" + path);
     return clicked;
 }

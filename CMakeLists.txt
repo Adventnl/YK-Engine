@@ -105,7 +105,7 @@ if(YK_RUNTIME)
         editor/ui/Menus.cpp editor/ui/Welcome.cpp editor/ui/ProblemsPanel.cpp editor/ui/ProfilerPanel.cpp
         editor/ui/SideViews.cpp editor/ui/ProjectSettings.cpp editor/ui/AssetInspector.cpp
         editor/ui/HierarchyPanel.cpp editor/ui/InspectorPanel.cpp editor/ui/SceneViewPanel.cpp
-        editor/ui/GameViewPanel.cpp editor/ui/AssetsPanel.cpp editor/ui/ConsolePanel.cpp
+        editor/ui/GameViewPanel.cpp editor/ui/DebugPanel.cpp editor/ui/AssetsPanel.cpp editor/ui/ConsolePanel.cpp
         editor/ui/Dialogs.cpp editor/ui/EditorApp.cpp editor/ui/EditorDriver.cpp)
     add_library(yk::editor_ui ALIAS yk_editor_ui)
     target_link_libraries(yk_editor_ui PUBLIC yk::editor_core imgui SDL3::SDL3)

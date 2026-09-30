@@ -174,6 +174,13 @@ void handleShortcuts(EditorState &state) {
         state.requestQuit();
     if (state.dialog.kind != DialogKind::None)
         return; // Dialogs own the keyboard.
+    // Escape dismisses an open menu, like everywhere else (keyboard navigation is off, so ImGui
+    // does not do it itself).
+    if (ImGui::IsKeyPressed(ImGuiKey_Escape, false) &&
+        ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel)) {
+        ImGui::ClosePopupToLevel(0, true);
+        return;
+    }
     if (pressed(ImGuiMod_Ctrl | ImGuiKey_O))
         state.guarded([&state] { showDialog(state, DialogKind::OpenProject); });
 
@@ -249,9 +256,16 @@ void handleShortcuts(EditorState &state) {
             state.activateScene(
                 state.sceneTabs[static_cast<std::size_t>((at + step + count) % count)]);
         };
-        if (pressed(ImGuiMod_Ctrl | ImGuiKey_Tab))
+#if defined(__APPLE__)
+        // The physical Control key (Dear ImGui calls it Super on a Mac): Command+Tab is the
+        // system's own application switcher.
+        constexpr ImGuiKeyChord tabModifier = ImGuiMod_Super;
+#else
+        constexpr ImGuiKeyChord tabModifier = ImGuiMod_Ctrl;
+#endif
+        if (pressed(tabModifier | ImGuiKey_Tab))
             cycle(1);
-        if (pressed(ImGuiMod_Ctrl | ImGuiMod_Shift | ImGuiKey_Tab))
+        if (pressed(tabModifier | ImGuiMod_Shift | ImGuiKey_Tab))
             cycle(-1);
         if (state.document.get() != &doc)
             return; // The tab changed; the rest waits for the next frame.

@@ -1266,12 +1266,27 @@ void workbenchLayout() {
                1600.0 * 900.0, 1.0);
     CHECK(!touches(r.sideBar, r.editor) && !touches(r.editor, r.panel) &&
           !touches(r.editor, r.inspector) && !touches(r.activity, r.sideBar));
-    CHECK_NEAR(r.title.size.y, 30.0, 0.01);
+    CHECK_NEAR(r.title.size.y, 36.0, 0.01);
     CHECK_NEAR(r.activity.size.x, 46.0, 0.01);
     CHECK_NEAR(r.status.position.y + r.status.size.y, 900.0, 0.01);
     CHECK_NEAR(r.sideBar.size.x, layout.sideBarWidth, 0.01);
     CHECK_NEAR(r.panel.size.y, layout.panelHeight, 0.01);
     CHECK_NEAR(r.panel.position.x, r.editor.position.x, 0.01); // The panel sits under the editor.
+
+    // The cards: inside their tiles, one gap from the window's edge and one gap from each other.
+    const float gap = 4.0F;
+    CHECK_NEAR(r.leftCard.position.x, gap, 0.01);
+    CHECK_NEAR(r.leftCard.position.y, r.title.size.y + gap, 0.01);
+    CHECK_NEAR(r.leftCard.position.y + r.leftCard.size.y, r.status.position.y - gap, 0.01);
+    CHECK_NEAR(r.cardA.position.x - (r.leftCard.position.x + r.leftCard.size.x), gap, 0.01);
+    CHECK_NEAR(r.inspectorCard.position.x - (r.cardA.position.x + r.cardA.size.x), gap, 0.01);
+    CHECK_NEAR(r.inspectorCard.position.x + r.inspectorCard.size.x, 1600.0 - gap, 0.01);
+    CHECK_NEAR(r.panelCard.position.y - (r.cardA.position.y + r.cardA.size.y), gap, 0.01);
+    CHECK_NEAR(r.panelCard.position.y + r.panelCard.size.y, r.status.position.y - gap, 0.01);
+    CHECK_NEAR(r.panelCard.position.x, r.cardA.position.x, 0.01);
+    CHECK_NEAR(r.panelCard.size.x, r.cardA.size.x, 0.01);
+    CHECK(!touches(r.leftCard, r.cardA) && !touches(r.cardA, r.panelCard) &&
+          !touches(r.cardA, r.inspectorCard) && !touches(r.panelCard, r.inspectorCard));
 
     // Hiding parts hands their room to the editor; the activity bar stays.
     const float editorWidth = r.editor.size.x;
@@ -1282,6 +1297,9 @@ void workbenchLayout() {
     CHECK(!r.hasSideBar && !r.hasInspector && !r.hasPanel);
     CHECK(r.editor.size.x > editorWidth + 600.0F && r.editor.size.y > 800.0F);
     CHECK_NEAR(r.editor.position.x, r.activity.size.x, 0.01);
+    // Alone in the window the editor card is one gap from the right and bottom edges too.
+    CHECK_NEAR(r.cardA.position.x + r.cardA.size.x, 1600.0 - gap, 0.01);
+    CHECK_NEAR(r.cardA.position.y + r.cardA.size.y, r.status.position.y - gap, 0.01);
 
     // Splitting the editor area gives two groups that tile it.
     layout = {};
@@ -1290,6 +1308,8 @@ void workbenchLayout() {
     CHECK(r.hasGroupB && !touches(r.groupA, r.groupB));
     CHECK_NEAR(area(r.groupA) + area(r.groupB), area(r.editor), 1.0);
     CHECK_NEAR(r.groupA.size.x / r.editor.size.x, 0.5, 0.01);
+    CHECK_NEAR(r.cardB.position.x - (r.cardA.position.x + r.cardA.size.x), gap, 0.01);
+    CHECK_NEAR(r.cardA.position.y, r.cardB.position.y, 0.01);
     layout.split = EditorSplit::Down;
     layout.splitRatio = 0.7F;
     r = layout.regions(window);
@@ -1312,6 +1332,11 @@ void workbenchLayout() {
                0.01); // Maximized: the panel replaces the editor.
     layout.togglePanelView(PanelView::Problems);
     CHECK(!layout.panelVisible && !layout.panelMaximized);
+    layout = {};
+    layout.split = EditorSplit::Down;
+    r = layout.regions(window);
+    CHECK_NEAR(r.cardB.position.y - (r.cardA.position.y + r.cardA.size.y), gap, 0.01);
+    CHECK_NEAR(r.cardA.size.x, r.cardB.size.x, 0.01);
 
     // Nothing collapses or overflows in a small window, or with silly stored sizes.
     layout = {};
@@ -1326,13 +1351,15 @@ void workbenchLayout() {
     WorkbenchMetrics hiDpi;
     hiDpi.scale = 2.0F;
     r = WorkbenchLayout{}.regions({3200.0F, 1800.0F}, hiDpi);
-    CHECK_NEAR(r.title.size.y, 60.0, 0.01);
+    CHECK_NEAR(r.title.size.y, 72.0, 0.01);
     CHECK_NEAR(r.activity.size.x, 92.0, 0.01);
+    CHECK_NEAR(r.leftCard.position.x, 8.0, 0.01); // The gap scales with the display.
 
     // It survives a restart, and damaged files never get in the way.
     layout = {};
     layout.sideView = SideView::Build;
     layout.panelView = PanelView::Profiler;
+    layout.inspectorView = InspectorView::Debug;
     layout.split = EditorSplit::Down;
     layout.sideBarWidth = 333.0F;
     layout.inspectorVisible = false;

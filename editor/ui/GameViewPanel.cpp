@@ -111,8 +111,10 @@ void gameViewPanel(EditorState &state) {
         if (ensureTarget(state, panel, pixels))
             if (const auto image = targetImage(state, panel, pixels)) {
                 const ImVec2 origin = ImGui::GetCursorScreenPos();
-                ImGui::Image(image->texture, avail, {0.0F, 0.0F}, image->uv1);
+                imageInCard(image->texture, avail, image->uv1);
                 trackViewport(panel, origin, avail);
+                ImGui::SetCursorScreenPos(origin);
+                ImGui::InvisibleButton("##gameview", avail);
                 panel.hovered = ImGui::IsItemHovered();
                 widgets().mark("game/view", {panel.origin, panel.size});
                 if (state.playing())

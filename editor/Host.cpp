@@ -92,7 +92,7 @@ std::optional<Options> parse(int argc, char **argv) {
             options.editor.fixedStep = true;
         } else if (arg == "--scene" || arg == "--size" || arg == "--settings-dir" ||
                    arg == "--script" || arg == "--failure-dir" || arg == "--frames" ||
-                   arg == "--capture" || arg == "--debug-crash") {
+                   arg == "--capture" || arg == "--debug-crash" || arg == "--ui-scale") {
             const char *text = value();
             if (!text) {
                 std::fprintf(stderr, "%s needs a value\n", arg.c_str());
@@ -104,6 +104,13 @@ std::optional<Options> parse(int argc, char **argv) {
                 if (!parseSize(text, options.width, options.height) || options.width < 320 ||
                     options.height < 240) {
                     std::fprintf(stderr, "--size wants WIDTHxHEIGHT, at least 320x240\n");
+                    return std::nullopt;
+                }
+            } else if (arg == "--ui-scale") {
+                char *end = nullptr;
+                options.editor.uiScale = std::strtof(text, &end);
+                if (end == text || options.editor.uiScale < 1.0F || options.editor.uiScale > 4.0F) {
+                    std::fprintf(stderr, "--ui-scale wants a number from 1 to 4\n");
                     return std::nullopt;
                 }
             } else if (arg == "--debug-crash") {

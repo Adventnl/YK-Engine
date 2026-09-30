@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cfloat>
 #include <cmath>
+#include <string>
 
 namespace yk::editor::ui {
 namespace {
@@ -161,8 +162,13 @@ void drawIcon(ImDrawList &list, Icon icon, ImVec2 center, float size, ImU32 colo
         return;
     const char *glyph = glyphOf(icon);
     const ImVec2 extent = font->CalcTextSizeA(size, FLT_MAX, 0.0F, glyph);
+    // ImGui sizes a font by its line height and puts the baseline of Inter (the font the Codicons
+    // are merged into) at 80% of it, while a Codicons glyph is centered on its own box: centering
+    // the line box would draw every icon 0.2 x size too high. Measured from the two fonts' tables.
+    constexpr float baselineFraction = 0.8F;
     list.AddText(font, size,
-                 {std::floor(center.x - extent.x * 0.5F), std::floor(center.y - extent.y * 0.5F)},
+                 {std::floor(center.x - extent.x * 0.5F),
+                  std::floor(center.y - (baselineFraction - 0.5F) * size)},
                  color, glyph);
 }
 
@@ -185,7 +191,7 @@ bool iconButton(const char *id, Icon icon, bool active, const char *tip, ImU32 t
         glyph = packed(Color{190, 190, 190, 255});
     drawIcon(list, icon, {origin.x + size * 0.5F, origin.y + size * 0.5F}, size * 0.62F, glyph);
     if (hovered && tip && *tip)
-        ImGui::SetTooltip("%s", tip);
+        ImGui::SetTooltip("%s", shortcutText(tip));
     markItem(id);
     ImGui::PopID();
     return pressed;
@@ -193,7 +199,10 @@ bool iconButton(const char *id, Icon icon, bool active, const char *tip, ImU32 t
 
 void iconLabel(Icon icon, const char *text, ImU32 tint) {
     const float height = ImGui::GetTextLineHeight();
-    const ImVec2 origin = ImGui::GetCursorScreenPos();
+    ImVec2 origin = ImGui::GetCursorScreenPos();
+    // A label that continues a row (a tree node with frame padding) sits lower than the line's top:
+    // the icon follows the text, not the top of the row.
+    origin.y += ImGui::GetCurrentWindow()->DC.CurrLineTextBaseOffset;
     drawIcon(*ImGui::GetWindowDrawList(), icon,
              {origin.x + height * 0.5F, origin.y + height * 0.5F}, height * 0.95F,
              tint != 0 ? tint : ImGui::GetColorU32(ImGuiCol_TextDisabled));
@@ -202,9 +211,107 @@ void iconLabel(Icon icon, const char *text, ImU32 tint) {
     ImGui::TextUnformatted(text);
 }
 
+const char *shortcutText(const char *text) {
+#if defined(__APPLE__)
+    // A ring of buffers so several labels can be alive in one frame.
+    static std::string ring[32];
+    static std::size_t next = 0;
+    std::string &out = ring[next++ % 32];
+    out = text;
+    const auto replaceAll = [&out](const std::string &from, const std::string &to) {
+        for (std::size_t at = out.find(from); at != std::string::npos;
+             at = out.find(from, at + to.size()))
+            out.replace(at, from.size(), to);
+    };
+    replaceAll("Ctrl+", "Cmd+");
+    replaceAll("Alt+", "Option+");
+    replaceAll("Cmd+Tab", "Control+Tab"); // Command+Tab is the system's; the editor uses Control.
+    replaceAll("Cmd+Shift+Tab", "Control+Shift+Tab");
+    return out.c_str();
+#else
+    return text;
+#endif
+}
+
+float displayScale() {
+    return std::max(1.0F, ImGui::GetStyle().FontScaleDpi);
+}
+
+bool pillTab(const char *id, const char *label, bool active, float height, const std::string &badge,
+             Color badgeColor) {
+    ImFont *font = active ? fonts().semibold : fonts().ui;
+    ImGui::PushFont(font, 0.0F);
+    const float padding = dp(10.0F);
+    const ImVec2 textSize = ImGui::CalcTextSize(label);
+    const float badgeWidth = badge.empty() ? 0.0F : dp(24.0F);
+    const ImVec2 size{textSize.x + 2.0F * padding + badgeWidth, height};
+    const ImVec2 origin = ImGui::GetCursorScreenPos();
+    ImGui::PushID(id);
+    const bool clicked = ImGui::InvisibleButton("##pilltab", size);
+    const bool hovered = ImGui::IsItemHovered();
+    ImGui::PopID();
+    markItem(id);
+    ImDrawList &list = *ImGui::GetWindowDrawList();
+    if (active || hovered)
+        list.AddRectFilled(origin, {origin.x + size.x, origin.y + size.y},
+                           packed(active ? vs::pill : vs::pillHover), dp(metrics::controlRadius));
+    const ImU32 color = packed(active || hovered ? vs::textBright : vs::textDim);
+    list.AddText({origin.x + padding, origin.y + (size.y - textSize.y) * 0.5F}, color, label);
+    if (!badge.empty()) {
+        const float w = dp(16.0F), h = dp(14.0F);
+        const ImVec2 pill{origin.x + padding + textSize.x + dp(6.0F),
+                          origin.y + (size.y - h) * 0.5F};
+        list.AddRectFilled(pill, {pill.x + w, pill.y + h}, packed(badgeColor), h * 0.5F);
+        ImGui::PushFont(fonts().ui, 10.5F);
+        const ImVec2 badgeSize = ImGui::CalcTextSize(badge.c_str());
+        list.AddText({pill.x + (w - badgeSize.x) * 0.5F, pill.y + (h - badgeSize.y) * 0.5F},
+                     IM_COL32(20, 20, 20, 255), badge.c_str());
+        ImGui::PopFont();
+    }
+    ImGui::PopFont();
+    ImGui::SameLine(0.0F, dp(2.0F));
+    return clicked;
+}
+
+bool sectionHeader(const char *id, const char *title, bool &open, bool separator) {
+    const float height = dp(28.0F);
+    const ImVec2 origin = ImGui::GetCursorScreenPos();
+    const float width = ImGui::GetContentRegionAvail().x;
+    ImGui::PushID(id);
+    const bool clicked = ImGui::InvisibleButton("##section", {width, height});
+    const bool hovered = ImGui::IsItemHovered();
+    ImGui::PopID();
+    markItem(id);
+    if (clicked)
+        open = !open;
+    ImDrawList &list = *ImGui::GetWindowDrawList();
+    if (separator)
+        list.AddLine({origin.x, origin.y + 0.5F}, {origin.x + width, origin.y + 0.5F},
+                     packed(vs::border));
+    if (hovered)
+        list.AddRectFilled({origin.x, origin.y + 1.0F}, {origin.x + width, origin.y + height},
+                           packed(vs::listHover));
+    drawIcon(list, open ? Icon::ChevronDown : Icon::ChevronRight,
+             {origin.x + dp(11.0F), origin.y + height * 0.5F}, dp(14.0F), packed(vs::textDim));
+    ImGui::PushFont(fonts().semibold, 0.0F);
+    const ImVec2 textSize = ImGui::CalcTextSize(title);
+    list.AddText({origin.x + dp(22.0F), origin.y + (height - textSize.y) * 0.5F}, packed(vs::text),
+                 title);
+    ImGui::PopFont();
+    return open;
+}
+
+void imageInCard(const ImTextureRef &texture, ImVec2 size, ImVec2 uv1) {
+    const ImVec2 origin = ImGui::GetCursorScreenPos();
+    ImGui::Dummy(size);
+    ImGui::GetWindowDrawList()->AddImageRounded(
+        texture, origin, {origin.x + size.x, origin.y + size.y}, {0.0F, 0.0F}, uv1, IM_COL32_WHITE,
+        dp(metrics::cardRadius - 1.0F), ImDrawFlags_RoundCornersBottom);
+}
+
 PopupLook::PopupLook() {
-    ImGui::PushStyleColor(ImGuiCol_HeaderHovered, imColor(vs::focus));
-    ImGui::PushStyleColor(ImGuiCol_HeaderActive, imColor(vs::buttonActive));
+    ImGui::PushStyleColor(ImGuiCol_HeaderHovered, imColor(Color{58, 60, 63, 255}));
+    ImGui::PushStyleColor(ImGuiCol_HeaderActive, imColor(Color{70, 72, 75, 255}));
     ImGui::PushStyleColor(ImGuiCol_Text, imColor(vs::text));
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {8.0F, 5.0F});
 }
@@ -352,7 +459,7 @@ bool hoveredForTooltip() {
 }
 void tooltip(const std::string &text) {
     if (!text.empty() && hoveredForTooltip())
-        ImGui::SetTooltip("%s", text.c_str());
+        ImGui::SetTooltip("%s", shortcutText(text.c_str()));
 }
 
 void nameCell(const std::string &text, const std::string &description) {

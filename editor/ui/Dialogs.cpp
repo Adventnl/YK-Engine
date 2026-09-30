@@ -625,7 +625,7 @@ void shortcutsDialog(EditorState &state) {
         for (const Row &row : rows) {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::TextColored(imColor(palette::selection), "%s", row.keys);
+            ImGui::TextColored(imColor(palette::selection), "%s", shortcutText(row.keys));
             ImGui::TableSetColumnIndex(1);
             ImGui::TextUnformatted(row.action);
         }
@@ -736,10 +736,32 @@ void showDialog(EditorState &state, DialogKind kind, EntityId entity) {
     }
 }
 
+namespace {
+// Dialogs are cards too: rounded, outlined, with a title bar of the raised color and roomy padding.
+struct DialogLook {
+    DialogLook() {
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, dp(metrics::cardRadius + 2.0F));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0F);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {dp(16.0F), dp(12.0F)});
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {dp(8.0F), dp(6.0F)});
+        ImGui::PushStyleColor(ImGuiCol_TitleBg, imColor(vs::raisedBg));
+        ImGui::PushStyleColor(ImGuiCol_TitleBgActive, imColor(vs::raisedBg));
+        ImGui::PushStyleColor(ImGuiCol_Border, imColor(vs::menuBorder));
+    }
+    ~DialogLook() {
+        ImGui::PopStyleColor(3);
+        ImGui::PopStyleVar(4);
+    }
+    DialogLook(const DialogLook &) = delete;
+    DialogLook &operator=(const DialogLook &) = delete;
+};
+} // namespace
+
 void drawDialogs(EditorState &state) {
     DialogState &dialog = state.dialog;
     if (dialog.kind == DialogKind::None)
         return;
+    const DialogLook look;
     const std::string popupId = dialog.title + "###yk_dialog";
     if (dialog.needsOpen) {
         ImGui::OpenPopup(popupId.c_str());

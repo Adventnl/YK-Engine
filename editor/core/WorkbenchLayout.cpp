@@ -46,6 +46,9 @@ const char *name(PanelView view) {
             return entry.text;
     return "console";
 }
+const char *name(InspectorView view) {
+    return view == InspectorView::Debug ? "debug" : "inspector";
+}
 const char *name(EditorSplit split) {
     switch (split) {
     case EditorSplit::Right:
@@ -67,6 +70,13 @@ std::optional<PanelView> panelViewFromName(std::string_view text) {
     for (const PanelName &entry : panelNames)
         if (text == entry.text)
             return entry.view;
+    return std::nullopt;
+}
+std::optional<InspectorView> inspectorViewFromName(std::string_view text) {
+    if (text == "inspector")
+        return InspectorView::Inspector;
+    if (text == "debug")
+        return InspectorView::Debug;
     return std::nullopt;
 }
 std::optional<EditorSplit> editorSplitFromName(std::string_view text) {
@@ -138,6 +148,29 @@ WorkbenchRegions WorkbenchLayout::regions(Vec2 size, const WorkbenchMetrics &met
                           {out.editor.size.x, out.editor.size.y - first}};
         }
     }
+
+    // The cards: every tile inset by the gap on the sides that face the window's edge and by half a
+    // gap on the sides that face a neighbour (whose own inset makes up the other half).
+    const float gap = std::max(0.0F, metrics.gap * s);
+    const float half = gap * 0.5F;
+    const auto card = [&](Rect tile, bool leftEdge, bool rightEdge, bool topEdge, bool bottomEdge) {
+        const float left = leftEdge ? gap : half, right = rightEdge ? gap : half;
+        const float top = topEdge ? gap : half, bottom = bottomEdge ? gap : half;
+        return Rect{{tile.position.x + left, tile.position.y + top},
+                    {std::max(0.0F, tile.size.x - left - right),
+                     std::max(0.0F, tile.size.y - top - bottom)}};
+    };
+    out.leftCard =
+        card({{0.0F, bodyTop}, {activityWidth + sideWidth, bodyHeight}}, true, false, true, true);
+    const bool rightOfEditorIsEdge = !out.hasInspector;
+    const bool stacked = out.hasGroupB && split == EditorSplit::Down;
+    const bool sideBySide = out.hasGroupB && split == EditorSplit::Right;
+    out.cardA = card(out.groupA, false, rightOfEditorIsEdge && !sideBySide, true,
+                     !out.hasPanel && !stacked);
+    if (out.hasGroupB)
+        out.cardB = card(out.groupB, false, rightOfEditorIsEdge, !stacked, !out.hasPanel);
+    out.panelCard = card(out.panel, false, rightOfEditorIsEdge, false, true);
+    out.inspectorCard = card(out.inspector, false, true, true, true);
     return out;
 }
 
@@ -173,6 +206,7 @@ Json WorkbenchLayout::toJson() const {
     json.set("panelHeight", panelHeight);
     json.set("panelMaximized", panelMaximized);
     json.set("panelView", name(panelView));
+    json.set("inspectorView", name(inspectorView));
     json.set("split", name(split));
     json.set("splitRatio", splitRatio);
     return json;
@@ -193,6 +227,8 @@ WorkbenchLayout WorkbenchLayout::fromJson(const Json &json) {
     layout.panelMaximized = flag(json, "panelMaximized", layout.panelMaximized);
     if (const auto view = panelViewFromName(json.get("panelView").asString()))
         layout.panelView = *view;
+    if (const auto view = inspectorViewFromName(json.get("inspectorView").asString()))
+        layout.inspectorView = *view;
     if (const auto split = editorSplitFromName(json.get("split").asString()))
         layout.split = *split;
     layout.splitRatio = number(json, "splitRatio", layout.splitRatio, 0.15F, 0.85F);

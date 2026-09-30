@@ -38,8 +38,9 @@ Status EditorApp::initialize(Renderer &renderer) {
     ui::loadFonts(io);
     ui::applyTheme();
     ImGuiStyle &style = ImGui::GetStyle();
-    style.FontSizeBase = 14.0F;
-    const float displayScale = SDL_GetWindowDisplayScale(window_);
+    style.FontSizeBase = ui::metrics::fontSize;
+    const float displayScale =
+        state_.options.uiScale > 0.0F ? state_.options.uiScale : SDL_GetWindowDisplayScale(window_);
     if (displayScale > 1.01F) {
         style.ScaleAllSizes(displayScale);
         style.FontScaleDpi = displayScale;

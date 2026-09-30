@@ -105,6 +105,43 @@ key ctrl+z
 expect shown Gate
 expect clean
 
+log "== the right-hand card has an Inspector and a Debug tab"
+expect inspector-view inspector
+click inspector-tab/Debug
+expect inspector-view debug
+expect widget debug/play
+capture ${SHOT_DIR}/bench-04b-debug-idle.bmp
+key f5
+expect playing
+wait 30
+expect widget debug/runtime
+expect widget debug/variables
+expect widget debug/entity
+capture ${SHOT_DIR}/bench-04c-debug-playing.bmp
+key shift+f5
+expect editing
+click inspector-tab/Inspector
+expect inspector-view inspector
+
+log "== the project capsule, the side bar's menu and the editor's split button do real things"
+click toolbar/Project
+expect widget project/open
+expect widget project/new
+expect widget project/close
+key escape
+click activity/Explorer
+click sidebar/more
+expect widget sidebar/more/import
+expect widget sidebar/more/refresh
+key escape
+expect widget assets/open/level01.ykscene
+click activity/Scene
+click editor/split
+expect split right
+expect widget panel/Editor2
+click editor/split
+expect split none
+
 log "== the status bar reports and navigates"
 expect widget status/project
 expect widget status/problems

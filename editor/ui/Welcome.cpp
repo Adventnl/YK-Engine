@@ -111,8 +111,9 @@ void welcomePage(EditorState &state) {
     ImGui::Dummy({1.0F, 22.0F});
     ImGui::PushFont(fonts().mono, 12.0F);
     ImGui::TextColored(
-        imColor(vs::textFaint),
-        "Ctrl+O open   Ctrl+Shift+B build   F5 play   Ctrl+J panel   Ctrl+B side bar");
+        imColor(vs::textFaint), "%s",
+        shortcutText(
+            "Ctrl+O open   Ctrl+Shift+B build   F5 play   Ctrl+J panel   Ctrl+B side bar"));
     ImGui::PopFont();
     ImGui::EndGroup();
 }

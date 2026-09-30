@@ -149,8 +149,15 @@ struct SdlInput {
         key(scancode, down);
     }
     void modifiers(const KeyMods &wanted, bool down) {
-        if (wanted.ctrl)
+        // "ctrl" in a script is the shortcut key: on macOS that is Command, because Dear ImGui
+        // swaps Control and Command there (Cmd+S saves, Cmd+A selects all, Cmd+click toggles).
+        if (wanted.ctrl) {
+#if defined(__APPLE__)
+            setModifier(SDL_SCANCODE_LGUI, SDL_KMOD_LGUI, down);
+#else
             setModifier(SDL_SCANCODE_LCTRL, SDL_KMOD_LCTRL, down);
+#endif
+        }
         if (wanted.shift)
             setModifier(SDL_SCANCODE_LSHIFT, SDL_KMOD_LSHIFT, down);
         if (wanted.alt)
@@ -881,6 +888,15 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
                       state.layout.panelVisible
                           ? "the panel shows " + std::string(name(state.layout.panelView))
                           : std::string("the panel is hidden"));
+    }
+    if (what == "inspector-view") { // expect inspector-view Inspector|Debug
+        const auto wanted = inspectorViewFromName(lower(arg));
+        if (!wanted) {
+            detail = "unknown inspector tab '" + arg + "'";
+            return -1;
+        }
+        return report(state.layout.inspectorView == *wanted,
+                      "the inspector shows " + std::string(name(state.layout.inspectorView)));
     }
     if (what == "inspector") // expect inspector visible|hidden
         return report(state.layout.inspectorVisible == (lower(arg) == "visible"),

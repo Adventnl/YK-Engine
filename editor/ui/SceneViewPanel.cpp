@@ -557,7 +557,7 @@ void contextMenu(EditorState &state, ViewportPanel &panel) {
             createEntityMenu(state, {}, panel.contextWorld);
             ImGui::EndMenu();
         }
-        if (ImGui::MenuItem("Paste Here", "Ctrl+V")) {
+        if (ImGui::MenuItem("Paste Here", shortcutText("Ctrl+V"))) {
             if (const char *text = ImGui::GetClipboardText(); text && *text)
                 if (auto parsed = Json::parse(text))
                     if (auto pasted = state.document->paste(parsed.value(), {}, panel.contextWorld);
@@ -567,7 +567,7 @@ void contextMenu(EditorState &state, ViewportPanel &panel) {
         const EntityId selected = state.document->primary();
         if (selected) {
             ImGui::Separator();
-            if (ImGui::MenuItem("Duplicate", "Ctrl+D"))
+            if (ImGui::MenuItem("Duplicate", shortcutText("Ctrl+D")))
                 state.document->duplicateSelection();
             if (ImGui::MenuItem("Delete", "Del"))
                 state.document->deleteSelection();
@@ -666,7 +666,7 @@ void sceneViewPanel(EditorState &state) {
     if (ensureTarget(state, panel, pixels)) {
         if (const auto image = targetImage(state, panel, pixels)) {
             const ImVec2 origin = ImGui::GetCursorScreenPos();
-            ImGui::Image(image->texture, avail, {0.0F, 0.0F}, image->uv1);
+            imageInCard(image->texture, avail, image->uv1);
             trackViewport(panel, origin, avail);
             ImGui::SetCursorScreenPos(origin);
             ImGui::InvisibleButton("##sceneview", avail,
