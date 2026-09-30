@@ -459,7 +459,7 @@ void cameraBehaviour() {
     camera.maxHeight = 100;
     const EntityId camId = cameraEntity.id();
     const CameraView before = camera.view();
-    CHECK(before.position == Vec2(0, 0) &&
+    CHECK(before.position == Vec2{0, 0} &&
           before.visibleHeight == 18.0F); // Authored state before running.
     GameRuntime &runtime = f.start();
     runtime.stepOnce(nothing());

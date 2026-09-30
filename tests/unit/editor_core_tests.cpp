@@ -177,7 +177,7 @@ void propertiesAndComponents() {
     const std::size_t sprite = componentIndex(f.get(id), "SpriteRenderer");
     const std::size_t collider = componentIndex(f.get(id), "Collider");
     CHECK(doc.setProperty(id, sprite, "size", Vec2{4.0F, 2.0F}));
-    CHECK(f.get(id).get<SpriteRenderer>()->size == Vec2({4.0F, 2.0F}) &&
+    CHECK(f.get(id).get<SpriteRenderer>()->size == Vec2{4.0F, 2.0F} &&
           doc.undoLabel() == "Edit Size");
     const std::size_t depth = doc.undoDepth();
     CHECK(!doc.setProperty(id, sprite, "size", std::string("wide"))); // Wrong type.
@@ -569,7 +569,7 @@ void viewCamera() {
     camera.center = {5.0F, -2.0F};
     camera.zoom = 50.0F;
     const Vec2 viewport{800, 600};
-    CHECK(camera.toScreen({5.0F, -2.0F}, viewport) == Vec2({400.0F, 300.0F}));
+    CHECK(camera.toScreen({5.0F, -2.0F}, viewport) == Vec2{400.0F, 300.0F});
     const Vec2 world{7.25F, 1.5F};
     const Vec2 back = camera.toWorld(camera.toScreen(world, viewport), viewport);
     CHECK_NEAR(back.x, 7.25);
@@ -939,7 +939,7 @@ void draggingGhosts() {
     const auto *door = v.get(gate.value()).get<Door>();
     CHECK_NEAR(door->openOffset.x, 1.0);
     CHECK_NEAR(door->openOffset.y, -5.0);
-    CHECK(v.get(gate.value()).worldPosition() == Vec2({0.0F, 0.0F})); // The door itself stays.
+    CHECK(v.get(gate.value()).worldPosition() == Vec2{0.0F, 0.0F}); // The door itself stays.
     CHECK(v.doc().undoLabel() == "Move Target" && v.doc().undo());
     CHECK_NEAR(v.get(gate.value()).get<Door>()->openOffset.y, -3.0);
 }
@@ -1209,7 +1209,7 @@ void playing() {
     play.update(1.0 / 60.0, held({})); // A bad request is reported, not fatal.
     CHECK(play.scenePath() == "scenes/practice.ykscene");
     play.setViewportSize({640, 360});
-    CHECK(play.runtime().viewportSize() == Vec2({640.0F, 360.0F}));
+    CHECK(play.runtime().viewportSize() == Vec2{640.0F, 360.0F});
 
     // Stopping drops the copy; the edited scene is exactly as it was.
     started.value().reset();
@@ -1421,7 +1421,7 @@ void prefabWorkflow() {
     const auto updated = doc.updatePrefabInstances(source, changed.value(), a.value());
     CHECK(updated && updated.value() == 1);
     CHECK(doc.scene().find(b.value())->childIds().empty());
-    CHECK(doc.scene().find(b.value())->get<SpriteRenderer>()->color == Color(200, 0, 0, 255));
+    CHECK(doc.scene().find(b.value())->get<SpriteRenderer>()->color == Color{200, 0, 0, 255});
     CHECK_NEAR(doc.scene().find(b.value())->worldPosition().x, 20.0); // It stays where it was.
     CHECK(doc.undoLabel() == "Update Prefab Instances");
     CHECK(doc.undo());
@@ -1435,7 +1435,7 @@ void prefabWorkflow() {
     });
     CHECK(doc.revertToPrefab(b.value(), changed.value()));
     CHECK(doc.scene().find(b.value())->name() == "Special");
-    CHECK(doc.scene().find(b.value())->get<SpriteRenderer>()->color == Color(200, 0, 0, 255));
+    CHECK(doc.scene().find(b.value())->get<SpriteRenderer>()->color == Color{200, 0, 0, 255});
     CHECK(doc.undoLabel() == "Revert to Prefab");
     CHECK(!doc.revertToPrefab(platform.value(), changed.value())); // Not an instance.
 
@@ -1700,7 +1700,7 @@ void prefabUpdatesAcrossScenes() {
     if (reopened) {
         for (const EntityId id : {b1.value(), b2.value()}) {
             const Entity *entity = reopened.value()->scene().find(id);
-            CHECK(entity && entity->get<SpriteRenderer>()->color == Color(9, 8, 7, 255));
+            CHECK(entity && entity->get<SpriteRenderer>()->color == Color{9, 8, 7, 255});
         }
         CHECK_NEAR(reopened.value()->scene().find(b2.value())->worldPosition().x,
                    2.0); // Stays put.

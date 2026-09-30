@@ -77,15 +77,24 @@ void numbers() {
     CHECK(Json(true).dump() == "true" && Json(nullptr).dump() == "null");
 }
 void strings() {
-    CHECK(parseOk(R"("a\nb\t\"q\"\\ \/")").asString() == "a\nb\t\"q\"\\ /");
-    CHECK(parseOk(R"("\u00e9")").asString() == "\xC3\xA9");
-    CHECK(parseOk(R"("\ud83d\ude00")").asString() == "\xF0\x9F\x98\x80"); // Surrogate pair.
-    CHECK(Json("tab\there\x01").dump() == R"("tab\there\u0001")");
+    // The JSON texts are named first: MSVC's preprocessor cannot stringize a raw string literal
+    // that contains backslashes, which CHECK does with everything inside it.
+    const std::string escapes = R"("a\nb\t\"q\"\\ \/")";
+    const std::string accent = R"("\u00e9")";
+    const std::string pair = R"("\ud83d\ude00")";
+    const std::string control = R"("tab\there\u0001")";
+    const std::string loneHigh = R"("\ud83d")";
+    const std::string loneLow = R"("\ude00")";
+    const std::string shortHex = R"("\u12")";
+    const std::string badEscape = R"("bad \x escape")";
+    CHECK(parseOk(escapes).asString() == "a\nb\t\"q\"\\ /");
+    CHECK(parseOk(accent).asString() == "\xC3\xA9");
+    CHECK(parseOk(pair).asString() == "\xF0\x9F\x98\x80"); // Surrogate pair.
+    CHECK(Json("tab\there\x01").dump() == control);
     const std::string utf8 = "caf\xC3\xA9 \xE2\x82\xAC";
     CHECK(parseOk(Json(utf8).dump()).asString() == utf8); // UTF-8 passes through untouched.
-    CHECK(parseFails(R"("\ud83d")") && parseFails(R"("\ude00")") && parseFails(R"("\u12")"));
-    CHECK(parseFails("\"line\nbreak\"") && parseFails(R"("bad \x escape")") &&
-          parseFails("\"open"));
+    CHECK(parseFails(loneHigh) && parseFails(loneLow) && parseFails(shortHex));
+    CHECK(parseFails("\"line\nbreak\"") && parseFails(badEscape) && parseFails("\"open"));
 }
 void malformed() {
     for (const char *text :
@@ -132,13 +141,13 @@ void equality() {
     CHECK(!(Json(1) == Json("1")) && !(Json() == Json(false)));
 }
 void colors() {
-    CHECK(yk::parseColor("#ff8000").value() == yk::Color(255, 128, 0, 255));
-    CHECK(yk::parseColor("#FF800080").value() == yk::Color(255, 128, 0, 128));
+    CHECK(yk::parseColor("#ff8000").value() == yk::Color{255, 128, 0, 255});
+    CHECK(yk::parseColor("#FF800080").value() == yk::Color{255, 128, 0, 128});
     CHECK(!yk::parseColor("ff8000") && !yk::parseColor("#ff80") && !yk::parseColor("#gg0000") &&
           !yk::parseColor("#ff8000ffaa") && !yk::parseColor(""));
     CHECK(yk::formatColor({1, 2, 254, 255}) == "#0102feff");
-    CHECK(yk::parseColor(yk::formatColor({9, 99, 199, 33})).value() == yk::Color(9, 99, 199, 33));
-    CHECK(yk::lerp({0, 0, 0, 255}, {200, 100, 50, 255}, 0.5F) == yk::Color(100, 50, 25, 255));
+    CHECK(yk::parseColor(yk::formatColor({9, 99, 199, 33})).value() == yk::Color{9, 99, 199, 33});
+    CHECK(yk::lerp({0, 0, 0, 255}, {200, 100, 50, 255}, 0.5F) == yk::Color{100, 50, 25, 255});
 }
 void files() {
     const auto directory = std::filesystem::temp_directory_path() / "yk-json-file-test";
