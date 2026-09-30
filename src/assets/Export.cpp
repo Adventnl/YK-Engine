@@ -274,6 +274,8 @@ std::optional<fs::path> findPlayer(BuildTarget target, const fs::path &executabl
     candidates.push_back(executableDir / "templates" / name(target) / file);
     candidates.push_back(executableDir / ".." / "share" / "yk-engine" / "templates" / name(target) /
                          file);
+    // Inside a macOS bundle the programs are in Contents/MacOS and the data in Contents/Resources.
+    candidates.push_back(executableDir / ".." / "Resources" / "templates" / name(target) / file);
     for (const fs::path &candidate : candidates) {
         std::error_code error;
         if (fs::is_regular_file(candidate, error))
@@ -283,10 +285,10 @@ std::optional<fs::path> findPlayer(BuildTarget target, const fs::path &executabl
 }
 
 std::optional<fs::path> findNotices(const fs::path &executableDir) {
-    const fs::path candidates[] = {executableDir / "licenses",
-                                   executableDir / ".." / "share" / "doc" / "YKEngine" / "licenses",
-                                   executableDir / ".." / "LICENSES",
-                                   executableDir / ".." / ".." / "LICENSES"};
+    const fs::path candidates[] = {
+        executableDir / "licenses", executableDir / ".." / "Resources" / "licenses",
+        executableDir / ".." / "share" / "doc" / "YKEngine" / "licenses",
+        executableDir / ".." / "LICENSES", executableDir / ".." / ".." / "LICENSES"};
     for (const fs::path &candidate : candidates) {
         std::error_code error;
         if (fs::is_regular_file(candidate / "SDL3.txt", error))

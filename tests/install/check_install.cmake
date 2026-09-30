@@ -66,6 +66,7 @@ if(headers OR libraries)
 endif()
 
 # The installed command line validates, and the installed player runs, the installed demo project.
+set(ENV{YK_LOG_DIR} "${WORK}/logs")
 set(ENV{SDL_VIDEODRIVER} dummy)
 set(ENV{SDL_RENDER_DRIVER} software)
 set(ENV{SDL_AUDIODRIVER} dummy)

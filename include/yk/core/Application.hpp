@@ -43,6 +43,12 @@ class ApplicationLayer {
     virtual Status
     render(Renderer &renderer) = 0; // Submit only; application owns frame boundaries.
 };
+// Tells the person that the program cannot start or has to stop. The message is logged and printed
+// to stderr and, because a program started by double-click has no terminal, also shown in a message
+// box that names the log file. No box appears under SDL's dummy video driver or when YK_NO_DIALOGS
+// is set (tests and headless runs).
+void showFatalError(const std::string &title, const std::string &message);
+
 class Application {
   public:
     static Result<std::unique_ptr<Application>> create(const ApplicationConfig &config);

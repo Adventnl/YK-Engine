@@ -18,6 +18,7 @@ set(ENV{SHOT_DIR} "${WORK}/shots")
 set(ENV{SDL_VIDEODRIVER} dummy)
 set(ENV{SDL_RENDER_DRIVER} software)
 set(ENV{SDL_AUDIODRIVER} dummy)
+set(ENV{YK_LOG_DIR} "${WORK}/logs")
 # Where an export made by the scripts ends up on this system: "Platformer" is the project the
 # workflow script creates, "Cinder Vale Deluxe" the product the settings script names.
 if(CMAKE_HOST_WIN32)
@@ -70,4 +71,12 @@ if(NOT result EQUAL 0)
     message("${output}")
     message("${errors}")
     message(FATAL_ERROR "The editor script ${SCRIPT} failed (exit code ${result}); screenshots are in ${WORK}/shots")
+endif()
+# A game the editor started must not outlive it: nothing may still run from the private copy of the
+# project (the player is started with --project <that folder>).
+if(UNIX AND PROJECT)
+    execute_process(COMMAND pgrep -f "${WORK}/project" RESULT_VARIABLE found OUTPUT_VARIABLE pids)
+    if(found EQUAL 0)
+        message(FATAL_ERROR "A process started by the editor is still running after it closed: ${pids}")
+    endif()
 endif()

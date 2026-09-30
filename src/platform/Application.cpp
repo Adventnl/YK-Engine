@@ -1,10 +1,12 @@
 #include "yk/core/Application.hpp"
+#include "yk/core/FileIO.hpp"
 #include "yk/core/Log.hpp"
 #include <SDL3/SDL.h>
 #define SDL_MAIN_HANDLED
 #include <SDL3/SDL_main.h>
 #include <array>
 #include <cassert>
+#include <cstdio>
 #include <optional>
 #include <thread>
 namespace yk {
@@ -152,6 +154,18 @@ struct Application::Impl {
         }
     }
 };
+void showFatalError(const std::string &title, const std::string &message) {
+    log(LogLevel::Error, "fatal", title + ": " + message);
+    std::fprintf(stderr, "%s: %s\n", title.c_str(), message.c_str());
+    const auto driver = environmentVariable("SDL_VIDEODRIVER");
+    if (environmentVariable("YK_NO_DIALOGS") || (driver && *driver == "dummy"))
+        return;
+    std::string body = message;
+    if (const auto file = logFilePath(); !file.empty())
+        body += "\n\nMore detail is in the log:\n" + file.string();
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title.c_str(), body.c_str(), nullptr);
+}
+
 Application::Application() : impl_(std::make_unique<Impl>()) {}
 Application::~Application() {
     assert(std::this_thread::get_id() == impl_->thread);

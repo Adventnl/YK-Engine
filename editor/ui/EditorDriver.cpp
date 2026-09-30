@@ -493,6 +493,10 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
         return report(state.playing() && state.play->paused(), "play mode is not paused");
     if (what == "running")
         return report(state.playing() && !state.play->paused(), "play mode is not running");
+    if (what == "player-running") // a game started with Run in Player is still running
+        return report(state.playerProcessRunning(), "no player process is running");
+    if (what == "no-player")
+        return report(!state.playerProcessRunning(), "a player process is running");
     if (what == "dirty")
         return report(state.document && state.document->dirty(),
                       "the scene has no unsaved changes");

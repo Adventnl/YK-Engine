@@ -28,8 +28,8 @@ include(YkGame)
 yk_sanitize(box2d)
 
 add_library(yk_engine STATIC src/core/Log.cpp src/core/Time.cpp src/core/Color.cpp src/core/Json.cpp
-    src/core/FileIO.cpp src/audio/Tone.cpp src/animation/Animator.cpp src/input/Input.cpp
-    src/input/InputMap.cpp src/input/ActionInput.cpp
+    src/core/FileIO.cpp src/core/AppPaths.cpp src/core/Diagnostics.cpp src/audio/Tone.cpp
+    src/animation/Animator.cpp src/input/Input.cpp src/input/InputMap.cpp src/input/ActionInput.cpp
     src/scene/EntityId.cpp src/scene/Property.cpp src/scene/Registry.cpp src/scene/Entity.cpp
     src/scene/Scene.cpp src/scene/SceneSerializer.cpp src/scene/RegistryDocs.cpp src/animation/AnimationSet.cpp
     src/animation/AnimationController.cpp
@@ -110,8 +110,7 @@ if(YK_RUNTIME)
     add_library(yk::editor_ui ALIAS yk_editor_ui)
     target_link_libraries(yk_editor_ui PUBLIC yk::editor_core imgui SDL3::SDL3)
     target_include_directories(yk_editor_ui PUBLIC editor)
-    target_compile_definitions(yk_editor_ui PRIVATE YK_VERSION="${PROJECT_VERSION}"
-        YK_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+    target_compile_definitions(yk_editor_ui PRIVATE YK_VERSION="${PROJECT_VERSION}")
     yk_target(yk_editor_ui)
     add_library(yk_editor_host STATIC editor/Host.cpp)
     add_library(yk::editor_host ALIAS yk_editor_host)
@@ -124,7 +123,7 @@ endif()
 target_compile_definitions(yk_engine PUBLIC YK_HAS_RUNTIME=$<BOOL:${YK_RUNTIME}>)
 
 if(BUILD_TESTING)
-    foreach(suite core physics json animation scene game_runtime audio input assets effects)
+    foreach(suite core diagnostics physics json animation scene game_runtime audio input assets effects)
         yk_add_test(${suite} tests/unit/${suite}_tests.cpp LIBS yk::engine TIMEOUT 30)
     endforeach()
     yk_add_test(gameplay tests/unit/gameplay_tests.cpp LIBS yk::gameplay TIMEOUT 120)
@@ -151,7 +150,7 @@ if(BUILD_TESTING)
         yk_add_test(game_module tests/game_module/game_module_tests.cpp
             LIBS yk_spinner_module yk_player_host TIMEOUT 60
             DEFINITIONS SPINNER_PROJECT="${YK_SPINNER_PROJECT}"
-            ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software;SDL_AUDIODRIVER=dummy")
+            ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software;SDL_AUDIODRIVER=dummy;YK_LOG_DIR=${CMAKE_BINARY_DIR}/test-logs")
         # Exported with the game's own tool and player, the game runs on its own.
         add_test(NAME game_module_export
             COMMAND ${CMAKE_COMMAND} -DTOOL=$<TARGET_FILE:spinner_game_tool>
@@ -232,6 +231,14 @@ if(BUILD_TESTING)
         endforeach()
         set_tests_properties(editor_layout_write PROPERTIES FIXTURES_SETUP editor_layout)
         set_tests_properties(editor_layout_read PROPERTIES FIXTURES_REQUIRED editor_layout)
+        # A crash leaves a log, a report with a stack trace and a notice on the next start.
+        add_test(NAME diagnostics_crash
+            COMMAND ${CMAKE_COMMAND} -DPLAYER=$<TARGET_FILE:yk_player> -DEDITOR=$<TARGET_FILE:yk_editor>
+                -DPROJECT=${CMAKE_CURRENT_SOURCE_DIR}/YK-DemoGame
+                -DSCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/tests/diagnostics/after_crash.ykscript
+                -DWORK=${CMAKE_BINARY_DIR}/diagnostics-test
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/diagnostics/check_crash.cmake)
+        set_tests_properties(diagnostics_crash PROPERTIES TIMEOUT 240)
         # The installation and its CPack archive: contents, no private dependencies, and the
         # installed programs work where they were put.
         add_test(NAME install

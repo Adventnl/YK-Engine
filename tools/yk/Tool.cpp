@@ -16,6 +16,7 @@
 #include "yk/assets/AssetSource.hpp"
 #include "yk/assets/Export.hpp"
 #include "yk/assets/Validation.hpp"
+#include "yk/core/AppPaths.hpp"
 #include "yk/core/FileIO.hpp"
 #include "yk/core/Log.hpp"
 #include "yk/gameplay/Gameplay.hpp"
@@ -104,14 +105,12 @@ std::optional<Args> parse(int argc, char **argv) {
     return args;
 }
 
-// The folder this program runs from, to find the player and the notices next to it.
-std::filesystem::path executableDirectory(const char *argv0) {
+// The folder this program runs from, to find the player and the notices next to it. Asked of the
+// operating system: argv[0] is only a name when the program was found through PATH.
+std::filesystem::path programDirectory(const char *argv0) {
+    if (const auto here = yk::executablePath(); !here.empty())
+        return here.parent_path();
     std::error_code error;
-#if defined(__linux__)
-    const auto self = std::filesystem::read_symlink("/proc/self/exe", error);
-    if (!error && !self.empty())
-        return self.parent_path();
-#endif
     const auto resolved = std::filesystem::weakly_canonical(argv0, error);
     return error ? std::filesystem::current_path() : resolved.parent_path();
 }
@@ -367,9 +366,9 @@ int runTool(int argc, char **argv, const RegisterComponents &registerGame) {
     if (args->command == "info")
         return info(*args, registry);
     if (args->command == "targets")
-        return targets(executableDirectory(argv[0]));
+        return targets(programDirectory(argv[0]));
     if (args->command == "export")
-        return exportProject(*args, executableDirectory(argv[0]), registry);
+        return exportProject(*args, programDirectory(argv[0]), registry);
     std::fprintf(stderr, "yk: unknown command '%s'\n\n", args->command.c_str());
     usage();
     return 2;

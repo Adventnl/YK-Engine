@@ -3,6 +3,7 @@
 #include "backends/imgui_impl_sdlrenderer3.h"
 #include "imgui.h"
 #include "ui/Panels.hpp"
+#include "yk/core/Diagnostics.hpp"
 #include "yk/core/Log.hpp"
 #include <SDL3/SDL.h>
 #include <algorithm>
@@ -73,6 +74,9 @@ bool EditorApp::onCloseRequested() {
 
 bool EditorApp::update(const FrameContext &frame) {
     ++frames_;
+    if (!state_.options.debugCrash.empty() && frames_ == 8 &&
+        !crashOnPurpose(state_.options.debugCrash))
+        log(LogLevel::Error, "editor", "Unknown --debug-crash kind");
     ui::widgets().beginFrame();
     if (hook_)
         hook_(*this);
