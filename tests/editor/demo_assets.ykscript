@@ -137,7 +137,7 @@ expect file-contains prefabs/terrain/platform.ykprefab "assets/tiles/stone_platf
 expect console "Moved 'assets/tiles/platform.png'"
 # The open scene was loaded again from the rewritten file and is where it was.
 expect scene scenes/level01.ykscene
-expect entity-count 171
+expect entity-count 173
 expect clean
 expect problems 0
 expect asset assets/tiles/stone_platform.png
@@ -207,7 +207,7 @@ expect scene scenes/levels/level_one.ykscene
 expect file scenes/level01.ykscene missing
 expect file scenes/levels/level_one.ykscene exists
 expect file-contains project.ykproj "scenes/levels/level_one.ykscene"
-expect entity-count 171
+expect entity-count 173
 expect clean
 click assets/filter
 key ctrl+a

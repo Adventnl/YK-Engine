@@ -619,6 +619,62 @@ void viewCamera() {
     CHECK_NEAR(onlyBackdrop.ui.camera.center.x, 0.0, 1.0);
 }
 
+// The toolbar's zoom buttons, the zoom menu and the keys: they zoom about the middle of the view,
+// walk a ladder of round levels from wherever the wheel left the zoom, and stop at the limits.
+void viewZoomControls() {
+    ViewCamera camera;
+    CHECK_NEAR(camera.percent(), 100.0);          // The default view is the reference size.
+    camera.zoom = ViewCamera::actualSize * 1.37F; // Wheel zooming lands between the stops.
+    CHECK_NEAR(camera.steppedZoom(1) / ViewCamera::actualSize, 1.5, 1e-4);
+    CHECK_NEAR(camera.steppedZoom(-1) / ViewCamera::actualSize, 1.0, 1e-4);
+    camera.zoom = ViewCamera::actualSize; // On a stop: the next one, not the same again.
+    CHECK_NEAR(camera.steppedZoom(1) / ViewCamera::actualSize, 1.5, 1e-4);
+    CHECK_NEAR(camera.steppedZoom(-1) / ViewCamera::actualSize, 0.75, 1e-4);
+
+    View view;
+    view.ui.viewport = {800, 600};
+    view.ui.camera.zoom = ViewCamera::actualSize;
+    view.ui.camera.center = {12.0F, -3.0F};
+    const Vec2 middle = view.ui.toWorld({400, 300});
+    view.ui.zoomStep(1);
+    CHECK_NEAR(view.ui.camera.percent(), 150.0, 1e-2);
+    view.ui.zoomStep(1);
+    CHECK_NEAR(view.ui.camera.percent(), 200.0, 1e-2);
+    view.ui.zoomStep(-1);
+    view.ui.zoomStep(-1);
+    CHECK_NEAR(view.ui.camera.percent(), 100.0, 1e-2);
+    const Vec2 still = view.ui.toWorld({400, 300}); // The middle of the view does not move.
+    CHECK_NEAR(still.x, middle.x, 1e-3);
+    CHECK_NEAR(still.y, middle.y, 1e-3);
+    CHECK_NEAR(view.ui.camera.center.x, 12.0, 1e-3);
+
+    view.ui.zoomStep(0); // Nothing to step.
+    CHECK_NEAR(view.ui.camera.percent(), 100.0, 1e-2);
+    view.ui.zoomTo(25.0F);
+    CHECK_NEAR(view.ui.camera.percent(), 25.0, 1e-2);
+    view.ui.zoomTo(100.0F);
+    CHECK_NEAR(view.ui.camera.zoom, ViewCamera::actualSize, 1e-3);
+    CHECK_NEAR(view.ui.camera.center.x, 12.0, 1e-3);
+
+    // The ends stop at the limits instead of overshooting or wrapping.
+    for (int i = 0; i < 40; ++i)
+        view.ui.zoomStep(1);
+    CHECK_NEAR(view.ui.camera.zoom, ViewCamera::maxZoom);
+    for (int i = 0; i < 40; ++i)
+        view.ui.zoomStep(-1);
+    CHECK_NEAR(view.ui.camera.zoom, ViewCamera::minZoom);
+    view.ui.zoomTo(1.0e6F);
+    CHECK_NEAR(view.ui.camera.zoom, ViewCamera::maxZoom);
+
+    // Every stop is a level the zoom menu also offers, so stepping never lands between them.
+    view.ui.zoomTo(100.0F);
+    for (int i = 0; i < 8; ++i) {
+        view.ui.zoomStep(1);
+        const float percent = view.ui.camera.percent();
+        CHECK(std::abs(percent - std::round(percent)) < 1e-2F);
+    }
+}
+
 void clickAndMarquee() {
     View v;
     const EntityId a = v.f.box("A", {0, 0}, {2, 1});
@@ -943,6 +999,53 @@ void draggingGhosts() {
     CHECK(v.get(gate.value()).worldPosition() == Vec2{0.0F, 0.0F}); // The door itself stays.
     CHECK(v.doc().undoLabel() == "Move Target" && v.doc().undo());
     CHECK_NEAR(v.get(gate.value()).get<Door>()->openOffset.y, -3.0);
+}
+
+// A hinge's anchor is a pin: it sits where the anchor is in the scene (following the entity's
+// rotation), is grabbed before the entity's body, and dragging it edits the anchor in the entity's
+// own space with one undo step.
+void draggingPins() {
+    View v;
+    const auto plank =
+        v.doc().createEntity("Plank", {}, Vec2{4.0F, 2.0F}); // Not a template: nothing to see yet.
+    CHECK(pinsOf(v.get(plank)).empty());
+    v.doc().addComponent(plank, "RigidBody");
+    v.doc().addComponent(plank, "HingeJoint");
+    v.doc().setProperty(plank, componentIndex(v.get(plank), "HingeJoint"), "anchor",
+                        Vec2{1.0F, 0.0F});
+    const auto pins = pinsOf(v.get(plank));
+    CHECK(pins.size() == 1 && pins[0].property == "anchor");
+    CHECK_NEAR(pins[0].world.x, 5.0);
+    CHECK_NEAR(pins[0].world.y, 2.0);
+
+    v.doc().select(plank);
+    Handle pin;
+    for (const Handle &handle : v.ui.handles())
+        if (handle.kind == HandleKind::Pin)
+            pin = handle;
+    CHECK(pin.kind == HandleKind::Pin);
+    CHECK_NEAR(pin.screen.x, v.px({5.0F, 2.0F}).x, 1e-3);
+    v.drag({5.0F, 2.0F}, {5.5F, 3.0F}); // Grabs the pin, not the entity.
+    const auto *hinge = v.get(plank).get<HingeJoint>();
+    CHECK_NEAR(hinge->anchor.x, 1.5);
+    CHECK_NEAR(hinge->anchor.y, 1.0);
+    CHECK(v.get(plank).worldPosition() == Vec2{4.0F, 2.0F});
+    CHECK(v.doc().undoLabel() == "Move Pin" && v.doc().undo());
+    CHECK_NEAR(v.get(plank).get<HingeJoint>()->anchor.x, 1.0);
+
+    // The anchor lives in the entity's space, so a turned entity keeps it on the same spot of the
+    // body: a quarter turn clockwise puts (1, 0) below the origin.
+    v.doc().change("turn", [&](Scene &scene) {
+        Transform2D transform = scene.find(plank)->worldTransform();
+        transform.rotationDegrees = 90.0F;
+        scene.find(plank)->setWorldTransform(transform);
+    });
+    const auto turned = pinsOf(v.get(plank));
+    CHECK_NEAR(turned[0].world.x, 4.0, 1e-3);
+    CHECK_NEAR(turned[0].world.y, 3.0, 1e-3);
+    v.drag({4.0F, 3.0F}, {4.0F, 4.0F}); // One meter further along the body's own x axis.
+    CHECK_NEAR(v.get(plank).get<HingeJoint>()->anchor.x, 2.0, 1e-3);
+    CHECK_NEAR(v.get(plank).get<HingeJoint>()->anchor.y, 0.0, 1e-3);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -1772,11 +1875,13 @@ int main() {
     picking();
     linksAndGhosts();
     viewCamera();
+    viewZoomControls();
     clickAndMarquee();
     movingThings();
     resizing();
     rotating();
     draggingGhosts();
+    draggingPins();
     projectFiles();
     sampleProject();
     prefabWorkflow();

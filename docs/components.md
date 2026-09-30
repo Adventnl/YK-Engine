@@ -401,7 +401,7 @@ Requires: `RigidBody`
 | Property | Type | Default | Notes |
 |---|---|---|---|
 | `connectedBody` | entity | none | The entity whose body the hinge is fixed to. Empty: fixed in the world. |
-| `anchor` | vec2 | [0,0] | The pin, in this entity's own space (0, 0 is its origin). (range -1000 to 1000) |
+| `anchor` | vec2 | [0,0] | The pin, in this entity's own space (0, 0 is its origin). (range -1000 to 1000) The editor shows it as a pin you can drag. |
 | `limits` | bool | false | Keep the swing between the two angles. |
 | `lowerAngle` | float | -45 | Degrees from the starting pose, positive clockwise on screen. (range -178 to 178) |
 | `upperAngle` | float | 45 | (range -178 to 178) |

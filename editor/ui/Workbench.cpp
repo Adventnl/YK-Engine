@@ -1002,10 +1002,10 @@ void statusBar(EditorState &state, Rect rect) {
     if (state.document) {
         StatusItem zoom;
         zoom.id = "zoom";
-        std::snprintf(text, sizeof text, "%d%%",
-                      static_cast<int>(state.interaction.camera.zoom / 48.0F * 100.0F));
+        std::snprintf(text, sizeof text, "%ld%%",
+                      std::lround(static_cast<double>(state.interaction.camera.percent())));
         zoom.text = text;
-        zoom.tooltip = "Scene view zoom (click to frame the scene)";
+        zoom.tooltip = "Scene view zoom (click to fit the scene in the view)";
         zoom.onClick = [&state] { state.interaction.frameAll(); };
         right.push_back(zoom);
     }

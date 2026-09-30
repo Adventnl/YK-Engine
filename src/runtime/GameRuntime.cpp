@@ -236,6 +236,20 @@ void GameRuntime::update(double frameSeconds, const Keyboard &keyboard) {
     update(frameSeconds, frame);
 }
 
+namespace {
+// Frames arrive a hair off a multiple of the tick (a 60 Hz screen delivers 16.4 ms, then 16.9 ms),
+// and a raw clock turns that into no tick on one frame and two on the next: a visible hitch every
+// few seconds. A frame time within 0.4 ms of one, two or three ticks, or of half a tick (a 120 Hz
+// screen), counts as exactly that; anything else is used as measured.
+double snapFrameTime(double seconds, double step) {
+    constexpr double tolerance = 0.0004;
+    for (const double multiple : {0.5, 1.0, 2.0, 3.0})
+        if (std::abs(seconds - multiple * step) < tolerance)
+            return multiple * step;
+    return seconds;
+}
+} // namespace
+
 void GameRuntime::update(double frameSeconds, const InputFrame &frameInput) {
     auto &state = *impl_;
     if (state.paused)
@@ -244,6 +258,7 @@ void GameRuntime::update(double frameSeconds, const InputFrame &frameInput) {
     if (!std::isfinite(frameSeconds) || frameSeconds < 0)
         frameSeconds = 0;
     const double step = state.options.fixedSeconds;
+    frameSeconds = snapFrameTime(frameSeconds, step);
     state.accumulator += std::min(frameSeconds, 0.25);
     unsigned steps = 0;
     while (state.accumulator + 1e-9 >= step && steps < state.options.maxStepsPerFrame) {

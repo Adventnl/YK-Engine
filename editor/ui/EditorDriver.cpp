@@ -537,6 +537,61 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
         return -1;
     const std::string &arg = w[2];
 
+    // The scene view's camera.
+    if (what == "zoom") { // expect zoom PERCENT [TOLERANCE] : the zoom level the toolbar shows
+        const auto wanted = number(arg);
+        if (!wanted) {
+            detail = "zoom must be a percentage";
+            return -1;
+        }
+        const double tolerance = w.size() > 3 ? number(w[3]).value_or(0.5) : 0.5;
+        const double actual = static_cast<double>(state.interaction.camera.percent());
+        char buffer[48];
+        std::snprintf(buffer, sizeof buffer, "the zoom is %.2f%%", actual);
+        return report(std::abs(actual - *wanted) <= tolerance, buffer);
+    }
+    if (what == "view-center") { // expect view-center x,y [TOLERANCE] : the world point mid-view
+        const auto wanted = pair(arg);
+        if (!wanted) {
+            detail = "view-center must be x,y";
+            return -1;
+        }
+        const double tolerance = w.size() > 3 ? number(w[3]).value_or(0.05) : 0.05;
+        const Vec2 at = state.interaction.camera.center;
+        char buffer[64];
+        std::snprintf(buffer, sizeof buffer, "the view is centered on %.3f,%.3f",
+                      static_cast<double>(at.x), static_cast<double>(at.y));
+        return report(std::abs(static_cast<double>(at.x) - wanted->first) <= tolerance &&
+                          std::abs(static_cast<double>(at.y) - wanted->second) <= tolerance,
+                      buffer);
+    }
+    if (what == "view-offset") { // expect view-offset dx,dy [TOLERANCE] : moved since remember-view
+        const auto wanted = pair(arg);
+        if (!wanted) {
+            detail = "view-offset must be dx,dy";
+            return -1;
+        }
+        const double tolerance = w.size() > 3 ? number(w[3]).value_or(0.05) : 0.05;
+        const Vec2 at = state.interaction.camera.center;
+        const double dx = static_cast<double>(at.x - rememberedView_.x);
+        const double dy = static_cast<double>(at.y - rememberedView_.y);
+        char buffer[64];
+        std::snprintf(buffer, sizeof buffer, "the view moved by %.3f,%.3f", dx, dy);
+        return report(std::abs(dx - wanted->first) <= tolerance &&
+                          std::abs(dy - wanted->second) <= tolerance,
+                      buffer);
+    }
+    if (what == "view-shows" || what == "view-hides") { // expect view-shows ENTITY
+        const Entity *entity = findNamed(scene, arg);
+        if (!entity)
+            return report(false, "there is no entity named '" + arg + "'");
+        const Vec2 at = state.interaction.toScreen(entity->worldPosition());
+        const Vec2 size = state.interaction.viewport;
+        const bool inside = at.x >= 0.0F && at.y >= 0.0F && at.x <= size.x && at.y <= size.y;
+        return report(inside == (what == "view-shows"),
+                      "'" + arg + "' is " + (inside ? "inside" : "outside") + " the scene view");
+    }
+
     if (what == "selected") {
         const Entity *entity = scene ? scene->find(state.inspected()) : nullptr;
         if (lower(arg) == "none")
@@ -1045,6 +1100,11 @@ bool EditorDriver::execute(EditorApp &app, const Command &command) {
     }
     if (name == "quit") {
         app.quit();
+        return true;
+    }
+    if (name == "remember-view") { // the view's center, for `expect view-offset`
+        const Vec2 at = app.state().interaction.camera.center;
+        rememberedView_ = {at.x, at.y};
         return true;
     }
     if (name == "import") { // import FILE... : as if the files were dropped on the window

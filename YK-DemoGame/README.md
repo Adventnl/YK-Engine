@@ -24,15 +24,15 @@ yk_player YK-DemoGame          play it without the editor
 | Jump | W | Up |
 | Use (lever) | S or E | Down or Right Ctrl |
 
-R restarts the level. Gamepads work too: pad 1 drives Ember, pad 2 drives Tide (edit the bindings in
-`project.ykproj`, section `input`).
+R restarts the level; Enter (pad: East) skips the wait after a level is completed. Gamepads work too:
+pad 1 drives Ember, pad 2 drives Tide (edit the bindings in `project.ykproj`, section `input`).
 
 ## What is in it
 
 ```
 project.ykproj      window, collision layers, input map, texture defaults
 scenes/level01      Room 1 (44 x 19 units): the level
-scenes/practice     a small practice room (also what the tests switch scenes to)
+scenes/practice     a small practice room; completing either room leads into the other
 prefabs/            terrain, hazards, items, characters, mechanisms, decor, fx, level parts
 assets/             sprite sheets, animations (.ykanim), state machines (.ykctl), textures, audio
 tools/              Python that generated the art, prefabs and levels (see below)
@@ -74,10 +74,26 @@ python3 tools/build_content.py --art --yk <build>/yk      also the art and audio
 3. **The water.** Tide wades through it; Ember takes the jump-through ledges above. A checkpoint sits
    before it: a dead player comes back there.
 4. **The stairs** of one-way ledges lead to the upper floor.
-5. **The goo pit.** The only way across is a platform that moves while either plate is held. One
-   player holds the near plate while the other rides across and holds the far one; then the first
-   follows.
-6. **The exits.** Both players stand in their door at the same time: level complete.
+5. **The goo pit.** The only way across is a platform that moves while either plate is held. The
+   plates are real buttons: stand on one and it sinks under you, jump onto it from above and it takes
+   your weight, push the crate onto it and it stays down. One player holds the near plate while the
+   other rides across and holds the far one; then the first follows.
+6. **The exits.** Both players stand in their door at the same time: the controls lock, each walks
+   into their door and fades away, LEVEL COMPLETE shows, and the screen fades into the practice
+   room (Enter skips the wait). Completing that room leads back here.
+
+## How the mechanisms are built
+
+Nothing here is special to this game; each is the engine's component set configured in a prefab:
+
+* **Plates** (`prefabs/mechanisms/plate`): a root with `PressurePlate` and a child `Pad` holding a
+  kinematic `RigidBody` and a solid `Collider` with a chamfered rim (so the crate can be pushed up
+  onto it), plus the art. The plate senses the weight resting on its pad and sinks 8 cm, carrying
+  whatever stands on it; `pressed` and `pressAmount` drive its animation.
+* **Gates** are `Door` on a kinematic body (they slide up and stop if a player is under them).
+  **Platforms** are `MovingPlatform`, easing in and out so riders stay on.
+* **Levers** are `Lever` with an interact action; **exits** are `Goal`s inside a `LevelFlow`, which
+  also holds the completion, retry and next-scene rules.
 
 `tests/unit/demo_tests.cpp` (in the engine repository) plays exactly this with a scripted bot, so a
 change to the engine or the level that breaks the route fails the build.

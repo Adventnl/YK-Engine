@@ -1,0 +1,182 @@
+# Getting around the scene view, through the real UI: the zoom buttons and the level menu with its
+# presets, fit and focus, the keys and the View menu, the wheel, panning, and that all of it keeps
+# working while the game plays. The software renderer this runs on takes time proportional to the
+# zoomed area it covers, so the script stays at 100% and below (the unit tests walk the whole ladder).
+# In the demo level the middle of the view after Fit is the exit; at 100% the lever is below the
+# view, at Fit everything shows.
+timeout 300
+expect project "Cinder Vale"
+expect widget view/ZoomOut
+expect widget view/Zoom
+expect widget view/ZoomIn
+expect widget scene/FrameAll
+expect widget view/Focus
+capture ${SHOT_DIR}/view-01-toolbar.bmp
+
+log "== the level menu offers round levels"
+click view/Zoom
+expect widget zoom/25%
+expect widget zoom/50%
+expect widget zoom/100%
+expect widget zoom/200%
+expect widget zoom/400%
+expect widget zoom/800%
+expect widget zoom/Fit
+expect widget zoom/Focus
+capture ${SHOT_DIR}/view-02-menu.bmp
+click zoom/25%
+expect zoom 25
+click view/Zoom
+click zoom/50%
+expect zoom 50
+click view/Zoom
+click zoom/100%
+expect zoom 100
+
+log "== the buttons zoom about the middle of the view, one round level at a time"
+click view/Zoom
+click zoom/25%
+expect zoom 25
+remember-view
+click view/ZoomIn
+expect zoom 50
+click view/ZoomIn
+expect zoom 75
+click view/ZoomIn
+expect zoom 100
+expect view-offset 0,0 0.01
+click view/ZoomOut
+click view/ZoomOut
+expect zoom 50
+expect view-offset 0,0 0.01
+
+log "== the keys and the View menu do the same"
+key ctrl+equals
+expect zoom 75
+key ctrl+minus
+key ctrl+minus
+expect zoom 25
+key ctrl+0
+expect zoom 100
+menu "View/Zoom Out"
+expect zoom 75
+menu "View/Zoom In"
+expect zoom 100
+menu "View/Zoom Out"
+expect zoom 75
+menu "View/Reset Zoom"
+expect zoom 100
+expect view-offset 0,0 0.01
+
+log "== fit shows the whole level, focus the selection"
+expect view-hides Lever
+click scene/FrameAll
+expect view-shows Lever
+expect view-shows Gate
+expect view-shows "Ember Exit"
+click view/Zoom
+click zoom/100%
+expect view-hides Lever
+click "hierarchy/Lever"
+expect selected Lever
+click view/Focus
+expect view-shows Lever
+expect view-hides "Ember Exit"
+capture ${SHOT_DIR}/view-03-focus.bmp
+click view/Zoom
+click zoom/Fit
+expect view-shows Lever
+expect view-shows "Ember Exit"
+expect clean
+
+log "== the wheel zooms at the pointer, and only over the view"
+click view/Zoom
+click zoom/100%
+expect zoom 100
+wheel view/Zoom 3
+wheel toolbar/Move -3
+expect zoom 100
+wheel scene/view 3
+expect zoom 140.5 0.3
+wheel scene/view -3
+expect zoom 100 0.3
+
+log "== panning: Space and a left drag; the view follows the hand"
+remember-view
+keydown space
+drag world:20,10 world:24,10
+keyup space
+expect view-offset -4,0 0.15
+capture ${SHOT_DIR}/view-04-panned.bmp
+# A plain left drag on empty space is a box selection: it does not move the view.
+remember-view
+drag world:20,10 world:24,10
+expect view-offset 0,0 0.01
+expect clean
+
+log "== a hinge's anchor is a pin in the scene view, and it can be dragged"
+click "hierarchy/Crate"
+click inspector/add-component
+click add-category/Physics
+click add/HingeJoint
+expect has-component Crate HingeJoint
+click view/Focus
+expect widget scene/handle/Pin0
+expect prop Crate HingeJoint.anchor 0,0
+capture ${SHOT_DIR}/view-05-pin.bmp
+drag scene/handle/Pin0 world:33.5,16
+expect prop Crate HingeJoint.anchor 0.5,-0.5
+expect undo "Move Pin"
+key ctrl+z
+expect prop Crate HingeJoint.anchor 0,0
+key ctrl+z
+expect no-component Crate HingeJoint
+expect clean
+
+log "== the view keeps working while the game plays"
+# Play shows the Game tab; a second editor group keeps the scene view on screen next to it.
+click scene/FrameAll
+menu "View/Editor Layout/Split Right"
+expect split right
+key f5
+expect playing
+expect widget view/Zoom
+# Side by side, each group is too narrow for the whole row: the rest is folded into "...".
+expect widget toolbar/More
+expect no-widget toolbar/Overlays
+expect no-widget scene/FrameAll
+click toolbar/More
+expect widget more/GridSize
+expect widget more/Overlays
+expect widget more/Fit
+expect widget more/Focus
+capture ${SHOT_DIR}/view-05-more.bmp
+click more/Fit
+expect view-shows Lever
+click view/Zoom
+click zoom/100%
+expect zoom 100
+key ctrl+equals
+expect zoom 150
+click view/ZoomOut
+expect zoom 100
+expect view-hides Lever
+key home
+expect view-shows Lever
+capture ${SHOT_DIR}/view-05-playing.bmp
+key shift+f5
+expect editing
+menu "View/Editor Layout/Single"
+expect split none
+expect no-widget toolbar/More
+expect widget toolbar/Overlays
+expect widget scene/FrameAll
+
+log "== the status bar shows the level and fits the scene when clicked"
+expect widget status/zoom
+click view/Zoom
+click zoom/100%
+expect view-hides Lever
+click status/zoom
+expect view-shows Lever
+expect clean

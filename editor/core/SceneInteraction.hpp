@@ -11,8 +11,9 @@ namespace yk::editor {
 struct ViewCamera {
     static constexpr float minZoom = 2.0F;
     static constexpr float maxZoom = 600.0F;
+    static constexpr float actualSize = 48.0F; // Pixels per meter that read as 100%.
     Vec2 center{};
-    float zoom{48.0F}; // Pixels per meter.
+    float zoom{actualSize}; // Pixels per meter.
 
     Vec2 toWorld(Vec2 pixel, Vec2 viewport) const {
         return center + (pixel - viewport * 0.5F) / zoom;
@@ -20,8 +21,15 @@ struct ViewCamera {
     Vec2 toScreen(Vec2 world, Vec2 viewport) const {
         return (world - center) * zoom + viewport * 0.5F;
     }
+    // The zoom as the percentage the toolbar shows (100 is `actualSize`).
+    float percent() const {
+        return zoom / actualSize * 100.0F;
+    }
     // Zooms by `factor` keeping the world point under `pixel` where it is.
     void zoomAt(Vec2 pixel, Vec2 viewport, float factor);
+    // The zoom (pixels per meter) one stop up (`direction` > 0) or down (< 0) a ladder of round
+    // percentages, from wherever the wheel left it. The ends stop at the limits.
+    float steppedZoom(int direction) const;
     // Centers `area` and zooms so it fills the viewport with `margin` (>1) to spare.
     void frame(Rect area, Vec2 viewport, float margin = 1.25F);
 };
@@ -51,11 +59,12 @@ enum class HandleKind {
     BottomLeft,
     BottomRight,
     Rotate,
-    Ghost
+    Ghost,
+    Pin
 };
 struct Handle {
     HandleKind kind{HandleKind::None};
-    std::size_t index{}; // Which ghost, for HandleKind::Ghost.
+    std::size_t index{}; // Which ghost or pin, for HandleKind::Ghost and HandleKind::Pin.
     Vec2 screen;         // Viewport pixels.
 };
 
@@ -89,7 +98,12 @@ class SceneInteraction {
         return 1.0F / camera.zoom;
     }
     void panBy(Vec2 pixels);
+    // The wheel: zooms by `factor` about the pointer.
     void zoomAt(Vec2 pixel, float factor);
+    // Buttons and keys: one stop up or down the zoom ladder, and an exact level, about the middle
+    // of the view. `percent` is what the toolbar shows (100 is the reset level).
+    void zoomStep(int direction);
+    void zoomTo(float percent);
     void frameSelection();
     void frameAll();
 
@@ -119,7 +133,7 @@ class SceneInteraction {
     EntityId pickAt(Vec2 pixel) const;
 
   private:
-    enum class Mode { Idle, Press, Marquee, Moving, Resizing, Rotating, Ghost };
+    enum class Mode { Idle, Press, Marquee, Moving, Resizing, Rotating, Ghost, Pin };
     struct SavedValue {
         std::size_t component{};
         std::string property;
@@ -132,10 +146,12 @@ class SceneInteraction {
     void beginResize(Handle handle);
     void beginRotate();
     void beginGhost(Handle handle);
+    void beginPin(Handle handle);
     void updateMove(Vec2 world, Modifiers modifiers);
     void updateResize(Vec2 world, Modifiers modifiers);
     void updateRotate(Vec2 world, Modifiers modifiers);
     void updateGhost(Vec2 world, Modifiers modifiers);
+    void updatePin(Vec2 world, Modifiers modifiers);
     void finishSelectionClick(Modifiers modifiers);
     void clearDrag();
 
@@ -180,5 +196,11 @@ class SceneInteraction {
         Vec2 boxCenter;
         Vec2 grab;
     } ghost_;
+    struct PinState {
+        EntityId id;
+        std::size_t component{};
+        std::string property;
+        Vec2 grab; // Pointer to pin, so the pin does not jump to the pointer.
+    } pin_;
 };
 } // namespace yk::editor

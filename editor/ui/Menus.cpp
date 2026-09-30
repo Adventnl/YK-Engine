@@ -179,6 +179,14 @@ void menuView(EditorState &state) {
     if (item("View/Snap to Grid", "Snap to Grid", nullptr, true, state.interaction.snap.enabled))
         state.interaction.snap.enabled = !state.interaction.snap.enabled;
     ImGui::Separator();
+    const bool hasView = state.interaction.bound();
+    if (item("View/Zoom In", "Zoom In", "Ctrl+=", hasView))
+        state.interaction.zoomStep(1);
+    if (item("View/Zoom Out", "Zoom Out", "Ctrl+-", hasView))
+        state.interaction.zoomStep(-1);
+    if (item("View/Reset Zoom", "Reset Zoom to 100%", "Ctrl+0", hasView))
+        state.interaction.zoomTo(100.0F);
+    ImGui::Separator();
     if (item("View/Reset Layout", "Reset Layout"))
         state.layout = {};
 }

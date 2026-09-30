@@ -7,6 +7,7 @@
 #include "yk/runtime/GameRuntime.hpp"
 #include "yk/scene/SceneSerializer.hpp"
 #include <cmath>
+#include <optional>
 
 using namespace yk;
 using namespace yk::test;
@@ -1228,6 +1229,161 @@ void persistenceAndPrefabs() {
     CHECK(plates == 2 && opened == 1); // Only the copy the character stands on opens its own door.
 }
 
+// A value different from the current one for a field, of the kind the field holds.
+std::optional<PropertyValue> otherValue(const PropertyInfo &property, const PropertyValue &now,
+                                        EntityId target) {
+    switch (property.type) {
+    case PropertyType::Bool:
+        return !std::get<bool>(now);
+    case PropertyType::Int: {
+        const std::int64_t up = std::get<std::int64_t>(now) + 1;
+        if (property.hasRange && static_cast<double>(up) > property.maxValue)
+            return std::get<std::int64_t>(now) - 1;
+        return up;
+    }
+    case PropertyType::Float:
+        if (property.hasRange)
+            return property.minValue + (property.maxValue - property.minValue) * 0.37;
+        return std::get<double>(now) + 0.75;
+    case PropertyType::String:
+        return std::string("sample ") + property.name;
+    case PropertyType::Vec2: {
+        const Vec2 value = std::get<Vec2>(now);
+        return Vec2{value.x + 1.25F, value.y - 0.5F};
+    }
+    case PropertyType::Color:
+        return Color{12, 34, 56, 78};
+    case PropertyType::Enum: {
+        const std::int64_t count = std::max<std::int64_t>(1, property.options.size());
+        return (std::get<std::int64_t>(now) + 1) % count;
+    }
+    case PropertyType::EntityReference:
+        return target;
+    case PropertyType::EntityReferenceList:
+        return std::vector<EntityId>{target};
+    case PropertyType::StringList:
+        return std::vector<std::string>{"alpha", "beta"};
+    case PropertyType::Asset:
+        return AssetRef{"assets/sample/" + property.name + ".png"};
+    }
+    return std::nullopt;
+}
+
+// Every registered component keeps every editable field through saving and loading. Each field is
+// given a value other than its default, the scene is written out and read back, and the values are
+// compared field by field: a field a component forgot to register, or one the file format cannot
+// carry, shows up here instead of in somebody's lost level.
+void everyComponentRoundTrips() {
+    World w;
+    const EntityId target = w.scene->createEntity("Other").id();
+    struct Expectation {
+        std::string entity, type;
+        std::vector<std::pair<const PropertyInfo *, Json>> fields;
+    };
+    std::vector<Expectation> expected;
+    std::size_t fields = 0;
+    for (const auto &type : w.registry.types()) {
+        Entity &host = w.scene->createEntity("Host " + type->name);
+        Component *component = host.addComponent(type->name);
+        CHECK(component != nullptr);
+        if (!component)
+            continue;
+        Expectation expectation{host.name(), type->name, {}};
+        for (const PropertyInfo &property : type->properties) {
+            if (property.readOnly)
+                continue;
+            const auto value = otherValue(property, property.get(*component), target);
+            const bool assigned = value && property.assign(*component, *value);
+            if (!assigned) {
+                const std::string what = type->name + "." + property.name + " rejected a value";
+                yk::test::record(false, what.c_str(), __FILE__, __LINE__);
+                continue;
+            }
+            // What the field holds now (the range may have clamped the value).
+            expectation.fields.emplace_back(&property,
+                                            propertyToJson(property, property.get(*component)));
+            ++fields;
+        }
+        expected.push_back(std::move(expectation));
+    }
+    CHECK(fields > 200); // The standard components have a few hundred fields between them.
+
+    const Json saved = sceneToJson(*w.scene);
+    auto loaded = sceneFromJson(Json::parse(saved.dump()).value(), w.registry);
+    CHECK(loaded);
+    if (!loaded)
+        return;
+    CHECK(sceneToJson(*loaded.value()) == saved);
+    for (const Expectation &expectation : expected) {
+        const Entity *host = loaded.value()->findByName(expectation.entity);
+        const Component *component = host ? host->findComponent(expectation.type) : nullptr;
+        CHECK(component != nullptr);
+        if (!component)
+            continue;
+        for (const auto &[property, value] : expectation.fields)
+            if (propertyToJson(*property, property->get(*component)) != value) {
+                const std::string what = expectation.type + "." + property->name + " changed";
+                yk::test::record(false, what.c_str(), __FILE__, __LINE__);
+            }
+    }
+}
+
+// A scene saved before plates were physical, doors could turn, colliders could be rounded and a
+// level had rules for finishing has none of the newer fields. It loads with their defaults and
+// plays as it always did: the plate is a zone that opens the door, and nothing about them changed
+// under it.
+void olderScenesStillWork() {
+    PlateAndDoor level;
+    level.w.character("Hero", {0.0F, restingHeight}, "Player1", "hero");
+    Json saved = sceneToJson(*level.w.scene);
+    const std::vector<std::pair<std::string, std::vector<std::string>>> newer = {
+        {"Collider", {"cornerRadius", "chamfer"}},
+        {"PressurePlate", {"sensing", "pad", "pressSpeed", "acceleration", "minimumMass"}},
+        {"Door", {"openRotation", "rotationSpeed", "stopWhenBlocked"}},
+        {"MovingPlatform", {"acceleration", "spinSpeed", "stopWhenBlocked"}},
+    };
+    int stripped = 0;
+    Json *entities = saved.find("entities");
+    CHECK(entities != nullptr);
+    if (!entities)
+        return;
+    for (std::size_t e = 0; e < entities->size(); ++e) {
+        Json *components = entities->at(e).find("components");
+        if (!components)
+            continue;
+        for (std::size_t c = 0; c < components->size(); ++c) {
+            Json &component = components->at(c);
+            Json *properties = component.find("properties");
+            if (!properties)
+                continue;
+            for (const auto &[type, keys] : newer)
+                if (component.get("type").asString() == type)
+                    for (const std::string &key : keys)
+                        stripped += properties->erase(key) ? 1 : 0;
+        }
+    }
+    CHECK(stripped >= 8); // The colliders, the plate and the door all had newer fields to lose.
+
+    auto loaded = sceneFromJson(saved, level.w.registry);
+    CHECK(loaded);
+    if (!loaded)
+        return;
+    World w;
+    w.scene = std::move(loaded.value());
+    // The newer fields hold their defaults.
+    const auto *plate = w.scene->findByName("Plate")->get<PressurePlate>();
+    CHECK(plate->sensing == PlateSensing::Auto && !plate->pad && plate->acceleration > 0.0F);
+    const auto *door = w.scene->findByName("Door")->get<Door>();
+    CHECK(door->stopWhenBlocked && door->openRotation == 0.0F && door->rotationSpeed > 0.0F);
+    const auto *collider = w.scene->findByName("Plate")->get<Collider>();
+    CHECK(collider->cornerRadius == 0.0F && collider->chamfer == Vec2{});
+    // And it plays as it did: standing in the zone presses the plate and opens the door.
+    w.start();
+    w.tick(90);
+    CHECK(w.at("Plate").get<PressurePlate>()->pressed());
+    CHECK_NEAR(w.at("Door").get<Door>()->openAmount(), 1.0, 1e-6);
+}
+
 void templatesWork() {
     World w;
     CHECK(w.registry.validate());
@@ -1277,5 +1433,7 @@ int main() {
     defaultsOnAdd();
     persistenceAndPrefabs();
     templatesWork();
+    everyComponentRoundTrips();
+    olderScenesStillWork();
     return yk::test::finish("gameplay");
 }

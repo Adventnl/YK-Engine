@@ -130,6 +130,7 @@ Components are ordinary classes with public members. Each registers in an explic
 `ComponentRegistry` (`registry.add<T>("Name")` plus `T::describe`), declaring every editable field
 once with `field("name", &T::member)` and optional flags: range, enum options, asset kind,
 `size`/`offset` (resize gizmo), `layer`, `displacement` (a world-space shift the editor previews),
+`pin` (a point in the entity's own space the editor draws and lets you drag: a hinge's anchor),
 input set and action pickers, `multiline`, `readOnly`. Type-level settings: category, description,
 `dependsOn` (added automatically first), `onAdd` defaults (never applied when loading),
 `allowMultiple`, `screenSpace`.
@@ -200,20 +201,50 @@ bounded `EventBus` complete the `GameContext` components see. Collision layers a
 and resolved through the project's `LayerConfig`, whose symmetric matrix covers solid collisions
 and trigger overlaps alike.
 
+**Transitions.** Restarts and scene changes go through a fade state machine the runtime owns (idle,
+out, covered, in; `RuntimeOptions::transitionSeconds`, `screenFade()` for the renderer), and the
+runtime keeps named **input locks** (`lockInput`, honored by `PlayerInput`, so the controls stop
+while a level ends and the raw input is untouched). `Blackboard::keep` marks variables that survive
+into the next scene. **`GameSession`** (`runtime/GameSession.hpp`) is the one place scenes are
+switched: it owns the current `GameRuntime`, loads the scene a component asked for, carries the kept
+variables over, starts it covered so it fades in, and stays on the current scene (logging why) when
+the load fails. The standalone player and the editor's Play mode both drive a session, so they cannot
+disagree ([ADR 0015](decisions/0015-level-flow-and-transitions-belong-to-the-runtime.md)).
+
 ## Gameplay library (`gameplay/`)
 
-Sources (`PressurePlate`, `Lever`, `Goal`, `TriggerZone`) list `targets`; receivers (`Door`,
-`MovingPlatform`) combine every source that reported to them (any/all, invert). Sources report
-every tick, so a receiver never misses a change and never depends on update order. Levers can
-fire on touch or on an interact action. `PlatformerController` moves a dynamic capsule by
-velocity: acceleration, variable-height jump, coyote time, jump buffering, slopes with ground
-snapping, riding moving platforms; it reads its actions from `PlayerInput`. `Killable` takes a
-character out of the world, plays a death animation and returns it to its spawn point or last
-checkpoint. `Hazard` kills entities matching `affectsTags` (empty: anything killable), which is
-how one pool is deadly to one character and safe for another. `Collectible`, `Checkpoint`,
-`SpawnPoint`, `Goal` and `LevelFlow` (win/lose rules, restart action, next scene, `level_state`,
-`level_message` and `level_time` published to the Blackboard) complete the set. Effects live in
-the engine: `ParticleEmitter`, `Light2D` (an additive glow), `Oscillator`, `Lifetime`.
+Sources (`PressurePlate`, `Lever`, `Goal`, `TriggerZone`, `EventAction`) list `targets`; receivers
+(`Door`, `MovingPlatform`) combine every source that reported to them (any/all, invert). Sources
+report every tick, so a receiver never misses a change and never depends on update order. Levers
+can fire on touch or on an interact action.
+
+**Mechanisms are physical.** A `PressurePlate` is a kinematic pad with a solid collider: characters
+and crates land on it, it senses its load from its own contacts, sinks under it carrying it down,
+stops at an exact depth and rises when the load leaves; a separate trigger region is available when
+an activation zone is wanted instead ([ADR 0013](decisions/0013-pressure-plates-are-solid-pads-that-carry-their-load.md)).
+`Door` slides and/or turns about its hinge, `MovingPlatform` shuttles and/or spins, both by velocity
+with easing, and both stop when something is squeezed in their way. `PlatformerController` moves a
+dynamic capsule (a bullet, for continuous collision against kinematic pads) by velocity:
+acceleration, variable-height jump, coyote time, jump buffering, slopes with ground snapping, and
+riding whatever it stands on by matching the velocity of the ground *point* under its feet, so
+sliding, rotating, tilting and sinking surfaces all carry it
+([ADR 0014](decisions/0014-characters-ride-the-velocity-of-the-ground-point.md)); it reads its
+actions from `PlayerInput`.
+
+**Flow.** `LevelFlow` is the level's state machine (intro, playing, complete, failed) with goals, a
+time limit, retry, continue, the next scene and the variables to carry over; it publishes
+`level_state`, `level_message`, `level_time` and `level_time_left` to the Blackboard and raises
+`level_started`, `level_completed` and `level_failed`. `Goal` is an exit: on completion whoever
+stands in it walks in and fades. `EventAction` connects events to consequences with a delay or a
+timer (a signal receivers follow, another event, entities switched on and off, animation triggers,
+a variable, a sound, a restart, a scene change). `Killable` takes a character out of the world,
+plays a death animation and returns it to its spawn point or last checkpoint. `Hazard` kills
+entities matching `affectsTags` (empty: anything killable), which is how one pool is deadly to one
+character and safe for another. `Collectible`, `Checkpoint` and `SpawnPoint` complete the set.
+Effects live in the engine: `ParticleEmitter`, `Light2D` (an additive glow), `Oscillator`,
+`Lifetime`. Components can also say what is wrong with them (`TypeBuilder::check`): a plate with
+nothing to press, a hinge on a body that cannot swing. Project validation and the editor's Problems
+panel show those sentences.
 
 ## Physics (`physics/`)
 
@@ -230,7 +261,14 @@ historical handles retained through destruction; nothing calls back from inside 
 
 At the component level `Collider` offers box, circle, capsule and **wedge** (a right-triangle
 ramp) shapes, **one-way** platforms (blocking only what comes down onto their top side), triggers
-(overlap events only) and per-layer filtering; kinematic bodies carry what stands on them.
+(overlap events only) and per-layer filtering. `cornerRadius` rounds a box (a stepping edge that does
+not catch a foot) and `chamfer` cuts its corners (the rim of a plate); kinematic bodies carry what
+stands on them, at the velocity of the point under each rider (the world reports it:
+`World::pointVelocity`). `HingeJoint` pins a body to a point in the world or to another body so it
+swings: seesaws, bridges, doors that give way, with limits, a spring and a motor; the anchor is a
+pin the editor draws and lets you drag. Continuous collision for a body that must not tunnel through
+kinematic mechanisms is a per-body flag (`World::setBullet`). Collision callbacks include
+`onCollisionExit`, so a mechanism knows when a load leaves.
 
 ## Graphics, application and audio (`graphics/`, `platform/`, `audio/`)
 
@@ -269,12 +307,15 @@ interface; without a device it plays nothing and never fails the game.
   selection, links and displacement ghosts; locked and hidden entities are skipped.
 - **`SceneInteraction`** is the scene view's behavior as a state machine over pointer positions:
   click, ctrl/shift/alt selection, marquee, move with snapping and axis lock, resize handles,
-  rotation, dragging a door's open target, nudging, panning, zooming, framing. It draws nothing,
-  so it is unit tested without a window.
+  rotation, dragging a door's open target or a hinge's pin, nudging, and the view itself: panning,
+  zooming about the pointer or the middle of the view (a ladder of round levels for the buttons and
+  keys), fitting the scene, focusing the selection. It draws nothing, so it is unit tested without
+  a window.
 - **`EditorProject`** creates and opens projects, scenes and prefabs (paths validated to stay
   inside the project), imports assets, validates, exports, applies instances to prefabs and
   remembers recent projects. **`PlaySession`** copies the document through the save format into a
-  `GameRuntime`; stopping drops the copy, so the edited scene is untouched.
+  `GameSession` (the same one the player uses, so level flow and scene changes behave identically);
+  stopping drops the copy, so the edited scene is untouched.
 - **`WorkbenchLayout`** is the layout arithmetic: which side bar view and panel tab are showing,
   the sizes, the split, and the rectangle of every region for a window size. The regions tile the
   window exactly and every stored size is clamped, so no part can collapse or push another out.

@@ -70,6 +70,15 @@ struct Ghost {
 };
 std::vector<Ghost> displacementGhosts(const Entity &entity, float markerHalf);
 
+// A point a component keeps in its entity's own space and the editor draws as a pin you can drag: a
+// hinge's anchor.
+struct Pin {
+    std::size_t componentIndex{};
+    std::string property;
+    Vec2 world; // Where the pin is in the scene.
+};
+std::vector<Pin> pinsOf(const Entity &entity);
+
 // Rounds to the nearest multiple of `step` (a non-positive step leaves the value alone).
 float snapTo(float value, float step);
 Vec2 snapTo(Vec2 value, float step);

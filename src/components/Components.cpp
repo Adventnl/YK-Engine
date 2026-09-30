@@ -223,6 +223,7 @@ void HingeJoint::describe(TypeBuilder<HingeJoint> &type) {
     type.field("anchor", &HingeJoint::anchor)
         .range(-1000, 1000, 0.05)
         .offset()
+        .pin()
         .tooltip("The pin, in this entity's own space (0, 0 is its origin).");
     type.field("limits", &HingeJoint::limits).tooltip("Keep the swing between the two angles.");
     type.field("lowerAngle", &HingeJoint::lowerAngle)

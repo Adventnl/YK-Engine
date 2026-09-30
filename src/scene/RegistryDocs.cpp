@@ -102,6 +102,9 @@ std::string describeRegistryMarkdown(const ComponentRegistry &registry) {
                 if (property.isDisplacement)
                     notes += (notes.empty() ? "" : " ") +
                              std::string("The editor shows the result as a ghost you can drag.");
+                if (property.isPin)
+                    notes += (notes.empty() ? "" : " ") +
+                             std::string("The editor shows it as a pin you can drag.");
                 if (property.readOnly)
                     notes += (notes.empty() ? "" : " ") + std::string("(runtime state, not saved)");
                 out << "| `" << property.name << "` | " << typeName(property.type) << " | "

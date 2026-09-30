@@ -183,6 +183,12 @@ class FieldBuilder {
         info_->isDisplacement = true;
         return *this;
     }
+    // A point in the entity's own space (a hinge's anchor). The editor draws it as a pin in the
+    // scene view and lets the user drag it.
+    FieldBuilder &pin() {
+        info_->isPin = true;
+        return *this;
+    }
     // A string naming a set ("Player1") of the project's input map; the editor offers a picker.
     FieldBuilder &inputSet() {
         info_->isInputSet = true;

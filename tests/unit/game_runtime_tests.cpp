@@ -344,6 +344,39 @@ void fixedStepping() {
     CHECK(runtime.tick() == 12);
 }
 
+// A display's frames are never exactly a tick long. A raw clock would run no tick on one frame and
+// two on the next (a hitch); frames within a fraction of a millisecond of a tick, of two, or of
+// half of one count as exact, and every other frame time is used as measured.
+void frameTimesDoNotHitch() {
+    Fixture f;
+    addBody(*f.scene, "Box", {0, 0}, {1, 1}, RigidBodyType::Static);
+    GameRuntime &runtime = f.start();
+    // A 60 Hz screen with a jittery clock: exactly one tick every frame.
+    const double jitter[] = {0.0164, 0.0169, 0.0166, 0.0170, 0.0163, 0.0167, 0.0168};
+    std::uint64_t before = runtime.tick();
+    for (int frame = 0; frame < 140; ++frame) {
+        runtime.update(jitter[frame % 7], nothing());
+        CHECK(runtime.tick() == before + 1);
+        before = runtime.tick();
+    }
+    // A 120 Hz screen: a tick every other frame, never two in a row or two apart.
+    const double fast[] = {0.0081, 0.0086, 0.0083, 0.0084, 0.0082};
+    before = runtime.tick();
+    for (int frame = 0; frame < 100; ++frame) {
+        runtime.update(fast[frame % 5], nothing());
+        CHECK(runtime.tick() == before + (frame % 2 == 1 ? 1 : 0));
+        before = runtime.tick();
+    }
+    // A frame that is a tick and a half is not near any multiple: it accumulates as measured.
+    runtime.update(0.025, nothing());
+    CHECK(runtime.tick() == before + 1);
+    runtime.update(0.025, nothing()); // 0.05 in all: three ticks so far, 0.0003 s over.
+    CHECK(runtime.tick() == before + 3);
+    // A stalled frame of two ticks and a bit runs both ticks at once.
+    runtime.update(0.0335, nothing());
+    CHECK(runtime.tick() == before + 5);
+}
+
 void compoundBodyAndKinematic() {
     Fixture f;
     f.scene->settings.gravity = {0, 0};
@@ -620,6 +653,7 @@ int main() {
     inputEdges();
     actionsThroughTheRuntime();
     fixedStepping();
+    frameTimesDoNotHitch();
     compoundBodyAndKinematic();
     colliderGeometry();
     spawning();
