@@ -31,14 +31,17 @@ set(exe "")
 if(WIN32)
     set(exe ".exe")
 endif()
-set(sample "${prefix}/share/yk-engine/projects/elemental-prototype")
+set(sample "${prefix}/share/yk-engine/YK-DemoGame")
 set(docs "${prefix}/share/doc/YKEngine")
 foreach(required
-        "${prefix}/bin/yk_editor${exe}" "${prefix}/bin/yk_player${exe}"
-        "${sample}/project.ykproj" "${sample}/scenes/test_level.ykscene"
-        "${docs}/README.md" "${docs}/THIRD_PARTY.md" "${docs}/editor.md"
+        "${prefix}/bin/yk_editor${exe}" "${prefix}/bin/yk_player${exe}" "${prefix}/bin/yk${exe}"
+        "${sample}/project.ykproj" "${sample}/scenes/level01.ykscene"
+        "${docs}/README.md" "${docs}/THIRD_PARTY.md" "${docs}/EDITOR.md" "${docs}/ARCHITECTURE.md"
+        "${docs}/BUILDING.md" "${docs}/PROJECT_FORMAT.md" "${docs}/STATUS.md"
         "${docs}/licenses/Box2D-MIT.txt" "${docs}/licenses/SDL3.txt" "${docs}/licenses/DearImGui-MIT.txt"
-        "${docs}/licenses/ProggyForever-MIT.txt" "${docs}/licenses/stb_image-PD.txt")
+        "${docs}/licenses/ProggyForever-MIT.txt" "${docs}/licenses/stb_image-PD.txt"
+        "${docs}/licenses/Inter-OFL-1.1.txt" "${docs}/licenses/JetBrainsMono-OFL-1.1.txt"
+        "${docs}/licenses/Codicons-CC-BY-4.0.txt")
     if(NOT EXISTS "${required}")
         message(FATAL_ERROR "The installation lacks ${required}")
     endif()
@@ -53,7 +56,7 @@ if(NOT top STREQUAL "bin;share")
 endif()
 file(GLOB programs RELATIVE "${prefix}/bin" "${prefix}/bin/*")
 list(SORT programs)
-if(NOT programs STREQUAL "yk_editor${exe};yk_player${exe}")
+if(NOT programs STREQUAL "yk${exe};yk_editor${exe};yk_player${exe}")
     message(FATAL_ERROR "Unexpected programs installed: ${programs}")
 endif()
 file(GLOB_RECURSE headers "${prefix}/*.h" "${prefix}/*.hpp")
@@ -62,16 +65,51 @@ if(headers OR libraries)
     message(FATAL_ERROR "The installation contains headers or libraries: ${headers} ${libraries}")
 endif()
 
-# The installed player runs the installed sample project.
+# The installed command line validates, and the installed player runs, the installed demo project.
 set(ENV{SDL_VIDEODRIVER} dummy)
 set(ENV{SDL_RENDER_DRIVER} software)
 set(ENV{SDL_AUDIODRIVER} dummy)
-run("the installed player's --validate" "${prefix}/bin/yk_player${exe}" --validate "${sample}")
+run("the installed yk validate" "${prefix}/bin/yk${exe}" validate "${sample}")
 run("the installed player" "${prefix}/bin/yk_player${exe}" --frames 90 --fixed --no-audio
     --capture "${WORK}/player.bmp" "${sample}")
 if(NOT EXISTS "${WORK}/player.bmp")
     message(FATAL_ERROR "The installed player did not capture a frame")
 endif()
+
+# The installed command line packages the installed demo for this system with the installed player
+# and the license notices found in the installation; the exported game has no development files and
+# runs.
+if(WIN32)
+    set(target windows)
+elseif(APPLE)
+    set(target macos)
+else()
+    set(target linux)
+endif()
+run("the installed yk export" "${prefix}/bin/yk${exe}" export "${sample}" --target ${target}
+    --out "${WORK}/exported" --zip)
+if(target STREQUAL "macos")
+    set(game_root "${WORK}/exported/Cinder Vale.app/Contents/Resources")
+    set(game "${WORK}/exported/Cinder Vale.app/Contents/MacOS/CinderVale")
+    set(game_archive "${WORK}/exported/Cinder Vale.app.zip")
+else()
+    set(game_root "${WORK}/exported/Cinder-Vale-${target}")
+    set(game "${game_root}/CinderVale${exe}")
+    set(game_archive "${WORK}/exported/Cinder-Vale-${target}.zip")
+endif()
+foreach(required "${game}" "${game_archive}" "${game_root}/data/project.ykproj"
+        "${game_root}/data/scenes/level01.ykscene" "${game_root}/README.txt"
+        "${game_root}/licenses/SDL3.txt" "${game_root}/licenses/Box2D-MIT.txt")
+    if(NOT EXISTS "${required}")
+        message(FATAL_ERROR "The exported game lacks ${required}")
+    endif()
+endforeach()
+foreach(never_shipped "${game_root}/data/tools" "${game_root}/data/README.md")
+    if(EXISTS "${never_shipped}")
+        message(FATAL_ERROR "The exported game contains ${never_shipped}")
+    endif()
+endforeach()
+run("the exported game" "${game}" --frames 60 --fixed --no-audio)
 
 # The installed editor finds the installed sample project from its welcome screen and plays it.
 set(ENV{SAMPLE_DIR} "${sample}")

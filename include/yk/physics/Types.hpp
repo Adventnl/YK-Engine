@@ -67,6 +67,12 @@ struct ShapeDef {
     float restitution{};
     CollisionFilter filter;
     bool sensor{};
+    // A one-way platform blocks only what comes from its solid side: a body above it (relative to
+    // `oneWayNormal`) lands and stands on it, while a body below or beside it, or moving up through
+    // it, passes freely. `oneWayNormal` is body-local (+Y is down, so "up" is (0, -1)). Not allowed
+    // on sensors. The decision is made per contact, before the solver responds.
+    bool oneWay{};
+    Vec2 oneWayNormal{0.0F, -1.0F};
 };
 struct Circle {
     float radius{0.5F};

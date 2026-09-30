@@ -1,0 +1,42 @@
+{
+  "format": "yk.animator",
+  "version": 1,
+  "parameters": [
+    {
+      "name": "satisfied",
+      "type": "bool"
+    }
+  ],
+  "entry": "Waiting",
+  "states": [
+    {
+      "name": "Waiting",
+      "clip": "waiting"
+    },
+    {
+      "name": "Active",
+      "clip": "active"
+    }
+  ],
+  "transitions": [
+    {
+      "from": "Waiting",
+      "to": "Active",
+      "when": [
+        {
+          "parameter": "satisfied"
+        }
+      ]
+    },
+    {
+      "from": "Active",
+      "to": "Waiting",
+      "when": [
+        {
+          "parameter": "satisfied",
+          "value": false
+        }
+      ]
+    }
+  ]
+}

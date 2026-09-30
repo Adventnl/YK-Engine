@@ -1,0 +1,108 @@
+{
+  "format": "yk.prefab",
+  "version": 1,
+  "root": "13169470533208dd",
+  "entities": [
+    {
+      "id": "13169470533208dd",
+      "name": "Torch",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/torch.png",
+            "shape": "Rectangle",
+            "size": [0.5, 1.125],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": -15,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0ad0ffbeb3f5f3aa",
+      "name": "Glow",
+      "parent": "13169470533208dd",
+      "transform": {
+        "position": [0, -0.3],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ffaa50ff",
+            "intensity": 0.8,
+            "radius": 3.4,
+            "offset": [0, 0],
+            "flicker": 0.5,
+            "flickerSpeed": 9,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "9eff937454970e89",
+      "name": "Flame",
+      "parent": "13169470533208dd",
+      "transform": {
+        "position": [0, -0.28],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 26,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.3, 0.6],
+            "area": "Circle",
+            "areaSize": [0.18, 0.1],
+            "direction": 0,
+            "spread": 25,
+            "speed": [0.5, 1.1],
+            "gravity": [0, -1.2],
+            "drag": 0,
+            "startSize": [0.14, 0.28],
+            "endScale": 0.1,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#ffcd5aeb",
+            "endColor": "#ff500a00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    }
+  ]
+}

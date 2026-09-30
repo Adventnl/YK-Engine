@@ -4,18 +4,43 @@
 #include <cmath>
 
 namespace yk {
-void InputTracker::feed(const Keyboard &frame) {
+void InputTracker::feed(const InputFrame &frame) {
     for (std::size_t i = 0; i < keyCount; ++i) {
-        const ButtonState state = frame.state(static_cast<Key>(i));
+        const ButtonState state = frame.keyboard.state(static_cast<Key>(i));
         held_[i] = state.held;
         pressed_[i] = pressed_[i] || state.pressed;
         released_[i] = released_[i] || state.released;
     }
+    for (std::size_t p = 0; p < maxGamepads; ++p) {
+        PadTrack &track = pads_[p];
+        const Gamepad &pad = frame.gamepads[p];
+        track.connected = pad.connected();
+        for (std::size_t b = 0; b < gamepadButtonCount; ++b) {
+            const ButtonState state = pad.button(static_cast<GamepadButton>(b));
+            track.held[b] = state.held;
+            track.pressed[b] = track.pressed[b] || state.pressed;
+            track.released[b] = track.released[b] || state.released;
+        }
+        for (std::size_t a = 0; a < gamepadAxisCount; ++a)
+            track.axes[a] = pad.axis(static_cast<GamepadAxis>(a));
+    }
 }
-void InputTracker::fill(Keyboard &tick) {
+void InputTracker::fill(InputFrame &tick) {
     for (std::size_t i = 0; i < keyCount; ++i) {
-        tick.assign(static_cast<Key>(i), {held_[i], pressed_[i], released_[i]});
+        tick.keyboard.assign(static_cast<Key>(i), {held_[i], pressed_[i], released_[i]});
         pressed_[i] = released_[i] = false;
+    }
+    for (std::size_t p = 0; p < maxGamepads; ++p) {
+        PadTrack &track = pads_[p];
+        Gamepad &pad = tick.gamepads[p];
+        pad.setConnected(track.connected);
+        for (std::size_t b = 0; b < gamepadButtonCount; ++b) {
+            pad.assignButton(static_cast<GamepadButton>(b),
+                             {track.held[b], track.pressed[b], track.released[b]});
+            track.pressed[b] = track.released[b] = false;
+        }
+        for (std::size_t a = 0; a < gamepadAxisCount; ++a)
+            pad.setAxis(static_cast<GamepadAxis>(a), track.axes[a]);
     }
 }
 
@@ -33,6 +58,8 @@ Result<std::unique_ptr<GameRuntime>> GameRuntime::create(std::unique_ptr<Scene> 
         options.viewportSize.x <= 0 || options.viewportSize.y <= 0)
         return Error{"Invalid runtime options"};
     if (auto status = options.layers.validate(); !status)
+        return Error{status.error()};
+    if (auto status = options.inputMap.validate(); !status)
         return Error{status.error()};
     auto runtime = std::unique_ptr<GameRuntime>(new GameRuntime());
     runtime->impl_->options = std::move(options);
@@ -53,7 +80,8 @@ Status GameRuntime::Impl::rebuild(std::unique_ptr<Scene> fresh) {
     ticks = 0;
     accumulator = 0;
     restartWanted = false;
-    tickKeyboard = Keyboard{};
+    tickInput = InputFrame{};
+    actions = ActionInput(options.inputMap);
     return buildWorld();
 }
 
@@ -92,7 +120,8 @@ void GameRuntime::Impl::startPending() {
 }
 
 void GameRuntime::Impl::fixedTick() {
-    input.fill(tickKeyboard);
+    input.fill(tickInput);
+    actions.update(tickInput);
     syncActivation();
     startPending();
     const float step = static_cast<float>(options.fixedSeconds);
@@ -142,10 +171,16 @@ void GameRuntime::Impl::finishFrame() {
 }
 
 void GameRuntime::update(double frameSeconds, const Keyboard &keyboard) {
+    InputFrame frame;
+    frame.keyboard = keyboard;
+    update(frameSeconds, frame);
+}
+
+void GameRuntime::update(double frameSeconds, const InputFrame &frameInput) {
     auto &state = *impl_;
     if (state.paused)
         return;
-    state.input.feed(keyboard);
+    state.input.feed(frameInput);
     if (!std::isfinite(frameSeconds) || frameSeconds < 0)
         frameSeconds = 0;
     const double step = state.options.fixedSeconds;
@@ -163,10 +198,16 @@ void GameRuntime::update(double frameSeconds, const Keyboard &keyboard) {
 }
 
 void GameRuntime::stepOnce(const Keyboard &keyboard) {
+    InputFrame frame;
+    frame.keyboard = keyboard;
+    stepOnce(frame);
+}
+
+void GameRuntime::stepOnce(const InputFrame &frameInput) {
     auto &state = *impl_;
     if (state.paused)
         return;
-    state.input.feed(keyboard);
+    state.input.feed(frameInput);
     state.fixedTick();
     state.variableUpdate(static_cast<float>(state.options.fixedSeconds));
     state.finishFrame();
@@ -199,13 +240,58 @@ const physics::World &GameRuntime::physics() const {
     return *impl_->world;
 }
 const Keyboard &GameRuntime::keyboard() const {
-    return impl_->tickKeyboard;
+    return impl_->tickInput.keyboard;
+}
+const ActionInput &GameRuntime::input() const {
+    return impl_->actions;
 }
 AudioSink &GameRuntime::audio() {
     return impl_->options.audio ? *impl_->options.audio : impl_->nullAudio;
 }
 const AssetSource *GameRuntime::assets() const {
     return impl_->options.assets;
+}
+namespace {
+// Reads and parses a JSON asset; logs and returns an error result when it cannot.
+Result<Json> readJsonAsset(const AssetSource *assets, const std::string &path) {
+    if (!assets)
+        return Error{"there is no asset source"};
+    auto text = assets->readText(path);
+    if (!text)
+        return Error{text.error()};
+    return Json::parse(text.value());
+}
+} // namespace
+std::shared_ptr<const AnimationSet> GameRuntime::animationSet(const std::string &path) {
+    const auto cached = impl_->animationSets.find(path);
+    if (cached != impl_->animationSets.end())
+        return cached->second;
+    std::shared_ptr<const AnimationSet> loaded;
+    auto document = readJsonAsset(impl_->options.assets, path);
+    auto set = document ? parseAnimationSet(document.value())
+                        : Result<AnimationSet>(Error{document.error()});
+    if (set)
+        loaded = std::make_shared<const AnimationSet>(std::move(set.value()));
+    else
+        log(LogLevel::Warning, "animation", "Cannot load " + path + ": " + set.error());
+    impl_->animationSets.emplace(path, loaded);
+    return loaded;
+}
+std::shared_ptr<const AnimationController>
+GameRuntime::animationController(const std::string &path) {
+    const auto cached = impl_->animationControllers.find(path);
+    if (cached != impl_->animationControllers.end())
+        return cached->second;
+    std::shared_ptr<const AnimationController> loaded;
+    auto document = readJsonAsset(impl_->options.assets, path);
+    auto controller = document ? AnimationController::fromJson(document.value())
+                               : Result<AnimationController>(Error{document.error()});
+    if (controller)
+        loaded = std::make_shared<const AnimationController>(std::move(controller.value()));
+    else
+        log(LogLevel::Warning, "animation", "Cannot load " + path + ": " + controller.error());
+    impl_->animationControllers.emplace(path, loaded);
+    return loaded;
 }
 Blackboard &GameRuntime::blackboard() {
     return impl_->blackboard;
@@ -277,6 +363,26 @@ Result<EntityId> GameRuntime::spawn(const Json &prefab, Vec2 worldPosition, Enti
         return created;
     impl_->bindEntities(impl_->scene->subtree(created.value()));
     return created;
+}
+Result<EntityId> GameRuntime::spawnPrefab(const std::string &path, Vec2 worldPosition,
+                                          EntityId parent) {
+    auto cached = impl_->prefabDocuments.find(path);
+    if (cached == impl_->prefabDocuments.end()) {
+        if (impl_->failedPrefabs.contains(path))
+            return Error{"Prefab " + path + " could not be loaded"}; // Already reported.
+        auto document = readJsonAsset(impl_->options.assets, path);
+        if (!document) {
+            impl_->failedPrefabs.insert(path);
+            log(LogLevel::Warning, "runtime",
+                "Cannot load prefab " + path + ": " + document.error());
+            return Error{"Cannot load prefab " + path + ": " + document.error()};
+        }
+        cached = impl_->prefabDocuments.emplace(path, std::move(document.value())).first;
+    }
+    auto spawned = spawn(cached->second, worldPosition, parent);
+    if (!spawned && impl_->failedPrefabs.insert(path).second)
+        log(LogLevel::Warning, "runtime", "Cannot spawn prefab " + path + ": " + spawned.error());
+    return spawned;
 }
 void GameRuntime::requestRestart() {
     impl_->restartWanted = true;

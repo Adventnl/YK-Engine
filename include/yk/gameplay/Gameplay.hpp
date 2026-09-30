@@ -54,21 +54,30 @@ void sendSignal(Scene &scene, EntityId source, const std::vector<EntityRef> &tar
 // accident.
 bool matchesActivator(const Entity &entity, const std::vector<std::string> &tags);
 
+// Spawns an effect prefab at `worldPosition` when `prefab` names one; a missing or invalid prefab
+// is reported once by the runtime and otherwise ignored, so effects can never break gameplay.
+void spawnEffect(GameContext &context, const AssetRef &prefab, Vec2 worldPosition);
+
 // Drives a kinematic body toward `worldTarget` within one tick (so riders are carried), or moves
 // the entity directly when it has no body.
 void moveKinematic(GameContext &context, Entity &entity, Vec2 worldTarget);
 
 // ----- Character -----------------------------------------------------------------------------
-// Health-less "can be killed, then comes back": disables the entity's body, colliders and sprite
-// while dead and returns it to its spawn point (or last checkpoint) after a delay.
+// Health-less "can be killed, then comes back". Dying takes the entity's body and colliders out of
+// the world at once, keeps its sprite visible for `deathDuration` so a death animation can play
+// (it sets the AnimatedSprite parameter `dead`), then hides it; after `respawnDelay` it returns to
+// its spawn point (or last checkpoint), sets `dead` back and raises the trigger `respawned`.
 class Killable final : public Component {
   public:
     bool respawn{true};
     float respawnDelay{1.0F};
+    float deathDuration{0.6F}; // Seconds the sprite stays visible after dying.
     EntityRef
         spawnPoint; // Where to return; otherwise the last checkpoint, else the start position.
     AssetRef deathSound;
     AssetRef respawnSound;
+    AssetRef deathEffect;   // Prefab spawned where it died.
+    AssetRef respawnEffect; // Prefab spawned where it returns.
     static void describe(TypeBuilder<Killable> &type);
 
     bool alive() const {
@@ -80,8 +89,11 @@ class Killable final : public Component {
     void onFixedUpdate(GameContext &context, float seconds) override;
 
   private:
-    void setPresent(bool present);
+    void setSolid(bool solid);
+    void setVisible(bool visible);
     bool alive_{true};
+    bool dying_{};
+    float dyingTimer_{};
     float timer_{};
     Vec2 home_{};
     Vec2 checkpoint_{};
@@ -89,13 +101,18 @@ class Killable final : public Component {
 };
 
 // Side-view character movement on a dynamic body: acceleration-based running, variable-height
-// jumps, coyote time, jump buffering, slopes, moving platforms. Keys are properties, so two
-// characters with different keys need no code.
+// jumps, coyote time, jump buffering, slopes, moving platforms. It reads named actions from the
+// entity's PlayerInput, so two characters with different keys (or a gamepad) need no code.
+//
+// It tells the entity's AnimatedSprite what the character is doing through generic parameters and
+// never names a clip: `speed` (m/s along the ground), `speedRatio` (speed / moveSpeed), `moveInput`
+// (-1..1), `velocityY` (m/s, positive down), `grounded` and `facing` (+1 right, -1 left), and the
+// triggers `jumped` and `landed`. The animation controller asset decides what to play.
 class PlatformerController final : public Component {
   public:
-    Key leftKey{Key::A};
-    Key rightKey{Key::D};
-    Key jumpKey{Key::W};
+    std::string moveLeftAction{"MoveLeft"};
+    std::string moveRightAction{"MoveRight"};
+    std::string jumpAction{"Jump"};
     float moveSpeed{5.5F};           // m/s
     float groundAcceleration{70.0F}; // m/s^2 while a direction is held on the ground
     float groundDeceleration{80.0F}; // m/s^2 when no direction is held on the ground
@@ -110,7 +127,13 @@ class PlatformerController final : public Component {
     float maxSlopeDegrees{55.0F};
     float gripFriction{1.2F};  // Friction when standing still on the ground.
     float slideFriction{0.0F}; // Friction when moving or airborne (no wall sticking).
+    float landingSpeed{4.0F};  // Downward speed (m/s) at which touching down counts as a "landed".
+    float groundSnap{0.3F};    // Walking off a ramp crest or down a slope keeps the feet on the
+                               // ground when it is at most this far below; 0 turns that off.
     AssetRef jumpSound;
+    AssetRef landSound;
+    AssetRef jumpEffect; // Prefab spawned at the feet when a jump starts (dust, for example).
+    AssetRef landEffect; // Prefab spawned at the feet after a landing.
     static void describe(TypeBuilder<PlatformerController> &type);
 
     bool grounded() const {
@@ -131,10 +154,15 @@ class PlatformerController final : public Component {
     bool jumping_{};
     bool gripping_{};
     bool frictionApplied_{};
+    float fallSpeed_{}; // Fastest downward speed since leaving the ground.
+    bool wasGroundedForAnimation_{true};
+    bool hadGround_{};
     float appliedGravityScale_{-1.0F};
 };
 
 // ----- Mechanisms ----------------------------------------------------------------------------
+// While pressed it drives its targets. With an AnimatedSprite it publishes the parameter `pressed`;
+// without one it tints and sinks its sprite.
 class PressurePlate final : public Component {
   public:
     std::vector<EntityRef> targets;
@@ -159,10 +187,15 @@ class PressurePlate final : public Component {
     Color baseColor_{};
 };
 
+// Flips between on and off. By default that happens when a character touches it; with an
+// `interactAction` it happens when a character standing in it presses that action of its own
+// PlayerInput set (and sets the character's `interact` animation trigger). With an AnimatedSprite
+// it publishes the parameter `on`; without one it tints its sprite.
 class Lever final : public Component {
   public:
     std::vector<EntityRef> targets;
     std::vector<std::string> activatorTags;
+    std::string interactAction; // Empty: flips on touch.
     bool startsOn{false};
     float cooldown{0.4F};             // Seconds before it can be flipped again.
     Color onColor{90, 220, 110, 255}; // The sprite's own color is the off look.
@@ -178,6 +211,7 @@ class Lever final : public Component {
 
   private:
     void applyVisuals();
+    void flip(GameContext &context, Entity &by);
     bool on_{};
     float cooldown_{};
     Color baseColor_{};
@@ -242,7 +276,10 @@ class Collectible final : public Component {
     std::string variable{"score"};          // Blackboard variable to increase.
     float value{1.0F};
     AssetRef sound;
+    AssetRef collectEffect; // Prefab spawned where it was picked up (a sparkle).
     static void describe(TypeBuilder<Collectible> &type);
+    // Adds `value` to `<variable>_total`, so UI text can show "{gems}/{gems_total}".
+    void onStart(GameContext &context) override;
     void onTriggerEnter(GameContext &context, Entity &other) override;
 };
 
@@ -305,6 +342,45 @@ class TriggerZone final : public Component {
     bool finished_{};
 };
 
+// ----- Level rules ---------------------------------------------------------------------------
+// The rules of a level: it completes when every listed Goal is satisfied at once, can restart when
+// anyone dies or when a person presses the restart action, and can continue to another scene. It
+// publishes `level_state` ("playing", "complete", "failed"), `level_message` and `level_time`
+// (whole seconds) to the Blackboard, so UiText can show them, and raises "level_completed".
+class LevelFlow final : public Component {
+  public:
+    std::vector<EntityRef> goals;
+    bool restartOnDeath{false};
+    float restartDelay{1.5F};
+    float completeDelay{2.5F};
+    std::string nextScene; // Project-relative scene to load after completion; empty stays.
+    std::string restartSet{"Global"};
+    std::string restartAction{"Restart"};
+    std::string completeMessage{"LEVEL COMPLETE!"};
+    std::string failMessage{"TRY AGAIN"};
+    AssetRef completeSound;
+    AssetRef failSound;
+    static void describe(TypeBuilder<LevelFlow> &type);
+
+    bool completed() const {
+        return state_ == State::Complete;
+    }
+    void onStart(GameContext &context) override;
+    void onFixedUpdate(GameContext &context, float seconds) override;
+    void onDestroy(GameContext &context) override;
+
+  private:
+    enum class State { Playing, Complete, Failed };
+    State state_{State::Playing};
+    float timer_{};
+    float elapsed_{};
+    EventBus::Subscription deathSubscription_{};
+};
+
 // Registers every component above plus generic entity templates (Platform, Door, ...).
 void registerGameplayComponents(ComponentRegistry &registry);
+// Everything the stock tools know: the engine's standard components, effects and this library. The
+// editor, the player and the `yk` command line start from it; a game with its own C++ components
+// registers them after it (see docs/BUILDING.md, "Game modules").
+void registerStandardComponents(ComponentRegistry &registry);
 } // namespace yk

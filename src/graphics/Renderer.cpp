@@ -81,8 +81,10 @@ struct Renderer::Impl {
     Camera2D frameCamera; // Camera given to beginFrame; restored after each pass.
     Vec2 viewport;        // Whole output (logical units in letterbox mode).
     Vec2 passSize;        // Size of the viewport the current pass draws into.
-    std::array<std::optional<TextureHandle>, 2> builtins;
+    std::array<std::optional<TextureHandle>, 3> builtins;
     std::set<std::size_t> renderTargets; // Texture indices created by createRenderTarget.
+    FrameStats building;                 // Counted while the current frame is being drawn.
+    FrameStats finished;                 // The last completed frame.
     bool targetActive{};
     bool nativeResolution{};
     bool passOpen{};
@@ -171,6 +173,23 @@ Result<TextureHandle> Renderer::builtinTexture(BuiltinTexture kind) {
             }
         created = createTexture(size, size, pixels, TextureFilter::Linear);
     }
+    if (kind == BuiltinTexture::Glow) {
+        // White with a smooth radial falloff (alpha 1 at the center, 0 at the edge): the shape of
+        // every soft particle and glow. Squared so it fades gently rather than showing a disc.
+        constexpr int size = 128;
+        std::vector<Color> pixels(static_cast<std::size_t>(size * size));
+        for (int y = 0; y < size; ++y)
+            for (int x = 0; x < size; ++x) {
+                const float distance = std::hypot(static_cast<float>(x) + 0.5F - size / 2.0F,
+                                                  static_cast<float>(y) + 0.5F - size / 2.0F) /
+                                       (size / 2.0F);
+                const float falloff = std::clamp(1.0F - distance, 0.0F, 1.0F);
+                pixels[static_cast<std::size_t>(y * size + x)] = {
+                    255, 255, 255,
+                    static_cast<std::uint8_t>(std::lround(falloff * falloff * 255.0F))};
+            }
+        created = createTexture(size, size, pixels, TextureFilter::Linear);
+    }
     if (created)
         slot = created.value();
     return created;
@@ -205,11 +224,15 @@ SDL_Texture *Renderer::nativeTexture(TextureHandle texture) const {
     assertThread();
     return valid(texture) ? impl_->textures[texture.index_].get() : nullptr;
 }
+Renderer::FrameStats Renderer::lastFrameStats() const {
+    assertThread();
+    return impl_->finished;
+}
 SDL_Renderer *Renderer::nativeRenderer() const {
     assertThread();
     return impl_->native.get();
 }
-Result<TextureHandle> Renderer::loadBmp(const std::filesystem::path &path) {
+Result<TextureHandle> Renderer::loadBmp(const std::filesystem::path &path, TextureFilter filter) {
     assertThread();
     // The caller resolves its stable asset root. Never depend on an implicit working directory.
     if (!path.is_absolute())
@@ -230,7 +253,9 @@ Result<TextureHandle> Renderer::loadBmp(const std::filesystem::path &path) {
     if (!texture)
         return sdlError("Create BMP texture '" + filename + "'");
     if (!SDL_SetTextureBlendMode(texture.get(), SDL_BLENDMODE_BLEND) ||
-        !SDL_SetTextureScaleMode(texture.get(), SDL_SCALEMODE_NEAREST))
+        !SDL_SetTextureScaleMode(texture.get(), filter == TextureFilter::Linear
+                                                    ? SDL_SCALEMODE_LINEAR
+                                                    : SDL_SCALEMODE_NEAREST))
         return sdlError("Configure BMP texture '" + filename + "'");
     TextureHandle handle;
     handle.owner_ = impl_->identity;
@@ -239,7 +264,7 @@ Result<TextureHandle> Renderer::loadBmp(const std::filesystem::path &path) {
     impl_->fileTextures.insert_or_assign(canonical, handle);
     return handle;
 }
-Result<TextureHandle> Renderer::loadPng(const std::filesystem::path &path) {
+Result<TextureHandle> Renderer::loadPng(const std::filesystem::path &path, TextureFilter filter) {
     assertThread();
     if (!path.is_absolute())
         return Error{"PNG path must be absolute: " + path.string()};
@@ -258,8 +283,8 @@ Result<TextureHandle> Renderer::loadPng(const std::filesystem::path &path) {
     if (!pixels)
         return Error{"Decode PNG '" + filename + "': " + stbi_failure_reason()};
     const auto count = static_cast<std::size_t>(width) * static_cast<std::size_t>(height);
-    auto texture =
-        createTexture(width, height, {reinterpret_cast<const Color *>(pixels.get()), count});
+    auto texture = createTexture(width, height,
+                                 {reinterpret_cast<const Color *>(pixels.get()), count}, filter);
     if (!texture)
         return Error{"Upload PNG '" + filename + "': " + texture.error()};
     impl_->fileTextures.insert_or_assign(canonical, texture.value());
@@ -299,6 +324,7 @@ Status Renderer::beginFrame(Color clear, const Camera2D &camera) {
     impl_->camera = impl_->frameCamera = camera;
     impl_->passSize = impl_->viewport;
     impl_->passOpen = false;
+    impl_->building = {};
     impl_->commands.clear();
     SDL_SetRenderViewport(impl_->native.get(), nullptr);
     if (!SDL_SetRenderDrawColor(impl_->native.get(), clear.r, clear.g, clear.b, clear.a) ||
@@ -370,7 +396,11 @@ Status Renderer::flush() {
                                  region.size.y};
                 source = &sourceStorage;
             }
-            if (!SDL_SetTextureColorMod(texture, sprite->tint.r, sprite->tint.g, sprite->tint.b) ||
+            ++impl_->building.sprites;
+            if (!SDL_SetTextureBlendMode(texture, sprite->blend == BlendMode::Additive
+                                                      ? SDL_BLENDMODE_ADD
+                                                      : SDL_BLENDMODE_BLEND) ||
+                !SDL_SetTextureColorMod(texture, sprite->tint.r, sprite->tint.g, sprite->tint.b) ||
                 !SDL_SetTextureAlphaMod(texture, sprite->tint.a) ||
                 !SDL_RenderTextureRotated(impl_->native.get(), texture, source, &destination,
                                           sprite->transform.rotationDegrees, &pivot,
@@ -378,6 +408,7 @@ Status Renderer::flush() {
                                                                  : SDL_FLIP_NONE))
                 return sdlError("Draw sprite");
         } else if (const auto *line = std::get_if<DebugLine>(&command.data)) {
+            ++impl_->building.lines;
             const auto first = impl_->camera.worldToScreen(line->first, impl_->passSize);
             const auto second = impl_->camera.worldToScreen(line->second, impl_->passSize);
             if (!finite(first) || !finite(second))
@@ -387,6 +418,7 @@ Status Renderer::flush() {
                 !SDL_RenderLine(impl_->native.get(), first.x, first.y, second.x, second.y))
                 return sdlError("Draw debug line");
         } else {
+            ++impl_->building.lines;
             const auto &debug = std::get<DebugRect>(command.data);
             const auto position = impl_->camera.worldToScreen(debug.rect.position, impl_->passSize);
             const auto size = debug.rect.size * impl_->camera.zoom();
@@ -434,6 +466,7 @@ Status Renderer::beginPass(const RenderPass &pass) {
     }
     if (auto drawn = flush(); !drawn) // Earlier submissions belong to the previous view.
         return drawn;
+    ++impl_->building.passes;
     if (targetTexture) {
         if (!SDL_SetRenderTarget(impl_->native.get(), targetTexture))
             return sdlError("Set render target");
@@ -493,6 +526,7 @@ Status Renderer::present(const std::optional<std::filesystem::path> &capture) {
     }
     impl_->camera = impl_->frameCamera;
     impl_->passSize = impl_->viewport;
+    impl_->finished = impl_->building;
     if (!drawn)
         return drawn;
     if (capture)

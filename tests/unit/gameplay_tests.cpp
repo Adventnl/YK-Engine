@@ -1,5 +1,6 @@
 // Plays the gameplay components headlessly: scripted keyboard input against real physics.
 #include "support/check.hpp"
+#include "yk/components/Effects.hpp"
 #include "yk/core/Log.hpp"
 #include "yk/gameplay/Gameplay.hpp"
 #include "yk/runtime/GameRuntime.hpp"
@@ -41,6 +42,7 @@ struct World {
     std::unique_ptr<Scene> scene = std::make_unique<Scene>(registry, 11);
     std::unique_ptr<GameRuntime> runtime;
     RecordingAudio audio;
+    MemoryAssets assets;
     Keyboard keyboard;
     std::vector<std::string> events;
 
@@ -55,14 +57,14 @@ struct World {
     Entity &ground(float left = -40.0F, float right = 40.0F) {
         return box("Ground", {(left + right) / 2, floorTop + 0.5F}, {right - left, 1.0F});
     }
-    Entity &character(const char *name, Vec2 at, Key left = Key::A, Key right = Key::D,
-                      Key jump = Key::W, const char *tag = "") {
+    // `actionSet` names the input-map set that drives it ("Player1" is A/D/W, "Player2" the arrow
+    // keys); a set that does not exist leaves the character uncontrolled.
+    Entity &character(const char *name, Vec2 at, const char *actionSet = "Player1",
+                      const char *tag = "") {
         Entity &entity = scene->createEntity(name);
         entity.transform().position = at;
-        auto &controller = entity.add<PlatformerController>();
-        controller.leftKey = left;
-        controller.rightKey = right;
-        controller.jumpKey = jump;
+        entity.add<PlatformerController>();
+        entity.get<PlayerInput>()->actionSet = actionSet;
         entity.add<Killable>();
         entity.add<SpriteRenderer>().size = {0.6F, 0.95F};
         if (*tag)
@@ -73,6 +75,7 @@ struct World {
         RuntimeOptions options;
         options.layers = testLayers();
         options.audio = &audio;
+        options.assets = &assets;
         auto created = GameRuntime::create(std::move(scene), options);
         CHECK(created);
         runtime = std::move(created.value());
@@ -108,6 +111,546 @@ struct World {
 };
 
 constexpr float restingHeight = floorTop - 0.475F; // Capsule center when standing on the floor.
+
+// The whole animation chain on real physics: the controller publishes generic parameters, the
+// controller asset picks clips, the AnimatedSprite shows frames and mirrors the sprite. No code
+// here or in the controller names a clip.
+constexpr const char *heroAnimation = R"({"format":"yk.animation","version":2,
+    "texture":"assets/hero.png","columns":8,"rows":1,"clips":[
+    {"name":"idle","first":0,"count":2,"fps":4},
+    {"name":"run","first":2,"count":2,"fps":10},
+    {"name":"jump","first":4,"count":1,"fps":10,"loop":false},
+    {"name":"fall","first":5,"count":1,"fps":10},
+    {"name":"land","first":6,"count":1,"fps":20,"loop":false}]})";
+constexpr const char *heroController = R"({"format":"yk.animator","version":1,
+    "parameters":[
+      {"name":"speed","type":"float"},{"name":"velocityY","type":"float"},
+      {"name":"grounded","type":"bool","default":true},
+      {"name":"jumped","type":"trigger"},{"name":"landed","type":"trigger"}],
+    "entry":"Idle",
+    "states":[{"name":"Idle","clip":"idle"},{"name":"Run","clip":"run"},{"name":"Jump","clip":"jump"},
+              {"name":"Fall","clip":"fall"},{"name":"Land","clip":"land"}],
+    "transitions":[
+      {"from":"*","to":"Jump","when":[{"parameter":"jumped"}]},
+      {"from":"Jump","to":"Fall","when":[{"parameter":"velocityY","op":">","value":0.5}]},
+      {"from":"Run","to":"Fall","when":[{"parameter":"grounded","value":false}]},
+      {"from":"Idle","to":"Fall","when":[{"parameter":"grounded","value":false}]},
+      {"from":"Fall","to":"Land","when":[{"parameter":"landed"}]},
+      {"from":"Fall","to":"Idle","when":[{"parameter":"grounded"}]},
+      {"from":"Land","to":"Idle","exitTime":1.0},
+      {"from":"Idle","to":"Run","when":[{"parameter":"speed","op":">","value":0.5}]},
+      {"from":"Run","to":"Idle","when":[{"parameter":"speed","op":"<=","value":0.5}]}]})";
+
+void characterAnimation() {
+    World w;
+    w.assets.files["anim/hero.ykanim"] = heroAnimation;
+    w.assets.files["anim/hero.ykctl"] = heroController;
+    w.ground();
+    Entity &hero = w.character("Hero", {0, restingHeight - 1.0F});
+    auto &animated = hero.add<AnimatedSprite>();
+    animated.animation.path = "anim/hero.ykanim";
+    animated.controller.path = "anim/hero.ykctl";
+    w.start();
+    const auto state = [&]() -> std::string { return w.at("Hero").get<AnimatedSprite>()->state(); };
+    const auto sprite = [&]() -> SpriteRenderer & { return *w.at("Hero").get<SpriteRenderer>(); };
+
+    // The asset's sheet layout and texture are applied to the sprite.
+    w.tick(1);
+    CHECK(sprite().columns == 8 && sprite().texture.path == "assets/hero.png");
+
+    // Falling onto the floor from a small height: Fall, then Idle (too slow for a Land).
+    bool sawFall = false;
+    for (int i = 0; i < 60; ++i) {
+        w.tick();
+        sawFall = sawFall || state() == "Fall";
+    }
+    CHECK(sawFall && state() == "Idle" && sprite().frame <= 1 && !sprite().flipX);
+
+    // Running right: Run clip frames, sprite not mirrored; left: mirrored.
+    w.down(Key::D);
+    w.tick(30);
+    CHECK(state() == "Run" && (sprite().frame == 2 || sprite().frame == 3) && !sprite().flipX);
+    w.up(Key::D);
+    w.tick(40);
+    CHECK(state() == "Idle");
+    w.down(Key::A);
+    w.tick(20);
+    CHECK(state() == "Run" && sprite().flipX);
+    w.up(Key::A);
+    w.tick(40);
+    CHECK(state() == "Idle" && sprite().flipX); // Keeps facing left when standing.
+
+    // A jump (starting from Idle): Jump -> Fall -> Land -> Idle, in that order (repeats collapsed).
+    std::vector<std::string> sequence;
+    w.down(Key::W);
+    for (int i = 0; i < 140; ++i) {
+        if (i == 3)
+            w.up(Key::W);
+        w.tick();
+        if (sequence.empty() || sequence.back() != state())
+            sequence.push_back(state());
+    }
+    const std::vector<std::string> expected{"Jump", "Fall", "Land", "Idle"};
+    if (sequence != expected) {
+        std::string seen;
+        for (const std::string &name : sequence)
+            seen += name + " ";
+        std::fprintf(stderr, "jump sequence was: %s\n", seen.c_str());
+    }
+    CHECK(sequence == expected);
+    CHECK(sprite().frame <= 1);
+
+    // A character without an AnimatedSprite still mirrors its plain sprite (the old behaviour).
+    World plain;
+    plain.ground();
+    plain.character("Plain", {0, restingHeight});
+    plain.start();
+    plain.down(Key::A);
+    plain.tick(10);
+    CHECK(plain.at("Plain").get<SpriteRenderer>()->flipX);
+}
+
+// Level geometry a platformer needs beyond boxes: jump-through platforms and wedge ramps.
+void oneWayAndWedge() {
+    // A one-way platform hovering above the floor: the hero jumps up through it, lands on top and
+    // walks off it again.
+    {
+        World w;
+        w.ground();
+        Entity &platform = w.box("Ledge", {0.0F, 8.4F}, {4.0F, 0.4F}); // Spans y 8.2 .. 8.6.
+        platform.get<Collider>()->oneWay = true;
+        w.character("Hero", {-1.0F, restingHeight});
+        w.start();
+        w.tick(30);
+        auto *controller = w.at("Hero").get<PlatformerController>();
+        CHECK(controller->grounded());
+        // Hold jump for the whole rise (2.3 m: the feet reach y = 7.7, above the ledge's top 8.2).
+        w.down(Key::W);
+        float highest = 100.0F;
+        for (int i = 0; i < 50; ++i) {
+            w.tick();
+            highest = std::min(highest, w.position("Hero").y);
+        }
+        w.up(Key::W);
+        CHECK(highest < 8.2F - 0.475F - 0.1F); // It rose past the ledge: through it.
+        w.tick(60);
+        CHECK_NEAR(w.position("Hero").y, 8.2F - 0.475F, 0.06); // ...and now stands on top.
+        CHECK(controller->grounded());
+
+        // Walk off the right edge and land back on the floor.
+        w.down(Key::D);
+        w.tick(90);
+        w.up(Key::D);
+        w.tick(60);
+        CHECK(w.position("Hero").x > 2.0F);
+        CHECK_NEAR(w.position("Hero").y, restingHeight, 0.06);
+    }
+    // A platform lower than the hero is tall: a solid box would stop the hero, the one-way one is
+    // simply walked through (it only blocks from above).
+    {
+        World w;
+        w.ground();
+        Entity &low =
+            w.box("Ceiling", {0.0F, 9.35F}, {6.0F, 0.3F}); // Underside at y 9.5, feet at 10.
+        low.get<Collider>()->oneWay = true;
+        w.character("Hero", {-5.0F, restingHeight});
+        w.start();
+        w.tick(30);
+        w.down(Key::D);
+        w.tick(120);
+        CHECK(w.position("Hero").x > 2.0F);
+
+        World solid; // The same setup with a plain box blocks the hero, so the test can tell.
+        solid.ground();
+        solid.box("Ceiling", {0.0F, 9.35F}, {6.0F, 0.3F});
+        solid.character("Hero", {-5.0F, restingHeight});
+        solid.start();
+        solid.tick(30);
+        solid.down(Key::D);
+        solid.tick(120);
+        CHECK(solid.position("Hero").x < -2.0F);
+    }
+    // Wedge ramps: 4 wide, 2 high (about 27 degrees), rising to the right...
+    {
+        World w;
+        w.ground();
+        Entity &ramp = w.box("Ramp", {4.0F, floorTop - 1.0F}, {4.0F, 2.0F});
+        ramp.get<Collider>()->shape = ColliderShape::Wedge;
+        w.character("Hero", {-1.0F, restingHeight});
+        w.start();
+        w.tick(30);
+        w.down(Key::D);
+        w.tick(60);
+        CHECK(w.position("Hero").x > 2.5F && w.position("Hero").x < 5.5F); // On the ramp.
+        CHECK(w.position("Hero").y < restingHeight - 0.5F);                // Climbing.
+        CHECK(w.at("Hero").get<PlatformerController>()->grounded());
+        w.up(Key::D);
+        w.tick(45);
+        const Vec2 rest = w.position("Hero");
+        w.tick(60);
+        CHECK_NEAR(w.position("Hero").y, rest.y, 0.03); // Grip holds it on the slope.
+        CHECK_NEAR(w.position("Hero").x, rest.x, 0.03);
+    }
+    // ...and mirrored (scale x = -1): rising to the left.
+    {
+        World w;
+        w.ground();
+        Entity &ramp = w.box("Ramp", {-4.0F, floorTop - 1.0F}, {4.0F, 2.0F});
+        ramp.get<Collider>()->shape = ColliderShape::Wedge;
+        ramp.transform().scale = {-1.0F, 1.0F};
+        w.character("Hero", {1.0F, restingHeight});
+        w.start();
+        w.tick(30);
+        w.down(Key::A);
+        w.tick(60);
+        CHECK(w.position("Hero").x < -2.5F && w.position("Hero").x > -5.5F);
+        CHECK(w.position("Hero").y < restingHeight - 0.5F);
+        CHECK(w.at("Hero").get<PlatformerController>()->grounded());
+    }
+    // The tall side is a wall: walking into it from the right stops the hero at x = 6 + radius.
+    {
+        World w;
+        w.ground();
+        Entity &ramp = w.box("Ramp", {4.0F, floorTop - 1.0F}, {4.0F, 2.0F});
+        ramp.get<Collider>()->shape = ColliderShape::Wedge;
+        w.character("Hero", {9.0F, restingHeight});
+        w.start();
+        w.tick(30);
+        w.down(Key::A);
+        w.tick(120);
+        CHECK_NEAR(w.position("Hero").x, 6.3F, 0.1);
+        CHECK_NEAR(w.position("Hero").y, restingHeight, 0.06);
+    }
+}
+
+// A lever that needs the Interact action: touching it does nothing, pressing the action of the
+// character's own PlayerInput set flips it, and the character is told to play its interact clip.
+void interactLever() {
+    World w;
+    w.ground();
+    Entity &lever = w.box("Lever", {0.0F, floorTop - 0.4F}, {0.6F, 0.8F}, layers::sensor);
+    lever.get<Collider>()->isTrigger = true;
+    lever.add<Lever>().interactAction = "Interact";
+    w.character("One", {-1.5F, restingHeight});              // Player1: Interact is S / E.
+    w.character("Two", {3.0F, restingHeight}, "Player2");    // Player2: Interact is Down.
+    w.character("Nobody", {-3.0F, restingHeight}, "Nobody"); // No such set: cannot interact.
+    w.start();
+    w.tick(30);
+    auto *plate = w.at("Lever").get<Lever>();
+
+    // Walking through it (touching) flips nothing.
+    w.down(Key::D);
+    w.tick(60);
+    w.up(Key::D);
+    w.tick(30);
+    CHECK(!plate->on() && w.count("lever_toggled") == 0);
+    CHECK(w.position("One").x > 1.0F); // It walked past.
+
+    // Stand in it and press Interact (S): it flips once per press, not while held.
+    w.runtime->teleport(w.at("One"), {0.0F, restingHeight});
+    w.tick(30);
+    w.down(Key::S);
+    w.tick(3);
+    CHECK(plate->on() && w.count("lever_toggled") == 1);
+    w.tick(40); // Held: no repeat flips (also inside the cooldown).
+    CHECK(plate->on() && w.count("lever_toggled") == 1);
+    w.up(Key::S);
+    w.tick(30);
+    w.down(Key::S);
+    w.tick(3);
+    w.up(Key::S);
+    CHECK(!plate->on() && w.count("lever_toggled") == 2);
+
+    // Player2's own action works for player2, and pressing another player's action does not.
+    w.runtime->teleport(w.at("One"), {-6.0F, restingHeight}); // Out of the way.
+    w.runtime->teleport(w.at("Two"), {0.0F, restingHeight});
+    w.tick(60);
+    w.down(Key::S); // Player1's key with only Player2 in the lever.
+    w.tick(3);
+    w.up(Key::S);
+    CHECK(!plate->on());
+    w.down(Key::Down);
+    w.tick(3);
+    w.up(Key::Down);
+    CHECK(plate->on() && w.count("lever_toggled") == 3);
+    // A character with no action set never flips it, whatever is pressed.
+    w.runtime->teleport(w.at("Two"), {6.0F, restingHeight});
+    w.runtime->teleport(w.at("Nobody"), {0.0F, restingHeight});
+    w.tick(60);
+    for (const Key key : {Key::S, Key::Down, Key::E})
+        w.down(key);
+    w.tick(5);
+    for (const Key key : {Key::S, Key::Down, Key::E})
+        w.up(key);
+    CHECK(plate->on() && w.count("lever_toggled") == 3);
+}
+
+constexpr const char *actorAnimation = R"({"format":"yk.animation","version":2,"columns":4,"rows":1,
+    "clips":[{"name":"idle","first":0,"count":1},{"name":"interact","first":1,"count":1,"fps":30,"loop":false},
+             {"name":"death","first":2,"count":1,"loop":false},{"name":"back","first":3,"count":1}]})";
+constexpr const char *actorController = R"({"format":"yk.animator","version":1,
+    "parameters":[{"name":"dead","type":"bool"},{"name":"interact","type":"trigger"},
+                  {"name":"respawned","type":"trigger"}],
+    "states":[{"name":"Idle","clip":"idle"},{"name":"Interact","clip":"interact"},
+              {"name":"Death","clip":"death"},{"name":"Back","clip":"back"}],
+    "transitions":[
+      {"from":"*","to":"Death","when":[{"parameter":"dead"}]},
+      {"from":"Death","to":"Back","when":[{"parameter":"dead","value":false}]},
+      {"from":"Back","to":"Idle","exitTime":0.5},
+      {"from":"Idle","to":"Interact","when":[{"parameter":"interact"}]},
+      {"from":"Interact","to":"Idle","exitTime":1.0}]})";
+
+void interactAnimation() {
+    World w;
+    w.assets.files["a.ykanim"] = actorAnimation;
+    w.assets.files["a.ykctl"] = actorController;
+    w.ground();
+    Entity &lever = w.box("Lever", {0.0F, floorTop - 0.4F}, {0.6F, 0.8F}, layers::sensor);
+    lever.get<Collider>()->isTrigger = true;
+    lever.add<Lever>().interactAction = "Interact";
+    Entity &hero = w.character("Hero", {0.0F, restingHeight});
+    auto &animated = hero.add<AnimatedSprite>();
+    animated.animation.path = "a.ykanim";
+    animated.controller.path = "a.ykctl";
+    w.start();
+    w.tick(30);
+    const auto state = [&] { return w.at("Hero").get<AnimatedSprite>()->state(); };
+    CHECK(state() == "Idle");
+    w.down(Key::S);
+    w.tick(2);
+    w.up(Key::S);
+    CHECK(state() == "Interact"); // The lever told the character to play its interact clip...
+    w.tick(10);
+    CHECK(state() == "Idle"); // ...which finishes and returns to Idle.
+}
+
+// Dying: the body leaves the world at once, the sprite stays for the death animation, the
+// respawn brings everything back, and effect prefabs spawn where it happened.
+void deathAndRespawn() {
+    World w;
+    w.assets.files["a.ykanim"] = actorAnimation;
+    w.assets.files["a.ykctl"] = actorController;
+    Scene puffScene(w.registry, 5);
+    Entity &puff = puffScene.createEntity("Puff");
+    puff.add<Lifetime>().seconds = 0.5F;
+    w.assets.files["fx/death.ykprefab"] = subtreeToJson(puffScene, puff.id()).dump();
+    Scene poofScene(w.registry, 6);
+    Entity &poof = poofScene.createEntity("Poof");
+    poof.add<Lifetime>().seconds = 0.5F;
+    w.assets.files["fx/respawn.ykprefab"] = subtreeToJson(poofScene, poof.id()).dump();
+
+    w.ground();
+    Entity &lava = w.box("Lava", {4.0F, floorTop - 0.3F}, {2.0F, 0.6F}, layers::sensor);
+    lava.get<Collider>()->isTrigger = true;
+    lava.add<Hazard>();
+    Entity &hero = w.character("Hero", {0.0F, restingHeight});
+    auto &animated = hero.add<AnimatedSprite>();
+    animated.animation.path = "a.ykanim";
+    animated.controller.path = "a.ykctl";
+    auto *killable = hero.get<Killable>();
+    killable->deathDuration = 0.6F;
+    killable->respawnDelay = 1.5F;
+    killable->deathEffect.path = "fx/death.ykprefab";
+    killable->respawnEffect.path = "fx/respawn.ykprefab";
+    w.start();
+    w.tick(30);
+    CHECK(killable->alive());
+    const auto visible = [&] { return w.at("Hero").get<SpriteRenderer>()->visible; };
+    const auto state = [&] { return w.at("Hero").get<AnimatedSprite>()->state(); };
+
+    // Walk into the lava.
+    w.down(Key::D);
+    for (int i = 0; i < 120 && killable->alive(); ++i)
+        w.tick();
+    w.up(Key::D);
+    CHECK(!killable->alive() && w.happened("entity_died"));
+    const Vec2 diedAt = w.position("Hero");
+    CHECK(w.at("Hero").get<Collider>()->enabled == false); // Nothing collides with it any more.
+    CHECK(visible() && state() == "Death");                // The animation plays in place.
+    CHECK(w.runtime->scene().findByName("Puff") != nullptr);
+    CHECK(w.runtime->scene().findByName("Puff")->worldPosition() == diedAt);
+    w.tick(30); // 0.5 s: still inside the 0.6 s death animation.
+    CHECK(visible());
+    w.tick(10);
+    CHECK(!visible() && !killable->alive()); // Hidden, waiting to come back.
+
+    // Respawn after 1.5 s in total: back at the start, visible, animating again.
+    w.tick(60);
+    CHECK(killable->alive() && visible() && w.happened("entity_respawned"));
+    CHECK(w.position("Hero").x < 1.0F);
+    CHECK(w.at("Hero").get<Collider>()->enabled);
+    CHECK(w.runtime->scene().findByName("Poof") != nullptr);
+    w.tick(20);
+    CHECK(state() == "Idle"); // Death -> Back -> Idle.
+    w.tick(60);
+    CHECK(w.runtime->scene().findByName("Puff") == nullptr &&
+          w.runtime->scene().findByName("Poof") == nullptr); // The effects cleaned themselves up.
+
+    // A missing effect prefab never breaks a death or a respawn.
+    World broken;
+    broken.ground();
+    Entity &pit = broken.box("Lava", {0.0F, floorTop - 0.3F}, {2.0F, 0.6F}, layers::sensor);
+    pit.get<Collider>()->isTrigger = true;
+    pit.add<Hazard>();
+    Entity &victim = broken.character("Victim", {0.0F, restingHeight - 1.0F});
+    victim.get<Killable>()->deathEffect.path = "fx/missing.ykprefab";
+    victim.get<Killable>()->respawnEffect.path = "fx/missing.ykprefab";
+    victim.get<Killable>()->respawnDelay = 0.5F;
+    setLogStderrEnabled(false);
+    broken.start();
+    broken.tick(30);
+    CHECK(broken.happened("entity_died"));
+    broken.tick(60);
+    setLogStderrEnabled(true);
+    CHECK(broken.happened("entity_respawned"));
+}
+
+// Collectibles count themselves for HUD text and can spawn a sparkle where they were picked up.
+void collectTotalsAndEffects() {
+    World w;
+    Scene sparkScene(w.registry, 8);
+    Entity &sparkle = sparkScene.createEntity("Sparkle");
+    sparkle.add<Lifetime>().seconds = 0.3F;
+    w.assets.files["fx/sparkle.ykprefab"] = subtreeToJson(sparkScene, sparkle.id()).dump();
+    w.ground();
+    for (int i = 0; i < 3; ++i) {
+        Entity &gem = w.box(("Gem" + std::to_string(i)).c_str(),
+                            {static_cast<float>(i) * 2.0F + 1.0F, floorTop - 0.4F}, {0.5F, 0.5F},
+                            layers::sensor);
+        gem.get<Collider>()->isTrigger = true;
+        auto &item = gem.add<Collectible>();
+        item.variable = "gems";
+        item.value = i == 2 ? 5.0F : 1.0F; // 1 + 1 + 5.
+        item.collectEffect.path = "fx/sparkle.ykprefab";
+    }
+    w.character("Hero", {-1.0F, restingHeight});
+    w.start();
+    w.tick(1); // Components start during the first tick.
+    CHECK_NEAR(w.runtime->blackboard().number("gems_total"), 7.0);
+    CHECK_NEAR(w.runtime->blackboard().number("gems"), 0.0);
+    CHECK(w.runtime->blackboard().format("{gems:0}/{gems_total}") == "0/7");
+    w.tick(30);
+    w.down(Key::D);
+    w.tick(75);
+    w.up(Key::D);
+    CHECK_NEAR(w.runtime->blackboard().number("gems"), 7.0);
+    CHECK(w.runtime->blackboard().format("{gems:0}/{gems_total}") == "7/7");
+    CHECK(w.runtime->scene().findByName("Sparkle") != nullptr); // Spawned at a pickup...
+    w.tick(60);
+    CHECK(w.runtime->scene().findByName("Sparkle") == nullptr); // ...and gone again.
+    // A restart recounts from scratch instead of piling on.
+    CHECK(w.runtime->restart());
+    CHECK_NEAR(w.runtime->blackboard().number("gems_total"), 0.0); // Not started yet after rebuild.
+    w.tick(1);
+    CHECK_NEAR(w.runtime->blackboard().number("gems_total"), 7.0);
+    CHECK_NEAR(w.runtime->blackboard().number("gems"), 0.0);
+}
+
+// Mechanisms tell their AnimatedSprite what state they are in, instead of tinting the sprite, so
+// art states come from the animation controller.
+constexpr const char *mechanismAnimation =
+    R"({"format":"yk.animation","version":2,"columns":2,"rows":1,
+    "clips":[{"name":"off","first":0,"count":1},{"name":"on","first":1,"count":1}]})";
+constexpr const char *mechanismController = R"({"format":"yk.animator","version":1,
+    "parameters":[{"name":"pressed","type":"bool"},{"name":"on","type":"bool"},
+                  {"name":"satisfied","type":"bool"},{"name":"open","type":"bool"}],
+    "states":[{"name":"Off","clip":"off"},{"name":"On","clip":"on"}],
+    "transitions":[
+      {"from":"Off","to":"On","when":[{"parameter":"pressed"}]},
+      {"from":"Off","to":"On","when":[{"parameter":"on"}]},
+      {"from":"Off","to":"On","when":[{"parameter":"satisfied"}]},
+      {"from":"Off","to":"On","when":[{"parameter":"open"}]},
+      {"from":"On","to":"Off","when":[{"parameter":"pressed","value":false},{"parameter":"on","value":false},
+                                       {"parameter":"satisfied","value":false},{"parameter":"open","value":false}]}]})";
+
+void mechanismsPublishState() {
+    World w;
+    w.assets.files["m.ykanim"] = mechanismAnimation;
+    w.assets.files["m.ykctl"] = mechanismController;
+    w.ground();
+    const auto animate = [&](Entity &entity) {
+        auto &animated = entity.add<AnimatedSprite>();
+        animated.animation.path = "m.ykanim";
+        animated.controller.path = "m.ykctl";
+        entity.get<SpriteRenderer>()->color = {10, 20, 30, 255};
+    };
+    Entity &door = w.box("Door", {8.0F, floorTop - 1.5F}, {0.6F, 3.0F});
+    door.add<Door>().openOffset = {0.0F, -3.0F};
+    Entity &plate = w.box("Plate", {2.0F, floorTop - 0.1F}, {1.0F, 0.2F}, layers::sensor);
+    plate.get<Collider>()->isTrigger = true;
+    plate.add<PressurePlate>().targets = {door.id()};
+    Entity &exit = w.box("Exit", {5.0F, floorTop - 0.9F}, {1.2F, 1.8F}, layers::sensor);
+    exit.get<Collider>()->isTrigger = true;
+    exit.add<Goal>();
+    animate(plate);
+    animate(exit);
+    animate(door);
+    w.character("Hero", {0.0F, restingHeight});
+    w.start();
+    w.tick(30);
+    const auto stateOf = [&](const char *name) {
+        return w.at(name).get<AnimatedSprite>()->state();
+    };
+    CHECK(stateOf("Plate") == "Off" && stateOf("Exit") == "Off" && stateOf("Door") == "Off");
+    w.down(Key::D);
+    w.tick(20);
+    w.up(Key::D);
+    CHECK(w.at("Plate").get<PressurePlate>()->pressed());
+    CHECK(stateOf("Plate") == "On");                                             // pressed
+    CHECK(w.at("Plate").get<SpriteRenderer>()->color == Color{10, 20, 30, 255}); // Not tinted.
+    w.tick(60);
+    CHECK(stateOf("Door") == "On"); // open
+    w.down(Key::D);
+    w.tick(40);
+    w.up(Key::D);
+    CHECK(stateOf("Exit") == "On"); // satisfied
+    CHECK(w.at("Exit").get<SpriteRenderer>()->color == Color{10, 20, 30, 255});
+}
+
+// Jumping and landing spawn effect prefabs at the feet and play a landing sound.
+void controllerEffects() {
+    World w;
+    Scene dustScene(w.registry, 12);
+    Entity &dust = dustScene.createEntity("Dust");
+    dust.add<Lifetime>().seconds = 5.0F;
+    w.assets.files["fx/jump.ykprefab"] = subtreeToJson(dustScene, dust.id()).dump();
+    Scene landScene(w.registry, 13);
+    Entity &thud = landScene.createEntity("Thud");
+    thud.add<Lifetime>().seconds = 5.0F;
+    w.assets.files["fx/land.ykprefab"] = subtreeToJson(landScene, thud.id()).dump();
+    w.ground();
+    Entity &hero = w.character("Hero", {0.0F, restingHeight});
+    auto *controller = hero.get<PlatformerController>();
+    controller->jumpEffect.path = "fx/jump.ykprefab";
+    controller->landEffect.path = "fx/land.ykprefab";
+    controller->landSound.path = "tone:120,0.1";
+    w.start();
+    w.tick(30);
+    CHECK(w.runtime->scene().findByName("Dust") == nullptr);
+    w.down(Key::W);
+    w.tick(3);
+    const Entity *jumpDust = w.runtime->scene().findByName("Dust");
+    CHECK(jumpDust != nullptr);
+    if (jumpDust) // At the feet: the bottom of the 0.95 m collider.
+        CHECK_NEAR(jumpDust->worldPosition().y, floorTop, 0.15);
+    w.tick(50);
+    w.up(Key::W);
+    w.tick(80);
+    CHECK(w.runtime->scene().findByName("Thud") != nullptr); // A real fall: landing effect...
+    CHECK(w.audio.count("tone:120,0.1") == 1);               // ...and sound, once.
+    // Stepping down a small height is not a landing.
+    World gentle;
+    Scene ignored(gentle.registry, 14);
+    Entity &quiet = ignored.createEntity("Thud");
+    quiet.add<Lifetime>().seconds = 5.0F;
+    gentle.assets.files["fx/land.ykprefab"] = subtreeToJson(ignored, quiet.id()).dump();
+    gentle.ground();
+    Entity &walker = gentle.character("Hero", {0.0F, restingHeight - 0.3F});
+    walker.get<PlatformerController>()->landEffect.path = "fx/land.ykprefab";
+    gentle.start();
+    gentle.tick(60);
+    CHECK(gentle.runtime->scene().findByName("Thud") == nullptr);
+}
 
 void controllerBasics() {
     World w;
@@ -292,7 +835,7 @@ void platformsCarryRiders() {
     elevator.travel = {0.0F, -5.0F};
     elevator.speed = 2.0F;
     w.character("Rider", {0.0F, floorTop - 1.0F - 0.2F - 0.475F});
-    w.character("Climber", {-12.0F, floorTop - 1.0F - 0.2F - 0.475F}, Key::F1, Key::F2, Key::F3);
+    w.character("Climber", {-12.0F, floorTop - 1.0F - 0.2F - 0.475F}, "Nobody");
     w.start();
     w.tick(30);
     const float riderStart = w.position("Rider").x, shuttleStart = w.position("Shuttle").x;
@@ -313,7 +856,7 @@ void pushingAndTwoPlayers() {
     Entity &crate = w.box("Crate", {3.0F, floorTop - 0.5F}, {1.0F, 1.0F}, layers::prop);
     crate.add<RigidBody>();
     w.character("One", {0.0F, restingHeight});
-    w.character("Two", {-8.0F, restingHeight}, Key::Left, Key::Right, Key::Up);
+    w.character("Two", {-8.0F, restingHeight}, "Player2");
     w.start();
     w.tick(30);
     const float crateStart = w.position("Crate").x, twoStart = w.position("Two").x;
@@ -354,7 +897,7 @@ struct PlateAndDoor {
 void plateOpensDoor() {
     PlateAndDoor level;
     World &w = level.w;
-    w.character("Hero", {-4.0F, restingHeight}, Key::A, Key::D, Key::W, "hero");
+    w.character("Hero", {-4.0F, restingHeight}, "Player1", "hero");
     w.start();
     const float closedY = w.position("Door").y;
     w.tick(60);
@@ -390,7 +933,7 @@ void plateOpensDoor() {
 void doorBlocksAndLatches() {
     PlateAndDoor level(true);
     World &w = level.w;
-    w.character("Hero", {4.0F, restingHeight}, Key::A, Key::D, Key::W, "hero");
+    w.character("Hero", {4.0F, restingHeight}, "Player1", "hero");
     w.start();
     w.down(Key::D);
     w.tick(150); // The closed door stops the character.
@@ -447,7 +990,7 @@ void plateFiltersAndCombines() {
             plate.add<PressurePlate>().targets = {door.id()};
         }
         w.character("A", {-6.0F, restingHeight});
-        w.character("B", {6.0F, restingHeight}, Key::Left, Key::Right, Key::Up);
+        w.character("B", {6.0F, restingHeight}, "Player2");
         w.start();
         w.tick(90);
         CHECK(w.at("Left").get<PressurePlate>()->pressed() &&
@@ -522,8 +1065,8 @@ void hazardsKillTheRightCharacters() {
     Entity &lava = w.box("Lava", {0.0F, floorTop - 0.25F}, {4.0F, 0.5F}, layers::sensor);
     lava.get<Collider>()->isTrigger = true;
     lava.add<Hazard>().affectsTags = {"water"};
-    w.character("Fire", {-6.0F, restingHeight}, Key::A, Key::D, Key::W, "fire");
-    w.character("Water", {-9.0F, restingHeight}, Key::Left, Key::Right, Key::Up, "water");
+    w.character("Fire", {-6.0F, restingHeight}, "Player1", "fire");
+    w.character("Water", {-9.0F, restingHeight}, "Player2", "water");
     w.start();
     w.tick(30);
     w.down(Key::D);
@@ -621,8 +1164,8 @@ void collectibles() {
     item.variable = "fire_gems";
     item.value = 2.0F;
     item.sound.path = "tone:880,0.1";
-    w.character("Water", {-2.0F, restingHeight}, Key::A, Key::D, Key::W, "water");
-    w.character("Fire", {2.0F, restingHeight}, Key::Left, Key::Right, Key::Up, "fire");
+    w.character("Water", {-2.0F, restingHeight}, "Player1", "water");
+    w.character("Fire", {2.0F, restingHeight}, "Player2", "fire");
     w.start();
     w.tick(30);
     w.runtime->teleport(w.at("Water"), {0.0F, restingHeight});
@@ -648,7 +1191,7 @@ void collectibles() {
     pearl.get<Collider>()->isTrigger = true;
     pearl.add<Collectible>();
     both.character("A", {-0.15F, restingHeight - 1.0F});
-    both.character("B", {0.15F, restingHeight - 1.0F}, Key::Left, Key::Right, Key::Up);
+    both.character("B", {0.15F, restingHeight - 1.0F}, "Player2");
     both.start();
     both.tick(60);
     CHECK(both.runtime->blackboard().number("score") == 1.0);
@@ -671,8 +1214,8 @@ void goalsAndZones() {
     region.enterEvent = "zone_in";
     region.exitEvent = "zone_out";
     region.once = true;
-    w.character("Water", {-2.0F, restingHeight}, Key::Left, Key::Right, Key::Up, "water");
-    w.character("Fire", {-5.0F, restingHeight}, Key::A, Key::D, Key::W, "fire");
+    w.character("Water", {-2.0F, restingHeight}, "Player2", "water");
+    w.character("Fire", {-5.0F, restingHeight}, "Player1", "fire");
     w.start();
     w.tick(30);
     w.runtime->teleport(w.at("Water"), {0.0F, restingHeight});
@@ -725,7 +1268,7 @@ void defaultsOnAdd() {
 
 void persistenceAndPrefabs() {
     PlateAndDoor level;
-    level.w.character("Hero", {0.0F, restingHeight}, Key::A, Key::D, Key::W, "hero");
+    level.w.character("Hero", {0.0F, restingHeight}, "Player1", "hero");
     Entity &lever = level.w.box("Lever", {-6.0F, floorTop - 0.4F}, {0.5F, 0.8F}, layers::sensor);
     lever.get<Collider>()->isTrigger = true;
     lever.add<Lever>().targets = {level.door->id()};
@@ -797,6 +1340,14 @@ void templatesWork() {
 
 int main() {
     controllerBasics();
+    characterAnimation();
+    oneWayAndWedge();
+    interactLever();
+    interactAnimation();
+    deathAndRespawn();
+    collectTotalsAndEffects();
+    mechanismsPublishState();
+    controllerEffects();
     jumping();
     coyoteAndBuffer();
     wallsAndSlopes();

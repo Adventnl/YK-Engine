@@ -1,0 +1,7424 @@
+{
+  "format": "yk.scene",
+  "version": 1,
+  "settings": {
+    "name": "Cinder Vale - Room 1",
+    "gravity": [0, 9.81],
+    "background": "#08141aff"
+  },
+  "entities": [
+    {
+      "id": "0575f0debb1f2c4c",
+      "name": "Camera",
+      "transform": {
+        "position": [22, 9.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Camera",
+          "properties": {
+            "primary": true,
+            "mode": "FitTargets",
+            "orthographicHeight": 13,
+            "targets": ["19d9398446d4e81a", "180d28c79fc27a28"],
+            "padding": 4,
+            "smoothTime": 0.3,
+            "minHeight": 11,
+            "maxHeight": 19,
+            "clampToBounds": true,
+            "boundsMin": [0, 0],
+            "boundsMax": [44, 19]
+          }
+        }
+      ]
+    },
+    {
+      "id": "30adb9ac70336862",
+      "name": "Backdrop",
+      "locked": true,
+      "prefab": "prefabs/level/backdrop.ykprefab",
+      "transform": {
+        "position": [22, 9.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": []
+    },
+    {
+      "id": "a435caa70c98ef87",
+      "name": "Far Wall",
+      "parent": "30adb9ac70336862",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/backgrounds/bg_far.png",
+            "shape": "Rectangle",
+            "size": [72, 40.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": -100,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [0.15, 0.15]
+          }
+        }
+      ]
+    },
+    {
+      "id": "1d53ed688894f494",
+      "name": "Columns",
+      "parent": "30adb9ac70336862",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/backgrounds/bg_mid.png",
+            "shape": "Rectangle",
+            "size": [96, 22],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": -90,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [16, 22],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [0.45, 0.45]
+          }
+        }
+      ]
+    },
+    {
+      "id": "851e94520fe810f1",
+      "name": "Audio",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": []
+    },
+    {
+      "id": "90c7f2ca038b635c",
+      "name": "Ambience",
+      "parent": "851e94520fe810f1",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "AudioSource",
+          "properties": {
+            "sound": "assets/audio/ambience.wav",
+            "volume": 0.5,
+            "loop": true,
+            "playOnStart": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "407ab0d4a6acf58f",
+      "name": "Music",
+      "parent": "851e94520fe810f1",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "AudioSource",
+          "properties": {
+            "sound": "assets/audio/music.wav",
+            "volume": 0.3,
+            "loop": true,
+            "playOnStart": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "081c985ca057da77",
+      "name": "Level Flow",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "LevelFlow",
+          "properties": {
+            "goals": ["3bd3efe60c6b8079", "6c68fab426ef8845"],
+            "restartOnDeath": false,
+            "restartDelay": 1.5,
+            "completeDelay": 4,
+            "nextScene": "",
+            "restartSet": "Global",
+            "restartAction": "Restart",
+            "completeMessage": "LEVEL COMPLETE!",
+            "failMessage": "TRY AGAIN",
+            "completeSound": "assets/audio/complete.wav",
+            "failSound": ""
+          }
+        }
+      ]
+    },
+    {
+      "id": "5d0b84d5820318ff",
+      "name": "HUD",
+      "prefab": "prefabs/level/hud.ykprefab",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": []
+    },
+    {
+      "id": "44b61f93e9381d26",
+      "name": "Vignette",
+      "parent": "5d0b84d5820318ff",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/backgrounds/vignette.png",
+            "anchor": "TopLeft",
+            "size": [48, 48],
+            "offset": [16, 16],
+            "color": "#ffffffff",
+            "layer": -5,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "fillScreen": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "22d7a18a9ed8d915",
+      "name": "Ember Score",
+      "parent": "5d0b84d5820318ff",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "TopLeft",
+            "size": [236, 52],
+            "offset": [16, 16],
+            "color": "#060e12aa",
+            "layer": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "2cd573ae86f23897",
+      "name": "Ember Gem Icon",
+      "parent": "5d0b84d5820318ff",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/items/gem_red.png",
+            "anchor": "TopLeft",
+            "size": [40, 40],
+            "offset": [24, 22],
+            "color": "#ffffffff",
+            "layer": 2,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "fillScreen": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "aeb284fb7a93b917",
+      "name": "Ember Gems",
+      "parent": "5d0b84d5820318ff",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "EMBER  {ember_gems:0}/{ember_gems_total:0}",
+            "anchor": "TopLeft",
+            "offset": [74, 32],
+            "scale": 2,
+            "color": "#ffb06eff",
+            "shadow": true,
+            "layer": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "24e82507dd531a1f",
+      "name": "Tide Score",
+      "parent": "5d0b84d5820318ff",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "TopRight",
+            "size": [236, 52],
+            "offset": [16, 16],
+            "color": "#060e12aa",
+            "layer": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "ad1c43cfc783943e",
+      "name": "Tide Gem Icon",
+      "parent": "5d0b84d5820318ff",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/items/gem_blue.png",
+            "anchor": "TopRight",
+            "size": [40, 40],
+            "offset": [24, 22],
+            "color": "#ffffffff",
+            "layer": 2,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "fillScreen": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "864b6ab61b4886e1",
+      "name": "Tide Gems",
+      "parent": "5d0b84d5820318ff",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "TIDE  {tide_gems:0}/{tide_gems_total:0}",
+            "anchor": "TopRight",
+            "offset": [74, 32],
+            "scale": 2,
+            "color": "#8ccdffff",
+            "shadow": true,
+            "layer": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "bccdbe0769988ca9",
+      "name": "Timer",
+      "parent": "5d0b84d5820318ff",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "TIME {level_time}",
+            "anchor": "Top",
+            "offset": [0, 30],
+            "scale": 2,
+            "color": "#ebf0ebff",
+            "shadow": true,
+            "layer": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "b4d04081693cc6cd",
+      "name": "Message",
+      "parent": "5d0b84d5820318ff",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "{level_message}",
+            "anchor": "Center",
+            "offset": [0, 0],
+            "scale": 6,
+            "color": "#fff0aaff",
+            "shadow": true,
+            "layer": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "a5ffe36307330ef4",
+      "name": "Controls",
+      "parent": "5d0b84d5820318ff",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "EMBER: A D MOVE  W JUMP  S USE      TIDE: ARROWS MOVE  UP JUMP  DOWN USE      R RESTART",
+            "anchor": "Bottom",
+            "offset": [0, 16],
+            "scale": 1,
+            "color": "#becdcdc8",
+            "shadow": true,
+            "layer": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "2c74292901fb461d",
+      "name": "Terrain",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": []
+    },
+    {
+      "id": "ce3e86a8ff11ab7c",
+      "name": "Ceiling",
+      "parent": "2c74292901fb461d",
+      "prefab": "prefabs/terrain/wall.ykprefab",
+      "transform": {
+        "position": [22, 0.75],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/wall.png",
+            "shape": "Rectangle",
+            "size": [44, 1.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [44, 1.5],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.4,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "f19e92dd06827b61",
+      "name": "Left Wall",
+      "parent": "2c74292901fb461d",
+      "prefab": "prefabs/terrain/wall.ykprefab",
+      "transform": {
+        "position": [0.75, 9.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/wall.png",
+            "shape": "Rectangle",
+            "size": [1.5, 19],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.5, 19],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.4,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "72744a512ff9b84b",
+      "name": "Right Wall",
+      "parent": "2c74292901fb461d",
+      "prefab": "prefabs/terrain/wall.ykprefab",
+      "transform": {
+        "position": [43.25, 9.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/wall.png",
+            "shape": "Rectangle",
+            "size": [1.5, 19],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.5, 19],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.4,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "1b9f890e32daf6cb",
+      "name": "Ground Start",
+      "parent": "2c74292901fb461d",
+      "prefab": "prefabs/terrain/platform.ykprefab",
+      "transform": {
+        "position": [4.75, 18],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/platform.png",
+            "shape": "Rectangle",
+            "size": [6.5, 2],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Sliced",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [6.5, 1.94],
+            "offset": [0, 0.03],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.8,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "864337d32968e255",
+      "name": "Ground Middle",
+      "parent": "2c74292901fb461d",
+      "prefab": "prefabs/terrain/platform.ykprefab",
+      "transform": {
+        "position": [19.5, 18],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/platform.png",
+            "shape": "Rectangle",
+            "size": [11, 2],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Sliced",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [11, 1.94],
+            "offset": [0, 0.03],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.8,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "9b8eacf35dbb5563",
+      "name": "Ground Far",
+      "parent": "2c74292901fb461d",
+      "prefab": "prefabs/terrain/platform.ykprefab",
+      "transform": {
+        "position": [36.75, 18],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/platform.png",
+            "shape": "Rectangle",
+            "size": [11.5, 2],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Sliced",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [11.5, 1.94],
+            "offset": [0, 0.03],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.8,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "71f32ebd1dc4d3b1",
+      "name": "Lava Basin",
+      "parent": "2c74292901fb461d",
+      "prefab": "prefabs/terrain/brick_block.ykprefab",
+      "transform": {
+        "position": [11, 18.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/brick.png",
+            "shape": "Rectangle",
+            "size": [6, 1],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [6, 1],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.4,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "341473a377e584a4",
+      "name": "Water Basin",
+      "parent": "2c74292901fb461d",
+      "prefab": "prefabs/terrain/brick_block.ykprefab",
+      "transform": {
+        "position": [28, 18.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/brick.png",
+            "shape": "Rectangle",
+            "size": [6, 1],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [6, 1],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.4,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "3d45cbf9dd451226",
+      "name": "Hill Up",
+      "parent": "2c74292901fb461d",
+      "prefab": "prefabs/terrain/ramp.ykprefab",
+      "transform": {
+        "position": [5, 16.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/ramp.png",
+            "shape": "Rectangle",
+            "size": [2, 1],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Wedge",
+            "size": [2, 1],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.5,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "d00fb3efb1d3c08d",
+      "name": "Hill Top",
+      "parent": "2c74292901fb461d",
+      "prefab": "prefabs/terrain/brick_block.ykprefab",
+      "transform": {
+        "position": [7, 16.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/brick.png",
+            "shape": "Rectangle",
+            "size": [2, 1],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [2, 1],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.4,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "a26d0784ea7c44b4",
+      "name": "Gate Wall",
+      "parent": "2c74292901fb461d",
+      "prefab": "prefabs/terrain/wall.ykprefab",
+      "transform": {
+        "position": [19, 7.75],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/wall.png",
+            "shape": "Rectangle",
+            "size": [1, 12.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1, 12.5],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.4,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "f8438594e0e47cce",
+      "name": "Water Ledge A",
+      "parent": "2c74292901fb461d",
+      "prefab": "prefabs/terrain/ledge.ykprefab",
+      "transform": {
+        "position": [26.55, 15.4],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/ledge.png",
+            "shape": "Rectangle",
+            "size": [2.5, 0.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Sliced",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [2.5, 0.3],
+            "offset": [0, -0.05],
+            "oneWay": true,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.8,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "bd8ffc13321f876d",
+      "name": "Water Ledge B",
+      "parent": "2c74292901fb461d",
+      "prefab": "prefabs/terrain/ledge.ykprefab",
+      "transform": {
+        "position": [29.55, 15.4],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/ledge.png",
+            "shape": "Rectangle",
+            "size": [2.5, 0.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Sliced",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [2.5, 0.3],
+            "offset": [0, -0.05],
+            "oneWay": true,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.8,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "47ec4cc07bb60c71",
+      "name": "Stair 1",
+      "parent": "2c74292901fb461d",
+      "prefab": "prefabs/terrain/ledge.ykprefab",
+      "transform": {
+        "position": [41.4, 15.4],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/ledge.png",
+            "shape": "Rectangle",
+            "size": [2, 0.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Sliced",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [2, 0.3],
+            "offset": [0, -0.05],
+            "oneWay": true,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.8,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "63e2844f9457d400",
+      "name": "Stair 2",
+      "parent": "2c74292901fb461d",
+      "prefab": "prefabs/terrain/ledge.ykprefab",
+      "transform": {
+        "position": [39.1, 13.6],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/ledge.png",
+            "shape": "Rectangle",
+            "size": [2.2, 0.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Sliced",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [2.2, 0.3],
+            "offset": [0, -0.05],
+            "oneWay": true,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.8,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "c804500a7041c82e",
+      "name": "Stair 3",
+      "parent": "2c74292901fb461d",
+      "prefab": "prefabs/terrain/ledge.ykprefab",
+      "transform": {
+        "position": [36.8, 11.8],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/ledge.png",
+            "shape": "Rectangle",
+            "size": [2, 0.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Sliced",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [2, 0.3],
+            "offset": [0, -0.05],
+            "oneWay": true,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.8,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "11db4639f45a29c7",
+      "name": "Upper Exit Floor",
+      "parent": "2c74292901fb461d",
+      "prefab": "prefabs/terrain/platform.ykprefab",
+      "transform": {
+        "position": [22.75, 11],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/platform.png",
+            "shape": "Rectangle",
+            "size": [6.5, 1],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Sliced",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [6.5, 0.94],
+            "offset": [0, 0.03],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.8,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "a76ee4ddd1c43b11",
+      "name": "Upper Plate Floor",
+      "parent": "2c74292901fb461d",
+      "prefab": "prefabs/terrain/platform.ykprefab",
+      "transform": {
+        "position": [33.9, 11],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/platform.png",
+            "shape": "Rectangle",
+            "size": [3.8, 1],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Sliced",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [3.8, 0.94],
+            "offset": [0, 0.03],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.8,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "b64ea3c09d006c2b",
+      "name": "Goo Basin",
+      "parent": "2c74292901fb461d",
+      "prefab": "prefabs/terrain/brick_block.ykprefab",
+      "transform": {
+        "position": [29, 12],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/tiles/brick.png",
+            "shape": "Rectangle",
+            "size": [6, 1],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [6, 1],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.4,
+            "restitution": 0,
+            "density": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "59f1e87d6a447afe",
+      "name": "Hazards",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": []
+    },
+    {
+      "id": "1cad970fd3902108",
+      "name": "Lava 1",
+      "parent": "59f1e87d6a447afe",
+      "prefab": "prefabs/hazards/lava.ykprefab",
+      "transform": {
+        "position": [9, 17.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/hazards/lava.png",
+            "shape": "Rectangle",
+            "size": [2, 1],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 50,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [2, 1],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/hazards/lava.ykanim",
+            "controller": "",
+            "clip": "flow",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.9, 0.6],
+            "offset": [0, 0.2],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Hazard",
+          "properties": {
+            "affectsTags": ["Tide"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "684e255953f1d939",
+      "name": "Glow",
+      "parent": "1cad970fd3902108",
+      "transform": {
+        "position": [0, -0.15],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ff8c28ff",
+            "intensity": 0.55,
+            "radius": 2.8,
+            "offset": [0, 0],
+            "flicker": 0.35,
+            "flickerSpeed": 5,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "a2a7941e7ea9ef5f",
+      "name": "Bubbles",
+      "parent": "1cad970fd3902108",
+      "transform": {
+        "position": [0, -0.35],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 2.4,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.5, 1.1],
+            "area": "Box",
+            "areaSize": [1.7, 0.1],
+            "direction": 0,
+            "spread": 30,
+            "speed": [0.4, 1.1],
+            "gravity": [0, -0.4],
+            "drag": 0,
+            "startSize": [0.06, 0.17],
+            "endScale": 0.2,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#ffd782e6",
+            "endColor": "#ff6e1e00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "fb91c83a2a06f0d7",
+      "name": "Lava 2",
+      "parent": "59f1e87d6a447afe",
+      "prefab": "prefabs/hazards/lava.ykprefab",
+      "transform": {
+        "position": [11, 17.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/hazards/lava.png",
+            "shape": "Rectangle",
+            "size": [2, 1],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 50,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [2, 1],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/hazards/lava.ykanim",
+            "controller": "",
+            "clip": "flow",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.9, 0.6],
+            "offset": [0, 0.2],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Hazard",
+          "properties": {
+            "affectsTags": ["Tide"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "34b6e3ca376d9aba",
+      "name": "Glow",
+      "parent": "fb91c83a2a06f0d7",
+      "transform": {
+        "position": [0, -0.15],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ff8c28ff",
+            "intensity": 0.55,
+            "radius": 2.8,
+            "offset": [0, 0],
+            "flicker": 0.35,
+            "flickerSpeed": 5,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "3b121bfc4565744d",
+      "name": "Bubbles",
+      "parent": "fb91c83a2a06f0d7",
+      "transform": {
+        "position": [0, -0.35],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 2.4,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.5, 1.1],
+            "area": "Box",
+            "areaSize": [1.7, 0.1],
+            "direction": 0,
+            "spread": 30,
+            "speed": [0.4, 1.1],
+            "gravity": [0, -0.4],
+            "drag": 0,
+            "startSize": [0.06, 0.17],
+            "endScale": 0.2,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#ffd782e6",
+            "endColor": "#ff6e1e00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "50c98ce9b338098e",
+      "name": "Lava 3",
+      "parent": "59f1e87d6a447afe",
+      "prefab": "prefabs/hazards/lava.ykprefab",
+      "transform": {
+        "position": [13, 17.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/hazards/lava.png",
+            "shape": "Rectangle",
+            "size": [2, 1],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 50,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [2, 1],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/hazards/lava.ykanim",
+            "controller": "",
+            "clip": "flow",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.9, 0.6],
+            "offset": [0, 0.2],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Hazard",
+          "properties": {
+            "affectsTags": ["Tide"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "04385a570642311c",
+      "name": "Glow",
+      "parent": "50c98ce9b338098e",
+      "transform": {
+        "position": [0, -0.15],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ff8c28ff",
+            "intensity": 0.55,
+            "radius": 2.8,
+            "offset": [0, 0],
+            "flicker": 0.35,
+            "flickerSpeed": 5,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "be9e082d366ff254",
+      "name": "Bubbles",
+      "parent": "50c98ce9b338098e",
+      "transform": {
+        "position": [0, -0.35],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 2.4,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.5, 1.1],
+            "area": "Box",
+            "areaSize": [1.7, 0.1],
+            "direction": 0,
+            "spread": 30,
+            "speed": [0.4, 1.1],
+            "gravity": [0, -0.4],
+            "drag": 0,
+            "startSize": [0.06, 0.17],
+            "endScale": 0.2,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#ffd782e6",
+            "endColor": "#ff6e1e00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "969d93f978b9b767",
+      "name": "Water 1",
+      "parent": "59f1e87d6a447afe",
+      "prefab": "prefabs/hazards/water.ykprefab",
+      "transform": {
+        "position": [26, 17.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/hazards/water.png",
+            "shape": "Rectangle",
+            "size": [2, 1],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 50,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [2, 1],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/hazards/water.ykanim",
+            "controller": "",
+            "clip": "flow",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.9, 0.6],
+            "offset": [0, 0.2],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Hazard",
+          "properties": {
+            "affectsTags": ["Ember"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "82cbb52685ff18b6",
+      "name": "Glow",
+      "parent": "969d93f978b9b767",
+      "transform": {
+        "position": [0, -0.15],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#5aaaffff",
+            "intensity": 0.55,
+            "radius": 2.4,
+            "offset": [0, 0],
+            "flicker": 0.1,
+            "flickerSpeed": 5,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "b6562d1c8f4f4671",
+      "name": "Bubbles",
+      "parent": "969d93f978b9b767",
+      "transform": {
+        "position": [0, -0.35],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 2.4,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.5, 1.1],
+            "area": "Box",
+            "areaSize": [1.7, 0.1],
+            "direction": 0,
+            "spread": 30,
+            "speed": [0.4, 1.1],
+            "gravity": [0, -0.4],
+            "drag": 0,
+            "startSize": [0.06, 0.17],
+            "endScale": 0.2,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#c8f0ffc8",
+            "endColor": "#78beff00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "9f2dc670c41a28c0",
+      "name": "Water 2",
+      "parent": "59f1e87d6a447afe",
+      "prefab": "prefabs/hazards/water.ykprefab",
+      "transform": {
+        "position": [28, 17.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/hazards/water.png",
+            "shape": "Rectangle",
+            "size": [2, 1],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 50,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [2, 1],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/hazards/water.ykanim",
+            "controller": "",
+            "clip": "flow",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.9, 0.6],
+            "offset": [0, 0.2],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Hazard",
+          "properties": {
+            "affectsTags": ["Ember"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "de8b6fbc84759926",
+      "name": "Glow",
+      "parent": "9f2dc670c41a28c0",
+      "transform": {
+        "position": [0, -0.15],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#5aaaffff",
+            "intensity": 0.55,
+            "radius": 2.4,
+            "offset": [0, 0],
+            "flicker": 0.1,
+            "flickerSpeed": 5,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "87b31eb3497b1709",
+      "name": "Bubbles",
+      "parent": "9f2dc670c41a28c0",
+      "transform": {
+        "position": [0, -0.35],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 2.4,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.5, 1.1],
+            "area": "Box",
+            "areaSize": [1.7, 0.1],
+            "direction": 0,
+            "spread": 30,
+            "speed": [0.4, 1.1],
+            "gravity": [0, -0.4],
+            "drag": 0,
+            "startSize": [0.06, 0.17],
+            "endScale": 0.2,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#c8f0ffc8",
+            "endColor": "#78beff00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "bca64cb14430e25e",
+      "name": "Water 3",
+      "parent": "59f1e87d6a447afe",
+      "prefab": "prefabs/hazards/water.ykprefab",
+      "transform": {
+        "position": [30, 17.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/hazards/water.png",
+            "shape": "Rectangle",
+            "size": [2, 1],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 50,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [2, 1],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/hazards/water.ykanim",
+            "controller": "",
+            "clip": "flow",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.9, 0.6],
+            "offset": [0, 0.2],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Hazard",
+          "properties": {
+            "affectsTags": ["Ember"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "b8c9ed2ceb16d3c3",
+      "name": "Glow",
+      "parent": "bca64cb14430e25e",
+      "transform": {
+        "position": [0, -0.15],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#5aaaffff",
+            "intensity": 0.55,
+            "radius": 2.4,
+            "offset": [0, 0],
+            "flicker": 0.1,
+            "flickerSpeed": 5,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "7e496e30d7b3e0e7",
+      "name": "Bubbles",
+      "parent": "bca64cb14430e25e",
+      "transform": {
+        "position": [0, -0.35],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 2.4,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.5, 1.1],
+            "area": "Box",
+            "areaSize": [1.7, 0.1],
+            "direction": 0,
+            "spread": 30,
+            "speed": [0.4, 1.1],
+            "gravity": [0, -0.4],
+            "drag": 0,
+            "startSize": [0.06, 0.17],
+            "endScale": 0.2,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#c8f0ffc8",
+            "endColor": "#78beff00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "7a44ab9b6a2cb021",
+      "name": "Goo 1",
+      "parent": "59f1e87d6a447afe",
+      "prefab": "prefabs/hazards/goo.ykprefab",
+      "transform": {
+        "position": [27, 11],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/hazards/goo.png",
+            "shape": "Rectangle",
+            "size": [2, 1],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 50,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [2, 1],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/hazards/goo.ykanim",
+            "controller": "",
+            "clip": "flow",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.9, 0.6],
+            "offset": [0, 0.2],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Hazard",
+          "properties": {
+            "affectsTags": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "d46e01c6cbb45e4c",
+      "name": "Glow",
+      "parent": "7a44ab9b6a2cb021",
+      "transform": {
+        "position": [0, -0.15],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#96f05aff",
+            "intensity": 0.55,
+            "radius": 2.4,
+            "offset": [0, 0],
+            "flicker": 0.2,
+            "flickerSpeed": 5,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "725a618a1d163042",
+      "name": "Bubbles",
+      "parent": "7a44ab9b6a2cb021",
+      "transform": {
+        "position": [0, -0.35],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 2.4,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.5, 1.1],
+            "area": "Box",
+            "areaSize": [1.7, 0.1],
+            "direction": 0,
+            "spread": 30,
+            "speed": [0.4, 1.1],
+            "gravity": [0, -0.4],
+            "drag": 0,
+            "startSize": [0.06, 0.17],
+            "endScale": 0.2,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#e6ffaadc",
+            "endColor": "#96e65a00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "8266b6bed9f1ca56",
+      "name": "Goo 2",
+      "parent": "59f1e87d6a447afe",
+      "prefab": "prefabs/hazards/goo.ykprefab",
+      "transform": {
+        "position": [29, 11],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/hazards/goo.png",
+            "shape": "Rectangle",
+            "size": [2, 1],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 50,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [2, 1],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/hazards/goo.ykanim",
+            "controller": "",
+            "clip": "flow",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.9, 0.6],
+            "offset": [0, 0.2],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Hazard",
+          "properties": {
+            "affectsTags": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "fa612c18c389077e",
+      "name": "Glow",
+      "parent": "8266b6bed9f1ca56",
+      "transform": {
+        "position": [0, -0.15],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#96f05aff",
+            "intensity": 0.55,
+            "radius": 2.4,
+            "offset": [0, 0],
+            "flicker": 0.2,
+            "flickerSpeed": 5,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "9f83cd70cae141cb",
+      "name": "Bubbles",
+      "parent": "8266b6bed9f1ca56",
+      "transform": {
+        "position": [0, -0.35],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 2.4,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.5, 1.1],
+            "area": "Box",
+            "areaSize": [1.7, 0.1],
+            "direction": 0,
+            "spread": 30,
+            "speed": [0.4, 1.1],
+            "gravity": [0, -0.4],
+            "drag": 0,
+            "startSize": [0.06, 0.17],
+            "endScale": 0.2,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#e6ffaadc",
+            "endColor": "#96e65a00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "12933356c3d2dd64",
+      "name": "Goo 3",
+      "parent": "59f1e87d6a447afe",
+      "prefab": "prefabs/hazards/goo.ykprefab",
+      "transform": {
+        "position": [31, 11],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/hazards/goo.png",
+            "shape": "Rectangle",
+            "size": [2, 1],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 50,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [2, 1],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/hazards/goo.ykanim",
+            "controller": "",
+            "clip": "flow",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.9, 0.6],
+            "offset": [0, 0.2],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Hazard",
+          "properties": {
+            "affectsTags": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "577c393386262dd9",
+      "name": "Glow",
+      "parent": "12933356c3d2dd64",
+      "transform": {
+        "position": [0, -0.15],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#96f05aff",
+            "intensity": 0.55,
+            "radius": 2.4,
+            "offset": [0, 0],
+            "flicker": 0.2,
+            "flickerSpeed": 5,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "983743a96a565a3b",
+      "name": "Bubbles",
+      "parent": "12933356c3d2dd64",
+      "transform": {
+        "position": [0, -0.35],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 2.4,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.5, 1.1],
+            "area": "Box",
+            "areaSize": [1.7, 0.1],
+            "direction": 0,
+            "spread": 30,
+            "speed": [0.4, 1.1],
+            "gravity": [0, -0.4],
+            "drag": 0,
+            "startSize": [0.06, 0.17],
+            "endScale": 0.2,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#e6ffaadc",
+            "endColor": "#96e65a00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "072d5602006b12fa",
+      "name": "Mechanisms",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": []
+    },
+    {
+      "id": "f62b35ac1688f6b4",
+      "name": "Lever",
+      "parent": "072d5602006b12fa",
+      "prefab": "prefabs/mechanisms/lever.ykprefab",
+      "transform": {
+        "position": [15.6, 16.25],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/mechanisms/lever.png",
+            "shape": "Rectangle",
+            "size": [1, 1.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 3,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/mechanisms/lever.ykanim",
+            "controller": "assets/mechanisms/lever.ykctl",
+            "clip": "",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.9, 1.2],
+            "offset": [0, 0.15],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Lever",
+          "properties": {
+            "targets": ["8d243375416b4ac0"],
+            "activatorTags": [],
+            "interactAction": "Interact",
+            "startsOn": false,
+            "cooldown": 0.4,
+            "onColor": "#5adc6eff",
+            "sound": "assets/audio/lever.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "8d243375416b4ac0",
+      "name": "Gate",
+      "parent": "072d5602006b12fa",
+      "prefab": "prefabs/mechanisms/gate.ykprefab",
+      "transform": {
+        "position": [19, 15.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/mechanisms/gate.png",
+            "shape": "Rectangle",
+            "size": [1, 3],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 0,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 2,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/mechanisms/gate.ykanim",
+            "controller": "assets/mechanisms/gate.ykctl",
+            "clip": "",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Kinematic",
+            "gravityScale": 1,
+            "linearDamping": 0,
+            "angularDamping": 0.05,
+            "fixedRotation": false,
+            "bullet": false,
+            "allowSleep": true
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.9, 3],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.4,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Door",
+          "properties": {
+            "openOffset": [0, -3.2],
+            "speed": 4,
+            "startsOpen": false,
+            "logic": "Any",
+            "invert": false,
+            "openSound": "assets/audio/gate_open.wav",
+            "closeSound": "assets/audio/gate_close.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "7d38d846660bd1de",
+      "name": "Shuttle Lava",
+      "parent": "072d5602006b12fa",
+      "prefab": "prefabs/mechanisms/shuttle.ykprefab",
+      "transform": {
+        "position": [9.5, 14.43],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/mechanisms/elevator.png",
+            "shape": "Rectangle",
+            "size": [3, 0.625],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Kinematic",
+            "gravityScale": 1,
+            "linearDamping": 0,
+            "angularDamping": 0.05,
+            "fixedRotation": false,
+            "bullet": false,
+            "allowSleep": true
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [3, 0.4],
+            "offset": [0, -0.03],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 1,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "MovingPlatform",
+          "properties": {
+            "travel": [3, 0],
+            "speed": 1.8,
+            "pause": 1.4,
+            "requireSignal": false,
+            "logic": "Any",
+            "invert": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "4dafbb036bbd4f40",
+      "name": "Shuttle Goo",
+      "parent": "072d5602006b12fa",
+      "prefab": "prefabs/mechanisms/shuttle.ykprefab",
+      "transform": {
+        "position": [27.5, 10.73],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/mechanisms/elevator.png",
+            "shape": "Rectangle",
+            "size": [3, 0.625],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Kinematic",
+            "gravityScale": 1,
+            "linearDamping": 0,
+            "angularDamping": 0.05,
+            "fixedRotation": false,
+            "bullet": false,
+            "allowSleep": true
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [3, 0.4],
+            "offset": [0, -0.03],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 1,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "MovingPlatform",
+          "properties": {
+            "travel": [3, 0],
+            "speed": 2,
+            "pause": 0.6,
+            "requireSignal": true,
+            "logic": "Any",
+            "invert": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "4c3db2b27e3f090e",
+      "name": "Plate Near",
+      "parent": "072d5602006b12fa",
+      "prefab": "prefabs/mechanisms/plate.ykprefab",
+      "transform": {
+        "position": [33.4, 10.25],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/mechanisms/plate.png",
+            "shape": "Rectangle",
+            "size": [2, 0.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 3,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/mechanisms/plate.ykanim",
+            "controller": "assets/mechanisms/plate.ykctl",
+            "clip": "",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.7, 0.3],
+            "offset": [0, 0.1],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "PressurePlate",
+          "properties": {
+            "targets": ["4dafbb036bbd4f40"],
+            "activatorTags": [],
+            "latch": false,
+            "pressedColor": "#5adc6eff",
+            "pressDepth": 0.08,
+            "pressSound": "assets/audio/plate_down.wav",
+            "releaseSound": "assets/audio/plate_up.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "3901abe758e504c0",
+      "name": "Plate Far",
+      "parent": "072d5602006b12fa",
+      "prefab": "prefabs/mechanisms/plate.ykprefab",
+      "transform": {
+        "position": [25, 10.25],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/mechanisms/plate.png",
+            "shape": "Rectangle",
+            "size": [2, 0.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 3,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/mechanisms/plate.ykanim",
+            "controller": "assets/mechanisms/plate.ykctl",
+            "clip": "",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.7, 0.3],
+            "offset": [0, 0.1],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "PressurePlate",
+          "properties": {
+            "targets": ["4dafbb036bbd4f40"],
+            "activatorTags": [],
+            "latch": false,
+            "pressedColor": "#5adc6eff",
+            "pressDepth": 0.08,
+            "pressSound": "assets/audio/plate_down.wav",
+            "releaseSound": "assets/audio/plate_up.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "0be01f1ca80e86d7",
+      "name": "Checkpoint",
+      "parent": "072d5602006b12fa",
+      "prefab": "prefabs/mechanisms/checkpoint.ykprefab",
+      "transform": {
+        "position": [23.5, 16.25],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/mechanisms/checkpoint.png",
+            "shape": "Rectangle",
+            "size": [1, 1.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 2,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/mechanisms/checkpoint.ykanim",
+            "controller": "assets/mechanisms/checkpoint.ykctl",
+            "clip": "",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.9, 1.3],
+            "offset": [0, 0.1],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Checkpoint",
+          "properties": {
+            "activatorTags": [],
+            "respawnOffset": [0, -0.3],
+            "activeColor": "#ffdc50ff",
+            "sound": "assets/audio/checkpoint.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "4a5f49064d011273",
+      "name": "Crate",
+      "parent": "072d5602006b12fa",
+      "prefab": "prefabs/mechanisms/crate.ykprefab",
+      "tags": ["crate"],
+      "transform": {
+        "position": [33, 16.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/mechanisms/crate.png",
+            "shape": "Rectangle",
+            "size": [1, 1],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 35,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Dynamic",
+            "gravityScale": 1,
+            "linearDamping": 0,
+            "angularDamping": 0.05,
+            "fixedRotation": true,
+            "bullet": false,
+            "allowSleep": true
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.96, 0.96],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Prop",
+            "friction": 0.9,
+            "restitution": 0,
+            "density": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "48e3badd7c199dfd",
+      "name": "Exits",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": []
+    },
+    {
+      "id": "3bd3efe60c6b8079",
+      "name": "Ember Exit",
+      "parent": "48e3badd7c199dfd",
+      "prefab": "prefabs/mechanisms/exit_ember.ykprefab",
+      "transform": {
+        "position": [21.4, 9.25],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/mechanisms/exit_ember.png",
+            "shape": "Rectangle",
+            "size": [2, 2.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 2,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/mechanisms/exit_ember.ykanim",
+            "controller": "assets/mechanisms/exit_ember.ykctl",
+            "clip": "",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.1, 1.9],
+            "offset": [0, 0.3],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Goal",
+          "properties": {
+            "requiredTag": "Ember",
+            "targets": [],
+            "satisfiedColor": "#5adc6eff",
+            "sound": "assets/audio/exit.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "8594d3cf50879048",
+      "name": "Glow",
+      "parent": "3bd3efe60c6b8079",
+      "transform": {
+        "position": [0, 0.1],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ff963cff",
+            "intensity": 0.55,
+            "radius": 2.6,
+            "offset": [0, 0],
+            "flicker": 0.15,
+            "flickerSpeed": 3,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "6ec55363b6966359",
+      "name": "Motes",
+      "parent": "3bd3efe60c6b8079",
+      "transform": {
+        "position": [0, 0.8],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 6,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.8, 1.5],
+            "area": "Box",
+            "areaSize": [0.9, 0.2],
+            "direction": 0,
+            "spread": 20,
+            "speed": [0.4, 0.9],
+            "gravity": [0, -0.3],
+            "drag": 0,
+            "startSize": [0.05, 0.12],
+            "endScale": 0,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#ffdc78e6",
+            "endColor": "#ff781e00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "6c68fab426ef8845",
+      "name": "Tide Exit",
+      "parent": "48e3badd7c199dfd",
+      "prefab": "prefabs/mechanisms/exit_tide.ykprefab",
+      "transform": {
+        "position": [23.6, 9.25],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/mechanisms/exit_tide.png",
+            "shape": "Rectangle",
+            "size": [2, 2.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 2,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/mechanisms/exit_tide.ykanim",
+            "controller": "assets/mechanisms/exit_tide.ykctl",
+            "clip": "",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.1, 1.9],
+            "offset": [0, 0.3],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Goal",
+          "properties": {
+            "requiredTag": "Tide",
+            "targets": [],
+            "satisfiedColor": "#5adc6eff",
+            "sound": "assets/audio/exit.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ff5a8c7eda462d73",
+      "name": "Glow",
+      "parent": "6c68fab426ef8845",
+      "transform": {
+        "position": [0, 0.1],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#64beffff",
+            "intensity": 0.55,
+            "radius": 2.6,
+            "offset": [0, 0],
+            "flicker": 0.15,
+            "flickerSpeed": 3,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "bc8d647dbec3187e",
+      "name": "Motes",
+      "parent": "6c68fab426ef8845",
+      "transform": {
+        "position": [0, 0.8],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 6,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.8, 1.5],
+            "area": "Box",
+            "areaSize": [0.9, 0.2],
+            "direction": 0,
+            "spread": 20,
+            "speed": [0.4, 0.9],
+            "gravity": [0, -0.3],
+            "drag": 0,
+            "startSize": [0.05, 0.12],
+            "endScale": 0,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#d2f5ffe6",
+            "endColor": "#5aa0ff00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "7f627d44366b7226",
+      "name": "Gems",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": []
+    },
+    {
+      "id": "bf794802ab7bda72",
+      "name": "Red Gem 1",
+      "parent": "7f627d44366b7226",
+      "prefab": "prefabs/items/gem_red.ykprefab",
+      "tags": ["gem"],
+      "transform": {
+        "position": [6.6, 15.3],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/items/gem_red.png",
+            "shape": "Rectangle",
+            "size": [0.7, 0.7],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 55,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/items/gem_red.ykanim",
+            "controller": "",
+            "clip": "shine",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [0.55, 0.55],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": ["Ember"],
+            "variable": "ember_gems",
+            "value": 1,
+            "sound": "assets/audio/collect.wav",
+            "collectEffect": "prefabs/fx/spark_red.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0.1],
+            "rotation": 0,
+            "scale": [0, 0],
+            "frequency": 0.8,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "4c47a8804b848ae9",
+      "name": "Glow",
+      "parent": "bf794802ab7bda72",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ff5a78ff",
+            "intensity": 0.45,
+            "radius": 1.3,
+            "offset": [0, 0],
+            "flicker": 0,
+            "flickerSpeed": 6,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "536d4d278269e3e5",
+      "name": "Red Gem 2",
+      "parent": "7f627d44366b7226",
+      "prefab": "prefabs/items/gem_red.ykprefab",
+      "tags": ["gem"],
+      "transform": {
+        "position": [10, 17.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/items/gem_red.png",
+            "shape": "Rectangle",
+            "size": [0.7, 0.7],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 55,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/items/gem_red.ykanim",
+            "controller": "",
+            "clip": "shine",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [0.55, 0.55],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": ["Ember"],
+            "variable": "ember_gems",
+            "value": 1,
+            "sound": "assets/audio/collect.wav",
+            "collectEffect": "prefabs/fx/spark_red.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0.1],
+            "rotation": 0,
+            "scale": [0, 0],
+            "frequency": 0.8,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "bcb14a0aa58adb05",
+      "name": "Glow",
+      "parent": "536d4d278269e3e5",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ff5a78ff",
+            "intensity": 0.45,
+            "radius": 1.3,
+            "offset": [0, 0],
+            "flicker": 0,
+            "flickerSpeed": 6,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "dc23c07803d4600b",
+      "name": "Red Gem 3",
+      "parent": "7f627d44366b7226",
+      "prefab": "prefabs/items/gem_red.ykprefab",
+      "tags": ["gem"],
+      "transform": {
+        "position": [12, 17.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/items/gem_red.png",
+            "shape": "Rectangle",
+            "size": [0.7, 0.7],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 55,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/items/gem_red.ykanim",
+            "controller": "",
+            "clip": "shine",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [0.55, 0.55],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": ["Ember"],
+            "variable": "ember_gems",
+            "value": 1,
+            "sound": "assets/audio/collect.wav",
+            "collectEffect": "prefabs/fx/spark_red.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0.1],
+            "rotation": 0,
+            "scale": [0, 0],
+            "frequency": 0.8,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "4662720519b4eac5",
+      "name": "Glow",
+      "parent": "dc23c07803d4600b",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ff5a78ff",
+            "intensity": 0.45,
+            "radius": 1.3,
+            "offset": [0, 0],
+            "flicker": 0,
+            "flickerSpeed": 6,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "52bddce6fc81c654",
+      "name": "Red Gem 4",
+      "parent": "7f627d44366b7226",
+      "prefab": "prefabs/items/gem_red.ykprefab",
+      "tags": ["gem"],
+      "transform": {
+        "position": [29.5, 13.9],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/items/gem_red.png",
+            "shape": "Rectangle",
+            "size": [0.7, 0.7],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 55,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/items/gem_red.ykanim",
+            "controller": "",
+            "clip": "shine",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [0.55, 0.55],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": ["Ember"],
+            "variable": "ember_gems",
+            "value": 1,
+            "sound": "assets/audio/collect.wav",
+            "collectEffect": "prefabs/fx/spark_red.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0.1],
+            "rotation": 0,
+            "scale": [0, 0],
+            "frequency": 0.8,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "f144404ff9220e55",
+      "name": "Glow",
+      "parent": "52bddce6fc81c654",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ff5a78ff",
+            "intensity": 0.45,
+            "radius": 1.3,
+            "offset": [0, 0],
+            "flicker": 0,
+            "flickerSpeed": 6,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "54db33e79150f745",
+      "name": "Red Gem 5",
+      "parent": "7f627d44366b7226",
+      "prefab": "prefabs/items/gem_red.ykprefab",
+      "tags": ["gem"],
+      "transform": {
+        "position": [34.9, 9.6],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/items/gem_red.png",
+            "shape": "Rectangle",
+            "size": [0.7, 0.7],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 55,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/items/gem_red.ykanim",
+            "controller": "",
+            "clip": "shine",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [0.55, 0.55],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": ["Ember"],
+            "variable": "ember_gems",
+            "value": 1,
+            "sound": "assets/audio/collect.wav",
+            "collectEffect": "prefabs/fx/spark_red.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0.1],
+            "rotation": 0,
+            "scale": [0, 0],
+            "frequency": 0.8,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "724d9440cfbeccea",
+      "name": "Glow",
+      "parent": "54db33e79150f745",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ff5a78ff",
+            "intensity": 0.45,
+            "radius": 1.3,
+            "offset": [0, 0],
+            "flicker": 0,
+            "flickerSpeed": 6,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "a01732449c7ad49d",
+      "name": "Red Gem 6",
+      "parent": "7f627d44366b7226",
+      "prefab": "prefabs/items/gem_red.ykprefab",
+      "tags": ["gem"],
+      "transform": {
+        "position": [28.4, 8.6],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/items/gem_red.png",
+            "shape": "Rectangle",
+            "size": [0.7, 0.7],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 55,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/items/gem_red.ykanim",
+            "controller": "",
+            "clip": "shine",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [0.55, 0.55],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": ["Ember"],
+            "variable": "ember_gems",
+            "value": 1,
+            "sound": "assets/audio/collect.wav",
+            "collectEffect": "prefabs/fx/spark_red.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0.1],
+            "rotation": 0,
+            "scale": [0, 0],
+            "frequency": 0.8,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "378e4983167d4aee",
+      "name": "Glow",
+      "parent": "a01732449c7ad49d",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ff5a78ff",
+            "intensity": 0.45,
+            "radius": 1.3,
+            "offset": [0, 0],
+            "flicker": 0,
+            "flickerSpeed": 6,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "075b92ccf8e54058",
+      "name": "Blue Gem 1",
+      "parent": "7f627d44366b7226",
+      "prefab": "prefabs/items/gem_blue.ykprefab",
+      "tags": ["gem"],
+      "transform": {
+        "position": [7.3, 15.3],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/items/gem_blue.png",
+            "shape": "Rectangle",
+            "size": [0.7, 0.7],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 55,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/items/gem_blue.ykanim",
+            "controller": "",
+            "clip": "shine",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [0.55, 0.55],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": ["Tide"],
+            "variable": "tide_gems",
+            "value": 1,
+            "sound": "assets/audio/collect.wav",
+            "collectEffect": "prefabs/fx/spark_blue.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0.1],
+            "rotation": 0,
+            "scale": [0, 0],
+            "frequency": 0.8,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "1d9d26ae6c7f06cf",
+      "name": "Glow",
+      "parent": "075b92ccf8e54058",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#64b4ffff",
+            "intensity": 0.45,
+            "radius": 1.3,
+            "offset": [0, 0],
+            "flicker": 0,
+            "flickerSpeed": 6,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "e391ac98903fb1d0",
+      "name": "Blue Gem 2",
+      "parent": "7f627d44366b7226",
+      "prefab": "prefabs/items/gem_blue.ykprefab",
+      "tags": ["gem"],
+      "transform": {
+        "position": [27, 17.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/items/gem_blue.png",
+            "shape": "Rectangle",
+            "size": [0.7, 0.7],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 55,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/items/gem_blue.ykanim",
+            "controller": "",
+            "clip": "shine",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [0.55, 0.55],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": ["Tide"],
+            "variable": "tide_gems",
+            "value": 1,
+            "sound": "assets/audio/collect.wav",
+            "collectEffect": "prefabs/fx/spark_blue.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0.1],
+            "rotation": 0,
+            "scale": [0, 0],
+            "frequency": 0.8,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "dc53fab911cb0ead",
+      "name": "Glow",
+      "parent": "e391ac98903fb1d0",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#64b4ffff",
+            "intensity": 0.45,
+            "radius": 1.3,
+            "offset": [0, 0],
+            "flicker": 0,
+            "flickerSpeed": 6,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "5a944809f268cc0d",
+      "name": "Blue Gem 3",
+      "parent": "7f627d44366b7226",
+      "prefab": "prefabs/items/gem_blue.ykprefab",
+      "tags": ["gem"],
+      "transform": {
+        "position": [29, 17.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/items/gem_blue.png",
+            "shape": "Rectangle",
+            "size": [0.7, 0.7],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 55,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/items/gem_blue.ykanim",
+            "controller": "",
+            "clip": "shine",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [0.55, 0.55],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": ["Tide"],
+            "variable": "tide_gems",
+            "value": 1,
+            "sound": "assets/audio/collect.wav",
+            "collectEffect": "prefabs/fx/spark_blue.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0.1],
+            "rotation": 0,
+            "scale": [0, 0],
+            "frequency": 0.8,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "d48c1d53d719e821",
+      "name": "Glow",
+      "parent": "5a944809f268cc0d",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#64b4ffff",
+            "intensity": 0.45,
+            "radius": 1.3,
+            "offset": [0, 0],
+            "flicker": 0,
+            "flickerSpeed": 6,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "133b8a461b5fd647",
+      "name": "Blue Gem 4",
+      "parent": "7f627d44366b7226",
+      "prefab": "prefabs/items/gem_blue.ykprefab",
+      "tags": ["gem"],
+      "transform": {
+        "position": [11, 13],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/items/gem_blue.png",
+            "shape": "Rectangle",
+            "size": [0.7, 0.7],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 55,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/items/gem_blue.ykanim",
+            "controller": "",
+            "clip": "shine",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [0.55, 0.55],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": ["Tide"],
+            "variable": "tide_gems",
+            "value": 1,
+            "sound": "assets/audio/collect.wav",
+            "collectEffect": "prefabs/fx/spark_blue.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0.1],
+            "rotation": 0,
+            "scale": [0, 0],
+            "frequency": 0.8,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "3baf25b9f10e8e64",
+      "name": "Glow",
+      "parent": "133b8a461b5fd647",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#64b4ffff",
+            "intensity": 0.45,
+            "radius": 1.3,
+            "offset": [0, 0],
+            "flicker": 0,
+            "flickerSpeed": 6,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "3c8eed40fdc7073d",
+      "name": "Blue Gem 5",
+      "parent": "7f627d44366b7226",
+      "prefab": "prefabs/items/gem_blue.ykprefab",
+      "tags": ["gem"],
+      "transform": {
+        "position": [34.9, 9.6],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/items/gem_blue.png",
+            "shape": "Rectangle",
+            "size": [0.7, 0.7],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 55,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/items/gem_blue.ykanim",
+            "controller": "",
+            "clip": "shine",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [0.55, 0.55],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": ["Tide"],
+            "variable": "tide_gems",
+            "value": 1,
+            "sound": "assets/audio/collect.wav",
+            "collectEffect": "prefabs/fx/spark_blue.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0.1],
+            "rotation": 0,
+            "scale": [0, 0],
+            "frequency": 0.8,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "1f646a606af8570a",
+      "name": "Glow",
+      "parent": "3c8eed40fdc7073d",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#64b4ffff",
+            "intensity": 0.45,
+            "radius": 1.3,
+            "offset": [0, 0],
+            "flicker": 0,
+            "flickerSpeed": 6,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "484882540e75c1c1",
+      "name": "Blue Gem 6",
+      "parent": "7f627d44366b7226",
+      "prefab": "prefabs/items/gem_blue.ykprefab",
+      "tags": ["gem"],
+      "transform": {
+        "position": [29.6, 8.6],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/items/gem_blue.png",
+            "shape": "Rectangle",
+            "size": [0.7, 0.7],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 55,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/items/gem_blue.ykanim",
+            "controller": "",
+            "clip": "shine",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [0.55, 0.55],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": ["Tide"],
+            "variable": "tide_gems",
+            "value": 1,
+            "sound": "assets/audio/collect.wav",
+            "collectEffect": "prefabs/fx/spark_blue.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0.1],
+            "rotation": 0,
+            "scale": [0, 0],
+            "frequency": 0.8,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "3b7125aba7c37633",
+      "name": "Glow",
+      "parent": "484882540e75c1c1",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#64b4ffff",
+            "intensity": 0.45,
+            "radius": 1.3,
+            "offset": [0, 0],
+            "flicker": 0,
+            "flickerSpeed": 6,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "3300fa6a5e692733",
+      "name": "Characters",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": []
+    },
+    {
+      "id": "19d9398446d4e81a",
+      "name": "Ember",
+      "parent": "3300fa6a5e692733",
+      "prefab": "prefabs/characters/ember.ykprefab",
+      "tags": ["Ember"],
+      "transform": {
+        "position": [2.6, 16.425],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/characters/ember.png",
+            "shape": "Rectangle",
+            "size": [1.5, 1.5],
+            "offset": [0, -0.09],
+            "color": "#ffffffff",
+            "layer": 40,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 8,
+            "rows": 4,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/characters/ember.ykanim",
+            "controller": "assets/characters/character.ykctl",
+            "clip": "",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "facing",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Dynamic",
+            "gravityScale": 1,
+            "linearDamping": 0,
+            "angularDamping": 0.05,
+            "fixedRotation": true,
+            "bullet": false,
+            "allowSleep": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Capsule",
+            "size": [0.6, 1.15],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Player",
+            "friction": 0,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "PlayerInput",
+          "properties": {
+            "actionSet": "Player1"
+          }
+        },
+        {
+          "type": "PlatformerController",
+          "properties": {
+            "moveLeftAction": "MoveLeft",
+            "moveRightAction": "MoveRight",
+            "jumpAction": "Jump",
+            "moveSpeed": 5.5,
+            "groundAcceleration": 70,
+            "groundDeceleration": 80,
+            "airAcceleration": 40,
+            "airDeceleration": 6,
+            "jumpHeight": 2.3,
+            "fallGravityMultiplier": 1.35,
+            "jumpCutMultiplier": 0.45,
+            "coyoteTime": 0.1,
+            "jumpBufferTime": 0.12,
+            "maxFallSpeed": 20,
+            "maxSlopeDegrees": 55,
+            "gripFriction": 1.2,
+            "slideFriction": 0,
+            "groundSnap": 0.3,
+            "landingSpeed": 4,
+            "jumpSound": "assets/audio/jump.wav",
+            "landSound": "assets/audio/land.wav",
+            "jumpEffect": "prefabs/fx/dust.ykprefab",
+            "landEffect": "prefabs/fx/dust.ykprefab"
+          }
+        },
+        {
+          "type": "Killable",
+          "properties": {
+            "respawn": true,
+            "respawnDelay": 1.4,
+            "deathDuration": 0.9,
+            "spawnPoint": null,
+            "deathSound": "assets/audio/death.wav",
+            "respawnSound": "assets/audio/respawn.wav",
+            "deathEffect": "prefabs/fx/death_ember.ykprefab",
+            "respawnEffect": "prefabs/fx/respawn.ykprefab"
+          }
+        }
+      ]
+    },
+    {
+      "id": "8b831a24e99e06a8",
+      "name": "Aura",
+      "parent": "19d9398446d4e81a",
+      "transform": {
+        "position": [0, -0.1],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ff8c3cff",
+            "intensity": 0.35,
+            "radius": 2.2,
+            "offset": [0, 0],
+            "flicker": 0.15,
+            "flickerSpeed": 4,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "1a697e12ed1eceac",
+      "name": "Trail",
+      "parent": "19d9398446d4e81a",
+      "transform": {
+        "position": [0, 0.1],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 14,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.4, 0.8],
+            "area": "Box",
+            "areaSize": [0.4, 0.5],
+            "direction": 0,
+            "spread": 40,
+            "speed": [0.4, 1],
+            "gravity": [0, -1.5],
+            "drag": 0,
+            "startSize": [0.08, 0.18],
+            "endScale": 0.1,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#ffaf46dc",
+            "endColor": "#ff3c1400",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "180d28c79fc27a28",
+      "name": "Tide",
+      "parent": "3300fa6a5e692733",
+      "prefab": "prefabs/characters/tide.ykprefab",
+      "tags": ["Tide"],
+      "transform": {
+        "position": [3.4, 16.425],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/characters/tide.png",
+            "shape": "Rectangle",
+            "size": [1.5, 1.5],
+            "offset": [0, -0.09],
+            "color": "#ffffffff",
+            "layer": 40,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 8,
+            "rows": 4,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/characters/tide.ykanim",
+            "controller": "assets/characters/character.ykctl",
+            "clip": "",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "facing",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Dynamic",
+            "gravityScale": 1,
+            "linearDamping": 0,
+            "angularDamping": 0.05,
+            "fixedRotation": true,
+            "bullet": false,
+            "allowSleep": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Capsule",
+            "size": [0.6, 1.15],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Player",
+            "friction": 0,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "PlayerInput",
+          "properties": {
+            "actionSet": "Player2"
+          }
+        },
+        {
+          "type": "PlatformerController",
+          "properties": {
+            "moveLeftAction": "MoveLeft",
+            "moveRightAction": "MoveRight",
+            "jumpAction": "Jump",
+            "moveSpeed": 5.5,
+            "groundAcceleration": 70,
+            "groundDeceleration": 80,
+            "airAcceleration": 40,
+            "airDeceleration": 6,
+            "jumpHeight": 2.3,
+            "fallGravityMultiplier": 1.35,
+            "jumpCutMultiplier": 0.45,
+            "coyoteTime": 0.1,
+            "jumpBufferTime": 0.12,
+            "maxFallSpeed": 20,
+            "maxSlopeDegrees": 55,
+            "gripFriction": 1.2,
+            "slideFriction": 0,
+            "groundSnap": 0.3,
+            "landingSpeed": 4,
+            "jumpSound": "assets/audio/jump.wav",
+            "landSound": "assets/audio/land.wav",
+            "jumpEffect": "prefabs/fx/dust.ykprefab",
+            "landEffect": "prefabs/fx/dust.ykprefab"
+          }
+        },
+        {
+          "type": "Killable",
+          "properties": {
+            "respawn": true,
+            "respawnDelay": 1.4,
+            "deathDuration": 0.9,
+            "spawnPoint": null,
+            "deathSound": "assets/audio/death.wav",
+            "respawnSound": "assets/audio/respawn.wav",
+            "deathEffect": "prefabs/fx/death_tide.ykprefab",
+            "respawnEffect": "prefabs/fx/respawn.ykprefab"
+          }
+        }
+      ]
+    },
+    {
+      "id": "e8df980249990391",
+      "name": "Aura",
+      "parent": "180d28c79fc27a28",
+      "transform": {
+        "position": [0, -0.1],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#5ab4ffff",
+            "intensity": 0.35,
+            "radius": 2.2,
+            "offset": [0, 0],
+            "flicker": 0.15,
+            "flickerSpeed": 4,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "99386da982c001eb",
+      "name": "Trail",
+      "parent": "180d28c79fc27a28",
+      "transform": {
+        "position": [0, 0.1],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 10,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.5, 0.9],
+            "area": "Box",
+            "areaSize": [0.4, 0.5],
+            "direction": 0,
+            "spread": 60,
+            "speed": [0.2, 0.7],
+            "gravity": [0, 3],
+            "drag": 0,
+            "startSize": [0.06, 0.12],
+            "endScale": 0.2,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#a0e1ffd2",
+            "endColor": "#50a0ff00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "e84f17472ce5ee63",
+      "name": "Ember Spawn",
+      "parent": "3300fa6a5e692733",
+      "prefab": "prefabs/level/spawn_point.ykprefab",
+      "transform": {
+        "position": [2.6, 16.425],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpawnPoint",
+          "properties": {
+            "character": "19d9398446d4e81a"
+          }
+        }
+      ]
+    },
+    {
+      "id": "113caf11b83be729",
+      "name": "Tide Spawn",
+      "parent": "3300fa6a5e692733",
+      "prefab": "prefabs/level/spawn_point.ykprefab",
+      "transform": {
+        "position": [3.4, 16.425],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpawnPoint",
+          "properties": {
+            "character": "180d28c79fc27a28"
+          }
+        }
+      ]
+    },
+    {
+      "id": "8ed7669b078cf85a",
+      "name": "Decor",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": []
+    },
+    {
+      "id": "3bc2e3ea869bf3a2",
+      "name": "Grass 1",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/grass.ykprefab",
+      "transform": {
+        "position": [5.1785197, 17.05],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/grass.png",
+            "shape": "Rectangle",
+            "size": [1, 0.625],
+            "offset": [0, -0.31],
+            "color": "#ffffffff",
+            "layer": 12,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 3,
+            "rows": 1,
+            "frame": 2,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2.2,
+            "scale": [0, 0],
+            "frequency": 0.5,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "dbdbd01684aef4bd",
+      "name": "Grass 2",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/grass.ykprefab",
+      "transform": {
+        "position": [14.4, 17.05],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/grass.png",
+            "shape": "Rectangle",
+            "size": [1, 0.625],
+            "offset": [0, -0.31],
+            "color": "#ffffffff",
+            "layer": 12,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 3,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2.2,
+            "scale": [0, 0],
+            "frequency": 0.5,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "3eb559fc5abfcde7",
+      "name": "Grass 3",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/grass.ykprefab",
+      "transform": {
+        "position": [31.4, 17.05],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/grass.png",
+            "shape": "Rectangle",
+            "size": [1, 0.625],
+            "offset": [0, -0.31],
+            "color": "#ffffffff",
+            "layer": 12,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 3,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2.2,
+            "scale": [0, 0],
+            "frequency": 0.5,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "2105d03d2cf42bcc",
+      "name": "Grass 4",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/grass.ykprefab",
+      "transform": {
+        "position": [35.15792, 17.05],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/grass.png",
+            "shape": "Rectangle",
+            "size": [1, 0.625],
+            "offset": [0, -0.31],
+            "color": "#ffffffff",
+            "layer": 12,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 3,
+            "rows": 1,
+            "frame": 2,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2.2,
+            "scale": [0, 0],
+            "frequency": 0.5,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "e0488d085925abcb",
+      "name": "Fern 1",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/fern.ykprefab",
+      "transform": {
+        "position": [36.6796, 17.05],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/fern.png",
+            "shape": "Rectangle",
+            "size": [1.5, 1],
+            "offset": [0, -0.47],
+            "color": "#ffffffff",
+            "layer": 12,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 1.5,
+            "scale": [0, 0],
+            "frequency": 0.4,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "e9997f344a6cc292",
+      "name": "Grass 5",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/grass.ykprefab",
+      "transform": {
+        "position": [38.564316, 17.05],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/grass.png",
+            "shape": "Rectangle",
+            "size": [1, 0.625],
+            "offset": [0, -0.31],
+            "color": "#ffffffff",
+            "layer": 12,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 3,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2.2,
+            "scale": [0, 0],
+            "frequency": 0.5,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "13a853b07b5ad41f",
+      "name": "Crystals 1",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/crystals.ykprefab",
+      "transform": {
+        "position": [40.44503, 17.05],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/crystals.png",
+            "shape": "Rectangle",
+            "size": [1, 1],
+            "offset": [0, -0.44],
+            "color": "#ffffffff",
+            "layer": 12,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 2,
+            "rows": 1,
+            "frame": 1,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0a51bd666af3c3c0",
+      "name": "Glow",
+      "parent": "13a853b07b5ad41f",
+      "transform": {
+        "position": [0, -0.45],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#6edcf0ff",
+            "intensity": 0.5,
+            "radius": 2.2,
+            "offset": [0, 0],
+            "flicker": 0,
+            "flickerSpeed": 6,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "33b64572a4eb6506",
+      "name": "Grass 6",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/grass.ykprefab",
+      "transform": {
+        "position": [42.110836, 17.05],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/grass.png",
+            "shape": "Rectangle",
+            "size": [1, 0.625],
+            "offset": [0, -0.31],
+            "color": "#ffffffff",
+            "layer": 12,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 3,
+            "rows": 1,
+            "frame": 2,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2.2,
+            "scale": [0, 0],
+            "frequency": 0.5,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "01fde4071f94141e",
+      "name": "Grass 7",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/grass.ykprefab",
+      "transform": {
+        "position": [27.151276, 15.25],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/grass.png",
+            "shape": "Rectangle",
+            "size": [1, 0.625],
+            "offset": [0, -0.31],
+            "color": "#ffffffff",
+            "layer": 12,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 3,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2.2,
+            "scale": [0, 0],
+            "frequency": 0.5,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "49a9a6604c0c3fca",
+      "name": "Grass 8",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/grass.ykprefab",
+      "transform": {
+        "position": [28.7, 15.25],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/grass.png",
+            "shape": "Rectangle",
+            "size": [1, 0.625],
+            "offset": [0, -0.31],
+            "color": "#ffffffff",
+            "layer": 12,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 3,
+            "rows": 1,
+            "frame": 2,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2.2,
+            "scale": [0, 0],
+            "frequency": 0.5,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "286c84c1499bdfd1",
+      "name": "Mushrooms 1",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/mushrooms.ykprefab",
+      "transform": {
+        "position": [29.992651, 15.25],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/mushrooms.png",
+            "shape": "Rectangle",
+            "size": [1, 0.75],
+            "offset": [0, -0.34],
+            "color": "#ffffffff",
+            "layer": 12,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 2,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        }
+      ]
+    },
+    {
+      "id": "4bb9229dfd4c6115",
+      "name": "Glow",
+      "parent": "286c84c1499bdfd1",
+      "transform": {
+        "position": [0, -0.3],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ff96c8ff",
+            "intensity": 0.35,
+            "radius": 1.6,
+            "offset": [0, 0],
+            "flicker": 0,
+            "flickerSpeed": 6,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "11883365a0a6543e",
+      "name": "Fern 2",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/fern.ykprefab",
+      "transform": {
+        "position": [40.8, 15.25],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/fern.png",
+            "shape": "Rectangle",
+            "size": [1.5, 1],
+            "offset": [0, -0.47],
+            "color": "#ffffffff",
+            "layer": 12,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 1.5,
+            "scale": [0, 0],
+            "frequency": 0.4,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "e7997dc9b0b9c9d4",
+      "name": "Crystals 2",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/crystals.ykprefab",
+      "transform": {
+        "position": [38.4, 13.45],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/crystals.png",
+            "shape": "Rectangle",
+            "size": [1, 1],
+            "offset": [0, -0.44],
+            "color": "#ffffffff",
+            "layer": 12,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 2,
+            "rows": 1,
+            "frame": 1,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        }
+      ]
+    },
+    {
+      "id": "f9b8b928a8cd28db",
+      "name": "Glow",
+      "parent": "e7997dc9b0b9c9d4",
+      "transform": {
+        "position": [0, -0.45],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#6edcf0ff",
+            "intensity": 0.5,
+            "radius": 2.2,
+            "offset": [0, 0],
+            "flicker": 0,
+            "flickerSpeed": 6,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "caac57d46450b85d",
+      "name": "Grass 9",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/grass.ykprefab",
+      "transform": {
+        "position": [36.2, 11.65],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/grass.png",
+            "shape": "Rectangle",
+            "size": [1, 0.625],
+            "offset": [0, -0.31],
+            "color": "#ffffffff",
+            "layer": 12,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 3,
+            "rows": 1,
+            "frame": 2,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2.2,
+            "scale": [0, 0],
+            "frequency": 0.5,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "16a0f29a13b021e2",
+      "name": "Vines 1",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/vines.ykprefab",
+      "transform": {
+        "position": [2.8925683, 1.4],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/vines.png",
+            "shape": "Rectangle",
+            "size": [1, 2.5],
+            "offset": [0, 1.25],
+            "color": "#ffffffff",
+            "layer": -20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 2,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2,
+            "scale": [0, 0],
+            "frequency": 0.3,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "94d5f96c1f7b0e6c",
+      "name": "Vines 2",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/vines.ykprefab",
+      "transform": {
+        "position": [6.3950233, 1.4],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/vines.png",
+            "shape": "Rectangle",
+            "size": [1, 2.5],
+            "offset": [0, 1.25],
+            "color": "#ffffffff",
+            "layer": -20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 2,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2,
+            "scale": [0, 0],
+            "frequency": 0.3,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "86830ad4875a053a",
+      "name": "Vines 3",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/vines.ykprefab",
+      "transform": {
+        "position": [9.809546, 1.4],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/vines.png",
+            "shape": "Rectangle",
+            "size": [1, 2.5],
+            "offset": [0, 1.25],
+            "color": "#ffffffff",
+            "layer": -20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 2,
+            "rows": 1,
+            "frame": 1,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2,
+            "scale": [0, 0],
+            "frequency": 0.3,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "420685cf2447498c",
+      "name": "Vines 4",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/vines.ykprefab",
+      "transform": {
+        "position": [12.368401, 1.4],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/vines.png",
+            "shape": "Rectangle",
+            "size": [1, 2.5],
+            "offset": [0, 1.25],
+            "color": "#ffffffff",
+            "layer": -20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 2,
+            "rows": 1,
+            "frame": 1,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2,
+            "scale": [0, 0],
+            "frequency": 0.3,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "6dfb678d0ea48acf",
+      "name": "Vines 5",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/vines.ykprefab",
+      "transform": {
+        "position": [16.288988, 1.4],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/vines.png",
+            "shape": "Rectangle",
+            "size": [1, 2.5],
+            "offset": [0, 1.25],
+            "color": "#ffffffff",
+            "layer": -20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 2,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2,
+            "scale": [0, 0],
+            "frequency": 0.3,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "1a64351029c78afe",
+      "name": "Vines 6",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/vines.ykprefab",
+      "transform": {
+        "position": [20.86545, 1.4],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/vines.png",
+            "shape": "Rectangle",
+            "size": [1, 2.5],
+            "offset": [0, 1.25],
+            "color": "#ffffffff",
+            "layer": -20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 2,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2,
+            "scale": [0, 0],
+            "frequency": 0.3,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "d692422170809e97",
+      "name": "Vines 7",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/vines.ykprefab",
+      "transform": {
+        "position": [26.564817, 1.4],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/vines.png",
+            "shape": "Rectangle",
+            "size": [1, 2.5],
+            "offset": [0, 1.25],
+            "color": "#ffffffff",
+            "layer": -20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 2,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2,
+            "scale": [0, 0],
+            "frequency": 0.3,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "b865493155a84961",
+      "name": "Vines 8",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/vines.ykprefab",
+      "transform": {
+        "position": [29.678392, 1.4],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/vines.png",
+            "shape": "Rectangle",
+            "size": [1, 2.5],
+            "offset": [0, 1.25],
+            "color": "#ffffffff",
+            "layer": -20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 2,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2,
+            "scale": [0, 0],
+            "frequency": 0.3,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "e6417d62e5c2ef35",
+      "name": "Vines 9",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/vines.ykprefab",
+      "transform": {
+        "position": [33.603455, 1.4],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/vines.png",
+            "shape": "Rectangle",
+            "size": [1, 2.5],
+            "offset": [0, 1.25],
+            "color": "#ffffffff",
+            "layer": -20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 2,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2,
+            "scale": [0, 0],
+            "frequency": 0.3,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "6ae0d89d281c9a81",
+      "name": "Vines 10",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/vines.ykprefab",
+      "transform": {
+        "position": [37.950512, 1.4],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/vines.png",
+            "shape": "Rectangle",
+            "size": [1, 2.5],
+            "offset": [0, 1.25],
+            "color": "#ffffffff",
+            "layer": -20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 2,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2,
+            "scale": [0, 0],
+            "frequency": 0.3,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "9a402142ec6bc901",
+      "name": "Vines 11",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/vines.ykprefab",
+      "transform": {
+        "position": [40.88023, 1.4],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/vines.png",
+            "shape": "Rectangle",
+            "size": [1, 2.5],
+            "offset": [0, 1.25],
+            "color": "#ffffffff",
+            "layer": -20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 2,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2,
+            "scale": [0, 0],
+            "frequency": 0.3,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "2a5e03eaae608954",
+      "name": "Vines 12",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/vines.ykprefab",
+      "transform": {
+        "position": [22, 11.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/vines.png",
+            "shape": "Rectangle",
+            "size": [1, 2.5],
+            "offset": [0, 1.25],
+            "color": "#ffffffff",
+            "layer": -20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 2,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2,
+            "scale": [0, 0],
+            "frequency": 0.3,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "d6c950916cbdd40e",
+      "name": "Vines 13",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/vines.ykprefab",
+      "transform": {
+        "position": [24.4, 11.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/vines.png",
+            "shape": "Rectangle",
+            "size": [1, 2.5],
+            "offset": [0, 1.25],
+            "color": "#ffffffff",
+            "layer": -20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 2,
+            "rows": 1,
+            "frame": 1,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2,
+            "scale": [0, 0],
+            "frequency": 0.3,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "eed75cddf1875716",
+      "name": "Vines 14",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/vines.ykprefab",
+      "transform": {
+        "position": [33, 11.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/vines.png",
+            "shape": "Rectangle",
+            "size": [1, 2.5],
+            "offset": [0, 1.25],
+            "color": "#ffffffff",
+            "layer": -20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 2,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2,
+            "scale": [0, 0],
+            "frequency": 0.3,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "b432c21d5f716077",
+      "name": "Vines 15",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/vines.ykprefab",
+      "transform": {
+        "position": [34.8, 11.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/vines.png",
+            "shape": "Rectangle",
+            "size": [1, 2.5],
+            "offset": [0, 1.25],
+            "color": "#ffffffff",
+            "layer": -20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 2,
+            "rows": 1,
+            "frame": 1,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [0, 0],
+            "rotation": 2,
+            "scale": [0, 0],
+            "frequency": 0.3,
+            "phase": 0,
+            "randomPhase": true,
+            "wave": "Sine"
+          }
+        }
+      ]
+    },
+    {
+      "id": "bae9f7d428d27236",
+      "name": "Torch 1",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/torch.ykprefab",
+      "transform": {
+        "position": [2.1, 12.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/torch.png",
+            "shape": "Rectangle",
+            "size": [0.5, 1.125],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": -15,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        }
+      ]
+    },
+    {
+      "id": "09f68604b3972708",
+      "name": "Glow",
+      "parent": "bae9f7d428d27236",
+      "transform": {
+        "position": [0, -0.3],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ffaa50ff",
+            "intensity": 0.8,
+            "radius": 3.4,
+            "offset": [0, 0],
+            "flicker": 0.5,
+            "flickerSpeed": 9,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "c4b014ce6efe008c",
+      "name": "Flame",
+      "parent": "bae9f7d428d27236",
+      "transform": {
+        "position": [0, -0.28],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 26,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.3, 0.6],
+            "area": "Circle",
+            "areaSize": [0.18, 0.1],
+            "direction": 0,
+            "spread": 25,
+            "speed": [0.5, 1.1],
+            "gravity": [0, -1.2],
+            "drag": 0,
+            "startSize": [0.14, 0.28],
+            "endScale": 0.1,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#ffcd5aeb",
+            "endColor": "#ff500a00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "1eb10ba14d7bd06f",
+      "name": "Torch 2",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/torch.ykprefab",
+      "transform": {
+        "position": [13, 9],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/torch.png",
+            "shape": "Rectangle",
+            "size": [0.5, 1.125],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": -15,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        }
+      ]
+    },
+    {
+      "id": "faa52f89459c5ef4",
+      "name": "Glow",
+      "parent": "1eb10ba14d7bd06f",
+      "transform": {
+        "position": [0, -0.3],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ffaa50ff",
+            "intensity": 0.8,
+            "radius": 3.4,
+            "offset": [0, 0],
+            "flicker": 0.5,
+            "flickerSpeed": 9,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "824f65f81aebff34",
+      "name": "Flame",
+      "parent": "1eb10ba14d7bd06f",
+      "transform": {
+        "position": [0, -0.28],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 26,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.3, 0.6],
+            "area": "Circle",
+            "areaSize": [0.18, 0.1],
+            "direction": 0,
+            "spread": 25,
+            "speed": [0.5, 1.1],
+            "gravity": [0, -1.2],
+            "drag": 0,
+            "startSize": [0.14, 0.28],
+            "endScale": 0.1,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#ffcd5aeb",
+            "endColor": "#ff500a00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "d6254c523c6158d1",
+      "name": "Torch 3",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/torch.ykprefab",
+      "transform": {
+        "position": [18.1, 12],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/torch.png",
+            "shape": "Rectangle",
+            "size": [0.5, 1.125],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": -15,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        }
+      ]
+    },
+    {
+      "id": "3f522410687c941d",
+      "name": "Glow",
+      "parent": "d6254c523c6158d1",
+      "transform": {
+        "position": [0, -0.3],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ffaa50ff",
+            "intensity": 0.8,
+            "radius": 3.4,
+            "offset": [0, 0],
+            "flicker": 0.5,
+            "flickerSpeed": 9,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "b79d753cc46e1882",
+      "name": "Flame",
+      "parent": "d6254c523c6158d1",
+      "transform": {
+        "position": [0, -0.28],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 26,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.3, 0.6],
+            "area": "Circle",
+            "areaSize": [0.18, 0.1],
+            "direction": 0,
+            "spread": 25,
+            "speed": [0.5, 1.1],
+            "gravity": [0, -1.2],
+            "drag": 0,
+            "startSize": [0.14, 0.28],
+            "endScale": 0.1,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#ffcd5aeb",
+            "endColor": "#ff500a00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "5e02790c929a2dc5",
+      "name": "Torch 4",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/torch.ykprefab",
+      "transform": {
+        "position": [19.9, 8],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/torch.png",
+            "shape": "Rectangle",
+            "size": [0.5, 1.125],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": -15,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        }
+      ]
+    },
+    {
+      "id": "8036615ed50376f4",
+      "name": "Glow",
+      "parent": "5e02790c929a2dc5",
+      "transform": {
+        "position": [0, -0.3],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ffaa50ff",
+            "intensity": 0.8,
+            "radius": 3.4,
+            "offset": [0, 0],
+            "flicker": 0.5,
+            "flickerSpeed": 9,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "fd0be82bd2de044c",
+      "name": "Flame",
+      "parent": "5e02790c929a2dc5",
+      "transform": {
+        "position": [0, -0.28],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 26,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.3, 0.6],
+            "area": "Circle",
+            "areaSize": [0.18, 0.1],
+            "direction": 0,
+            "spread": 25,
+            "speed": [0.5, 1.1],
+            "gravity": [0, -1.2],
+            "drag": 0,
+            "startSize": [0.14, 0.28],
+            "endScale": 0.1,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#ffcd5aeb",
+            "endColor": "#ff500a00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "a80486d6cf7da05a",
+      "name": "Torch 5",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/torch.ykprefab",
+      "transform": {
+        "position": [27, 5.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/torch.png",
+            "shape": "Rectangle",
+            "size": [0.5, 1.125],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": -15,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        }
+      ]
+    },
+    {
+      "id": "024203d4257b137b",
+      "name": "Glow",
+      "parent": "a80486d6cf7da05a",
+      "transform": {
+        "position": [0, -0.3],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ffaa50ff",
+            "intensity": 0.8,
+            "radius": 3.4,
+            "offset": [0, 0],
+            "flicker": 0.5,
+            "flickerSpeed": 9,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "fdc0457ed165125e",
+      "name": "Flame",
+      "parent": "a80486d6cf7da05a",
+      "transform": {
+        "position": [0, -0.28],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 26,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.3, 0.6],
+            "area": "Circle",
+            "areaSize": [0.18, 0.1],
+            "direction": 0,
+            "spread": 25,
+            "speed": [0.5, 1.1],
+            "gravity": [0, -1.2],
+            "drag": 0,
+            "startSize": [0.14, 0.28],
+            "endScale": 0.1,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#ffcd5aeb",
+            "endColor": "#ff500a00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "adad732f8b77709e",
+      "name": "Torch 6",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/torch.ykprefab",
+      "transform": {
+        "position": [37, 6],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/torch.png",
+            "shape": "Rectangle",
+            "size": [0.5, 1.125],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": -15,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        }
+      ]
+    },
+    {
+      "id": "621799f240859b7b",
+      "name": "Glow",
+      "parent": "adad732f8b77709e",
+      "transform": {
+        "position": [0, -0.3],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ffaa50ff",
+            "intensity": 0.8,
+            "radius": 3.4,
+            "offset": [0, 0],
+            "flicker": 0.5,
+            "flickerSpeed": 9,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "81040e8861c97331",
+      "name": "Flame",
+      "parent": "adad732f8b77709e",
+      "transform": {
+        "position": [0, -0.28],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 26,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.3, 0.6],
+            "area": "Circle",
+            "areaSize": [0.18, 0.1],
+            "direction": 0,
+            "spread": 25,
+            "speed": [0.5, 1.1],
+            "gravity": [0, -1.2],
+            "drag": 0,
+            "startSize": [0.14, 0.28],
+            "endScale": 0.1,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#ffcd5aeb",
+            "endColor": "#ff500a00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "277627a30a4ca7bb",
+      "name": "Torch 7",
+      "parent": "8ed7669b078cf85a",
+      "prefab": "prefabs/decor/torch.ykprefab",
+      "transform": {
+        "position": [42, 12],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/decor/torch.png",
+            "shape": "Rectangle",
+            "size": [0.5, 1.125],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": -15,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        }
+      ]
+    },
+    {
+      "id": "b6049866f4a454c8",
+      "name": "Glow",
+      "parent": "277627a30a4ca7bb",
+      "transform": {
+        "position": [0, -0.3],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ffaa50ff",
+            "intensity": 0.8,
+            "radius": 3.4,
+            "offset": [0, 0],
+            "flicker": 0.5,
+            "flickerSpeed": 9,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "55922379215340e0",
+      "name": "Flame",
+      "parent": "277627a30a4ca7bb",
+      "transform": {
+        "position": [0, -0.28],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 26,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.3, 0.6],
+            "area": "Circle",
+            "areaSize": [0.18, 0.1],
+            "direction": 0,
+            "spread": 25,
+            "speed": [0.5, 1.1],
+            "gravity": [0, -1.2],
+            "drag": 0,
+            "startSize": [0.14, 0.28],
+            "endScale": 0.1,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#ffcd5aeb",
+            "endColor": "#ff500a00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    }
+  ]
+}

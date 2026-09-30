@@ -1,0 +1,141 @@
+{
+  "format": "yk.prefab",
+  "version": 1,
+  "root": "3fae8ffd403908bb",
+  "entities": [
+    {
+      "id": "3fae8ffd403908bb",
+      "name": "Lava",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/hazards/lava.png",
+            "shape": "Rectangle",
+            "size": [2, 1],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 50,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [2, 1],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/hazards/lava.ykanim",
+            "controller": "",
+            "clip": "flow",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.9, 0.6],
+            "offset": [0, 0.2],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Hazard",
+          "properties": {
+            "affectsTags": ["Tide"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "121f01cb005dc99b",
+      "name": "Glow",
+      "parent": "3fae8ffd403908bb",
+      "transform": {
+        "position": [0, -0.15],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ff8c28ff",
+            "intensity": 0.55,
+            "radius": 2.8,
+            "offset": [0, 0],
+            "flicker": 0.35,
+            "flickerSpeed": 5,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "4f7afe7911bf5a2d",
+      "name": "Bubbles",
+      "parent": "3fae8ffd403908bb",
+      "transform": {
+        "position": [0, -0.35],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 2.4,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.5, 1.1],
+            "area": "Box",
+            "areaSize": [1.7, 0.1],
+            "direction": 0,
+            "spread": 30,
+            "speed": [0.4, 1.1],
+            "gravity": [0, -0.4],
+            "drag": 0,
+            "startSize": [0.06, 0.17],
+            "endScale": 0.2,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#ffd782e6",
+            "endColor": "#ff6e1e00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    }
+  ]
+}

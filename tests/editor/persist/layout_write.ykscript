@@ -1,0 +1,15 @@
+# First half of the layout persistence check: rearrange the workbench and let it be written.
+timeout 300
+expect project "Cinder Vale"
+click activity/Prefabs
+expect side-view prefabs
+drag sash/side px:426,300
+expect layout sideBarWidth 380 6
+click "panel-tab/Profiler"
+expect panel-view profiler
+menu "View/Editor Layout/Split Right"
+expect split right
+key ctrl+alt+b
+expect inspector hidden
+wait 5
+expect layout-saved

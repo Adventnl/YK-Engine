@@ -25,6 +25,11 @@ struct Probe final : Component {
         log.push_back(context.keyboard().state(Key::Space).pressed ? "pressed" : "tick");
         if (script == "destroy" && fixedCalls == 5)
             context.destroyLater(entity().id());
+        if (script == "actions") {
+            if (context.input().state("Player1", "Jump").pressed)
+                log.push_back("jump");
+            context.blackboard().add("right", context.input().value("Player1", "MoveRight"));
+        }
         if (script == "velocity")
             if (const auto body = context.bodyOf(entity().id()))
                 context.physics().setVelocity(*body, {2.0F, 0.0F});
@@ -279,6 +284,43 @@ void inputEdges() {
     CHECK(waiting->count("pressed") == 1);
 }
 
+// Named actions reach components through the same fixed-tick retiming as raw keys: a button edge
+// lands on exactly one tick even when the frame runs several, and analog values reach every tick.
+void actionsThroughTheRuntime() {
+    Fixture f;
+    Entity &box = addBody(*f.scene, "Box", {0, 0}, {1, 1}, RigidBodyType::Static);
+    box.add<Probe>().script = "actions";
+    GameRuntime &runtime = f.start();
+    InputFrame pad;
+    pad.gamepads[0].setConnected(true);
+    pad.gamepads[0].setButton(GamepadButton::South, true);
+    pad.gamepads[0].setAxis(GamepadAxis::LeftX, 1.0F);
+    runtime.update(1.0 / 30.0, pad); // Two ticks in one frame.
+    auto *probe = runtime.scene().findByName("Box")->get<Probe>();
+    CHECK(probe->count("jump") == 1);
+    CHECK_NEAR(runtime.blackboard().number("right"), 2.0);
+    CHECK(runtime.input().state("Player1", "Jump").held);
+
+    // Keyboard-only callers still work: W is Player1's Jump in the standard map.
+    Keyboard keys;
+    keys.beginFrame();
+    keys.set(Key::W, true);
+    runtime.update(1.0 / 60.0, keys);
+    // The pad was holding Jump; W taking over from it is a hand-over, not a new press.
+    CHECK(probe->count("jump") == 1);
+    keys.beginFrame();
+    keys.set(Key::W, false);
+    runtime.update(1.0 / 60.0, keys);
+    keys.beginFrame();
+    keys.set(Key::W, true);
+    runtime.update(1.0 / 60.0, keys);
+    CHECK(probe->count("jump") == 2);
+
+    // A restart releases every action.
+    CHECK(runtime.restart());
+    CHECK(!runtime.input().state("Player1", "Jump").held);
+}
+
 void fixedStepping() {
     Fixture f;
     addBody(*f.scene, "Box", {0, 0}, {1, 1}, RigidBodyType::Static);
@@ -518,7 +560,7 @@ void animationAndAudio() {
     f.options.assets = assets.get();
     Entity &hero = f.scene->createEntity("Hero");
     hero.add<SpriteRenderer>();
-    auto &animator = hero.add<SpriteAnimator>();
+    auto &animator = hero.add<AnimatedSprite>();
     animator.animation.path = "anim/hero.ykanim";
     animator.clip = "run";
     hero.add<AudioSource>().sound.path = "tone:440,0.1";
@@ -531,8 +573,8 @@ void animationAndAudio() {
     CHECK(sprite->columns == 4 && sprite->frame >= 1); // Sheet layout comes from the asset.
     run(runtime, 12);                                  // 0.2s at 10 fps = two frames later.
     CHECK(sprite->frame >= 1 && sprite->frame <= 3);
-    runtime.scene().find(id)->get<SpriteAnimator>()->play("idle");
-    runtime.scene().find(id)->get<SpriteAnimator>()->play("missing"); // Ignored.
+    runtime.scene().find(id)->get<AnimatedSprite>()->play("idle");
+    runtime.scene().find(id)->get<AnimatedSprite>()->play("missing"); // Ignored.
     run(runtime, 2);
     CHECK(sprite->frame == 0);
     CHECK(f.audio.count("tone:440,0.1") == 1 && f.audio.requests[0].volume == 0.5F);
@@ -540,7 +582,7 @@ void animationAndAudio() {
     Fixture missing;
     Entity &lonely = missing.scene->createEntity("Lonely");
     lonely.add<SpriteRenderer>();
-    lonely.add<SpriteAnimator>().animation.path = "nope.ykanim";
+    lonely.add<AnimatedSprite>().animation.path = "nope.ykanim";
     missing.options.assets = assets.get();
     setLogStderrEnabled(false);
     GameRuntime &tolerant = missing.start();
@@ -561,6 +603,9 @@ void invalidOptions() {
     RuntimeOptions layers;
     layers.layers.masks = {};
     CHECK(!GameRuntime::create(std::make_unique<Scene>(registry, 1), layers));
+    RuntimeOptions input;
+    input.inputMap.sets.push_back(input.inputMap.sets.front()); // A set defined twice.
+    CHECK(!GameRuntime::create(std::make_unique<Scene>(registry, 1), input));
 }
 } // namespace
 
@@ -573,6 +618,7 @@ int main() {
     destruction();
     hookOrderAndRestart();
     inputEdges();
+    actionsThroughTheRuntime();
     fixedStepping();
     compoundBodyAndKinematic();
     colliderGeometry();

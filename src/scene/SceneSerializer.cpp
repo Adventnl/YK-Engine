@@ -2,6 +2,7 @@
 #include "yk/core/FileIO.hpp"
 #include "yk/core/Log.hpp"
 #include <algorithm>
+#include <map>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -28,6 +29,12 @@ Json entityRecord(const Entity &entity) {
         json.set("parent", toString(entity.parentId()));
     if (!entity.active())
         json.set("active", false);
+    if (entity.locked())
+        json.set("locked", true);
+    if (entity.editorHidden())
+        json.set("editorHidden", true);
+    if (!entity.prefabSource().empty())
+        json.set("prefab", entity.prefabSource());
     if (!entity.tags().empty()) {
         Json tags = Json::array();
         for (const std::string &tag : entity.tags())
@@ -69,6 +76,21 @@ Status applyEntityRecord(Entity &entity, const Json &record, const std::string &
         if (!active->isBool())
             return Error{context + ": 'active' must be a boolean"};
         entity.setActive(active->asBool());
+    }
+    if (const Json *hidden = record.find("editorHidden")) {
+        if (!hidden->isBool())
+            return Error{context + ": 'editorHidden' must be a boolean"};
+        entity.setEditorHidden(hidden->asBool());
+    }
+    if (const Json *locked = record.find("locked")) {
+        if (!locked->isBool())
+            return Error{context + ": 'locked' must be a boolean"};
+        entity.setLocked(locked->asBool());
+    }
+    if (const Json *prefab = record.find("prefab")) {
+        if (!prefab->isString())
+            return Error{context + ": 'prefab' must be a string"};
+        entity.setPrefabSource(prefab->asString());
     }
     if (const Json *tags = record.find("tags")) {
         if (!tags->isArray())
@@ -409,6 +431,8 @@ Result<std::vector<EntityId>> instantiateSubtrees(Scene &scene,
             return Error{"Prefab root is not among its entities"};
         }
         roots.push_back(root->second);
+        if (!placement.source.empty())
+            scene.find(root->second)->setPrefabSource(placement.source);
     }
     remapReferences(scene, created, remap, keepExternalReferences);
     for (std::size_t i = 0; i < roots.size(); ++i)
@@ -418,14 +442,204 @@ Result<std::vector<EntityId>> instantiateSubtrees(Scene &scene,
 }
 
 Result<EntityId> instantiateSubtree(Scene &scene, const Json &prefab, EntityId parent,
-                                    std::optional<Vec2> worldPosition,
-                                    bool keepExternalReferences) {
-    auto roots = instantiateSubtrees(scene, {{&prefab, parent}}, keepExternalReferences);
+                                    std::optional<Vec2> worldPosition, bool keepExternalReferences,
+                                    const std::string &source) {
+    auto roots = instantiateSubtrees(scene, {{&prefab, parent, source}}, keepExternalReferences);
     if (!roots)
         return Error{roots.error()};
     if (worldPosition)
         scene.find(roots.value().front())->setWorldPosition(*worldPosition);
     return roots.value().front();
+}
+
+namespace {
+// The place of an entity below an instance root: names from the root down ("Gate/Handle").
+std::string namePath(const Scene &scene, const Entity &entity, EntityId root) {
+    std::string path;
+    for (const Entity *at = &entity; at && at->id() != root; at = scene.find(at->parentId()))
+        path = path.empty() ? at->name() : at->name() + "/" + path;
+    return path;
+}
+
+// One entity reference that pointed outside an instance, addressed so it can be found again in the
+// rebuilt instance: entity (by name path), component type and n-th of that type, property.
+struct OutsideReference {
+    std::string entityPath, type, property;
+    int occurrence{};
+    EntityId single;
+    std::vector<EntityId> list;
+    bool isList{};
+};
+
+std::vector<OutsideReference> outsideReferences(const Scene &scene, EntityId root) {
+    std::vector<OutsideReference> found;
+    std::unordered_set<EntityId> inside;
+    std::vector<EntityId> stack{root};
+    while (!stack.empty()) {
+        const EntityId id = stack.back();
+        stack.pop_back();
+        inside.insert(id);
+        for (const EntityId child : scene.find(id)->childIds())
+            stack.push_back(child);
+    }
+    for (const EntityId id : inside) {
+        const Entity &entity = *scene.find(id);
+        std::map<std::string, int> seen;
+        for (const auto &component : entity.components()) {
+            const int occurrence = seen[component->type().name]++;
+            for (const PropertyInfo &property : component->type().properties) {
+                if (property.readOnly)
+                    continue;
+                OutsideReference reference;
+                reference.entityPath = namePath(scene, entity, root);
+                reference.type = component->type().name;
+                reference.property = property.name;
+                reference.occurrence = occurrence;
+                if (property.type == PropertyType::EntityReference) {
+                    const auto target = std::get<EntityId>(property.get(*component));
+                    if (!target || inside.count(target) || !scene.find(target))
+                        continue;
+                    reference.single = target;
+                } else if (property.type == PropertyType::EntityReferenceList) {
+                    const auto targets = std::get<std::vector<EntityId>>(property.get(*component));
+                    for (const EntityId target : targets)
+                        if (target && !inside.count(target) && scene.find(target))
+                            reference.list.push_back(target);
+                    if (reference.list.empty())
+                        continue;
+                    reference.isList = true;
+                } else {
+                    continue;
+                }
+                found.push_back(std::move(reference));
+            }
+        }
+    }
+    return found;
+}
+
+void restoreOutsideReferences(Scene &scene, EntityId root,
+                              const std::vector<OutsideReference> &references) {
+    std::map<std::string, EntityId> byPath;
+    std::vector<EntityId> stack{root};
+    while (!stack.empty()) {
+        const EntityId id = stack.back();
+        stack.pop_back();
+        byPath.emplace(namePath(scene, *scene.find(id), root), id);
+        for (const EntityId child : scene.find(id)->childIds())
+            stack.push_back(child);
+    }
+    for (const OutsideReference &reference : references) {
+        const auto entityId = byPath.find(reference.entityPath);
+        if (entityId == byPath.end())
+            continue;
+        Entity &entity = *scene.find(entityId->second);
+        int occurrence = 0;
+        for (const auto &component : entity.components()) {
+            if (component->type().name != reference.type || occurrence++ != reference.occurrence)
+                continue;
+            for (const PropertyInfo &property : component->type().properties) {
+                if (property.name != reference.property)
+                    continue;
+                if (!reference.isList && property.type == PropertyType::EntityReference) {
+                    // The prefab's own value wins when it has one.
+                    if (!std::get<EntityId>(property.get(*component)))
+                        property.assign(*component, reference.single);
+                } else if (reference.isList && property.type == PropertyType::EntityReferenceList) {
+                    auto list = std::get<std::vector<EntityId>>(property.get(*component));
+                    for (const EntityId target : reference.list)
+                        if (std::find(list.begin(), list.end(), target) == list.end())
+                            list.push_back(target);
+                    property.assign(*component, std::move(list));
+                }
+            }
+        }
+    }
+}
+} // namespace
+
+Status reapplyPrefab(Scene &scene, EntityId root, const Json &prefab, const std::string &source) {
+    Entity *target = scene.find(root);
+    if (!target)
+        return Error{"Unknown entity " + toString(root)};
+    const std::vector<OutsideReference> wiring = outsideReferences(scene, root);
+    // Build the fresh copy beside the instance; an invalid prefab fails here and changes nothing.
+    auto made = instantiateSubtree(scene, prefab, target->parentId(), std::nullopt, false, {});
+    if (!made)
+        return Error{made.error()};
+    const EntityId copyId = made.value();
+    Entity &copy = *scene.find(copyId);
+    target = scene.find(root);
+
+    // Out with the old parts, in with the new ones.
+    for (const EntityId child : std::vector<EntityId>(target->childIds()))
+        scene.destroy(child);
+    while (!target->components().empty())
+        target->removeComponent(target->components().back().get());
+    for (const EntityId child : std::vector<EntityId>(copy.childIds()))
+        scene.setParent(child, root);
+    for (const auto &component : copy.components()) {
+        Component *added = target->addComponent(component->type().name, false);
+        if (!added)
+            continue;
+        for (const PropertyInfo &property : component->type().properties)
+            if (!property.readOnly)
+                property.assign(*added, property.get(*component));
+    }
+    scene.destroy(copyId);
+
+    // The prefab's references to its own root now mean the reused one.
+    std::vector<EntityId> stack{root};
+    while (!stack.empty()) {
+        const EntityId id = stack.back();
+        stack.pop_back();
+        Entity *entity = scene.find(id);
+        for (const auto &component : entity->components())
+            for (const PropertyInfo &property : component->type().properties) {
+                if (property.readOnly)
+                    continue;
+                if (property.type == PropertyType::EntityReference &&
+                    std::get<EntityId>(property.get(*component)) == copyId) {
+                    property.assign(*component, root);
+                } else if (property.type == PropertyType::EntityReferenceList) {
+                    auto list = std::get<std::vector<EntityId>>(property.get(*component));
+                    if (std::find(list.begin(), list.end(), copyId) != list.end()) {
+                        std::replace(list.begin(), list.end(), copyId, root);
+                        property.assign(*component, std::move(list));
+                    }
+                }
+            }
+        for (const EntityId child : entity->childIds())
+            stack.push_back(child);
+    }
+    restoreOutsideReferences(scene, root, wiring);
+    scene.find(root)->setPrefabSource(source);
+    return success();
+}
+
+Result<Json> canonicalScene(const Json &document, const ComponentRegistry &registry) {
+    auto scene = sceneFromJson(document, registry);
+    if (!scene)
+        return Error{scene.error()};
+    return sceneToJson(*scene.value());
+}
+
+Result<Json> canonicalPrefab(const Json &document, const ComponentRegistry &registry) {
+    if (auto status = checkHeader(document, prefabFormatName); !status)
+        return Error{status.error()};
+    const auto rootId = document.get("root").isString()
+                            ? parseEntityId(document.get("root").asString())
+                            : std::nullopt;
+    if (!rootId || !*rootId)
+        return Error{"Prefab has no valid 'root'"};
+    Scene scratch(registry, 1);
+    std::unordered_map<EntityId, EntityId> remap;
+    auto created = populate(scratch, document.get("entities"), true, {}, remap);
+    if (!created)
+        return Error{created.error()};
+    if (!scratch.find(*rootId))
+        return Error{"Prefab root is not among its entities"};
+    return subtreeToJson(scratch, *rootId);
 }
 
 Result<Json> loadPrefabDocument(const std::filesystem::path &path) {
@@ -443,6 +657,12 @@ Result<Json> loadPrefabDocument(const std::filesystem::path &path) {
 Status savePrefab(const Scene &scene, EntityId root, const std::filesystem::path &path) {
     if (!scene.find(root))
         return Error{"Unknown entity " + toString(root)};
-    return writeTextFileAtomic(path, subtreeToJson(scene, root).dump(2) + "\n");
+    Json document = subtreeToJson(scene, root);
+    // The prefab's root is the prefab itself, whatever it was an instance of before.
+    if (Json *entities = document.find("entities"))
+        for (std::size_t i = 0; i < entities->size(); ++i)
+            if (entities->at(i).get("id").asString() == toString(root))
+                entities->at(i).erase("prefab");
+    return writeTextFileAtomic(path, document.dump(2) + "\n");
 }
 } // namespace yk

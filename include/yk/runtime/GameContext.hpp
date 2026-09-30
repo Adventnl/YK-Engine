@@ -1,11 +1,14 @@
 #pragma once
+#include "yk/animation/AnimationController.hpp"
 #include "yk/assets/AssetSource.hpp"
 #include "yk/audio/Audio.hpp"
+#include "yk/input/ActionInput.hpp"
 #include "yk/input/Input.hpp"
 #include "yk/physics/World.hpp"
 #include "yk/runtime/Blackboard.hpp"
 #include "yk/runtime/EventBus.hpp"
 #include "yk/scene/Scene.hpp"
+#include <memory>
 #include <optional>
 
 namespace yk {
@@ -23,8 +26,16 @@ class GameContext {
     virtual physics::World &physics() = 0;
     // Input as seen by the current fixed tick: edges (pressed/released) appear on exactly one tick.
     virtual const Keyboard &keyboard() const = 0;
+    // Named actions ("Player1/Jump") evaluated from the project's input map for the current tick.
+    // Gameplay should ask for actions, never for keys.
+    virtual const ActionInput &input() const = 0;
     virtual AudioSink &audio() = 0;
     virtual const AssetSource *assets() const = 0;
+    // Animation assets, loaded once and shared by every entity that uses them. Null (after logging
+    // the reason) when the asset is missing or invalid.
+    virtual std::shared_ptr<const AnimationSet> animationSet(const std::string &path) = 0;
+    virtual std::shared_ptr<const AnimationController>
+    animationController(const std::string &path) = 0;
     virtual Blackboard &blackboard() = 0;
     virtual EventBus &events() = 0;
     virtual const LayerConfig &layers() const = 0;
@@ -47,6 +58,10 @@ class GameContext {
     virtual void destroyLater(EntityId entity) = 0;
     virtual Result<EntityId> spawn(const Json &prefab, Vec2 worldPosition,
                                    EntityId parent = {}) = 0;
+    // Instantiates a prefab asset (project-relative path) with its root at `worldPosition`. The
+    // document is read once and kept, so gameplay can spawn an effect on every jump.
+    virtual Result<EntityId> spawnPrefab(const std::string &path, Vec2 worldPosition,
+                                         EntityId parent = {}) = 0;
     virtual void requestRestart() = 0;
     virtual void requestSceneChange(std::string projectRelativePath) = 0;
 

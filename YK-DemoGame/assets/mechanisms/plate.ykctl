@@ -1,0 +1,79 @@
+{
+  "format": "yk.animator",
+  "version": 1,
+  "parameters": [
+    {
+      "name": "pressed",
+      "type": "bool"
+    }
+  ],
+  "entry": "Up",
+  "states": [
+    {
+      "name": "Up",
+      "clip": "up"
+    },
+    {
+      "name": "Press",
+      "clip": "press"
+    },
+    {
+      "name": "Down",
+      "clip": "down"
+    },
+    {
+      "name": "Release",
+      "clip": "release"
+    }
+  ],
+  "transitions": [
+    {
+      "from": "Up",
+      "to": "Press",
+      "when": [
+        {
+          "parameter": "pressed"
+        }
+      ]
+    },
+    {
+      "from": "Press",
+      "to": "Down",
+      "exitTime": 1
+    },
+    {
+      "from": "Press",
+      "to": "Release",
+      "when": [
+        {
+          "parameter": "pressed",
+          "value": false
+        }
+      ]
+    },
+    {
+      "from": "Down",
+      "to": "Release",
+      "when": [
+        {
+          "parameter": "pressed",
+          "value": false
+        }
+      ]
+    },
+    {
+      "from": "Release",
+      "to": "Up",
+      "exitTime": 1
+    },
+    {
+      "from": "Release",
+      "to": "Press",
+      "when": [
+        {
+          "parameter": "pressed"
+        }
+      ]
+    }
+  ]
+}

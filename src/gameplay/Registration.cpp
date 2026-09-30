@@ -54,6 +54,7 @@ void registerGameplayComponents(ComponentRegistry &registry) {
     registry.add<SpawnPoint>("SpawnPoint");
     registry.add<Goal>("Goal");
     registry.add<TriggerZone>("TriggerZone");
+    registry.add<LevelFlow>("LevelFlow");
 
     registry.addTemplate(
         {"Platform", "Level", [](Scene &scene, Vec2 at) {
@@ -139,6 +140,11 @@ void registerGameplayComponents(ComponentRegistry &registry) {
                               spawn.add<SpawnPoint>();
                               return spawn.id();
                           }});
+    registry.addTemplate({"Level Flow", "Gameplay", [](Scene &scene, Vec2 at) {
+                              Entity &flow = place(scene, "Level Flow", at);
+                              flow.add<LevelFlow>();
+                              return flow.id();
+                          }});
     registry.addTemplate({"Character", "Gameplay", [](Scene &scene, Vec2 at) {
                               Entity &character = place(scene, "Character", at);
                               auto &sprite = character.add<SpriteRenderer>();
@@ -149,5 +155,12 @@ void registerGameplayComponents(ComponentRegistry &registry) {
                               character.add<Killable>();
                               return character.id();
                           }});
+}
+} // namespace yk
+
+namespace yk {
+void registerStandardComponents(ComponentRegistry &registry) {
+    registerEngineComponents(registry);
+    registerGameplayComponents(registry);
 }
 } // namespace yk

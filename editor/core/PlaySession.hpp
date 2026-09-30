@@ -22,8 +22,10 @@ class PlaySession {
         return *runtime_;
     }
     // Advances by real elapsed time (unless paused) and follows the game's scene-change requests.
+    void update(double seconds, const InputFrame &input);
     void update(double seconds, const Keyboard &keyboard);
     // One fixed tick while paused.
+    void step(const InputFrame &input);
     void step(const Keyboard &keyboard);
     void setPaused(bool paused);
     bool paused() const {

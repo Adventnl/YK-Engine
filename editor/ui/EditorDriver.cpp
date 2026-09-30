@@ -22,8 +22,8 @@ std::string expandVariables(const std::string &text) {
             const auto close = text.find('}', i);
             if (close != std::string::npos) {
                 const std::string name = text.substr(i + 2, close - i - 2);
-                if (const char *value = std::getenv(name.c_str()))
-                    out += value;
+                if (const auto value = environmentVariable(name))
+                    out += *value;
                 i = close + 1;
                 continue;
             }
@@ -33,13 +33,18 @@ std::string expandVariables(const std::string &text) {
     return out;
 }
 
-// Splits a line into words; double quotes group words.
+// Splits a line into words; double quotes group words and \" is a quote character.
 std::vector<std::string> tokenize(const std::string &line) {
     std::vector<std::string> words;
     std::string current;
     bool quoted = false, started = false;
-    for (const char c : line) {
-        if (c == '"') {
+    for (std::size_t i = 0; i < line.size(); ++i) {
+        const char c = line[i];
+        if (c == '\\' && i + 1 < line.size() && line[i + 1] == '"') {
+            current += '"';
+            started = true;
+            ++i;
+        } else if (c == '"') {
             quoted = !quoted;
             started = true;
         } else if (!quoted && std::isspace(static_cast<unsigned char>(c))) {
@@ -501,10 +506,22 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
         return report(state.dialog.kind == DialogKind::None, "a dialog is open");
     if (what == "no-project")
         return report(!state.project, "a project is open");
+    if (what == "no-asset")
+        return report(state.selectedAsset.empty(), "'" + state.selectedAsset + "' is selected");
     if (what == "no-pick")
         return report(!state.pick, "waiting for the user to pick an entity");
     if (what == "pick")
         return report(state.pick.has_value(), "not waiting for a pick");
+    if (what == "layout-saved") { // expect layout-saved : workbench.json matches the live layout
+        std::error_code error;
+        const auto file = state.settingsDirectory / "workbench.json";
+        if (!std::filesystem::exists(file, error))
+            return report(false, "workbench.json has not been written");
+        const auto text = readTextFile(file);
+        const auto json = text ? Json::parse(text.value()) : Result<Json>(Error{"unreadable"});
+        return report(json && WorkbenchLayout::fromJson(json.value()) == state.layout,
+                      "workbench.json differs from the live layout");
+    }
     if (!need(1))
         return -1;
     const std::string &arg = w[2];
@@ -558,7 +575,7 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
         const Entity *entity = findNamed(scene, arg);
         return report(entity && !entity->findComponent(w[3]), "'" + arg + "' still has " + w[3]);
     }
-    if (what == "prop") { // expect prop ENTITY Component.property VALUE
+    if (what == "prop" || what == "prop-not") { // expect prop ENTITY Component.property VALUE
         if (!need(3))
             return -1;
         const Entity *entity = findNamed(scene, arg);
@@ -602,7 +619,9 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
             }
             actual = formatValue(*scene, *property, property->get(*component));
         }
-        return report(sameValue(actual, w[4]), "'" + arg + "." + path + "' is '" + actual + "'");
+        const bool same = sameValue(actual, w[4]);
+        return report(what == "prop" ? same : !same,
+                      "'" + arg + "." + path + "' is '" + actual + "'");
     }
     if (what == "position") { // expect position ENTITY x,y
         if (!need(2))
@@ -650,6 +669,20 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
         const Entity *parent = child->parent();
         const std::string actual = parent ? parent->name() : "none";
         return report(actual == w[3], "'" + arg + "' has parent '" + actual + "'");
+    }
+    if (what == "sibling-index") { // expect sibling-index ENTITY N: its place among its siblings
+        if (!need(2))
+            return -1;
+        const Entity *entity = findNamed(scene, arg);
+        if (!entity)
+            return report(false, "there is no entity named '" + arg + "'");
+        const std::vector<EntityId> &siblings =
+            entity->parent() ? entity->parent()->childIds() : scene->roots();
+        const auto found = std::find(siblings.begin(), siblings.end(), entity->id());
+        const auto index = static_cast<long>(found - siblings.begin());
+        return report(found != siblings.end() &&
+                          index == static_cast<long>(number(w[3]).value_or(-1)),
+                      "'" + arg + "' is at index " + std::to_string(index));
     }
     if (what == "no-links") { // expect no-links FROM TO
         if (!need(2))
@@ -737,7 +770,8 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
             {"saveprefab", DialogKind::SavePrefab},    {"unsaved", DialogKind::Unsaved},
             {"settings", DialogKind::ProjectSettings}, {"export", DialogKind::Export},
             {"validation", DialogKind::Validation},    {"about", DialogKind::About},
-            {"shortcuts", DialogKind::Shortcuts},      {"message", DialogKind::Message}};
+            {"shortcuts", DialogKind::Shortcuts},      {"message", DialogKind::Message},
+            {"confirm", DialogKind::Confirm},          {"moveasset", DialogKind::MoveAsset}};
         const auto found = kinds.find(lower(arg));
         if (found == kinds.end()) {
             detail = "unknown dialog '" + arg + "'";
@@ -745,6 +779,10 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
         }
         return report(state.dialog.kind == found->second, "that dialog is not open");
     }
+    if (what == "dialog-text") // expect dialog-text TEXT: the open dialog's message contains it
+        return report(state.dialog.kind != DialogKind::None &&
+                          state.dialog.message.find(arg) != std::string::npos,
+                      "the dialog says '" + state.dialog.message + "'");
     if (what == "console") {
         for (const auto &entry : state.console.snapshot())
             if (entry.message.find(arg) != std::string::npos)
@@ -793,9 +831,129 @@ int EditorDriver::check(EditorApp &app, const Command &command, std::string &det
         return report(lower(w[3]) == "exists" ? exists : !exists,
                       "'" + path.string() + (exists ? "' exists" : "' does not exist"));
     }
+    if (what == "file-contains" || what == "file-lacks") { // expect file-contains PATH TEXT
+        if (!need(2))
+            return -1;
+        std::filesystem::path path = arg;
+        if (path.is_relative() && state.project)
+            path = state.project->project().root / path;
+        const auto text = readTextFile(path);
+        const bool found = text && text.value().find(w[3]) != std::string::npos;
+        return report(what == "file-contains" ? found : !found,
+                      "'" + path.string() + (found ? "' contains '" : "' does not contain '") +
+                          w[3] + "'");
+    }
+    if (what == "asset") // expect asset PATH : the Explorer's selection, shown in the Inspector
+        return report(state.selectedAsset == arg,
+                      "the selected asset is '" + state.selectedAsset + "'");
     if (what == "start-scene")
         return report(state.project && state.project->project().startScene == arg,
                       "the start scene differs");
+    // The workbench: which side bar view and panel are showing, how the editor area is split.
+    if (what == "side-view") { // expect side-view Explorer|Scene|Prefabs|Components|Build|none
+        if (lower(arg) == "none")
+            return report(!state.layout.sideBarVisible,
+                          "the side bar is showing " + std::string(name(state.layout.sideView)));
+        const auto wanted = sideViewFromName(lower(arg));
+        if (!wanted) {
+            detail = "unknown side bar view '" + arg + "'";
+            return -1;
+        }
+        return report(state.layout.sideBarVisible && state.layout.sideView == *wanted,
+                      state.layout.sideBarVisible
+                          ? "the side bar shows " + std::string(name(state.layout.sideView))
+                          : std::string("the side bar is hidden"));
+    }
+    if (what == "panel-view") { // expect panel-view Console|Problems|Output|Profiler|none
+        if (lower(arg) == "none")
+            return report(!state.layout.panelVisible,
+                          "the panel is showing " + std::string(name(state.layout.panelView)));
+        const auto wanted = panelViewFromName(lower(arg));
+        if (!wanted) {
+            detail = "unknown panel '" + arg + "'";
+            return -1;
+        }
+        return report(state.layout.panelVisible && state.layout.panelView == *wanted,
+                      state.layout.panelVisible
+                          ? "the panel shows " + std::string(name(state.layout.panelView))
+                          : std::string("the panel is hidden"));
+    }
+    if (what == "inspector") // expect inspector visible|hidden
+        return report(state.layout.inspectorVisible == (lower(arg) == "visible"),
+                      state.layout.inspectorVisible ? "the inspector is visible"
+                                                    : "the inspector is hidden");
+    if (what == "split") { // expect split none|right|down
+        const auto wanted = editorSplitFromName(lower(arg));
+        if (!wanted) {
+            detail = "unknown split '" + arg + "'";
+            return -1;
+        }
+        return report(state.layout.split == *wanted,
+                      "the editor area is split " + std::string(name(state.layout.split)));
+    }
+    if (what == "scene-tabs") { // expect scene-tabs N
+        return report(state.sceneTabs.size() == static_cast<std::size_t>(number(arg).value_or(-1)),
+                      std::to_string(state.sceneTabs.size()) + " scenes are open");
+    }
+    if (what == "scene-open") { // expect scene-open PATH
+        return report(std::find(state.sceneTabs.begin(), state.sceneTabs.end(), arg) !=
+                          state.sceneTabs.end(),
+                      "'" + arg + "' is not open in a tab");
+    }
+    if (what == "scene-closed") {
+        return report(std::find(state.sceneTabs.begin(), state.sceneTabs.end(), arg) ==
+                          state.sceneTabs.end(),
+                      "'" + arg + "' is still open in a tab");
+    }
+    if (what == "editor-focus") // expect editor-focus scene|game
+        return report((state.editorFocus == EditorFocus::Game) == (lower(arg) == "game"),
+                      "another editor tab is showing");
+    if (what == "problems") { // expect problems N (after a validation)
+        return report(state.problems.size() == static_cast<std::size_t>(number(arg).value_or(-1)),
+                      std::to_string(state.problems.size()) + " problems are listed");
+    }
+    if (what == "problems-at-least")
+        return report(state.problems.size() >= static_cast<std::size_t>(number(arg).value_or(1e9)),
+                      std::to_string(state.problems.size()) + " problems are listed");
+    if (what == "locked" || what == "unlocked") { // expect locked ENTITY
+        const Entity *entity = findNamed(scene, arg);
+        if (!entity) {
+            detail = "there is no entity named '" + arg + "'";
+            return 0;
+        }
+        return report(entity->locked() == (what == "locked"),
+                      "'" + arg + "' is " + (entity->locked() ? "locked" : "not locked"));
+    }
+    if (what == "hidden" || what == "shown") { // expect hidden ENTITY : hidden in the editor
+        const Entity *entity = findNamed(scene, arg);
+        if (!entity) {
+            detail = "there is no entity named '" + arg + "'";
+            return 0;
+        }
+        return report(entity->editorHidden() == (what == "hidden"),
+                      "'" + arg + "' is " + (entity->editorHidden() ? "hidden" : "shown"));
+    }
+    if (what == "layout") { // expect layout KEY VALUE [TOLERANCE] : a number or flag in the
+                            // workbench layout
+        if (!need(2))
+            return -1;
+        const Json layoutJson = state.layout.toJson();
+        const Json &value = layoutJson.get(arg);
+        if (value.isBool()) { // a flag: true/false (or on/off, 1/0)
+            const std::string word = lower(w[3]);
+            const bool wantedFlag = word == "true" || word == "on" || word == "1";
+            return report(value.asBool() == wantedFlag,
+                          arg + " is " + (value.asBool() ? "true" : "false"));
+        }
+        const auto wanted = number(w[3]);
+        if (!value.isNumber() || !wanted) {
+            detail = "'" + arg + "' is not a number in the layout";
+            return -1;
+        }
+        const double tolerance = w.size() > 4 ? number(w[4]).value_or(0.5) : 0.5;
+        return report(std::abs(value.asNumber() - *wanted) <= tolerance,
+                      arg + " is " + std::to_string(value.asNumber()));
+    }
     detail = "unknown expectation '" + what + "'";
     return -1;
 }
@@ -867,6 +1025,14 @@ bool EditorDriver::execute(EditorApp &app, const Command &command) {
     }
     if (name == "quit") {
         app.quit();
+        return true;
+    }
+    if (name == "import") { // import FILE... : as if the files were dropped on the window
+        std::vector<std::filesystem::path> files;
+        for (std::size_t i = 1; i < w.size(); ++i)
+            files.emplace_back(argument(i));
+        if (auto imported = app.state().importAssets(files); !imported)
+            fail(app, command, imported.error());
         return true;
     }
     if (name == "closewindow") { // The window's close button: unsaved work must be asked about.

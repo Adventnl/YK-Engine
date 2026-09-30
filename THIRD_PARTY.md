@@ -1,6 +1,6 @@
 # Third-party software
 
-Engine, gameplay, editor and prototype code are proprietary. Dependency notices do not grant a
+Engine, gameplay, editor and demo game code are proprietary. Dependency notices do not grant a
 license to that code. Dependencies are built statically from pinned, unmodified sources. There are
 no floating branches, system-library fallbacks or bundled upstream sample applications.
 
@@ -9,18 +9,25 @@ no floating branches, system-library fallbacks or bundled upstream sample applic
 | Box2D | [3.1.1](https://github.com/erincatto/box2d/releases/tag/v3.1.1) | MIT | archive SHA-256 `fb6ef914b50f4312d7d921a600eabc12318bb3c55a0b8c0b90608fa4488ef2e4` (tag commit `8c661469c9507d3ad6fbd2fea3f1aa71669c2fe3`) | physics (private) |
 | SDL3 | [3.2.28](https://www.libsdl.org/release/SDL3-3.2.28.tar.gz) | zlib | archive SHA-256 `1330671214d146f8aeb1ed399fc3e081873cdb38b5189d1f8bb6ab15bbc04211` (tag commit `7f3ae3d57459e59943a4ecfefc8f6277ec6bf540`) | window, input, renderer, audio; omitted by `YK_RUNTIME=OFF` |
 | Dear ImGui | [1.92.9, docking branch](https://github.com/ocornut/imgui/tree/9b4eb24cee2071e61dc1f9ef3e5228097cdde720) | MIT | git commit `9b4eb24cee2071e61dc1f9ef3e5228097cdde720` | `yk_editor` only |
+| Inter | 5.3.0 of the [`@fontsource/inter`](https://www.npmjs.com/package/@fontsource/inter) npm package (Latin subset, Regular 400 and SemiBold 600, converted from WOFF2 to TrueType) | SIL Open Font License 1.1 | npm package version | `yk_editor` UI text (embedded in the executable) |
+| JetBrains Mono | 5.3.0 of [`@fontsource/jetbrains-mono`](https://www.npmjs.com/package/@fontsource/jetbrains-mono) (Latin subset, Regular 400, converted from WOFF2 to TrueType) | SIL Open Font License 1.1 | npm package version | `yk_editor` paths, console and values (embedded) |
+| Codicons | 0.0.46-24 of [`@vscode/codicons`](https://www.npmjs.com/package/@vscode/codicons) (`codicon.ttf` and its glyph table) | CC BY 4.0 (font), MIT (code) | npm package version | `yk_editor` icons (embedded) |
 | stb_image | commit `013ac3beddff3dbffafd5177e7972067cd2b5083`, vendored as `third_party/stb_image.h` | used under its MIT alternative (also offered as public domain) | file SHA-256 `594c2fe35d49488b4382dbfaec8f98366defca819d916ac95becf3e75f4200b3` | PNG decoding |
 
 Retained notices are in `LICENSES/`: `Box2D-MIT.txt`, `SDL3.txt`, `SDL3-HIDAPI-BSD.txt`,
-`SDL3-yuv2rgb-BSD.txt`, `SDL3-fdlibm.txt`, `DearImGui-MIT.txt`, `ProggyForever-MIT.txt` and
-`stb_image-PD.txt`. Keep them with redistributed binaries (`cmake --install` and `cpack` include
+`SDL3-yuv2rgb-BSD.txt`, `SDL3-fdlibm.txt`, `DearImGui-MIT.txt`, `ProggyForever-MIT.txt`,
+`stb_image-PD.txt`, `Inter-OFL-1.1.txt`, `JetBrainsMono-OFL-1.1.txt` and `Codicons-CC-BY-4.0.txt`. Keep them with redistributed binaries (`cmake --install` and `cpack` include
 them). Upstream sources retain their own notices.
 
 Dear ImGui also contains, unmodified, `imstb_truetype.h` (stb_truetype 1.26) and `imstb_rectpack.h`
-(stb_rect_pack 1.01), both public domain (MIT alternative), and its scalable default UI font is a
-partial copy of ProggyForever (MIT; `LICENSES/ProggyForever-MIT.txt`). The editor loads no font
-files. Only the ImGui core and its SDL3 and SDL_Renderer backends are compiled; ImGui's demo and
-example applications are not built.
+(stb_rect_pack 1.01), both public domain (MIT alternative), and its built-in fallback font is a
+partial copy of ProggyForever (MIT; `LICENSES/ProggyForever-MIT.txt`); the editor draws with the
+three embedded fonts above instead and never reads a font file at run time (`editor/resources/`
+holds the font files and how they were obtained; CMake turns them into a source file, see
+`cmake/YkEmbed.cmake`). Only the ImGui core and its SDL3 and SDL_Renderer backends are compiled;
+ImGui's demo and example applications are not built.
+
+The exported games and `yk_player` contain none of the editor's fonts, Dear ImGui or icons.
 
 Box2D's own install rules are suppressed (it is linked statically and stays private), so an installed
 or packaged engine contains no Box2D headers or libraries. SDL's optional external HIDAPI libusb is

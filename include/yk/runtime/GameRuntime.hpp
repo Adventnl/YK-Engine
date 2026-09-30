@@ -9,6 +9,7 @@ struct RuntimeOptions {
     unsigned maxStepsPerFrame{8}; // Beyond this, simulated time is dropped rather than spiraling.
     Vec2 viewportSize{1280, 720};
     LayerConfig layers{LayerConfig::defaults()};
+    InputMap inputMap{InputMap::standard()};
     AudioSink *audio{nullptr};          // Borrowed; nullptr discards sound requests.
     const AssetSource *assets{nullptr}; // Borrowed; nullptr means no asset access.
 };
@@ -26,9 +27,12 @@ class GameRuntime final : public GameContext {
     ~GameRuntime() override;
 
     // Frame driver: accumulates time into fixed ticks (bounded catch-up), then runs one variable
-    // update. Key edges in `keyboard` are delivered to exactly one tick.
+    // update. Key and button edges in `input` are delivered to exactly one tick. The Keyboard
+    // overloads are for callers with no gamepads (tests, scripted input).
+    void update(double frameSeconds, const InputFrame &input);
     void update(double frameSeconds, const Keyboard &keyboard);
     // Deterministic single step for tests and tools: exactly one fixed tick plus one update.
+    void stepOnce(const InputFrame &input);
     void stepOnce(const Keyboard &keyboard);
 
     // Rebuilds the scene from its start state and clears variables and events. requestRestart()
@@ -46,8 +50,12 @@ class GameRuntime final : public GameContext {
     Scene &scene() override;
     physics::World &physics() override;
     const Keyboard &keyboard() const override;
+    const ActionInput &input() const override;
     AudioSink &audio() override;
     const AssetSource *assets() const override;
+    std::shared_ptr<const AnimationSet> animationSet(const std::string &path) override;
+    std::shared_ptr<const AnimationController>
+    animationController(const std::string &path) override;
     Blackboard &blackboard() override;
     EventBus &events() override;
     const LayerConfig &layers() const override;
@@ -63,6 +71,8 @@ class GameRuntime final : public GameContext {
     void teleport(Entity &entity, Vec2 worldPosition) override;
     void destroyLater(EntityId entity) override;
     Result<EntityId> spawn(const Json &prefab, Vec2 worldPosition, EntityId parent = {}) override;
+    Result<EntityId> spawnPrefab(const std::string &path, Vec2 worldPosition,
+                                 EntityId parent = {}) override;
     void requestRestart() override;
     void requestSceneChange(std::string projectRelativePath) override;
 

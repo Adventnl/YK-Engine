@@ -4,13 +4,6 @@
 
 namespace yk::editor::ui {
 void consolePanel(EditorState &state) {
-    if (!state.showConsole)
-        return;
-    if (!ImGui::Begin("Console", &state.showConsole)) {
-        ImGui::End();
-        return;
-    }
-    markWindow("panel/Console");
     static bool showInfo = true, showWarnings = true, showErrors = true;
     static std::string filter;
     static std::vector<ConsoleLog::Entry> cache;
@@ -105,6 +98,5 @@ void consolePanel(EditorState &state) {
     if (atBottom && !rows.empty())
         ImGui::SetScrollHereY(1.0F);
     ImGui::EndChild();
-    ImGui::End();
 }
 } // namespace yk::editor::ui

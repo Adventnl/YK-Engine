@@ -1,5 +1,5 @@
 #include "yk/components/Components.hpp"
-#include "yk/animation/AnimationSet.hpp"
+#include "yk/components/Effects.hpp"
 #include "yk/core/Log.hpp"
 #include "yk/runtime/GameContext.hpp"
 #include <algorithm>
@@ -11,6 +11,20 @@ const std::vector<std::string> &uiAnchorNames() {
                                                 "Left",       "Center", "Right",
                                                 "BottomLeft", "Bottom", "BottomRight"};
     return names;
+}
+
+void PlayerInput::describe(TypeBuilder<PlayerInput> &type) {
+    type.category("Input").description(
+        "Lets a person control this entity through one action set of the project's input map.");
+    type.field("actionSet", &PlayerInput::actionSet)
+        .inputSet()
+        .tooltip("Set of the project's input map, for example Player1.");
+}
+ButtonState PlayerInput::button(const GameContext &context, std::string_view action) const {
+    return enabled ? context.input().state(actionSet, action) : ButtonState{};
+}
+float PlayerInput::value(const GameContext &context, std::string_view action) const {
+    return enabled ? context.input().value(actionSet, action) : 0.0F;
 }
 
 void SpriteRenderer::describe(TypeBuilder<SpriteRenderer> &type) {
@@ -38,6 +52,23 @@ void SpriteRenderer::describe(TypeBuilder<SpriteRenderer> &type) {
     type.field("frame", &SpriteRenderer::frame)
         .range(0, 65535)
         .tooltip("Sprite sheet cell to draw.");
+    type.field("drawMode", &SpriteRenderer::drawMode)
+        .options({"Simple", "Tiled", "Sliced"})
+        .tooltip("Simple stretches the texture; Tiled repeats it; Sliced keeps the corners of a "
+                 "nine-slice texture (set its border in the texture's import settings).");
+    type.field("tileSize", &SpriteRenderer::tileSize)
+        .range(0, 1000)
+        .tooltip("Tiled: world size of one repeat. 0 uses the texture's own size.");
+    type.field("sliceFill", &SpriteRenderer::sliceFill)
+        .options({"Stretch", "Tile"})
+        .tooltip("Sliced: how the edges and the middle are filled.");
+    type.field("blend", &SpriteRenderer::blend)
+        .options({"Alpha", "Additive"})
+        .tooltip("Additive adds light to what is behind (glows, sparks).");
+    type.field("parallax", &SpriteRenderer::parallax)
+        .range(-10, 10, 0.01)
+        .tooltip("1 moves with the world, 0 stays fixed on screen, in between scrolls slower than "
+                 "the camera. Applied in the game view.");
 }
 void UiText::describe(TypeBuilder<UiText> &type) {
     type.category("UI").screenSpace().description(
@@ -51,6 +82,20 @@ void UiText::describe(TypeBuilder<UiText> &type) {
     type.field("color", &UiText::color);
     type.field("shadow", &UiText::shadow);
     type.field("layer", &UiText::layer).range(-1000, 1000);
+}
+void UiImage::describe(TypeBuilder<UiImage> &type) {
+    type.category("UI").screenSpace().description("Screen-space image (HUD icon, frame).");
+    type.field("texture", &UiImage::texture).asset("texture");
+    type.field("anchor", &UiImage::anchor).options(uiAnchorNames());
+    type.field("size", &UiImage::size).range(0, 8000).size().tooltip("Pixels.");
+    type.field("offset", &UiImage::offset).range(-4000, 4000);
+    type.field("color", &UiImage::color);
+    type.field("layer", &UiImage::layer).range(-1000, 1000);
+    type.field("columns", &UiImage::columns).range(1, 256);
+    type.field("rows", &UiImage::rows).range(1, 256);
+    type.field("frame", &UiImage::frame).range(0, 65535);
+    type.field("fillScreen", &UiImage::fillScreen)
+        .tooltip("Stretch over the whole screen: vignettes, fades and backdrops.");
 }
 void UiPanel::describe(TypeBuilder<UiPanel> &type) {
     type.category("UI").screenSpace().description("Screen-space filled rectangle.");
@@ -73,15 +118,29 @@ void RigidBody::describe(TypeBuilder<RigidBody> &type) {
     type.field("bullet", &RigidBody::bullet).tooltip("Continuous collision for very fast bodies.");
     type.field("allowSleep", &RigidBody::allowSleep);
 }
+std::array<Vec2, 3> wedgePoints(Vec2 halfExtents, Vec2 scaleSign) {
+    const float sx = scaleSign.x < 0.0F ? -1.0F : 1.0F;
+    const float sy = scaleSign.y < 0.0F ? -1.0F : 1.0F;
+    // Right angle at the bottom right; the hypotenuse rises to the right (y is down).
+    return {Vec2{-halfExtents.x * sx, halfExtents.y * sy},
+            Vec2{halfExtents.x * sx, halfExtents.y * sy},
+            Vec2{halfExtents.x * sx, -halfExtents.y * sy}};
+}
+
 void Collider::describe(TypeBuilder<Collider> &type) {
     type.category("Physics").description(
         "Collision or trigger geometry attached to the nearest RigidBody.");
-    type.field("shape", &Collider::shape).options({"Box", "Circle", "Capsule"});
+    type.field("shape", &Collider::shape)
+        .options({"Box", "Circle", "Capsule", "Wedge"})
+        .tooltip("Wedge is a right triangle (a ramp rising to the right); mirror the entity for "
+                 "the other direction.");
     type.field("size", &Collider::size)
         .range(0.01, 1000)
         .size()
         .tooltip("Full extent in world units.");
     type.field("offset", &Collider::offset).offset();
+    type.field("oneWay", &Collider::oneWay)
+        .tooltip("A jump-through platform: blocks only what lands on its top side.");
     type.field("isTrigger", &Collider::isTrigger)
         .tooltip("Detects overlaps without blocking movement.");
     type.field("detectTriggers", &Collider::detectTriggers)
@@ -182,62 +241,87 @@ void AudioSource::onStart(GameContext &context) {
         play(context);
 }
 
-void SpriteAnimator::describe(TypeBuilder<SpriteAnimator> &type) {
+void AnimatedSprite::describe(TypeBuilder<AnimatedSprite> &type) {
     type.category("Rendering")
         .dependsOn("SpriteRenderer")
-        .description("Plays clips from an animation asset.");
-    type.field("animation", &SpriteAnimator::animation).asset("animation");
-    type.field("clip", &SpriteAnimator::clip).tooltip("Clip to play on start.");
-    type.field("speed", &SpriteAnimator::speed).range(0, 10, 0.05);
-    type.field("playOnStart", &SpriteAnimator::playOnStart);
+        .description("Animates the sprite from an animation asset, optionally through an "
+                     "animation controller (state machine).");
+    type.field("animation", &AnimatedSprite::animation)
+        .asset("animation")
+        .tooltip("The .ykanim asset: sheet texture, grid and clips.");
+    type.field("controller", &AnimatedSprite::controller)
+        .asset("animator")
+        .tooltip("Optional .ykctl state machine. Without one, `clip` plays.");
+    type.field("clip", &AnimatedSprite::clip).tooltip("Clip to play when there is no controller.");
+    type.field("speed", &AnimatedSprite::speed).range(0, 10, 0.05);
+    type.field("playOnStart", &AnimatedSprite::playOnStart);
+    type.field("flipParameter", &AnimatedSprite::flipParameter)
+        .tooltip("Mirror the sprite when this controller parameter is negative (facing).");
+    type.field("artFacesLeft", &AnimatedSprite::artFacesLeft)
+        .tooltip("The art is drawn facing left, so the mirroring is inverted.");
 }
-void SpriteAnimator::play(const std::string &name) {
-    if (ready_ && animator_.has(name))
-        animator_.play(name);
-}
-void SpriteAnimator::onStart(GameContext &context) {
-    if (animation.path.empty() || !context.assets())
+void AnimatedSprite::play(const std::string &name) {
+    if (!player_.ready() || !player_.set()->find(name))
         return;
-    auto text = context.assets()->readText(animation.path);
-    auto document = text ? Json::parse(text.value()) : Result<Json>(Error{text.error()});
-    auto set = document ? parseAnimationSet(document.value())
-                        : Result<AnimationSet>(Error{document.error()});
-    if (!set) {
-        log(LogLevel::Warning, "animation",
-            "'" + entity().name() + "': cannot load " + animation.path + ": " + set.error());
+    player_.playClip(name);
+    playing_ = true;
+}
+void AnimatedSprite::onStart(GameContext &context) {
+    if (animation.path.empty())
+        return;
+    const auto set = context.animationSet(animation.path);
+    if (!set)
+        return;
+    std::shared_ptr<const AnimationController> machine;
+    if (!controller.path.empty())
+        machine = context.animationController(controller.path);
+    if (auto status = player_.start(set, machine); !status) {
+        log(LogLevel::Warning, "animation", "'" + entity().name() + "': " + status.error());
         return;
     }
-    for (const AnimationClip &item : set.value().clips)
-        animator_.define(item);
+    if (!clip.empty() && !machine)
+        player_.playClip(clip);
+    playing_ = playOnStart || machine != nullptr;
     if (auto *sprite = entity().get<SpriteRenderer>()) {
-        sprite->columns = set.value().columns;
-        sprite->rows = set.value().rows;
-    }
-    ready_ = true;
-    if (playOnStart) {
-        if (!clip.empty() && animator_.has(clip))
-            animator_.play(clip);
-        else
-            animator_.play(set.value().clips.front().name);
+        if (!set->texture.empty())
+            sprite->texture.path = set->texture;
+        sprite->columns = set->columns;
+        sprite->rows = set->rows;
+        sprite->frame = player_.frame();
     }
 }
-void SpriteAnimator::onUpdate(GameContext &, float seconds) {
-    if (!ready_)
+void AnimatedSprite::onUpdate(GameContext &context, float seconds) {
+    if (!player_.ready())
         return;
-    animator_.tick(seconds * speed);
-    if (auto *sprite = entity().get<SpriteRenderer>())
-        sprite->frame = animator_.frame();
+    if (playing_)
+        player_.update(seconds * speed);
+    if (auto *sprite = entity().get<SpriteRenderer>()) {
+        sprite->frame = player_.frame();
+        if (!flipParameter.empty()) {
+            const double direction = player_.value(flipParameter);
+            if (direction != 0.0)
+                sprite->flipX = (direction < 0.0) != artFacesLeft;
+        }
+    }
+    for (const ClipEvent &event : player_.takeEvents()) {
+        context.emit(event.name, entity().id());
+        if (!event.sound.empty())
+            context.audio().play(event.sound);
+    }
 }
 
 void registerEngineComponents(ComponentRegistry &registry) {
     registry.add<SpriteRenderer>("SpriteRenderer");
     registry.add<UiText>("UiText");
     registry.add<UiPanel>("UiPanel");
+    registry.add<UiImage>("UiImage");
+    registry.add<PlayerInput>("PlayerInput");
     registry.add<RigidBody>("RigidBody");
     registry.add<Collider>("Collider").allowMultiple();
     registry.add<Camera>("Camera");
     registry.add<AudioSource>("AudioSource");
-    registry.add<SpriteAnimator>("SpriteAnimator");
+    registry.add<AnimatedSprite>("AnimatedSprite");
+    registerEffectComponents(registry);
     const auto place = [](Scene &scene, Vec2 at, const char *name) -> Entity & {
         Entity &entity = scene.createEntity(name);
         entity.setWorldPosition(at);
@@ -259,6 +343,11 @@ void registerEngineComponents(ComponentRegistry &registry) {
     registry.addTemplate({"UI Text", "UI", [place](Scene &scene, Vec2 at) {
                               Entity &entity = place(scene, at, "UI Text");
                               entity.add<UiText>();
+                              return entity.id();
+                          }});
+    registry.addTemplate({"UI Image", "UI", [place](Scene &scene, Vec2 at) {
+                              Entity &entity = place(scene, at, "UI Image");
+                              entity.add<UiImage>();
                               return entity.id();
                           }});
     registry.addTemplate({"UI Panel", "UI", [place](Scene &scene, Vec2 at) {

@@ -1,0 +1,12 @@
+# The editor is started with a project that is not there (moved, deleted, a typo in a shortcut):
+# it says so and stays on the welcome screen instead of quitting.
+timeout 60
+wait 5
+expect no-project
+expect dialog message
+expect console "There is no project at"
+capture ${SHOT_DIR}/startup-01-bad-project.bmp
+click dialog/Message/ok
+expect no-dialog
+expect widget "welcome/New Project"
+expect widget "welcome/Open Project"

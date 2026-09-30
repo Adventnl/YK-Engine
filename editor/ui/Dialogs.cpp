@@ -1,4 +1,5 @@
 #include "ui/Panels.hpp"
+#include "yk/core/FileIO.hpp"
 #include "yk/core/Log.hpp"
 #include <SDL3/SDL.h>
 #include <algorithm>
@@ -186,25 +187,145 @@ void nameDialog(EditorState &state, const char *kind, const char *prompt, const 
     }
 }
 
-void exportDialog(EditorState &state) {
+// Rename or move a file or folder of the project: a path field that says at once why a path will
+// not do, and what the change will rewrite.
+void moveAssetDialog(EditorState &state) {
     DialogState &dialog = state.dialog;
-    ImGui::TextWrapped(
-        "Exports the game as a folder holding the player and this project's data, ready to "
-        "run or share. Choose where the folder goes:");
-    folderBrowser(dialog.browser, "dialog/Export");
-    if (state.project) {
-        ImGui::TextColored(
-            imColor(palette::dim), "%s",
-            (dialog.browser.current / state.project->project().name).string().c_str());
+    if (!state.project) {
+        closeDialog(state);
+        return;
     }
+    ImGui::TextUnformatted("New name or path (inside the project)");
+    ImGui::SetNextItemWidth(460.0F);
+    if (ImGui::IsWindowAppearing())
+        ImGui::SetKeyboardFocusHere();
+    inputText("##name", dialog.text);
+    const bool entered = enterPressedInField();
+    markItem("dialog/MoveAsset/name");
+    const bool changed = dialog.text != dialog.assetPath;
+    std::string problem;
+    if (changed)
+        if (const auto checked = state.project->checkMove(dialog.assetPath, dialog.text); !checked)
+            problem = checked.error();
+    ImGui::PushTextWrapPos(560.0F);
+    ImGui::TextColored(imColor(palette::dim), "%s", dialog.message.c_str());
+    if (!problem.empty())
+        ImGui::TextColored(imColor(palette::error), "%s", problem.c_str());
     if (!dialog.error.empty())
         ImGui::TextColored(imColor(palette::error), "%s", dialog.error.c_str());
+    ImGui::PopTextWrapPos();
     ImGui::Spacing();
-    ImGui::BeginDisabled(dialog.browser.current.empty());
+    const bool ready = changed && problem.empty();
+    ImGui::BeginDisabled(!ready);
+    const bool ok = ImGui::Button("Rename", {120.0F, 0.0F});
+    markItem("dialog/MoveAsset/ok");
+    ImGui::EndDisabled();
+    ImGui::SameLine();
+    const bool cancel = ImGui::Button("Cancel", {100.0F, 0.0F});
+    markItem("dialog/MoveAsset/cancel");
+    if ((ok || entered) && ready) {
+        if (auto moved = state.moveAsset(dialog.assetPath, dialog.text); moved)
+            closeDialog(state);
+        else
+            dialog.error = moved.error();
+    } else if (cancel) {
+        closeDialog(state);
+    }
+}
+
+// Picks the player program that goes with the chosen target: the one found next to the editor, or
+// the path typed into the field.
+std::filesystem::path chosenPlayer(EditorState &state) {
+    if (!state.dialog.exportPlayer.empty())
+        return state.dialog.exportPlayer;
+    if (const auto found = state.playerFor(state.dialog.exportTarget))
+        return *found;
+    return {};
+}
+
+void exportDialog(EditorState &state) {
+    DialogState &dialog = state.dialog;
+    if (!state.project) {
+        closeDialog(state);
+        return;
+    }
+    const Project &project = state.project->project();
+    ImGui::TextWrapped("Packages the game as a folder that runs on its own: the player program for "
+                       "the chosen system, this project's data and the notices the player's "
+                       "libraries require.");
+    ImGui::Spacing();
+    ImGui::PushFont(fonts().semibold, 13.0F);
+    ImGui::TextUnformatted("Target system");
+    ImGui::PopFont();
+    for (const BuildTarget target : allBuildTargets) {
+        ImGui::PushID(name(target));
+        if (ImGui::RadioButton(displayName(target), dialog.exportTarget == target)) {
+            dialog.exportTarget = target;
+            dialog.exportPlayer.clear();
+            dialog.error.clear();
+        }
+        markItem(std::string("dialog/Export/target/") + name(target));
+        ImGui::SameLine(150.0F);
+        if (const auto player = state.playerFor(target)) {
+            ImGui::TextColored(imColor(palette::good), "player found");
+            tooltip(player->string());
+        } else {
+            ImGui::TextColored(imColor(palette::dim), "no player program yet");
+            tooltip("Build yk_player for " + std::string(displayName(target)) +
+                    " and choose it below, or put it in templates/" + name(target) +
+                    "/ next to the editor (docs/BUILDING.md).");
+        }
+        ImGui::PopID();
+    }
+    ImGui::Spacing();
+    ImGui::TextUnformatted("Player program");
+    ImGui::SetNextItemWidth(-FLT_MIN);
+    const auto found = state.playerFor(dialog.exportTarget);
+    inputText("##player", dialog.exportPlayer, 0,
+              found ? found->string().c_str() : "Path of yk_player built for this system");
+    markItem("dialog/Export/player");
+    ImGui::Spacing();
+    ImGui::TextUnformatted("Export into this folder");
+    folderBrowser(dialog.browser, "dialog/Export");
+    ImGui::Checkbox("Also write a .zip archive", &dialog.exportZip);
+    markItem("dialog/Export/zip");
+    ImGui::SameLine(0.0F, 24.0F);
+    ImGui::Checkbox("Replace an earlier export", &dialog.exportReplace);
+    markItem("dialog/Export/replace");
+    tooltip("Only a folder that an earlier export created is ever replaced.");
+    if (!dialog.browser.current.empty())
+        ImGui::TextColored(imColor(palette::dim), "%s",
+                           (dialog.browser.current / exportFolderName(project, dialog.exportTarget))
+                               .string()
+                               .c_str());
+    if (!dialog.error.empty()) {
+        ImGui::PushTextWrapPos(560.0F);
+        ImGui::TextColored(imColor(palette::error), "%s", dialog.error.c_str());
+        ImGui::PopTextWrapPos();
+    }
+    ImGui::Spacing();
+    const std::filesystem::path player = chosenPlayer(state);
+    ImGui::BeginDisabled(dialog.browser.current.empty() || player.empty());
     if (ImGui::Button("Export", {120.0F, 0.0F})) {
-        if (auto exported = state.exportGame(dialog.browser.current); !exported)
+        ExportOptions options;
+        options.target = dialog.exportTarget;
+        options.destination = dialog.browser.current;
+        options.player = player;
+        options.archive = dialog.exportZip;
+        options.overwrite = dialog.exportReplace;
+        if (auto exported = state.exportGame(options); exported) {
+            const ExportReport &report = exported.value();
+            std::string text = "The game is in:\n" + report.output.string();
+            if (!report.archive.empty())
+                text += "\n\nArchive:\n" + report.archive.string();
+            for (const std::string &warning : report.warnings)
+                text += "\n\nNote: " + warning;
+            const std::filesystem::path reveal = report.output.parent_path();
+            state.message("Game exported", text);
+            state.dialog.revealPath = reveal;
+        } else {
             dialog.error = exported.error();
-        // On success exportGame replaced this dialog with its result message.
+        }
     }
     markItem("dialog/Export/export");
     ImGui::EndDisabled();
@@ -212,6 +333,29 @@ void exportDialog(EditorState &state) {
     if (ImGui::Button("Cancel", {100.0F, 0.0F}))
         closeDialog(state);
     markItem("dialog/Export/cancel");
+}
+
+// A question with an accept button; the accepted action is the dialog's continuation.
+void confirmDialog(EditorState &state) {
+    DialogState &dialog = state.dialog;
+    ImGui::PushTextWrapPos(460.0F);
+    ImGui::TextWrapped("%s", dialog.message.c_str());
+    ImGui::PopTextWrapPos();
+    ImGui::Spacing();
+    const std::string label = dialog.confirmLabel;
+    const bool accepted = ImGui::Button(label.c_str(), {110.0F, 0.0F});
+    markItem("dialog/Confirm/ok");
+    ImGui::SameLine();
+    const bool cancelled = ImGui::Button("Cancel", {100.0F, 0.0F});
+    markItem("dialog/Confirm/cancel");
+    if (accepted) {
+        const auto continuation = dialog.continuation;
+        closeDialog(state);
+        if (continuation)
+            continuation();
+    } else if (cancelled) {
+        closeDialog(state);
+    }
 }
 
 void unsavedDialog(EditorState &state) {
@@ -226,16 +370,10 @@ void unsavedDialog(EditorState &state) {
             continuation();
     };
     if (ImGui::Button("Save", {110.0F, 0.0F})) {
-        if (state.document && !state.document->path().empty()) {
-            if (auto saved = state.project->saveScene(*state.document); saved) {
-                resume();
-            } else {
-                dialog.error = saved.error();
-            }
-        } else if (state.document) {
-            // An untitled scene needs a name first; ask, then the user repeats the action.
-            closeDialog(state);
-            showDialog(state, DialogKind::SaveSceneAs);
+        if (auto saved = state.saveScenes(dialog.unsavedScenes); saved) {
+            resume();
+        } else {
+            dialog.error = saved.error();
         }
     }
     markItem("dialog/Unsaved/save");
@@ -260,7 +398,9 @@ void settingsDialog(EditorState &state) {
     Project &draft = *dialog.draft;
     ImGui::SetNextItemWidth(-FLT_MIN);
     if (ImGui::BeginTabBar("##settings")) {
-        if (ImGui::BeginTabItem("General")) {
+        const bool tabGeneral = ImGui::BeginTabItem("General");
+        markItem("dialog/Settings/tab/General");
+        if (tabGeneral) {
             ImGui::Spacing();
             ImGui::TextUnformatted("Project name");
             ImGui::SetNextItemWidth(-FLT_MIN);
@@ -287,7 +427,9 @@ void settingsDialog(EditorState &state) {
             }
             ImGui::EndTabItem();
         }
-        if (ImGui::BeginTabItem("Collision Layers")) {
+        const bool tabCollisionLayers = ImGui::BeginTabItem("Collision Layers");
+        markItem("dialog/Settings/tab/Collision Layers");
+        if (tabCollisionLayers) {
             ImGui::Spacing();
             ImGui::TextWrapped(
                 "Which layers touch each other. Solid collisions and trigger overlaps both "
@@ -348,6 +490,24 @@ void settingsDialog(EditorState &state) {
             markItem("dialog/Settings/addlayer");
             ImGui::EndTabItem();
         }
+        const bool tabInput = ImGui::BeginTabItem("Input");
+        markItem("dialog/Settings/tab/Input");
+        if (tabInput) {
+            settingsInputTab(draft, dialog.error);
+            ImGui::EndTabItem();
+        }
+        const bool tabRendering = ImGui::BeginTabItem("Rendering");
+        markItem("dialog/Settings/tab/Rendering");
+        if (tabRendering) {
+            settingsRenderingTab(draft);
+            ImGui::EndTabItem();
+        }
+        const bool tabBuild = ImGui::BeginTabItem("Build");
+        markItem("dialog/Settings/tab/Build");
+        if (tabBuild) {
+            settingsBuildTab(draft);
+            ImGui::EndTabItem();
+        }
         ImGui::EndTabBar();
     }
     if (!dialog.error.empty())
@@ -356,6 +516,8 @@ void settingsDialog(EditorState &state) {
     if (ImGui::Button("Save", {110.0F, 0.0F})) {
         if (auto valid = draft.layers.validate(); !valid) {
             dialog.error = valid.error();
+        } else if (auto inputValid = draft.input.validate(); !inputValid) {
+            dialog.error = "Input: " + inputValid.error();
         } else {
             state.project->project() = draft;
             if (auto saved = state.project->save(); saved) {
@@ -399,13 +561,15 @@ void shortcutsDialog(EditorState &state) {
         const char *action;
     };
     static constexpr Row rows[] = {
-        {"Ctrl+S / Ctrl+Shift+S", "Save scene / Save scene as"},
+        {"Ctrl+N / O / S / Shift+S / Alt+S", "New scene, open project, save, save as, save all"},
+        {"Ctrl+W / Ctrl+Tab", "Close the scene, next scene tab"},
         {"Ctrl+Z / Ctrl+Y", "Undo / Redo"},
         {"Ctrl+C / X / V", "Copy / Cut / Paste entities"},
-        {"Ctrl+D, Delete", "Duplicate, delete the selection"},
+        {"Ctrl+D, Delete, Ctrl+A", "Duplicate, delete the selection, select all"},
         {"W, R, E", "Move, Resize, Rotate tool"},
-        {"F, Home", "Frame the selection, frame the whole scene"},
+        {"F, Home", "Frame the selection, frame everything you can edit"},
         {"Arrow keys", "Nudge the selection (Shift for bigger steps)"},
+        {"Alt+Up / Alt+Down", "Move the selected entity among its siblings"},
         {"Ctrl (while dragging)", "Toggle grid snapping"},
         {"Shift (while dragging)", "Constrain to an axis, or keep proportions when resizing"},
         {"Alt (resizing)", "Resize from the center"},
@@ -413,8 +577,14 @@ void shortcutsDialog(EditorState &state) {
         {"Middle or right drag", "Pan the scene view (also Space + left drag)"},
         {"Mouse wheel", "Zoom at the cursor"},
         {"F5 / Shift+F5", "Play / Stop"},
-        {"F6 / F10", "Pause / Step one tick while paused"},
-        {"F2", "Rename the selected entity (in the Hierarchy)"},
+        {"F6 / F10 / Ctrl+Shift+F5", "Pause / Step one tick while paused / Restart"},
+        {"Ctrl+F5", "Run the project in the standalone player"},
+        {"Ctrl+B / Ctrl+Alt+B / Ctrl+J", "Toggle the side bar / inspector / panel"},
+        {"Ctrl+Shift+E H K X B", "Explorer, Scene, Prefabs, Components, Build view"},
+        {"Ctrl+Shift+Y M U", "Console, Problems, Build Output panel"},
+        {"Ctrl+\\", "Split the editor area"},
+        {"F2", "Rename an entity (Hierarchy) or a file (Explorer)"},
+        {"Delete (in the Explorer)", "Delete the selected file or folder, after asking"},
         {"Escape", "Cancel a drag or a pending pick"},
     };
     if (ImGui::BeginTable("##keys", 2, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_RowBg)) {
@@ -453,9 +623,19 @@ void messageDialog(EditorState &state) {
     ImGui::TextWrapped("%s", state.dialog.message.c_str());
     ImGui::PopTextWrapPos();
     ImGui::Spacing();
-    if (ImGui::Button("OK", {100.0F, 0.0F}) || ImGui::IsKeyPressed(ImGuiKey_Enter))
-        closeDialog(state);
+    const bool ok = ImGui::Button("OK", {100.0F, 0.0F}) || ImGui::IsKeyPressed(ImGuiKey_Enter);
     markItem("dialog/Message/ok");
+    if (!state.dialog.revealPath.empty()) {
+        ImGui::SameLine();
+        if (ImGui::Button("Show Folder", {120.0F, 0.0F})) {
+            // The file manager opens the folder; nothing is done with the result.
+            const std::string url = toFileUrl(state.dialog.revealPath);
+            SDL_OpenURL(url.c_str());
+        }
+        markItem("dialog/Message/reveal");
+    }
+    if (ok)
+        closeDialog(state);
 }
 } // namespace
 
@@ -500,6 +680,8 @@ void showDialog(EditorState &state, DialogKind kind, EntityId entity) {
         break;
     case DialogKind::Export: {
         state.dialog.title = "Export Game";
+        state.dialog.exportTarget = hostTarget();
+        state.dialog.exportZip = true;
         std::filesystem::path start = startingFolder();
         if (state.project && state.project->project().root.has_parent_path())
             start = state.project->project().root.parent_path();
@@ -536,7 +718,8 @@ void drawDialogs(EditorState &state) {
                       dialog.kind == DialogKind::Validation ||
                       dialog.kind == DialogKind::NewProject ||
                       dialog.kind == DialogKind::OpenProject || dialog.kind == DialogKind::Export;
-    ImGui::SetNextWindowSize({wide ? 600.0F : 0.0F, 0.0F});
+    ImGui::SetNextWindowSize(
+        {wide ? (dialog.kind == DialogKind::ProjectSettings ? 760.0F : 600.0F) : 0.0F, 0.0F});
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoSavedSettings;
     if (!wide)
         flags |= ImGuiWindowFlags_AlwaysAutoResize;
@@ -600,6 +783,12 @@ void drawDialogs(EditorState &state) {
         break;
     case DialogKind::Message:
         messageDialog(state);
+        break;
+    case DialogKind::Confirm:
+        confirmDialog(state);
+        break;
+    case DialogKind::MoveAsset:
+        moveAssetDialog(state);
         break;
     case DialogKind::None:
         break;

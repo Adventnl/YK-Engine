@@ -1,0 +1,22 @@
+{
+  "format": "yk.scene",
+  "version": 1,
+  "settings": { "name": "Spinner Test", "gravity": [0, 9.81], "background": "#141a24ff" },
+  "entities": [
+    {
+      "id": "0000000000000001",
+      "name": "Camera",
+      "transform": { "position": [0, 0], "rotation": 0, "scale": [1, 1] },
+      "components": [ { "type": "Camera", "properties": { "primary": true, "orthographicHeight": 8 } } ]
+    },
+    {
+      "id": "0000000000000002",
+      "name": "Box",
+      "transform": { "position": [0, 0], "rotation": 0, "scale": [1, 1] },
+      "components": [
+        { "type": "SpriteRenderer", "properties": { "size": [2, 2], "color": "#ffc040ff" } },
+        { "type": "Spinner", "properties": { "degreesPerSecond": 90, "clockwise": true } }
+      ]
+    }
+  ]
+}

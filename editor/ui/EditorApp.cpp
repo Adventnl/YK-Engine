@@ -23,22 +23,21 @@ Status EditorApp::initialize(Renderer &renderer) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
-    // Docking is the whole layout. Keyboard navigation stays off: arrow keys and WASD belong to the
+    // Every part of the editor is pinned by the workbench (WorkbenchLayout), so ImGui saves no
+    // window placement of its own. Keyboard navigation stays off: arrow keys and WASD belong to the
     // scene view and to the game being played.
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigWindowsMoveFromTitleBarOnly = true;
-    io.ConfigDockingWithShift = false;
-    iniPath_ = (state_.settingsDirectory / "layout.ini").string();
-    io.IniFilename = state_.options.persistLayout ? iniPath_.c_str() : nullptr;
+    io.IniFilename = nullptr;
     if (!ImGui_ImplSDL3_InitForSDLRenderer(window_, renderer.nativeRenderer()) ||
         !ImGui_ImplSDLRenderer3_Init(renderer.nativeRenderer())) {
         ImGui::DestroyContext();
         return Error{"Cannot initialize Dear ImGui's SDL backends"};
     }
     imguiReady_ = true;
+    ui::loadFonts(io);
     ui::applyTheme();
     ImGuiStyle &style = ImGui::GetStyle();
-    style.FontSizeBase = 15.0F;
+    style.FontSizeBase = 14.0F;
     const float displayScale = SDL_GetWindowDisplayScale(window_);
     if (displayScale > 1.01F) {
         style.ScaleAllSizes(displayScale);
@@ -51,10 +50,21 @@ Status EditorApp::initialize(Renderer &renderer) {
 void EditorApp::onNativeEvent(const SDL_Event &event) {
     if (imguiReady_)
         ImGui_ImplSDL3_ProcessEvent(&event);
+    // Files dropped from the file manager: a project file opens the project, media files are
+    // imported into the open one.
+    if (event.type == SDL_EVENT_DROP_FILE && event.drop.data != nullptr) {
+        const std::filesystem::path dropped(event.drop.data);
+        if (dropped.filename() == Project::fileName) {
+            const std::filesystem::path project = dropped;
+            state_.guarded([this, project] { state_.openProject(project); });
+        } else if (state_.project) {
+            state_.queueImport({dropped});
+        }
+    }
 }
 
 bool EditorApp::onCloseRequested() {
-    if (state_.document && state_.document->dirty() && !state_.playing()) {
+    if (state_.anyDirty() && !state_.playing()) {
         state_.requestQuit(); // Ask about the unsaved changes first.
         return false;
     }
@@ -69,16 +79,21 @@ bool EditorApp::update(const FrameContext &frame) {
 
     ImGuiIO &io = ImGui::GetIO();
     const double seconds = static_cast<double>(frame.delta.seconds);
-    if (seconds > 0.0)
+    if (seconds > 0.0) {
         state_.framesPerSecond =
             state_.framesPerSecond * 0.9F + static_cast<float>(1.0 / seconds) * 0.1F;
+        auto &times = state_.frameMilliseconds;
+        times.push_back(static_cast<float>(seconds * 1000.0));
+        if (times.size() > EditorState::frameMillisecondsCapacity)
+            times.erase(times.begin());
+    }
 
     // The game hears the keyboard only while its view has the user's attention.
-    Keyboard gameInput;
+    InputFrame gameInput;
     if (state_.playing() && !io.WantTextInput &&
         (state_.gameView.focused || state_.gameView.hovered) &&
         state_.dialog.kind == DialogKind::None)
-        gameInput = frame.keyboard;
+        gameInput = frame.input;
     state_.tick(state_.options.fixedStep ? 1.0 / 60.0 : seconds, gameInput);
 
     ImGui_ImplSDLRenderer3_NewFrame();
@@ -90,15 +105,8 @@ bool EditorApp::update(const FrameContext &frame) {
 
     if (state_.document)
         ui::settleEdits(*state_.document, state_.interaction.dragging());
-    ui::drawShell(state_);
+    ui::drawWorkbench(state_);
     ui::handleShortcuts(state_);
-    ui::hierarchyPanel(state_);
-    ui::inspectorPanel(state_);
-    ui::sceneViewPanel(state_);
-    ui::gameViewPanel(state_);
-    ui::assetsPanel(state_);
-    ui::consolePanel(state_);
-    ui::drawWelcome(state_);
     ui::drawDialogs(state_);
     ImGui::Render();
 

@@ -1,0 +1,132 @@
+# The workbench, through the real UI: the activity bar and the views it switches, the bottom panel
+# and its tabs, editor tabs and split groups, sashes, hiding and locking entities from the
+# hierarchy, and the status bar. Starts from the default layout (--fresh-layout).
+timeout 300
+expect project "Cinder Vale"
+expect side-view scene
+expect panel-view console
+expect inspector visible
+expect split none
+expect widget panel/TitleBar
+expect widget panel/Editor
+expect widget panel/StatusBar
+expect widget tab/level01.ykscene
+expect widget tab/Game
+capture ${SHOT_DIR}/bench-01-default.bmp
+
+log "== the activity bar switches side bar views and hides the side bar"
+click activity/Explorer
+expect side-view explorer
+expect widget assets/filter
+click activity/Prefabs
+expect side-view prefabs
+click activity/Components
+expect side-view components
+expect widget component/Door
+click activity/Build
+expect side-view build
+capture ${SHOT_DIR}/bench-02-build.bmp
+click activity/Build
+expect side-view none
+click activity/Scene
+expect side-view scene
+key ctrl+b
+expect side-view none
+key ctrl+b
+expect side-view scene
+
+log "== the panel: tabs, toggle, maximize"
+click "panel-tab/Problems"
+expect panel-view problems
+click "panel-tab/Build Output"
+expect panel-view output
+click "panel-tab/Profiler"
+expect panel-view profiler
+click "panel-tab/Console"
+expect panel-view console
+key ctrl+j
+expect panel-view none
+key ctrl+j
+expect panel-view console
+key ctrl+shift+m
+expect panel-view problems
+expect problems 0
+click "panel-tab/Console"
+key ctrl+alt+b
+expect inspector hidden
+key ctrl+alt+b
+expect inspector visible
+
+log "== sashes resize the side bar, the inspector and the panel"
+drag sash/side px:446,300
+expect layout sideBarWidth 400 6
+drag sash/inspector px:1000,300
+expect layout inspectorWidth 440 6
+drag sash/panel px:700,480
+expect layout panelHeight 310 40
+capture ${SHOT_DIR}/bench-03-resized.bmp
+
+log "== editor tabs and split groups"
+click tab/Game
+expect editor-focus game
+click tab/level01.ykscene
+expect editor-focus scene
+menu "View/Editor Layout/Split Right"
+expect split right
+expect widget tab/Game
+expect widget tab/level01.ykscene
+expect widget panel/Editor2
+drag sash/split px:751,300
+expect layout splitRatio 0.55 0.1
+capture ${SHOT_DIR}/bench-04-split.bmp
+menu "View/Editor Layout/Split Down"
+expect split down
+menu "View/Editor Layout/Single"
+expect split none
+expect no-widget panel/Editor2
+
+log "== hide and lock entities from the hierarchy"
+# The row's buttons appear while it is hovered.
+click "hierarchy/Gate"
+move "hierarchy/Gate"
+wait 2
+click "hierarchy/hide/Gate"
+expect hidden Gate
+expect dirty
+click "hierarchy/hide/Gate"
+expect shown Gate
+click "hierarchy/lock/Gate"
+expect locked Gate
+key ctrl+z
+expect unlocked Gate
+key ctrl+z
+expect hidden Gate
+key ctrl+z
+expect shown Gate
+expect clean
+
+log "== the status bar reports and navigates"
+expect widget status/project
+expect widget status/problems
+expect widget status/entities
+click status/problems
+expect panel-view problems
+click status/project
+expect side-view explorer
+menu "View/Reset Layout"
+expect side-view scene
+expect panel-view console
+expect layout sideBarWidth 290 1
+capture ${SHOT_DIR}/bench-05-reset.bmp
+
+log "== help lists the shortcuts the editor really has"
+menu "Help/Keyboard Shortcuts"
+expect dialog shortcuts
+capture ${SHOT_DIR}/bench-06-shortcuts.bmp
+click dialog/Shortcuts/close
+expect no-dialog
+# One of the shortcuts it lists, used: Ctrl+B hides the side bar and shows it again.
+key ctrl+b
+expect layout sideBarVisible false
+key ctrl+b
+expect layout sideBarVisible true

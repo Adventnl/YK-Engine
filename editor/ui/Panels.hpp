@@ -5,20 +5,42 @@
 // One function per editor panel. Panels read EditorState, draw with Dear ImGui and change the
 // document only through the editor core (never the scene directly), so every edit is undoable.
 namespace yk::editor::ui {
-// The frame around everything: menu bar, toolbar, status bar, dockspace and default layout.
-void drawShell(EditorState &state);
+// The whole window: title bar with the menus and Play controls, activity bar, side bar, editor
+// tabs and groups, inspector, panel, status bar and the sashes between them.
+void drawWorkbench(EditorState &state);
+// The menus (File, Edit, View, Scene, Entity, Component, Build, Debug, Help), drawn inside the
+// title bar's menu bar.
+void drawMenus(EditorState &state);
 // Keyboard shortcuts that are not attached to a menu item's focus.
 void handleShortcuts(EditorState &state);
-// Only true when the welcome screen is showing (no project open).
-void drawWelcome(EditorState &state);
+// The start page shown in the editor area while no project is open.
+void welcomePage(EditorState &state);
+// Clipboard commands shared by the menus, shortcuts and context menus.
+void copySelection(EditorState &state, bool cut);
+void pasteClipboard(EditorState &state);
+// Launches the standalone player on the project as a separate process.
+Status runInPlayer(EditorState &state);
 
 void hierarchyPanel(EditorState &state);
 void inspectorPanel(EditorState &state);
+// The Inspector's view of the file picked in the Explorer (AssetInspector.cpp).
+void assetInspector(EditorState &state);
 void sceneViewPanel(EditorState &state);
 void gameViewPanel(EditorState &state);
 void assetsPanel(EditorState &state);
 void consolePanel(EditorState &state);
+void problemsPanel(EditorState &state);
+void outputPanel(EditorState &state);
+void profilerPanel(EditorState &state);
+void prefabsPanel(EditorState &state);
+void componentsPanel(EditorState &state);
+void buildPanel(EditorState &state);
 void drawDialogs(EditorState &state);
+// Tabs of the Project Settings dialog that edit the project's data (ProjectSettings.cpp); they work
+// on the dialog's draft. `error` is shown under the tabs.
+void settingsInputTab(Project &draft, std::string &error);
+void settingsRenderingTab(Project &draft);
+void settingsBuildTab(Project &draft);
 // Opens a dialog with sensible defaults. `entity` is the entity a prefab is saved from.
 void showDialog(EditorState &state, DialogKind kind, EntityId entity = {});
 
@@ -33,6 +55,10 @@ void createEntityMenu(EditorState &state, EntityId parent, std::optional<Vec2> a
 // Where new entities land when the position is not given: the middle of the scene view, on the
 // grid.
 Vec2 defaultSpawnPoint(const EditorState &state);
+// The Prefab items for an entity that is part of a prefab instance (show it in the Explorer,
+// revert, apply, unpack), shared by the Entity menu, the hierarchy's context menu and the
+// Inspector. Draws nothing for an entity that is not part of an instance.
+void prefabMenuItems(EditorState &state, EntityId entity, const std::string &menuId = {});
 // Menu of components that can be added to `entity`, grouped by category.
 void addComponentMenu(EditorState &state, EntityId entity);
 

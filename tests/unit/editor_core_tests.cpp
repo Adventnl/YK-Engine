@@ -1,12 +1,12 @@
 // Everything the editor does to a scene, exercised without a window: undo, selection, picking,
 // gizmo drags, project files and play sessions.
-#include "Modules.hpp"
 #include "core/ConsoleLog.hpp"
 #include "core/EditorDocument.hpp"
 #include "core/EditorGeometry.hpp"
 #include "core/EditorProject.hpp"
 #include "core/PlaySession.hpp"
 #include "core/SceneInteraction.hpp"
+#include "core/WorkbenchLayout.hpp"
 #include "support/check.hpp"
 #include "yk/core/FileIO.hpp"
 #include "yk/core/Log.hpp"
@@ -14,6 +14,7 @@
 #include "yk/scene/SceneSerializer.hpp"
 #include <cmath>
 #include <filesystem>
+#include <set>
 
 using namespace yk;
 using namespace yk::editor;
@@ -38,7 +39,7 @@ struct Fixture {
     ComponentRegistry registry;
     std::unique_ptr<EditorDocument> document;
     Fixture() {
-        registerAllModules(registry);
+        registerStandardComponents(registry);
         document = std::make_unique<EditorDocument>(registry, std::make_unique<Scene>(registry, 7));
     }
     EditorDocument &doc() {
@@ -462,6 +463,17 @@ void picking() {
     stack = pickAll(doc.scene(), {0, 0}, 0.02F);
     CHECK(stack.size() == 2 && stack[0] == back && stack[1] == front);
 
+    // A locked entity (a huge backdrop, say) is neither picked by a click nor swept up by a
+    // marquee.
+    doc.change("lock", [&](Scene &scene) { scene.find(back)->setLocked(true); });
+    stack = pickAll(doc.scene(), {0, 0}, 0.02F);
+    CHECK(stack.size() == 1 && stack[0] == front);
+    CHECK(pickAll(doc.scene(), {2.5F, 0}, 0.02F).empty());
+    const auto swept = pickInRect(doc.scene(), Rect{{-4, -4}, {8, 8}}, 0.02F);
+    CHECK(std::find(swept.begin(), swept.end(), back) == swept.end());
+    doc.change("unlock", [&](Scene &scene) { scene.find(back)->setLocked(false); });
+    CHECK(pickAll(doc.scene(), {2.5F, 0}, 0.02F).size() == 1);
+
     // Round shapes are not hit in their corners.
     const EntityId ball = f.box("Ball", {20, 0}, {2, 2});
     doc.change("ball", [&](Scene &scene) {
@@ -589,6 +601,21 @@ void viewCamera() {
     view.doc().select(view.doc().scene().roots().front());
     view.ui.frameSelection();
     CHECK_NEAR(view.ui.camera.center.x, 100.0, 0.5);
+
+    // Frame All looks at what can be worked on: a huge locked backdrop does not count, unless it
+    // is all there is.
+    View backdrop;
+    const EntityId wall = backdrop.f.box("Backdrop", {0, 0}, {300, 200});
+    backdrop.f.box("Level", {50, 20}, {4, 2});
+    backdrop.doc().setLocked({wall}, true);
+    backdrop.ui.frameAll();
+    CHECK_NEAR(backdrop.ui.camera.center.x, 50.0, 1.0);
+    CHECK(backdrop.ui.camera.zoom > 10.0F); // Framing a few meters, not the whole 300 m wall.
+    View onlyBackdrop;
+    const EntityId only = onlyBackdrop.f.box("Backdrop", {0, 0}, {300, 200});
+    onlyBackdrop.doc().setLocked({only}, true);
+    onlyBackdrop.ui.frameAll();
+    CHECK_NEAR(onlyBackdrop.ui.camera.center.x, 0.0, 1.0);
 }
 
 void clickAndMarquee() {
@@ -931,7 +958,7 @@ struct TempDir {
 
 void projectFiles() {
     ComponentRegistry registry;
-    registerAllModules(registry);
+    registerStandardComponents(registry);
     TempDir dir("yk-editor-project-test");
     auto created = EditorProject::create(dir.path / "My Game", "My Game", registry);
     CHECK(created);
@@ -1006,21 +1033,26 @@ void projectFiles() {
     }
     CHECK(scenes == 4 && prefabs == 1);
 
-    // Exporting the game: the player beside a copy of the project.
+    // Exporting the game: the player beside a copy of the project's data.
     const auto fakePlayer = dir.path / "yk_player";
     CHECK(writeTextFileAtomic(fakePlayer, "not really a program"));
-    CHECK(!project.exportGame(dir.path / "out",
-                              dir.path / "missing_player")); // No player, no export.
-    const auto exported = project.exportGame(dir.path / "out", fakePlayer);
-    CHECK(exported && exported.value().filename() == "My Game-game");
+    ExportOptions exportOptions;
+    exportOptions.target = BuildTarget::Linux;
+    exportOptions.destination = dir.path / "out";
+    exportOptions.player = dir.path / "missing_player";
+    CHECK(!project.exportGame(exportOptions)); // No player, no export.
+    exportOptions.player = fakePlayer;
+    const auto exported = project.exportGame(exportOptions);
+    CHECK(exported && exported.value().output.filename() == "My-Game-linux");
     if (exported) {
-        CHECK(std::filesystem::exists(exported.value() / "yk_player") &&
-              std::filesystem::exists(exported.value() / "README.txt") &&
-              std::filesystem::exists(exported.value() / "project" / "project.ykproj") &&
-              std::filesystem::exists(exported.value() / "project" / "scenes" / "main.ykscene") &&
-              std::filesystem::exists(exported.value() / "project" / "prefabs" / "floor.ykprefab"));
-        CHECK(Project::load(exported.value() / "project"));       // The copy is a complete project.
-        CHECK(!project.exportGame(dir.path / "out", fakePlayer)); // Never overwrites.
+        const auto &out = exported.value().output;
+        CHECK(std::filesystem::exists(out / "MyGame") &&
+              std::filesystem::exists(out / "README.txt") &&
+              std::filesystem::exists(out / "data" / "project.ykproj") &&
+              std::filesystem::exists(out / "data" / "scenes" / "main.ykscene") &&
+              std::filesystem::exists(out / "data" / "prefabs" / "floor.ykprefab"));
+        CHECK(Project::load(out / "data"));        // The copy is a complete project.
+        CHECK(!project.exportGame(exportOptions)); // Never overwrites unasked.
     }
 
     // Validation flags a scene that points at a missing asset; such a project cannot be exported.
@@ -1030,7 +1062,8 @@ void projectFiles() {
     CHECK(project.saveScene(doc));
     const auto issues = project.validate();
     CHECK(!issues.empty() && hasErrors(issues));
-    const auto refused = project.exportGame(dir.path / "out2", fakePlayer);
+    exportOptions.destination = dir.path / "out2";
+    const auto refused = project.exportGame(exportOptions);
     CHECK(!refused && refused.error().find("error") != std::string::npos);
     CHECK(!std::filesystem::exists(dir.path / "out2"));
     doc.change("repair", [&](Scene &scene) {
@@ -1070,30 +1103,30 @@ void projectFiles() {
 void sampleProject() {
     setLogStderrEnabled(false);
     ComponentRegistry registry;
-    registerAllModules(registry);
-    auto opened = EditorProject::open(
-        std::filesystem::path(YK_SOURCE_DIR) / "projects" / "elemental-prototype", registry);
+    registerStandardComponents(registry);
+    auto opened =
+        EditorProject::open(std::filesystem::path(YK_SOURCE_DIR) / "YK-DemoGame", registry);
     CHECK(opened);
     if (!opened)
         return;
     EditorProject &project = *opened.value();
     CHECK(!hasErrors(project.validate()));
-    auto level = project.openScene("scenes/test_level.ykscene");
+    auto level = project.openScene("scenes/level01.ykscene");
     CHECK(level && level.value()->scene().size() > 40);
     CHECK(!level.value()->dirty() && !level.value()->canUndo());
     // Round trip through the editor's own save format changes nothing of substance.
     const Json original = sceneToJson(level.value()->scene());
     auto text = Json::parse(original.dump(2));
     CHECK(text && text.value().dump(2) == original.dump(2));
-    // Picking works on real content: the fire character is where its sprite is.
-    const Entity *fireCharacter = level.value()->scene().findByName("Fire Character");
-    CHECK(fireCharacter);
-    if (fireCharacter) {
-        const auto stack = pickAll(level.value()->scene(), fireCharacter->worldPosition(), 0.02F);
+    // Picking works on real content: the character is where its sprite is.
+    const Entity *emberCharacter = level.value()->scene().findByName("Ember");
+    CHECK(emberCharacter);
+    if (emberCharacter) {
+        const auto stack = pickAll(level.value()->scene(), emberCharacter->worldPosition(), 0.02F);
         CHECK(!stack.empty());
         bool found = false;
         for (const EntityId id : stack)
-            found = found || id == fireCharacter->id();
+            found = found || id == emberCharacter->id();
         CHECK(found);
     }
     // Links in the real level: the lever opens something.
@@ -1113,20 +1146,20 @@ Keyboard held(std::initializer_list<Key> keys) {
 void playing() {
     setLogStderrEnabled(false);
     ComponentRegistry registry;
-    registerAllModules(registry);
-    auto opened = EditorProject::open(
-        std::filesystem::path(YK_SOURCE_DIR) / "projects" / "elemental-prototype", registry);
+    registerStandardComponents(registry);
+    auto opened =
+        EditorProject::open(std::filesystem::path(YK_SOURCE_DIR) / "YK-DemoGame", registry);
     CHECK(opened);
     if (!opened)
         return;
     EditorProject &project = *opened.value();
-    auto document = project.openScene("scenes/test_level.ykscene");
+    auto document = project.openScene("scenes/level01.ykscene");
     CHECK(document);
     if (!document)
         return;
     EditorDocument &doc = *document.value();
     // An edit that was never saved must still be in the game that Play starts.
-    const Entity *character = doc.scene().findByName("Fire Character");
+    const Entity *character = doc.scene().findByName("Ember");
     CHECK(character);
     const EntityId characterId = character->id();
     doc.rename(characterId, "Player One");
@@ -1168,13 +1201,13 @@ void playing() {
     CHECK_NEAR(play.runtime().scene().find(characterId)->worldPosition().x, startX, 0.05);
 
     // Scene changes requested by the game load that scene from the project.
-    play.runtime().requestSceneChange("scenes/playground.ykscene");
+    play.runtime().requestSceneChange("scenes/practice.ykscene");
     play.update(1.0 / 60.0, held({}));
-    CHECK(play.scenePath() == "scenes/playground.ykscene");
+    CHECK(play.scenePath() == "scenes/practice.ykscene");
     CHECK(!play.runtime().scene().findByName("Player One"));
     play.runtime().requestSceneChange("scenes/none.ykscene");
     play.update(1.0 / 60.0, held({})); // A bad request is reported, not fatal.
-    CHECK(play.scenePath() == "scenes/playground.ykscene");
+    CHECK(play.scenePath() == "scenes/practice.ykscene");
     play.setViewportSize({640, 360});
     CHECK(play.runtime().viewportSize() == Vec2({640.0F, 360.0F}));
 
@@ -1211,9 +1244,487 @@ void console() {
     yk::log(LogLevel::Info, "after", "the console is gone"); // No dangling sink.
     setLogStderrEnabled(true);
 }
+
+double area(Rect rect) {
+    return static_cast<double>(rect.size.x) * static_cast<double>(rect.size.y);
+}
+bool touches(Rect a, Rect b) {
+    return a.position.x < b.position.x + b.size.x - 0.01F &&
+           b.position.x < a.position.x + a.size.x - 0.01F &&
+           a.position.y < b.position.y + b.size.y - 0.01F &&
+           b.position.y < a.position.y + a.size.y - 0.01F;
+}
+
+void workbenchLayout() {
+    const Vec2 window{1600.0F, 900.0F};
+    WorkbenchLayout layout;
+    WorkbenchRegions r = layout.regions(window);
+    // Every part is placed and together they tile the window, without overlapping.
+    CHECK(r.hasSideBar && r.hasInspector && r.hasPanel && !r.hasGroupB);
+    CHECK_NEAR(area(r.title) + area(r.status) + area(r.activity) + area(r.sideBar) +
+                   area(r.editor) + area(r.panel) + area(r.inspector),
+               1600.0 * 900.0, 1.0);
+    CHECK(!touches(r.sideBar, r.editor) && !touches(r.editor, r.panel) &&
+          !touches(r.editor, r.inspector) && !touches(r.activity, r.sideBar));
+    CHECK_NEAR(r.title.size.y, 30.0, 0.01);
+    CHECK_NEAR(r.activity.size.x, 46.0, 0.01);
+    CHECK_NEAR(r.status.position.y + r.status.size.y, 900.0, 0.01);
+    CHECK_NEAR(r.sideBar.size.x, layout.sideBarWidth, 0.01);
+    CHECK_NEAR(r.panel.size.y, layout.panelHeight, 0.01);
+    CHECK_NEAR(r.panel.position.x, r.editor.position.x, 0.01); // The panel sits under the editor.
+
+    // Hiding parts hands their room to the editor; the activity bar stays.
+    const float editorWidth = r.editor.size.x;
+    layout.sideBarVisible = false;
+    layout.inspectorVisible = false;
+    layout.panelVisible = false;
+    r = layout.regions(window);
+    CHECK(!r.hasSideBar && !r.hasInspector && !r.hasPanel);
+    CHECK(r.editor.size.x > editorWidth + 600.0F && r.editor.size.y > 800.0F);
+    CHECK_NEAR(r.editor.position.x, r.activity.size.x, 0.01);
+
+    // Splitting the editor area gives two groups that tile it.
+    layout = {};
+    layout.split = EditorSplit::Right;
+    r = layout.regions(window);
+    CHECK(r.hasGroupB && !touches(r.groupA, r.groupB));
+    CHECK_NEAR(area(r.groupA) + area(r.groupB), area(r.editor), 1.0);
+    CHECK_NEAR(r.groupA.size.x / r.editor.size.x, 0.5, 0.01);
+    layout.split = EditorSplit::Down;
+    layout.splitRatio = 0.7F;
+    r = layout.regions(window);
+    CHECK(r.hasGroupB && r.groupA.size.x == r.editor.size.x && r.groupA.size.y > r.groupB.size.y);
+    CHECK_NEAR(area(r.groupA) + area(r.groupB), area(r.editor), 1.0);
+
+    // The activity bar toggles views like VS Code: the same one again hides the side bar.
+    layout = {};
+    layout.toggleSideView(SideView::Explorer);
+    CHECK(layout.sideBarVisible && layout.sideView == SideView::Explorer);
+    layout.toggleSideView(SideView::Explorer);
+    CHECK(!layout.sideBarVisible);
+    layout.toggleSideView(SideView::Prefabs);
+    CHECK(layout.sideBarVisible && layout.sideView == SideView::Prefabs);
+    layout.togglePanelView(PanelView::Problems);
+    CHECK(layout.panelVisible && layout.panelView == PanelView::Problems);
+    layout.panelMaximized = true;
+    r = layout.regions(window);
+    CHECK_NEAR(r.panel.size.y, r.activity.size.y,
+               0.01); // Maximized: the panel replaces the editor.
+    layout.togglePanelView(PanelView::Problems);
+    CHECK(!layout.panelVisible && !layout.panelMaximized);
+
+    // Nothing collapses or overflows in a small window, or with silly stored sizes.
+    layout = {};
+    layout.sideBarWidth = 5000.0F;
+    layout.inspectorWidth = 5000.0F;
+    layout.panelHeight = 5000.0F;
+    r = layout.regions({900.0F, 500.0F});
+    CHECK(r.editor.size.x >= 250.0F && r.editor.size.y >= 150.0F);
+    CHECK(r.sideBar.position.x + r.sideBar.size.x <= r.editor.position.x + 0.01F);
+    CHECK(r.inspector.position.x >= r.editor.position.x + r.editor.size.x - 0.01F);
+    CHECK(r.panel.position.y + r.panel.size.y <= 500.0F - r.status.size.y + 0.01F);
+    WorkbenchMetrics hiDpi;
+    hiDpi.scale = 2.0F;
+    r = WorkbenchLayout{}.regions({3200.0F, 1800.0F}, hiDpi);
+    CHECK_NEAR(r.title.size.y, 60.0, 0.01);
+    CHECK_NEAR(r.activity.size.x, 92.0, 0.01);
+
+    // It survives a restart, and damaged files never get in the way.
+    layout = {};
+    layout.sideView = SideView::Build;
+    layout.panelView = PanelView::Profiler;
+    layout.split = EditorSplit::Down;
+    layout.sideBarWidth = 333.0F;
+    layout.inspectorVisible = false;
+    layout.panelMaximized = true;
+    auto text = Json::parse(layout.toJson().dump(2));
+    CHECK(text && WorkbenchLayout::fromJson(text.value()) == layout);
+    Json damaged = Json::object();
+    damaged.set("sideView", "nonsense");
+    damaged.set("sideBarWidth", "wide");
+    damaged.set("panelHeight", 1e30);
+    damaged.set("split", 7);
+    damaged.set("splitRatio", 0.0);
+    const WorkbenchLayout repaired = WorkbenchLayout::fromJson(damaged);
+    CHECK(repaired.sideView == WorkbenchLayout{}.sideView &&
+          repaired.sideBarWidth == WorkbenchLayout{}.sideBarWidth &&
+          repaired.split == EditorSplit::None && repaired.panelHeight <= 4000.0F &&
+          repaired.splitRatio >= 0.15F);
+    CHECK(WorkbenchLayout::fromJson(Json("not an object")) == WorkbenchLayout{});
+    for (const SideView view : {SideView::Explorer, SideView::Scene, SideView::Prefabs,
+                                SideView::Components, SideView::Build})
+        CHECK(sideViewFromName(name(view)) == view);
+    for (const PanelView view :
+         {PanelView::Console, PanelView::Problems, PanelView::Output, PanelView::Profiler})
+        CHECK(panelViewFromName(name(view)) == view);
+}
 } // namespace
 
+// The prefab workflow on a real project: place instances, edit one, apply it to the prefab file,
+// update the others, revert, unpack, all undoable.
+void prefabWorkflow() {
+    ComponentRegistry registry;
+    registerStandardComponents(registry);
+    TempDir dir("yk-editor-prefab-test");
+    auto created = EditorProject::create(dir.path / "P", "P", registry);
+    CHECK(created);
+    if (!created)
+        return;
+    EditorProject &project = *created.value();
+    auto opened = project.newScene("scenes/level");
+    CHECK(opened);
+    if (!opened)
+        return;
+    EditorDocument &doc = *opened.value();
+
+    // A prefab of a platform with a child.
+    const auto platform = doc.createFromTemplate(templateNamed(registry, "Platform"), {0, 0});
+    CHECK(platform);
+    doc.change("child", [&](Scene &scene) { scene.createEntity("Trim", platform.value()); });
+    CHECK(project.savePrefab(doc, platform.value(), "prefabs/floor"));
+    auto prefab = project.loadPrefab("prefabs/floor.ykprefab");
+    CHECK(prefab);
+    const std::string source = "prefabs/floor.ykprefab";
+    CHECK(doc.prefabRootOf(platform.value()).value == 0); // The original is no instance.
+
+    // Two instances, and their parts know which instance they belong to.
+    const auto a = doc.instantiatePrefab(prefab.value(), {10, 0}, {}, source);
+    const auto b = doc.instantiatePrefab(prefab.value(), {20, 0}, {}, source);
+    CHECK(a && b);
+    if (!a || !b)
+        return;
+    const EntityId trimOfB = doc.scene().find(b.value())->childIds().at(0);
+    CHECK(doc.prefabRootOf(b.value()) == b.value() && doc.prefabRootOf(trimOfB) == b.value());
+    CHECK(doc.prefabRootOf(a.value()) == a.value());
+
+    // Change instance A: another color, and remove its child. Apply writes the prefab file.
+    doc.change("edit A", [&](Scene &scene) {
+        Entity *entity = scene.find(a.value());
+        entity->get<SpriteRenderer>()->color = Color{200, 0, 0, 255};
+        scene.destroy(entity->childIds().at(0));
+    });
+    CHECK(project.applyToPrefab(doc, a.value()));
+    auto changed = project.loadPrefab(source);
+    CHECK(changed && changed.value().dump() != prefab.value().dump());
+    if (changed) {
+        // The prefab has no place of its own and is not an instance of itself.
+        const Json &rootRecord = changed.value().get("entities").at(0);
+        CHECK(!rootRecord.contains("prefab"));
+        CHECK(changed.value().get("entities").size() == 1); // The child is gone from the prefab.
+        for (const Json &record : changed.value().get("entities").items())
+            if (record.get("id").asString() == changed.value().get("root").asString())
+                CHECK(record.get("transform").get("position").at(0).asNumber() == 0.0);
+    }
+    CHECK(!project.applyToPrefab(doc, doc.scene().findByName("Main Camera")->id()));
+
+    // The other instance follows, in one undo step; A itself is left alone.
+    const auto updated = doc.updatePrefabInstances(source, changed.value(), a.value());
+    CHECK(updated && updated.value() == 1);
+    CHECK(doc.scene().find(b.value())->childIds().empty());
+    CHECK(doc.scene().find(b.value())->get<SpriteRenderer>()->color == Color(200, 0, 0, 255));
+    CHECK_NEAR(doc.scene().find(b.value())->worldPosition().x, 20.0); // It stays where it was.
+    CHECK(doc.undoLabel() == "Update Prefab Instances");
+    CHECK(doc.undo());
+    CHECK(doc.scene().find(b.value())->childIds().size() == 1);
+    CHECK(doc.redo());
+
+    // Revert puts an edited instance back, keeping name and place.
+    doc.change("edit B", [&](Scene &scene) {
+        scene.find(b.value())->setName("Special");
+        scene.find(b.value())->get<SpriteRenderer>()->color = Color{1, 2, 3, 255};
+    });
+    CHECK(doc.revertToPrefab(b.value(), changed.value()));
+    CHECK(doc.scene().find(b.value())->name() == "Special");
+    CHECK(doc.scene().find(b.value())->get<SpriteRenderer>()->color == Color(200, 0, 0, 255));
+    CHECK(doc.undoLabel() == "Revert to Prefab");
+    CHECK(!doc.revertToPrefab(platform.value(), changed.value())); // Not an instance.
+
+    // Unpacking forgets the link.
+    doc.unpackPrefab(b.value());
+    CHECK(doc.scene().find(b.value())->prefabSource().empty() &&
+          doc.prefabRootOf(b.value()).value == 0);
+    CHECK(doc.undo() && doc.scene().find(b.value())->prefabSource() == source);
+    const auto none = doc.updatePrefabInstances("prefabs/other.ykprefab", changed.value(), {});
+    CHECK(none && none.value() == 0);
+}
+
+std::string readAll(const std::filesystem::path &file) {
+    auto text = readTextFile(file);
+    return text ? text.value() : std::string("<unreadable>");
+}
+
+std::string replaceAll(std::string text, const std::string &from, const std::string &to) {
+    for (std::size_t at = text.find(from); at != std::string::npos;
+         at = text.find(from, at + to.size()))
+        text.replace(at, from.size(), to);
+    return text;
+}
+
+// A file goes by its path in the data of a project (scenes, prefabs, animations, the start scene):
+// moving it must not leave any of those behind, and a move that cannot be completed must leave
+// everything as it was.
+void assetOperations() {
+    ComponentRegistry registry;
+    registerStandardComponents(registry);
+    TempDir dir("yk-editor-asset-ops-test");
+    auto created = EditorProject::create(dir.path / "A", "A", registry);
+    CHECK(created);
+    if (!created)
+        return;
+    EditorProject &project = *created.value();
+    const auto root = project.project().root;
+    const auto put = [&](const std::string &relative, const std::string &text) {
+        CHECK(writeTextFileAtomic(root / relative, text));
+    };
+    const std::string picture = "assets/tiles/a.png";
+    put(picture, "not really a png");
+    put(picture + ".ykmeta", "{\"format\":\"yk.texture\",\"version\":1,\"pixelsPerUnit\":32}\n");
+    put("assets/anim/walk.ykanim",
+        R"({"format":"yk.animations","version":2,"texture":"assets/tiles/a.png"})");
+
+    // A scene with a sprite that uses the picture and an instance of a prefab made from it.
+    auto opened = project.newScene("scenes/level");
+    CHECK(opened);
+    if (!opened)
+        return;
+    EditorDocument &doc = *opened.value();
+    const auto tile = doc.createFromTemplate(templateNamed(registry, "Platform"), {0, 0});
+    CHECK(tile);
+    if (!tile)
+        return;
+    doc.change("texture", [&](Scene &scene) {
+        scene.find(tile.value())->get<SpriteRenderer>()->texture.path = picture;
+    });
+    CHECK(project.savePrefab(doc, tile.value(), "prefabs/tile"));
+    const auto prefab = project.loadPrefab("prefabs/tile.ykprefab");
+    CHECK(prefab);
+    if (!prefab)
+        return;
+    const auto instance =
+        doc.instantiatePrefab(prefab.value(), {5, 0}, {}, "prefabs/tile.ykprefab");
+    CHECK(instance);
+    CHECK(project.saveScene(doc));
+    project.refresh();
+
+    // Who names what.
+    const auto usage = project.usageOf(picture);
+    CHECK(usage.references == 4); // Two sprites in the scene, the prefab, the animation.
+    CHECK(usage.files ==
+          (std::vector<std::string>{"assets/anim/walk.ykanim", "prefabs/tile.ykprefab",
+                                    "scenes/level.ykscene"}));
+    CHECK(project.usageOf("prefabs/tile.ykprefab").references == 1); // The instance's link.
+    CHECK(project.usageOf("assets").references == 4);                // Anything inside a folder.
+    CHECK(project.usageOf("assets/tiles").references == 4);
+    CHECK(project.usageOf("assets/tile").references == 0);         // Not a prefix of a name.
+    CHECK(project.usageOf("scenes/main.ykscene").references == 1); // The start scene.
+    CHECK(project.usageOf("scenes/main.ykscene").files ==
+          std::vector<std::string>{"project.ykproj"});
+
+    // Renaming into another folder: the picture, its import settings and every reference follow.
+    const std::string sceneBefore = readAll(root / "scenes/level.ykscene");
+    const std::string prefabBefore = readAll(root / "prefabs/tile.ykprefab");
+    CHECK(project.checkMove(picture, "assets/props/b.png"));
+    const auto moved = project.moveAsset(picture, "assets/props/b.png");
+    CHECK(moved);
+    if (!moved)
+        return;
+    CHECK(moved.value().references == 4 && moved.value().rewritten.size() == 3);
+    CHECK(!std::filesystem::exists(root / picture) &&
+          !std::filesystem::exists(root / (picture + ".ykmeta")));
+    CHECK(std::filesystem::exists(root / "assets/props/b.png") &&
+          std::filesystem::exists(root / "assets/props/b.png.ykmeta"));
+    CHECK(project.usageOf(picture).references == 0);
+    CHECK(project.usageOf("assets/props/b.png").references == 4);
+    // Only the path changed in files the editor wrote: the diff is that name and nothing else.
+    CHECK(readAll(root / "scenes/level.ykscene") ==
+          replaceAll(sceneBefore, picture, "assets/props/b.png"));
+    CHECK(readAll(root / "prefabs/tile.ykprefab") ==
+          replaceAll(prefabBefore, picture, "assets/props/b.png"));
+    CHECK(readAll(root / "assets/anim/walk.ykanim").find("assets/props/b.png") !=
+          std::string::npos);
+    auto reopened = project.openScene("scenes/level.ykscene");
+    CHECK(reopened);
+    if (reopened)
+        CHECK(reopened.value()->scene().find(tile.value())->get<SpriteRenderer>()->texture.path ==
+              "assets/props/b.png");
+    CHECK(project.files().size() > 0);
+
+    // A folder moves with everything in it; references are rewritten by prefix.
+    const auto folderMove = project.moveAsset("assets/props", "assets/things/deep");
+    CHECK(folderMove && folderMove.value().references == 4);
+    CHECK(std::filesystem::exists(root / "assets/things/deep/b.png.ykmeta"));
+    CHECK(project.usageOf("assets/things/deep/b.png").references == 4);
+    // Names that differ only by case are allowed.
+    CHECK(project.moveAsset("assets/things/deep/b.png", "assets/things/deep/B.png"));
+    CHECK(std::filesystem::exists(root / "assets/things/deep/B.png"));
+    CHECK(project.usageOf("assets/things/deep/B.png").references == 4);
+
+    // A prefab: the instance's link follows. A scene: the start scene follows.
+    CHECK(project.moveAsset("prefabs/tile.ykprefab", "prefabs/props/tile.ykprefab"));
+    reopened = project.openScene("scenes/level.ykscene");
+    CHECK(reopened && reopened.value()->scene().find(instance.value())->prefabSource() ==
+                          "prefabs/props/tile.ykprefab");
+    const auto sceneMove = project.moveAsset("scenes/main.ykscene", "scenes/start/first.ykscene");
+    CHECK(sceneMove && sceneMove.value().rewritten == std::vector<std::string>{"project.ykproj"});
+    CHECK(project.project().startScene == "scenes/start/first.ykscene");
+    const auto onDisk = Project::load(root);
+    CHECK(onDisk && onDisk.value().startScene == "scenes/start/first.ykscene");
+
+    // What cannot be moved says why, and nothing changes.
+    const auto refused = [&](const std::string &from, const std::string &to, const char *why) {
+        const auto checked = project.checkMove(from, to);
+        if (checked || checked.error().find(why) == std::string::npos)
+            std::fprintf(stderr, "'%s' -> '%s' should be refused with '%s', got '%s'\n",
+                         from.c_str(), to.c_str(), why,
+                         checked ? "no error" : checked.error().c_str());
+        CHECK(!checked && checked.error().find(why) != std::string::npos);
+        CHECK(!project.moveAsset(from, to));
+    };
+    refused("scenes/level.ykscene", "scenes/start/first.ykscene", "already exists");
+    refused("scenes/level.ykscene", "scenes/level.ykscene", "where it already is");
+    refused("scenes/level.ykscene", "../level.ykscene", "inside the project");
+    refused("scenes/level.ykscene", "/level.ykscene", "leading slash");
+    refused("scenes/level.ykscene", "scenes/.hidden.ykscene", "start with a dot");
+    refused("scenes/level.ykscene", "scenes/a:b.ykscene", "cannot contain");
+    refused("scenes/level.ykscene", "scenes/level.ykscene.", "end with");
+    refused("scenes/level.ykscene", "  ", "Enter a path");
+    refused("scenes/nothing.ykscene", "scenes/other.ykscene", "does not exist");
+    refused("project.ykproj", "project2.ykproj", "the project itself");
+    refused("scenes/level.ykscene", "project.ykproj", "the project itself");
+    refused("assets", "assets/inner", "into itself");
+    refused("assets/things/deep/B.png.ykmeta", "assets/x.ykmeta", "belong to their picture");
+    refused("scenes/level.ykscene", "assets/things/deep/B.png/x.ykscene", "is a file");
+    put("assets/x.png.ykmeta", "{}");
+    refused("assets/things/deep/B.png", "assets/x.png",
+            "already exists"); // Its settings would clash.
+    CHECK(std::filesystem::exists(root / "assets/things/deep/B.png"));
+
+    // All or nothing: when a file cannot be rewritten (a directory sits where its temporary file
+    // would go), the earlier rewrites are undone and the picture stays where it was.
+    put("scenes/zz.ykscene",
+        replaceAll(readAll(root / "scenes/level.ykscene"), "prefabs/props/tile.ykprefab",
+                   "prefabs/props/tile.ykprefab"));
+    std::filesystem::create_directories(root / "scenes/zz.ykscene.tmp");
+    project.refresh();
+    const std::string levelBefore = readAll(root / "scenes/level.ykscene");
+    const std::string walkBefore = readAll(root / "assets/anim/walk.ykanim");
+    const auto failed = project.moveAsset("assets/things/deep/B.png", "assets/back.png");
+    CHECK(!failed && failed.error().find("Nothing was moved") != std::string::npos);
+    CHECK(std::filesystem::exists(root / "assets/things/deep/B.png") &&
+          std::filesystem::exists(root / "assets/things/deep/B.png.ykmeta") &&
+          !std::filesystem::exists(root / "assets/back.png"));
+    CHECK(readAll(root / "scenes/level.ykscene") == levelBefore &&
+          readAll(root / "assets/anim/walk.ykanim") == walkBefore);
+    std::filesystem::remove_all(root / "scenes/zz.ykscene.tmp");
+    std::filesystem::remove(root / "scenes/zz.ykscene");
+
+    // Deleting: a picture takes its import settings along, a folder everything inside.
+    CHECK(project.filesUnder("assets/things") == 2 &&
+          project.filesUnder("assets/things/deep/B.png") == 1 &&
+          project.filesUnder("assets/none") == 0);
+    CHECK(!project.deleteAsset("project.ykproj") && !project.deleteAsset("assets/none") &&
+          !project.deleteAsset("../outside"));
+    CHECK(project.deleteAsset("assets/things/deep/B.png"));
+    CHECK(!std::filesystem::exists(root / "assets/things/deep/B.png") &&
+          !std::filesystem::exists(root / "assets/things/deep/B.png.ykmeta"));
+    CHECK(project.deleteAsset("assets/things"));
+    CHECK(!std::filesystem::exists(root / "assets/things"));
+    // The references it leaves are still reported, by validation.
+    CHECK(project.usageOf("assets/things/deep/B.png").references == 4);
+    bool missing = false;
+    for (const ProjectIssue &issue : project.validate())
+        missing = missing || issue.message.find("B.png") != std::string::npos;
+    CHECK(missing);
+}
+
+// A prefab is used all over a project: updating its instances reaches the scenes that are not open.
+void prefabUpdatesAcrossScenes() {
+    ComponentRegistry registry;
+    registerStandardComponents(registry);
+    TempDir dir("yk-editor-prefab-scenes-test");
+    auto created = EditorProject::create(dir.path / "P", "P", registry);
+    CHECK(created);
+    if (!created)
+        return;
+    EditorProject &project = *created.value();
+    const auto root = project.project().root;
+    const std::string source = "prefabs/floor.ykprefab";
+
+    // The prefab, a scene with an instance, another with two, and one with none.
+    auto firstScene = project.newScene("scenes/first");
+    CHECK(firstScene);
+    if (!firstScene)
+        return;
+    EditorDocument &doc = *firstScene.value();
+    const auto platform = doc.createFromTemplate(templateNamed(registry, "Platform"), {0, 0});
+    CHECK(platform && project.savePrefab(doc, platform.value(), "prefabs/floor"));
+    const auto prefab = project.loadPrefab(source);
+    CHECK(prefab);
+    if (!prefab || !platform)
+        return;
+    const auto a = doc.instantiatePrefab(prefab.value(), {10, 0}, {}, source);
+    CHECK(a && project.saveScene(doc));
+    auto secondScene = project.newScene("scenes/second");
+    CHECK(secondScene);
+    if (!secondScene || !a)
+        return;
+    EditorDocument &other = *secondScene.value();
+    const auto b1 = other.instantiatePrefab(prefab.value(), {1, 1}, {}, source);
+    const auto b2 = other.instantiatePrefab(prefab.value(), {2, 2}, {}, source);
+    CHECK(b1 && b2 && project.saveScene(other));
+    CHECK(project.newScene("scenes/third"));
+    if (!b1 || !b2)
+        return;
+
+    // The instance in the first scene is recolored and applied to the prefab.
+    doc.change("recolor", [&](Scene &scene) {
+        scene.find(a.value())->get<SpriteRenderer>()->color = Color{9, 8, 7, 255};
+    });
+    CHECK(project.applyToPrefab(doc, a.value()));
+    CHECK(project.saveScene(doc));
+
+    // Only scenes that are not open are looked at, and only ones that hold instances count.
+    const std::set<std::string> open{"scenes/first.ykscene"};
+    const auto found = project.closedInstancesOf(source, open);
+    CHECK(found.instances == 2 &&
+          found.scenes == std::vector<std::string>{"scenes/second.ykscene"});
+    CHECK(project.closedInstancesOf(source, {"scenes/first.ykscene", "scenes/second.ykscene"})
+              .instances == 0);
+    const std::string thirdBefore = readAll(root / "scenes/third.ykscene");
+    const std::string firstBefore = readAll(root / "scenes/first.ykscene");
+
+    const auto updated = project.updateClosedInstances(source, open);
+    CHECK(updated.updated == 2 && updated.failures.empty() && updated.scenes == found.scenes);
+    auto reopened = project.openScene("scenes/second.ykscene");
+    CHECK(reopened);
+    if (reopened) {
+        for (const EntityId id : {b1.value(), b2.value()}) {
+            const Entity *entity = reopened.value()->scene().find(id);
+            CHECK(entity && entity->get<SpriteRenderer>()->color == Color(9, 8, 7, 255));
+        }
+        CHECK_NEAR(reopened.value()->scene().find(b2.value())->worldPosition().x,
+                   2.0); // Stays put.
+        CHECK(!reopened.value()->dirty());
+    }
+    CHECK(readAll(root / "scenes/third.ykscene") == thirdBefore);
+    CHECK(readAll(root / "scenes/first.ykscene") == firstBefore); // The open scene is the editor's.
+
+    // A scene that cannot be written is reported; the others still go ahead.
+    auto fourthScene = project.newScene("scenes/zzz");
+    CHECK(fourthScene);
+    if (!fourthScene)
+        return;
+    CHECK(fourthScene.value()->instantiatePrefab(prefab.value(), {3, 3}, {}, source) &&
+          project.saveScene(*fourthScene.value()));
+    std::filesystem::create_directories(root / "scenes/zzz.ykscene.tmp");
+    const auto partial = project.updateClosedInstances(source, open);
+    CHECK(partial.updated == 2 && partial.scenes == found.scenes);
+    CHECK(partial.failures.size() == 1 && partial.failures[0].starts_with("scenes/zzz.ykscene"));
+    CHECK(project.updateClosedInstances("prefabs/none.ykprefab", open).updated == 0);
+}
+
 int main() {
+    workbenchLayout();
     undoAndRedo();
     historyLimit();
     selection();
@@ -1234,6 +1745,9 @@ int main() {
     draggingGhosts();
     projectFiles();
     sampleProject();
+    prefabWorkflow();
+    assetOperations();
+    prefabUpdatesAcrossScenes();
     playing();
     console();
     return yk::test::finish("editor_core");

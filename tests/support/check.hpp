@@ -32,7 +32,9 @@ inline int finish(const char *suite) {
 }
 } // namespace yk::test
 
-#define CHECK(expression)                                                                          \
-    ::yk::test::record(static_cast<bool>(expression), #expression, __FILE__, __LINE__)
+// Variadic so that an expression containing braces and commas (Vec2{1, 2}) is one argument; the
+// parentheses keep it one expression. Standard __VA_ARGS__ use, not the GNU extension.
+#define CHECK(...)                                                                                 \
+    ::yk::test::record(static_cast<bool>((__VA_ARGS__)), #__VA_ARGS__, __FILE__, __LINE__)
 // CHECK_NEAR(a, b) or CHECK_NEAR(a, b, tolerance); no GNU variadic-macro extension needed.
 #define CHECK_NEAR(...) ::yk::test::recordNear(#__VA_ARGS__, __FILE__, __LINE__, __VA_ARGS__)

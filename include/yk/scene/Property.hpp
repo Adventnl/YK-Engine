@@ -53,6 +53,8 @@ struct PropertyInfo {
     bool isOffset{};                  // Local offsets the resize gizmo scales with sizes.
     bool isLayer{};                   // Integer index into the project's collision layers.
     bool isDisplacement{};            // Vec2 world-space shift the editor previews as a ghost.
+    bool isInputSet{};                // String naming a set of the project's input map.
+    bool isInputAction{};             // String naming an action of the project's input map.
     bool multiline{};
     PropertyValue defaultValue;
     std::function<PropertyValue(const Component &)> get;

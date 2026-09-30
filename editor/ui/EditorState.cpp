@@ -1,4 +1,5 @@
 #include "ui/EditorState.hpp"
+#include "yk/core/FileIO.hpp"
 #include "yk/core/Log.hpp"
 #include "yk/scene/SceneSerializer.hpp"
 #include <SDL3/SDL.h>
@@ -54,6 +55,12 @@ EditorState::EditorState(const ComponentRegistry &registryRef, EditorOptions opt
     std::error_code error;
     std::filesystem::create_directories(settingsDirectory, error);
     recent.load();
+    if (options.persistLayout) {
+        if (auto text = readTextFile(settingsDirectory / "workbench.json"))
+            if (auto json = Json::parse(text.value()))
+                layout = WorkbenchLayout::fromJson(json.value());
+    }
+    savedLayout = layout;
 }
 
 Status EditorState::initialize(Renderer &rendererRef) {
@@ -63,11 +70,15 @@ Status EditorState::initialize(Renderer &rendererRef) {
         return Error{created.error()};
     sceneRenderer = std::move(created.value());
     if (!options.project.empty()) {
-        if (auto opened = openProject(options.project); !opened)
-            return opened;
+        // A project that cannot be opened at start-up (moved, damaged) is reported and the welcome
+        // screen stays: the editor is a window, and quitting would only make it vanish.
+        if (auto opened = openProject(options.project); !opened) {
+            message("Cannot open the project", opened.error());
+            return success();
+        }
         if (!options.scene.empty() && (!document || document->path() != options.scene))
             if (auto scene = openScene(options.scene); !scene)
-                return scene;
+                message("Cannot open the scene", scene.error());
     }
     return success();
 }
@@ -102,8 +113,14 @@ Status EditorState::attachProject(std::unique_ptr<EditorProject> opened) {
     stopPlay();
     interaction.bind(nullptr);
     document.reset();
+    background.clear();
+    sceneTabs.clear();
+    problems.clear();
+    problemsChecked = false;
+    selectedAsset.clear();
     project = std::move(opened);
-    auto renderers = SceneRenderer::create(*renderer, &project->assets());
+    auto renderers =
+        SceneRenderer::create(*renderer, &project->assets(), project->project().textures);
     if (!renderers) {
         project.reset();
         return Error{renderers.error()};
@@ -124,6 +141,7 @@ Status EditorState::attachProject(std::unique_ptr<EditorProject> opened) {
         else
             log(LogLevel::Warning, "editor", "Start scene '" + start + "' does not exist");
     }
+    refreshProblems();
     return success();
 }
 
@@ -149,26 +167,163 @@ void EditorState::closeProject() {
     stopPlay();
     interaction.bind(nullptr);
     document.reset();
+    background.clear();
+    sceneTabs.clear();
+    problems.clear();
+    problemsChecked = false;
+    selectedAsset.clear();
     project.reset();
     audio.reset();
     if (auto created = SceneRenderer::create(*renderer, nullptr))
         sceneRenderer = std::move(created.value());
 }
 
+// Moves the edited scene (if any) to the background so another one can take its place.
+void EditorState::stashActive() {
+    if (!document)
+        return;
+    const std::string key = document->path(); // Read it before the document is moved away.
+    BackgroundScene entry{std::move(document), interaction.camera};
+    background[key] = std::move(entry);
+}
+
 Status EditorState::openScene(const std::string &path) {
     if (!project)
         return Error{"No project is open"};
     stopPlay();
+    if (document && document->path() == path) {
+        editorFocus = EditorFocus::Scene;
+        return success();
+    }
+    if (background.contains(path))
+        return activateScene(path);
     auto opened = project->openScene(path);
     if (!opened) {
         log(LogLevel::Error, "editor", opened.error());
         return Error{opened.error()};
     }
+    stashActive();
     interaction.bind(nullptr);
     document = std::move(opened.value());
     bindDocument();
+    if (std::find(sceneTabs.begin(), sceneTabs.end(), path) == sceneTabs.end())
+        sceneTabs.push_back(path);
+    editorFocus = EditorFocus::Scene;
     log(LogLevel::Info, "editor", "Opened scene " + path);
     return success();
+}
+
+Status EditorState::activateScene(const std::string &path) {
+    if (document && document->path() == path) {
+        editorFocus = EditorFocus::Scene;
+        return success();
+    }
+    const auto found = background.find(path);
+    if (found == background.end())
+        return Error{"'" + path + "' is not open"};
+    stopPlay();
+    BackgroundScene next = std::move(found->second);
+    background.erase(found);
+    stashActive();
+    interaction.bind(nullptr);
+    document = std::move(next.document);
+    bindDocument();
+    interaction.camera = next.camera; // bind() asked for a fresh framing; the tab keeps its view.
+    frameRequested = false;
+    editorFocus = EditorFocus::Scene;
+    return success();
+}
+
+void EditorState::dropScene(const std::string &path) {
+    const auto tab = std::find(sceneTabs.begin(), sceneTabs.end(), path);
+    const std::size_t index =
+        tab == sceneTabs.end() ? 0 : static_cast<std::size_t>(tab - sceneTabs.begin());
+    if (tab != sceneTabs.end())
+        sceneTabs.erase(tab);
+    if (document && document->path() == path) {
+        stopPlay();
+        interaction.bind(nullptr);
+        document.reset();
+        if (!sceneTabs.empty())
+            activateScene(sceneTabs[std::min(index, sceneTabs.size() - 1)]);
+    } else {
+        background.erase(path);
+    }
+}
+
+void EditorState::reloadScenes(const std::function<std::string(const std::string &)> &remap) {
+    const std::vector<std::string> tabs = sceneTabs;
+    const std::string active = document ? document->path() : std::string();
+    // Every tab keeps the view it had.
+    std::map<std::string, ViewCamera> views;
+    for (const auto &entry : background)
+        views[entry.first] = entry.second.camera;
+    if (document)
+        views[active] = interaction.camera;
+    stopPlay();
+    interaction.bind(nullptr);
+    document.reset();
+    background.clear();
+    sceneTabs.clear();
+    for (const std::string &tab : tabs) {
+        const std::string path = remap(tab);
+        if (path.empty())
+            continue;
+        if (!openScene(path))
+            continue;
+        if (const auto saved = views.find(tab); saved != views.end()) {
+            if (document && document->path() == path) {
+                interaction.camera = saved->second;
+                frameRequested = false;
+            }
+        }
+    }
+    // The scenes that went to the background while the others opened get their views back too.
+    for (auto &entry : background)
+        for (const std::string &tab : tabs)
+            if (remap(tab) == entry.first)
+                if (const auto saved = views.find(tab); saved != views.end())
+                    entry.second.camera = saved->second;
+    if (const std::string wanted = active.empty() ? std::string() : remap(active); !wanted.empty())
+        activateScene(wanted);
+}
+
+void EditorState::closeScene(const std::string &path) {
+    const auto removeNow = [this, path] { dropScene(path); };
+    const EditorDocument *target = nullptr;
+    if (document && document->path() == path)
+        target = document.get();
+    else if (const auto found = background.find(path); found != background.end())
+        target = found->second.document.get();
+    if (target && target->dirty() && !(playing() && target == document.get())) {
+        dialog = {};
+        dialog.kind = DialogKind::Unsaved;
+        dialog.title = "Unsaved Changes";
+        dialog.message = "'" + target->displayName() + "' has changes that are not saved.";
+        dialog.unsavedScenes = {path};
+        dialog.continuation = removeNow;
+        dialog.needsOpen = true;
+        return;
+    }
+    removeNow();
+}
+
+bool EditorState::anyDirty() const {
+    return !dirtyScenes().empty();
+}
+
+std::vector<std::string> EditorState::dirtyScenes() const {
+    std::vector<std::string> names;
+    for (const std::string &path : sceneTabs) {
+        const EditorDocument *doc = nullptr;
+        if (document && document->path() == path)
+            doc = document.get();
+        else if (const auto found = background.find(path); found != background.end())
+            doc = found->second.document.get();
+        if (doc && doc->dirty())
+            names.push_back(path);
+    }
+    return names;
 }
 
 Status EditorState::newScene(const std::string &path) {
@@ -180,9 +335,13 @@ Status EditorState::newScene(const std::string &path) {
         log(LogLevel::Error, "editor", created.error());
         return Error{created.error()};
     }
+    stashActive();
     interaction.bind(nullptr);
     document = std::move(created.value());
     bindDocument();
+    if (std::find(sceneTabs.begin(), sceneTabs.end(), document->path()) == sceneTabs.end())
+        sceneTabs.push_back(document->path());
+    editorFocus = EditorFocus::Scene;
     log(LogLevel::Info, "editor", "Created scene " + document->path());
     return success();
 }
@@ -202,16 +361,48 @@ Status EditorState::saveScene() {
     if (!saved) {
         log(LogLevel::Error, "editor", saved.error());
         message("Could not save the scene", saved.error());
+    } else {
+        refreshProblems();
     }
     return saved;
+}
+
+Status EditorState::saveAll() {
+    return saveScenes(dirtyScenes());
+}
+
+Status EditorState::saveScenes(const std::vector<std::string> &paths) {
+    if (!project)
+        return Error{"No project is open"};
+    for (const std::string &path : paths) {
+        EditorDocument *doc = document && document->path() == path ? document.get() : nullptr;
+        if (!doc)
+            if (const auto found = background.find(path); found != background.end())
+                doc = found->second.document.get();
+        if (!doc || !doc->dirty())
+            continue;
+        if (auto saved = project->saveScene(*doc); !saved) {
+            log(LogLevel::Error, "editor", saved.error());
+            return saved;
+        }
+    }
+    refreshProblems();
+    return success();
 }
 
 Status EditorState::saveSceneAs(const std::string &path) {
     if (!project || !document)
         return Error{"There is no scene to save"};
+    const std::string before = document->path();
     auto saved = project->saveSceneAs(*document, path);
-    if (!saved)
+    if (!saved) {
         log(LogLevel::Error, "editor", saved.error());
+        return saved;
+    }
+    const std::string after = document->path();
+    for (std::string &tab : sceneTabs)
+        if (tab == before)
+            tab = after;
     return saved;
 }
 
@@ -232,7 +423,7 @@ Status EditorState::instantiatePrefab(const std::string &path, Vec2 world) {
         log(LogLevel::Error, "editor", prefab.error());
         return Error{prefab.error()};
     }
-    auto placed = document->instantiatePrefab(prefab.value(), world);
+    auto placed = document->instantiatePrefab(prefab.value(), world, {}, path);
     if (!placed) {
         log(LogLevel::Error, "editor", placed.error());
         return Error{placed.error()};
@@ -240,48 +431,94 @@ Status EditorState::instantiatePrefab(const std::string &path, Vec2 world) {
     return success();
 }
 
+void EditorState::refreshProblems() {
+    if (!project)
+        return;
+    problems = project->validate();
+    problemsChecked = true;
+}
+
 void EditorState::validateProject() {
     if (!project)
         return;
-    dialog = {};
-    dialog.kind = DialogKind::Validation;
-    dialog.title = "Project Validation";
-    dialog.issues = project->validate();
-    dialog.needsOpen = true;
+    refreshProblems();
+    std::size_t errors = 0;
+    for (const ProjectIssue &issue : problems)
+        errors += issue.severity == ProjectIssue::Severity::Error ? 1 : 0;
     log(LogLevel::Info, "editor",
-        "Validated project: " + std::to_string(dialog.issues.size()) + " issue(s)");
+        "Validated project: " + std::to_string(errors) + " error(s), " +
+            std::to_string(problems.size() - errors) + " warning(s)");
+    layout.panelView = PanelView::Problems;
+    layout.panelVisible = true;
+}
+
+void EditorState::addOutput(LogLevel level, const std::string &text) {
+    output.push_back({level, text});
+    if (output.size() > 2000)
+        output.erase(output.begin(), output.begin() + 500);
+}
+
+std::filesystem::path EditorState::executableDirectory() const {
+    if (const char *path = SDL_GetBasePath())
+        return path;
+    return ".";
+}
+
+std::optional<std::filesystem::path> EditorState::playerFor(BuildTarget target) const {
+    return findPlayer(target, executableDirectory());
 }
 
 std::filesystem::path EditorState::playerExecutable() const {
-    std::filesystem::path base = ".";
-    if (const char *path = SDL_GetBasePath())
-        base = path;
-#ifdef _WIN32
-    return base / "yk_player.exe";
-#else
-    return base / "yk_player";
-#endif
+    if (const auto found = playerFor(hostTarget()))
+        return *found;
+    return executableDirectory() / playerFileName(hostTarget());
 }
 
-Status EditorState::exportGame(const std::filesystem::path &destination) {
+Result<ExportReport> EditorState::exportGame(ExportOptions request) {
     if (!project)
         return Error{"No project is open"};
-    auto exported = project->exportGame(destination, playerExecutable());
+    if (request.notices.empty())
+        if (const auto notices = findNotices(executableDirectory()))
+            request.notices = *notices;
+    request.progress = [this](const std::string &line) {
+        addOutput(LogLevel::Info, line);
+        log(LogLevel::Info, "export", line);
+    };
+    layout.panelView = PanelView::Output;
+    layout.panelVisible = true;
+    addOutput(LogLevel::Info,
+              std::string("--- Export for ") + displayName(request.target) + " ---");
+    auto exported = project->exportGame(request);
     if (!exported) {
-        log(LogLevel::Error, "editor", exported.error());
+        addOutput(LogLevel::Error, exported.error());
+        log(LogLevel::Error, "export", exported.error());
         return Error{exported.error()};
     }
-    message("Game exported", "The game is in:\n" + exported.value().string() +
-                                 "\n\nRun yk_player from that folder to play it.");
-    return success();
+    for (const std::string &warning : exported.value().warnings) {
+        addOutput(LogLevel::Warning, warning);
+        log(LogLevel::Warning, "export", warning);
+    }
+    addOutput(LogLevel::Info, std::to_string(exported.value().files) + " files, " +
+                                  std::to_string(exported.value().bytes / 1024) +
+                                  " KB of game data");
+    return exported;
 }
 
 void EditorState::guarded(std::function<void()> action) {
-    if (document && document->dirty() && !playing()) {
+    if (anyDirty() && !playing()) {
         dialog = {};
         dialog.kind = DialogKind::Unsaved;
         dialog.title = "Unsaved Changes";
-        dialog.message = "'" + document->displayName() + "' has changes that are not saved.";
+        dialog.unsavedScenes = dirtyScenes();
+        if (dialog.unsavedScenes.size() == 1) {
+            dialog.message =
+                "'" + dialog.unsavedScenes.front() + "' has changes that are not saved.";
+        } else {
+            dialog.message = std::to_string(dialog.unsavedScenes.size()) +
+                             " scenes have changes that are not saved:";
+            for (const std::string &path : dialog.unsavedScenes)
+                dialog.message += "\n   " + path;
+        }
         dialog.continuation = std::move(action);
         dialog.needsOpen = true;
         return;
@@ -304,7 +541,8 @@ void EditorState::startPlay() {
     }
     play = std::move(session.value());
     playSelection = {};
-    focusRequest = "Game";
+    editorFocus = EditorFocus::Game;
+    focusGame = true;
     log(LogLevel::Info, "editor", "Play: " + document->displayName());
 }
 
@@ -315,7 +553,7 @@ void EditorState::stopPlay() {
     if (audio)
         audio->stopAll();
     playSelection = {};
-    focusRequest = "Scene";
+    editorFocus = EditorFocus::Scene;
     log(LogLevel::Info, "editor", "Stopped; back to editing");
 }
 
@@ -324,9 +562,9 @@ void EditorState::togglePause() {
         play->setPaused(!play->paused());
 }
 
-void EditorState::stepPlay(const Keyboard &keyboard) {
+void EditorState::stepPlay(const InputFrame &input) {
     if (play)
-        play->step(keyboard);
+        play->step(input);
 }
 
 void EditorState::restartPlay() {
@@ -378,10 +616,345 @@ std::string EditorState::windowTitle() const {
     return title;
 }
 
-void EditorState::tick(double seconds, const Keyboard &gameInput) {
+void EditorState::tick(double seconds, const InputFrame &gameInput) {
     if (play)
         play->update(seconds, gameInput);
     if (audio)
         audio->update();
+    std::vector<std::filesystem::path> imports;
+    {
+        const std::lock_guard<std::mutex> lock(importMutex_);
+        imports.swap(importQueue_);
+    }
+    if (!imports.empty())
+        importAssets(imports, explorerFolder);
+}
+
+void EditorState::queueImport(std::vector<std::filesystem::path> files) {
+    const std::lock_guard<std::mutex> lock(importMutex_);
+    importQueue_.insert(importQueue_.end(), files.begin(), files.end());
+}
+
+namespace {
+// SDL calls this when the file dialog closes, possibly from another thread.
+void onFilesChosen(void *userdata, const char *const *files, int) {
+    auto *state = static_cast<EditorState *>(userdata);
+    if (!files)
+        return; // The dialog failed; SDL logs the reason.
+    std::vector<std::filesystem::path> chosen;
+    for (const char *const *file = files; *file; ++file)
+        chosen.emplace_back(*file);
+    if (!chosen.empty())
+        state->queueImport(std::move(chosen));
+}
+} // namespace
+
+void EditorState::chooseAssetsToImport(SDL_Window *window) {
+    static const SDL_DialogFileFilter filters[] = {
+        {"Images and sounds", "png;bmp;wav"}, {"Images", "png;bmp"}, {"Sounds", "wav"}};
+    SDL_Window *parent = window ? window : SDL_GetKeyboardFocus();
+    SDL_ShowOpenFileDialog(onFilesChosen, this, parent, filters, 3, nullptr, true);
+}
+
+Status EditorState::importAssets(const std::vector<std::filesystem::path> &files,
+                                 const std::string &folder) {
+    if (!project)
+        return Error{"No project is open"};
+    auto imported = project->importFiles(files, folder);
+    if (!imported) {
+        log(LogLevel::Error, "editor", imported.error());
+        return Error{imported.error()};
+    }
+    for (const std::string &path : imported.value().imported) {
+        log(LogLevel::Info, "editor", "Imported " + path);
+        if (sceneRenderer)
+            sceneRenderer->reload(*renderer, path);
+    }
+    for (const std::string &why : imported.value().skipped)
+        log(LogLevel::Warning, "editor", "Skipped " + why);
+    if (!imported.value().imported.empty())
+        showAssetInExplorer(imported.value().imported.front());
+    return success();
+}
+
+Status EditorState::revertPrefab(EntityId entity) {
+    if (!project || !document || playing())
+        return Error{"There is no scene to edit"};
+    const EntityId root = document->prefabRootOf(entity);
+    if (!root)
+        return Error{"That entity is not part of a prefab instance"};
+    const std::string source = document->scene().find(root)->prefabSource();
+    auto prefab = project->loadPrefab(source);
+    if (!prefab) {
+        log(LogLevel::Error, "editor", prefab.error());
+        message("Cannot revert", prefab.error());
+        return Error{prefab.error()};
+    }
+    auto reverted = document->revertToPrefab(root, prefab.value());
+    if (!reverted) {
+        log(LogLevel::Error, "editor", reverted.error());
+        return reverted;
+    }
+    log(LogLevel::Info, "editor",
+        "Reverted '" + document->scene().find(root)->name() + "' to " + source);
+    return success();
+}
+
+namespace {
+// The files a dialog lists, one per line, the first few.
+std::string fileList(const std::vector<std::string> &files) {
+    constexpr std::size_t shown = 6;
+    std::string text;
+    for (std::size_t i = 0; i < files.size() && i < shown; ++i)
+        text += "\n   " + files[i];
+    if (files.size() > shown)
+        text += "\n   ... and " + std::to_string(files.size() - shown) + " more";
+    return text;
+}
+
+// How many other instances of `source` the open scenes hold (`except` is the one being acted on).
+std::size_t otherInstances(const EditorState &state, const std::string &source, EntityId except) {
+    std::size_t count = 0;
+    const auto scan = [&](const EditorDocument &document, EntityId skip) {
+        document.scene().forEach([&](const Entity &entity) {
+            if (entity.prefabSource() == source && entity.id() != skip)
+                ++count;
+        });
+    };
+    if (state.document)
+        scan(*state.document, except);
+    for (const auto &entry : state.background)
+        if (entry.second.document)
+            scan(*entry.second.document, {});
+    return count;
+}
+} // namespace
+
+Status EditorState::applyPrefab(EntityId entity) {
+    if (!project || !document || playing())
+        return Error{"There is no scene to edit"};
+    const EntityId root = document->prefabRootOf(entity);
+    if (!root)
+        return Error{"That entity is not part of a prefab instance"};
+    const std::string source = document->scene().find(root)->prefabSource();
+    if (auto written = project->applyToPrefab(*document, root); !written) {
+        log(LogLevel::Error, "editor", written.error());
+        message("Cannot apply to the prefab", written.error());
+        return written;
+    }
+    std::string text = "Applied '" + document->scene().find(root)->name() + "' to " + source;
+    if (const std::size_t others = otherInstances(*this, source, root); others > 0)
+        text += ". " + std::to_string(others) +
+                " other instance(s) in the open scenes still have the old contents (Entity > "
+                "Prefab > Update Other Instances brings them in line, in the scenes that are not "
+                "open too)";
+    log(LogLevel::Info, "editor", text);
+    refreshProblems();
+    return success();
+}
+
+void EditorState::updateOtherInstances(EntityId entity) {
+    if (!project || !document || playing())
+        return;
+    const EntityId root = document->prefabRootOf(entity);
+    if (!root)
+        return;
+    const std::string source = document->scene().find(root)->prefabSource();
+    const std::set<std::string> open(sceneTabs.begin(), sceneTabs.end());
+    const std::size_t inOpen = otherInstances(*this, source, root);
+    const auto closed = project->closedInstancesOf(source, open);
+    if (inOpen + closed.instances == 0) {
+        log(LogLevel::Info, "editor",
+            "There are no other instances of " + source + " in the project");
+        return;
+    }
+    dialog = {};
+    dialog.kind = DialogKind::Confirm;
+    dialog.title = "Update Other Instances";
+    dialog.message = "This puts " + std::to_string(inOpen + closed.instances) +
+                     " other instance(s) of\n" + source +
+                     "\nback to the prefab file's contents. Their names and placement stay; "
+                     "any other changes made to them are replaced.";
+    if (inOpen > 0)
+        dialog.message += "\n\n" + std::to_string(inOpen) +
+                          " in the open scenes (these become unsaved changes you can undo).";
+    if (closed.instances > 0)
+        dialog.message += "\n\n" + std::to_string(closed.instances) +
+                          " in scenes that are not open, which are saved right away and cannot be "
+                          "undone:" +
+                          fileList(closed.scenes);
+    dialog.confirmLabel = "Update";
+    dialog.needsOpen = true;
+    dialog.continuation = [this, source, root, open] {
+        auto prefab = project ? project->loadPrefab(source) : Result<Json>(Error{"No project"});
+        if (!prefab) {
+            log(LogLevel::Error, "editor", prefab.error());
+            return;
+        }
+        std::size_t updated = 0;
+        const auto update = [&](EditorDocument &target, EntityId except) {
+            if (auto done = target.updatePrefabInstances(source, prefab.value(), except); done)
+                updated += done.value();
+            else
+                log(LogLevel::Error, "editor", done.error());
+        };
+        if (document)
+            update(*document, root);
+        for (auto &entry : background)
+            if (entry.second.document)
+                update(*entry.second.document, {});
+        const auto written = project->updateClosedInstances(source, open);
+        updated += written.updated;
+        std::string text = "Updated " + std::to_string(updated) + " other instance(s) of " + source;
+        if (!written.scenes.empty())
+            text += "; " + std::to_string(written.scenes.size()) +
+                    " scene(s) that were not open were saved";
+        log(LogLevel::Info, "editor", text);
+        for (const std::string &failure : written.failures)
+            log(LogLevel::Error, "editor", failure);
+        if (!written.failures.empty())
+            message("Some scenes were not updated", fileList(written.failures));
+        refreshProblems();
+    };
+}
+
+void EditorState::unpackPrefab(EntityId entity) {
+    if (!document || playing())
+        return;
+    if (const EntityId root = document->prefabRootOf(entity)) {
+        document->unpackPrefab(root);
+        log(LogLevel::Info, "editor", "Unpacked '" + document->scene().find(root)->name() + "'");
+    }
+}
+
+namespace {
+bool isFolder(const EditorProject &project, const std::string &path) {
+    std::error_code error;
+    return std::filesystem::is_directory(project.project().root / std::filesystem::path(path),
+                                         error);
+}
+} // namespace
+
+void EditorState::askToMoveAsset(const std::string &path) {
+    if (!project || playing())
+        return;
+    guarded([this, path] {
+        const auto usage = project->usageOf(path);
+        dialog = {};
+        dialog.kind = DialogKind::MoveAsset;
+        dialog.title = "Rename or Move";
+        dialog.assetPath = path;
+        dialog.text = path;
+        dialog.message = usage.references == 0
+                             ? "Nothing in the project refers to it."
+                             : std::to_string(usage.references) + " reference(s) in " +
+                                   std::to_string(usage.files.size()) +
+                                   " file(s) will be updated, and the open scenes reloaded:" +
+                                   fileList(usage.files);
+        dialog.needsOpen = true;
+    });
+}
+
+void EditorState::askToDeleteAsset(const std::string &path) {
+    if (!project || playing())
+        return;
+    guarded([this, path] {
+        const auto usage = project->usageOf(path);
+        const std::size_t count = project->filesUnder(path);
+        std::string text;
+        if (isFolder(*project, path))
+            text = "Delete the folder '" + path + "' and the " + std::to_string(count) +
+                   " file(s) in it?";
+        else
+            text = "Delete '" + path + "'?";
+        text += "\nThis cannot be undone.";
+        if (usage.references > 0)
+            text += "\n\n" + std::to_string(usage.references) + " reference(s) in " +
+                    std::to_string(usage.files.size()) +
+                    " file(s) name it and will be reported as problems:" + fileList(usage.files);
+        dialog = {};
+        dialog.kind = DialogKind::Confirm;
+        dialog.title = "Delete";
+        dialog.message = text;
+        dialog.confirmLabel = "Delete";
+        dialog.continuation = [this, path] { (void)deleteAsset(path); };
+        dialog.needsOpen = true;
+    });
+}
+
+Status EditorState::moveAsset(const std::string &from, const std::string &to) {
+    if (!project)
+        return Error{"No project is open"};
+    stopPlay();
+    const bool folder = isFolder(*project, from);
+    auto moved = project->moveAsset(from, to);
+    if (!moved) {
+        log(LogLevel::Error, "editor", moved.error());
+        return Error{moved.error()};
+    }
+    const EditorProject::MoveResult &result = moved.value();
+    // Open scenes hold the old paths in memory: load them again from the rewritten files.
+    reloadScenes([&](const std::string &path) {
+        if (path == result.from)
+            return result.to;
+        if (folder && path.starts_with(result.from + "/"))
+            return result.to + path.substr(result.from.size());
+        return path;
+    });
+    selectedAsset.clear();
+    assetSelectionMark.clear();
+    if (folder) {
+        explorerFolder = result.to;
+        explorerTarget = result.to;
+        explorerReveal = result.to;
+    } else {
+        showAssetInExplorer(result.to);
+    }
+    std::string text = "Moved '" + result.from + "' to '" + result.to + "'";
+    if (result.references > 0)
+        text += "; " + std::to_string(result.references) + " reference(s) in " +
+                std::to_string(result.rewritten.size()) + " file(s) updated";
+    log(LogLevel::Info, "editor", text);
+    refreshProblems();
+    return success();
+}
+
+Status EditorState::deleteAsset(const std::string &path) {
+    if (!project)
+        return Error{"No project is open"};
+    stopPlay();
+    if (auto deleted = project->deleteAsset(path); !deleted) {
+        log(LogLevel::Error, "editor", deleted.error());
+        message("Cannot delete", deleted.error());
+        return deleted;
+    }
+    const auto inside = [&](const std::string &other) {
+        return other == path || other.starts_with(path + "/");
+    };
+    for (const std::string &tab : std::vector<std::string>(sceneTabs))
+        if (inside(tab))
+            dropScene(tab);
+    if (inside(selectedAsset))
+        selectedAsset.clear();
+    if (inside(explorerTarget))
+        explorerTarget.clear();
+    if (inside(explorerFolder))
+        explorerFolder = std::filesystem::path(path).parent_path().generic_string();
+    log(LogLevel::Info, "editor", "Deleted '" + path + "'");
+    refreshProblems();
+    return success();
+}
+
+void EditorState::showAssetInExplorer(const std::string &path) {
+    selectedAsset = path;
+    explorerTarget = path;
+    explorerReveal = path;
+    explorerFolder = std::filesystem::path(path).parent_path().generic_string();
+    assetSelectionMark.clear();
+    if (document)
+        for (const EntityId id : document->selection())
+            assetSelectionMark.push_back(id);
+    layout.sideView = SideView::Explorer;
+    layout.sideBarVisible = true;
 }
 } // namespace yk::editor

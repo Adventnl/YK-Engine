@@ -21,8 +21,8 @@ struct RunOptions {
 };
 struct FrameContext {
     FrameTime delta;
-    const Keyboard &keyboard;
-    bool focused{true}; // False while unfocused or minimized (delta is then zero).
+    const InputFrame &input; // The keyboard and every connected gamepad, as of this frame.
+    bool focused{true};      // False while unfocused or minimized (delta is then zero).
 };
 class ApplicationLayer {
   public:

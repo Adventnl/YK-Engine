@@ -23,13 +23,33 @@ struct PropertyView {
     std::string changeLabel;
 };
 
-// Writes `value` into the property being edited (inside the change commitEdit opened).
+// Writes `value` into the property being edited (inside the change commitEdit opened). With
+// several entities selected the same value goes into the same component (the n-th of its type) of
+// every selected entity that has one, so a row of tiles can be recolored or reordered at once.
 void write(const PropertyView &view, PropertyValue value) {
-    Entity *entity = view.inspect.doc->edit().find(view.inspect.entity);
-    if (!entity || view.componentIndex >= entity->components().size())
+    EditorDocument &doc = *view.inspect.doc;
+    Scene &scene = doc.edit();
+    Entity *primary = scene.find(view.inspect.entity);
+    if (!primary || view.componentIndex >= primary->components().size())
         return;
-    Component &component = *entity->components()[view.componentIndex];
-    view.property.assign(component, std::move(value));
+    const std::string typeName = primary->components()[view.componentIndex]->type().name;
+    int occurrence = 0;
+    for (std::size_t i = 0; i < view.componentIndex; ++i)
+        occurrence += primary->components()[i]->type().name == typeName ? 1 : 0;
+    const auto assignTo = [&](Entity &entity) {
+        int seen = 0;
+        for (const auto &component : entity.components())
+            if (component->type().name == typeName && seen++ == occurrence) {
+                view.property.assign(*component, value);
+                return;
+            }
+    };
+    assignTo(*primary);
+    if (doc.isSelected(view.inspect.entity))
+        for (const EntityId id : doc.selection())
+            if (id != view.inspect.entity)
+                if (Entity *other = scene.find(id))
+                    assignTo(*other);
 }
 
 // One-shot edit for widgets that change discretely (a list item removed, an entity picked).
@@ -616,7 +636,7 @@ void drawHeader(Inspect &inspect, const Entity &entity) {
     ImGui::SetNextItemWidth(-FLT_MIN);
     const bool tagsChanged = inputText("##tags", tags, 0, "Tags (comma separated)");
     markItem("inspector/tags");
-    tooltip("Tags let hazards, plates and exits tell entities apart, e.g. fire, water.");
+    tooltip("Tags let hazards, plates and exits tell entities apart, e.g. enemy, collectible.");
     if (doc)
         commitEdit(*doc, "Edit Tags", tagsChanged, [&] {
             std::vector<std::string> parsed;
@@ -638,6 +658,63 @@ void drawHeader(Inspect &inspect, const Entity &entity) {
             if (Entity *target = doc->edit().find(inspect.entity))
                 target->setTags(parsed);
         });
+}
+
+// For an entity that belongs to a prefab instance: where it came from and the buttons that act on
+// the instance.
+void drawPrefabBar(Inspect &inspect, const Entity &entity) {
+    if (!inspect.doc)
+        return;
+    const EntityId root = inspect.doc->prefabRootOf(inspect.entity);
+    if (!root)
+        return;
+    const Entity &instance = *inspect.scene.find(root);
+    const std::string source = instance.prefabSource();
+    ImGui::Spacing();
+    const ImVec2 at = ImGui::GetCursorScreenPos();
+    ImDrawList &list = *ImGui::GetWindowDrawList();
+    drawIcon(list, Icon::Prefab, {at.x + 9.0F, at.y + 10.0F}, 16.0F,
+             packed(Color{110, 210, 150, 255}));
+    ImGui::SetCursorScreenPos({at.x + 22.0F, at.y});
+    ImGui::AlignTextToFramePadding();
+    if (root == inspect.entity) {
+        ImGui::TextColored(imColor(vs::textDim), "Prefab");
+        ImGui::SameLine();
+        if (ImGui::SmallButton(std::filesystem::path(source).filename().string().c_str()))
+            inspect.state.showAssetInExplorer(source);
+        markItem("inspector/prefab/source");
+        tooltip(source + "\nClick to show it in the Explorer.");
+        ImGui::SetCursorScreenPos({at.x, at.y + ImGui::GetFrameHeight() + 4.0F});
+        if (ImGui::Button("Revert"))
+            inspect.state.revertPrefab(inspect.entity);
+        markItem("inspector/prefab/revert");
+        tooltip("Put this instance back to what the prefab file says (name and position stay).");
+        ImGui::SameLine();
+        if (ImGui::Button("Apply"))
+            inspect.state.applyPrefab(inspect.entity);
+        markItem("inspector/prefab/apply");
+        tooltip("Write this instance to the prefab file. The other instances keep their contents "
+                "until you update them.");
+        ImGui::SameLine();
+        if (ImGui::Button("Update Others"))
+            inspect.state.updateOtherInstances(inspect.entity);
+        markItem("inspector/prefab/update");
+        tooltip("Put every other instance of this prefab in the open scenes back to the prefab "
+                "file's contents (asks first).");
+        ImGui::SameLine();
+        if (ImGui::Button("Unpack"))
+            inspect.state.unpackPrefab(inspect.entity);
+        markItem("inspector/prefab/unpack");
+        tooltip("Forget where this instance came from.");
+    } else {
+        ImGui::TextColored(imColor(vs::textDim), "Part of");
+        ImGui::SameLine();
+        if (ImGui::SmallButton(instance.name().c_str()))
+            inspect.doc->select(root);
+        markItem("inspector/prefab/root");
+        tooltip("Select the prefab instance this entity belongs to (" + source + ").");
+    }
+    (void)entity;
 }
 
 void drawTransform(Inspect &inspect, const Entity &entity) {
@@ -722,33 +799,119 @@ void addComponentPopup(Inspect &inspect) {
     }
     ImGui::EndPopup();
 }
+
+// The scene's own settings, shown when no entity is selected: name, gravity and background.
+void sceneInspector(EditorState &state, const Scene &scene) {
+    EditorDocument *doc = state.playing() ? nullptr : state.document.get();
+    const SceneSettings &settings = scene.settings;
+    ImGui::PushFont(fonts().semibold, 14.0F);
+    ImGui::TextUnformatted("Scene");
+    ImGui::PopFont();
+    if (!doc)
+        ImGui::TextColored(imColor(palette::good), "Running copy (read-only)");
+    ImGui::Spacing();
+    ImGui::BeginDisabled(!doc);
+    ImGui::AlignTextToFramePadding();
+    ImGui::TextUnformatted("Name");
+    ImGui::SameLine(96.0F);
+    ImGui::SetNextItemWidth(-FLT_MIN);
+    std::string name = settings.name;
+    bool changed = inputText("##scenename", name);
+    markItem("scene/settings/name");
+    if (doc)
+        commitEdit(*doc, "Rename Scene", changed, [&] { doc->edit().settings.name = name; });
+    ImGui::AlignTextToFramePadding();
+    ImGui::TextUnformatted("Gravity");
+    ImGui::SameLine(96.0F);
+    float gravity[2] = {settings.gravity.x, settings.gravity.y};
+    const float half = (ImGui::GetContentRegionAvail().x - ImGui::GetStyle().ItemSpacing.x) * 0.5F;
+    for (int axis = 0; axis < 2; ++axis) {
+        if (axis == 1)
+            ImGui::SameLine();
+        ImGui::PushID(axis);
+        ImGui::SetNextItemWidth(half);
+        changed = ImGui::DragFloat("##g", &gravity[axis], 0.05F, -200.0F, 200.0F, "%.2f");
+        markItem(axis == 0 ? "scene/settings/gravity/x" : "scene/settings/gravity/y");
+        tooltip("Meters per second squared; +Y points down.");
+        if (doc)
+            commitEdit(*doc, "Edit Gravity", changed,
+                       [&] { doc->edit().settings.gravity = {gravity[0], gravity[1]}; });
+        ImGui::PopID();
+    }
+    ImGui::AlignTextToFramePadding();
+    ImGui::TextUnformatted("Background");
+    ImGui::SameLine(96.0F);
+    ImGui::SetNextItemWidth(-FLT_MIN);
+    ImVec4 color = imColor(settings.background);
+    changed = ImGui::ColorEdit4("##background", &color.x,
+                                ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs);
+    markItem("scene/settings/background");
+    if (doc)
+        commitEdit(*doc, "Edit Background", changed,
+                   [&] { doc->edit().settings.background = fromImColor(color); });
+    ImGui::EndDisabled();
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+    std::size_t active = 0;
+    scene.forEach([&](const Entity &entity) { active += entity.activeInHierarchy() ? 1 : 0; });
+    ImGui::TextColored(imColor(vs::textDim), "%zu entities (%zu active), %zu at the top level",
+                       scene.size(), active, scene.roots().size());
+    const Camera *camera = SceneRenderer::primaryCamera(scene);
+    ImGui::TextColored(imColor(vs::textDim), camera
+                                                 ? "The game looks through a camera."
+                                                 : "There is no camera: the game shows nothing.");
+    ImGui::Spacing();
+    ImGui::TextDisabled("Select an entity to edit it.");
+}
+
+// True while the Inspector shows a file picked in the Explorer instead of an entity: from the pick
+// until the entity selection changes.
+bool assetInspected(EditorState &state) {
+    if (state.selectedAsset.empty() || !state.project || state.playing())
+        return false;
+    if (state.document) {
+        const auto &selection = state.document->selection();
+        if (selection.size() != state.assetSelectionMark.size() ||
+            !std::equal(selection.begin(), selection.end(), state.assetSelectionMark.begin())) {
+            state.selectedAsset.clear(); // An entity was selected since: back to the entities.
+            return false;
+        }
+    }
+    return true;
+}
 } // namespace
 
 void inspectorPanel(EditorState &state) {
-    if (!state.showInspector)
-        return;
-    if (!ImGui::Begin("Inspector", &state.showInspector)) {
-        ImGui::End();
-        return;
-    }
-    markWindow("panel/Inspector");
     const Scene *scene = state.visibleScene();
     const EntityId id = state.inspected();
     const Entity *entity = scene ? scene->find(id) : nullptr;
+    if (assetInspected(state)) {
+        assetInspector(state);
+        return;
+    }
     if (!entity) {
-        ImGui::TextDisabled(scene ? "Select an entity to edit it." : "Nothing to inspect.");
-        ImGui::End();
+        if (scene)
+            sceneInspector(state, *scene);
+        else
+            ImGui::TextDisabled("Nothing to inspect.");
         return;
     }
     EditorDocument *doc = state.playing() ? nullptr : state.document.get();
     Inspect inspect{state, *scene, doc, id};
-    if (doc && doc->selection().size() > 1)
-        ImGui::TextColored(imColor(palette::dim), "%zu selected. Showing '%s'.",
-                           doc->selection().size(), entity->name().c_str());
+    if (doc && doc->selection().size() > 1) {
+        ImGui::PushStyleColor(ImGuiCol_Text, imColor(palette::dim));
+        ImGui::TextWrapped(
+            "%zu selected. Component fields change all of them; name, tags and Transform only "
+            "the one shown.",
+            doc->selection().size());
+        ImGui::PopStyleColor();
+    }
     if (!doc)
         ImGui::TextColored(imColor(palette::good), "Running copy (read-only)");
     ImGui::BeginDisabled(!doc);
     drawHeader(inspect, *entity);
+    drawPrefabBar(inspect, *entity);
     ImGui::Spacing();
     drawTransform(inspect, *entity);
     std::optional<std::size_t> removeRequest;
@@ -766,6 +929,5 @@ void inspectorPanel(EditorState &state) {
         if (auto removed = doc->removeComponent(id, *removeRequest); !removed)
             log(LogLevel::Warning, "editor", removed.error());
     }
-    ImGui::End();
 }
 } // namespace yk::editor::ui

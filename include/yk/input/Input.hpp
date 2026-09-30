@@ -1,7 +1,6 @@
 #pragma once
 #include <array>
 #include <cstddef>
-#include <initializer_list>
 #include <string_view>
 
 // One list drives the enum, display names, serialization names and (in the platform layer) the SDL
@@ -66,18 +65,68 @@ class Keyboard {
   private:
     std::array<ButtonState, keyCount> keys_{};
 };
-// Any bound key can hold an action. Query edges for the combined held state.
-class ActionBinding {
+// ----- Gamepads ------------------------------------------------------------------------------
+// Physical layout names follow the common "Xbox" positions (South = A, East = B, ...), so they mean
+// the same thing on every controller SDL recognises.
+enum class GamepadButton : std::size_t {
+    South,
+    East,
+    West,
+    North,
+    Back,
+    Start,
+    LeftStick,
+    RightStick,
+    LeftShoulder,
+    RightShoulder,
+    DPadUp,
+    DPadDown,
+    DPadLeft,
+    DPadRight,
+    Count
+};
+enum class GamepadAxis : std::size_t {
+    LeftX, // -1 left .. +1 right
+    LeftY, // -1 up .. +1 down
+    RightX,
+    RightY,
+    LeftTrigger, // 0 .. 1
+    RightTrigger,
+    Count
+};
+constexpr std::size_t gamepadButtonCount = static_cast<std::size_t>(GamepadButton::Count);
+constexpr std::size_t gamepadAxisCount = static_cast<std::size_t>(GamepadAxis::Count);
+constexpr std::size_t maxGamepads = 4;
+std::string_view gamepadButtonName(GamepadButton button);
+GamepadButton gamepadButtonFromName(std::string_view name); // Count when unknown.
+std::string_view gamepadAxisName(GamepadAxis axis);
+GamepadAxis gamepadAxisFromName(std::string_view name); // Count when unknown.
+
+class Gamepad {
   public:
-    ActionBinding(std::initializer_list<Key> keys);
-    void update(const Keyboard &keyboard);
-    ButtonState state() const {
-        return state_;
+    bool connected() const {
+        return connected_;
     }
+    void setConnected(bool connected);
+    void beginFrame();
+    void setButton(GamepadButton button, bool down);
+    void setAxis(GamepadAxis axis, float value); // Clamped to [-1, 1]; non-finite becomes 0.
+    void assignButton(GamepadButton button, ButtonState state);
+    ButtonState button(GamepadButton button) const;
+    float axis(GamepadAxis axis) const;
 
   private:
-    std::array<Key, keyCount> keys_{};
-    std::size_t count_{};
-    ButtonState state_{};
+    bool connected_{};
+    std::array<ButtonState, gamepadButtonCount> buttons_{};
+    std::array<float, gamepadAxisCount> axes_{};
+};
+
+// Everything the player did during one frame (or one fixed tick): the keyboard and every gamepad.
+// The runtime turns this into named actions through the project's InputMap, so gameplay code never
+// sees a key or a button.
+struct InputFrame {
+    Keyboard keyboard;
+    std::array<Gamepad, maxGamepads> gamepads{};
+    void beginFrame();
 };
 } // namespace yk

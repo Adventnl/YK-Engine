@@ -1,11 +1,20 @@
 #include "yk/gameplay/Gameplay.hpp"
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 
 namespace yk {
 namespace {
 float approach(float value, float target, float amount) {
     return value < target ? std::min(value + amount, target) : std::max(value - amount, target);
+}
+
+// Where the character's feet are: the bottom of its first collider.
+Vec2 feetOf(const Entity &entity) {
+    const Vec2 position = entity.worldPosition();
+    if (const auto *collider = entity.get<Collider>())
+        return position + Vec2{0.0F, collider->offset.y + collider->size.y * 0.5F};
+    return position;
 }
 
 struct Ground {
@@ -54,6 +63,7 @@ void PlatformerController::describe(TypeBuilder<PlatformerController> &type) {
         .description("Side-view character movement: run, jump, slopes, moving platforms.")
         .dependsOn("RigidBody")
         .dependsOn("Collider")
+        .dependsOn("PlayerInput")
         .onAdd([](Entity &entity, PlatformerController &) {
             if (auto *body = entity.get<RigidBody>()) {
                 body->type = RigidBodyType::Dynamic;
@@ -67,9 +77,9 @@ void PlatformerController::describe(TypeBuilder<PlatformerController> &type) {
                 collider->layer = layers::player;
             }
         });
-    type.field("leftKey", &PlatformerController::leftKey).keyOptions();
-    type.field("rightKey", &PlatformerController::rightKey).keyOptions();
-    type.field("jumpKey", &PlatformerController::jumpKey).keyOptions();
+    type.field("moveLeftAction", &PlatformerController::moveLeftAction).inputAction();
+    type.field("moveRightAction", &PlatformerController::moveRightAction).inputAction();
+    type.field("jumpAction", &PlatformerController::jumpAction).inputAction();
     type.field("moveSpeed", &PlatformerController::moveSpeed)
         .range(0, 50, 0.1)
         .tooltip("Top running speed, m/s.");
@@ -91,7 +101,23 @@ void PlatformerController::describe(TypeBuilder<PlatformerController> &type) {
     type.field("maxSlopeDegrees", &PlatformerController::maxSlopeDegrees).range(0, 89, 1);
     type.field("gripFriction", &PlatformerController::gripFriction).range(0, 10, 0.05);
     type.field("slideFriction", &PlatformerController::slideFriction).range(0, 10, 0.05);
+    type.field("groundSnap", &PlatformerController::groundSnap)
+        .range(0, 2, 0.05)
+        .tooltip(
+            "Keeps the feet on the ground over ramp crests, slopes and small steps down: after "
+            "walking off the ground (without jumping), a walkable surface at most this far "
+            "below pulls the character back. 0 turns it off.");
+    type.field("landingSpeed", &PlatformerController::landingSpeed)
+        .range(0, 100, 0.1)
+        .tooltip("Downward speed at which touching down raises the animation trigger 'landed'.");
     type.field("jumpSound", &PlatformerController::jumpSound).asset("sound");
+    type.field("landSound", &PlatformerController::landSound).asset("sound");
+    type.field("jumpEffect", &PlatformerController::jumpEffect)
+        .asset("prefab")
+        .tooltip("Effect prefab spawned at the feet when a jump starts (dust).");
+    type.field("landEffect", &PlatformerController::landEffect)
+        .asset("prefab")
+        .tooltip("Effect prefab spawned at the feet after a landing.");
     type.field("grounded", &PlatformerController::grounded_).readOnly();
 }
 
@@ -105,9 +131,15 @@ void PlatformerController::onFixedUpdate(GameContext &context, float seconds) {
     const auto state = world.state(*body);
     if (!state)
         return;
-    const Keyboard &keyboard = context.keyboard();
-    const float move = (keyboard.state(rightKey).held ? 1.0F : 0.0F) -
-                       (keyboard.state(leftKey).held ? 1.0F : 0.0F);
+    // Input: a character with no PlayerInput (or a disabled one) simply stands still.
+    const auto *player = entity().get<PlayerInput>();
+    float move = 0.0F;
+    ButtonState jump;
+    if (player && player->enabled) {
+        const ActionInput &input = context.input();
+        move = input.axis(player->actionSet, moveLeftAction, moveRightAction);
+        jump = input.state(player->actionSet, jumpAction);
+    }
     const float cosMaxSlope = std::cos(degreesToRadians(maxSlopeDegrees));
 
     Vec2 velocity = state.value().linearVelocity;
@@ -127,12 +159,32 @@ void PlatformerController::onFixedUpdate(GameContext &context, float seconds) {
         if (dot(velocity - reference, ground.normal) > std::clamp(0.5F * jumpSpeed, 1.0F, 2.5F))
             ground.found = false;
     }
+    // Just left the ground without jumping: over a ramp crest or down a slope the surface falls
+    // away faster than gravity pulls, so look for walkable ground a short way below and stay on it.
+    float snapDistance = 0.0F;
+    if (!ground.found && hadGround_ && !jumping_ && groundSnap > 0.0F) {
+        if (const auto *collider = entity().get<Collider>()) {
+            const physics::QueryFilter filter{context.layers().categoryBits(collider->layer),
+                                              UINT64_MAX};
+            const Vec2 feet = feetOf(entity());
+            const float reach = groundSnap + 0.05F;
+            const auto hit = world.rayCast(feet - Vec2{0.0F, 0.05F}, {0.0F, reach + 0.05F}, filter);
+            if (hit && hit.value() && -hit.value()->normal.y >= cosMaxSlope) {
+                snapDistance = std::max(0.0F, hit.value()->fraction * (reach + 0.05F) - 0.05F);
+                if (snapDistance <= groundSnap) {
+                    ground.found = true;
+                    ground.normal = hit.value()->normal;
+                    ground.velocity = {};
+                }
+            }
+        }
+    }
+    hadGround_ = ground.found;
     wasGrounded_ = ground.found;
     lastGroundVelocity_ = ground.found ? ground.velocity : Vec2{};
     grounded_ = ground.found;
     coyote_ = grounded_ ? coyoteTime : std::max(0.0F, coyote_ - seconds);
-    jumpBuffer_ =
-        keyboard.state(jumpKey).pressed ? jumpBufferTime : std::max(0.0F, jumpBuffer_ - seconds);
+    jumpBuffer_ = jump.pressed ? jumpBufferTime : std::max(0.0F, jumpBuffer_ - seconds);
     const float target = move * moveSpeed;
 
     Vec2 next = velocity;
@@ -142,6 +194,8 @@ void PlatformerController::onFixedUpdate(GameContext &context, float seconds) {
         const float along = dot(velocity - ground.velocity, tangent);
         const float rate = move != 0.0F ? groundAcceleration : groundDeceleration;
         next = ground.velocity + tangent * approach(along, target, rate * seconds);
+        if (snapDistance > 0.001F) // Close the gap to the surface within a tick or two.
+            next -= ground.normal * std::min(snapDistance / seconds, 8.0F);
         jumping_ = false;
     } else {
         // Right after losing the ground without jumping (a seam, a ledge), keep ground-style
@@ -155,14 +209,17 @@ void PlatformerController::onFixedUpdate(GameContext &context, float seconds) {
 
     const auto *rigid = entity().get<RigidBody>();
     const float baseGravity = rigid ? rigid->gravityScale : 1.0F;
+    bool jumpedNow = false;
     if (jumpBuffer_ > 0.0F && coyote_ > 0.0F) {
         next.y = (grounded_ ? ground.velocity.y : 0.0F) - jumpSpeed;
         jumpBuffer_ = coyote_ = 0.0F;
         grounded_ = false;
         jumping_ = true;
+        jumpedNow = true;
+        spawnEffect(context, jumpEffect, feetOf(entity()));
         if (!jumpSound.path.empty())
             context.audio().play(jumpSound.path);
-    } else if (keyboard.state(jumpKey).released && jumping_ && next.y < 0.0F) {
+    } else if (jump.released && jumping_ && next.y < 0.0F) {
         next.y *= jumpCutMultiplier;
     }
     next.y = std::min(next.y, maxFallSpeed);
@@ -183,10 +240,38 @@ void PlatformerController::onFixedUpdate(GameContext &context, float seconds) {
 
     if (move != 0.0F)
         facing_ = move > 0.0F ? 1 : -1;
-    if (auto *sprite = entity().get<SpriteRenderer>())
-        sprite->flipX = facing_ < 0;
-    if (auto *animator = entity().get<SpriteAnimator>())
-        animator->play(!grounded_ ? (next.y < 0.0F ? "jump" : "fall")
-                                  : (std::fabs(move) > 0.0F ? "run" : "idle"));
+    // With an AnimatedSprite the animation system mirrors the sprite from the `facing` parameter;
+    // a plain sprite is mirrored here so a static character still faces where it walks.
+    if (!entity().has<AnimatedSprite>())
+        if (auto *sprite = entity().get<SpriteRenderer>())
+            sprite->flipX = facing_ < 0;
+    // Landing: touching down after a real fall (also drives the `landed` animation trigger).
+    const bool landedNow = grounded_ && !wasGroundedForAnimation_ && fallSpeed_ >= landingSpeed;
+    if (landedNow) {
+        if (!landSound.path.empty())
+            context.audio().play(landSound.path);
+        spawnEffect(context, landEffect, feetOf(entity()));
+    }
+    if (auto *animated = entity().get<AnimatedSprite>()) {
+        // What the body really did last tick (not what was commanded), so pushing against a wall
+        // does not look like running.
+        const float alongGround = std::fabs(velocity.x - (ground.found ? ground.velocity.x : 0.0F));
+        animated->setFloat("speed", alongGround);
+        animated->setFloat("speedRatio", moveSpeed > 0.0F ? alongGround / moveSpeed : 0.0);
+        animated->setFloat("moveInput", move);
+        animated->setFloat("velocityY", velocity.y);
+        animated->setBool("grounded", grounded_);
+        animated->setFloat("facing", facing_);
+        if (jumpedNow)
+            animated->trigger("jumped");
+        // A landing counts only after a real fall, so stepping off a curb does not squash.
+        if (landedNow)
+            animated->trigger("landed");
+    }
+    if (!grounded_)
+        fallSpeed_ = std::max(fallSpeed_, velocity.y);
+    else
+        fallSpeed_ = 0.0F;
+    wasGroundedForAnimation_ = grounded_;
 }
 } // namespace yk

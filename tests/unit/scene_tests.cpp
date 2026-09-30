@@ -216,6 +216,37 @@ void hierarchy() {
     CHECK(fixed.id() == EntityId{77});
 }
 
+// orderedIds() is the cached form of hierarchyOrder(): same order, rebuilt after every structural
+// change (a stale cache would make the renderer or runtime skip or repeat entities).
+void cachedOrder() {
+    auto registry = makeRegistry();
+    Scene scene(registry, 6);
+    const auto matches = [&] { return scene.orderedIds() == scene.hierarchyOrder(); };
+    CHECK(scene.orderedIds().empty());
+    Entity &a = scene.createEntity("A");
+    CHECK(scene.orderedIds().size() == 1 && matches());
+    Entity &b = scene.createEntity("B");
+    Entity &a1 = scene.createEntity("A1", a.id());
+    CHECK(scene.orderedIds().size() == 3 && matches());
+    CHECK(scene.orderedIds()[0] == a.id() && scene.orderedIds()[1] == a1.id() &&
+          scene.orderedIds()[2] == b.id());
+    // Reparenting, reordering and destroying each invalidate it.
+    CHECK(scene.setParent(b.id(), a.id(), 0));
+    CHECK(matches() && scene.orderedIds()[1] == b.id());
+    CHECK(scene.setSiblingIndex(b.id(), 1));
+    CHECK(matches() && scene.orderedIds()[2] == b.id());
+    CHECK(scene.destroy(a1.id()));
+    CHECK(matches() && scene.orderedIds().size() == 2);
+    CHECK(scene.findByName("B") == &b && !scene.findByName("A1"));
+    // A copy taken earlier is unaffected by later changes (callers rely on that while iterating).
+    const auto snapshot = scene.hierarchyOrder();
+    scene.createEntity("C");
+    CHECK(snapshot.size() == 2 && scene.orderedIds().size() == 3);
+    // Repeated calls without changes give the very same storage (no rebuild).
+    const auto *first = scene.orderedIds().data();
+    CHECK(scene.orderedIds().data() == first);
+}
+
 void transforms() {
     auto registry = makeRegistry();
     Scene scene(registry, 3);
@@ -549,6 +580,142 @@ void prefabs() {
           !loadPrefabDocument(file.parent_path() / "none.ykprefab"));
     std::filesystem::remove_all(file.parent_path());
 }
+
+void prefabSources() {
+    auto registry = makeRegistry();
+    Scene scene(registry, 300);
+    Entity &root = scene.createEntity("Thing");
+    scene.createEntity("Part", root.id()).add<Widget>();
+    const Json prefab = subtreeToJson(scene, root.id());
+    CHECK(!prefab.get("entities").at(0).contains("prefab")); // An ordinary entity is no instance.
+
+    const std::string path = "prefabs/thing.ykprefab";
+    auto placed = instantiateSubtree(scene, prefab, {}, Vec2{3, 4}, false, path);
+    CHECK(placed);
+    Entity *instance = scene.find(placed.value());
+    CHECK(instance && instance->prefabSource() == path);
+    CHECK(instance && scene.find(instance->childIds()[0])->prefabSource().empty()); // Root only.
+    CHECK(root.prefabSource().empty());
+
+    // The scene file keeps the link and loads it back.
+    const Json document = sceneToJson(scene);
+    auto reloaded = sceneFromJson(document, registry);
+    CHECK(reloaded && reloaded.value()->find(placed.value()) &&
+          reloaded.value()->find(placed.value())->prefabSource() == path);
+    CHECK(reloaded && reloaded.value()->find(root.id())->prefabSource().empty());
+    Json broken = document;
+    for (std::size_t i = 0; i < broken.get("entities").size(); ++i)
+        if (broken.get("entities").at(i).get("id").asString() == toString(placed.value()))
+            broken.find("entities")->at(i).set("prefab", 5);
+    CHECK(!sceneFromJson(broken, registry)); // A prefab reference must be a string.
+
+    // Locking is an editor hint saved with the scene; it covers everything below the entity.
+    Entity &locker = scene.createEntity("Locker");
+    Entity &locked = scene.createEntity("Locked Child", locker.id());
+    CHECK(!locked.lockedInHierarchy());
+    locker.setLocked(true);
+    CHECK(locked.lockedInHierarchy() && !locked.locked());
+    auto withLock = sceneFromJson(sceneToJson(scene), registry);
+    CHECK(withLock && withLock.value()->find(locker.id())->locked() &&
+          withLock.value()->find(locked.id())->lockedInHierarchy());
+    CHECK(!sceneToJson(scene).get("entities").at(0).contains("locked"));
+    locker.setLocked(false);
+
+    // A copy of an instance stays an instance; a prefab saved from an instance names nothing.
+    const Json copy = subtreeToJson(scene, placed.value());
+    CHECK(copy.get("entities").at(0).get("prefab").asString() == path);
+    auto duplicate = instantiateSubtree(scene, copy, {}, std::nullopt, true);
+    CHECK(duplicate && scene.find(duplicate.value())->prefabSource() == path);
+    const auto file =
+        std::filesystem::temp_directory_path() / "yk-prefab-source-test" / "again.ykprefab";
+    CHECK(savePrefab(scene, placed.value(), file));
+    auto saved = loadPrefabDocument(file);
+    CHECK(saved && !saved.value().get("entities").at(0).contains("prefab"));
+    std::filesystem::remove_all(file.parent_path());
+}
+void reapplyingPrefabs() {
+    auto registry = makeRegistry();
+    // The prefab: a gate with two parts; the gate's widget points at one of its own parts.
+    Scene template_(registry, 400);
+    Entity &gate = template_.createEntity("Gate");
+    gate.add<Widget>().label = "from the prefab";
+    Entity &handle = template_.createEntity("Handle", gate.id());
+    handle.add<Widget>().count = 2;
+    template_.createEntity("Latch", gate.id());
+    gate.get<Widget>()->target = handle.id();
+    const Json prefab = subtreeToJson(template_, gate.id());
+    const std::string source = "prefabs/gate.ykprefab";
+
+    // A level with the gate placed in it, a lever that points at the gate and a door beside it.
+    Scene level(registry, 401);
+    Entity &door = level.createEntity("Door");
+    Entity &lever = level.createEntity("Lever");
+    auto placed = instantiateSubtree(level, prefab, {}, Vec2{5, 6}, false, source);
+    CHECK(placed);
+    const EntityId gateId = placed.value();
+    lever.add<Widget>().target = gateId;
+
+    // The designer's changes to this one instance: a new name, tag and rotation on the root, a
+    // changed label, a wire to the door, an edited part and a deleted part.
+    Entity *instance = level.find(gateId);
+    instance->setName("Front Gate");
+    instance->addTag("front");
+    instance->transform().rotationDegrees = 30.0F;
+    instance->get<Widget>()->label = "edited";
+    instance->get<Widget>()->targets.push_back(door.id());
+    Entity *editedHandle = level.findByName("Handle");
+    CHECK(editedHandle);
+    editedHandle->get<Widget>()->count = 9;
+    const EntityId oldHandle = editedHandle->id();
+    Entity *latch = level.findByName("Latch");
+    CHECK(latch);
+    level.destroy(latch->id());
+    CHECK(instance->childIds().size() == 1);
+    const std::size_t entitiesBefore = level.size();
+
+    CHECK(reapplyPrefab(level, gateId, prefab, source));
+    instance = level.find(gateId);
+    CHECK(instance); // The root is the same entity, so the lever's link is still good.
+    CHECK(level.find(lever.id())->get<Widget>()->target == gateId);
+    // Identity and place stay; content comes from the prefab.
+    CHECK(instance->name() == "Front Gate" && instance->hasTag("front"));
+    CHECK(instance->transform().position == Vec2(5, 6) &&
+          instance->transform().rotationDegrees == 30.0F);
+    CHECK(instance->prefabSource() == source);
+    CHECK(instance->get<Widget>()->label == "from the prefab");
+    CHECK(instance->childIds().size() == 2 && level.size() == entitiesBefore + 1);
+    Entity *newHandle = level.findByName("Handle");
+    CHECK(newHandle && newHandle->id() != oldHandle && newHandle->get<Widget>()->count == 2);
+    CHECK(level.findByName("Latch") != nullptr);
+    // The gate's link to its own part now points at the new part; the wire to the door survived.
+    CHECK(newHandle && instance->get<Widget>()->target == newHandle->id());
+    CHECK(instance->get<Widget>()->targets.size() == 1 &&
+          instance->get<Widget>()->targets[0] == door.id());
+    CHECK(level.find(door.id()) && level.find(lever.id()));
+
+    // An invalid prefab changes nothing.
+    Json broken = prefab;
+    broken.set("format", "nope");
+    const std::size_t count = level.size();
+    CHECK(!reapplyPrefab(level, gateId, broken, source));
+    CHECK(level.size() == count && level.find(gateId)->childIds().size() == 2);
+    CHECK(!reapplyPrefab(level, EntityId{0x99}, prefab, source));
+
+    // A prefab that points at its own root: after the update the reference means the reused root.
+    Scene loop(registry, 402);
+    Entity &owner = loop.createEntity("Owner");
+    owner.add<Widget>();
+    Entity &child = loop.createEntity("Child", owner.id());
+    child.add<Widget>().target = owner.id();
+    const Json loopPrefab = subtreeToJson(loop, owner.id());
+    Scene home(registry, 403);
+    auto instantiated =
+        instantiateSubtree(home, loopPrefab, {}, std::nullopt, false, "prefabs/o.ykprefab");
+    CHECK(instantiated);
+    CHECK(reapplyPrefab(home, instantiated.value(), loopPrefab, "prefabs/o.ykprefab"));
+    const Entity *reusedChild = home.findByName("Child");
+    CHECK(reusedChild && reusedChild->get<Widget>()->target == instantiated.value());
+}
 } // namespace
 
 int main() {
@@ -556,10 +723,13 @@ int main() {
     registration();
     reflection();
     hierarchy();
+    cachedOrder();
     transforms();
     components();
     serialization();
     malformedScenes();
     prefabs();
+    prefabSources();
+    reapplyingPrefabs();
     return yk::test::finish("scene");
 }

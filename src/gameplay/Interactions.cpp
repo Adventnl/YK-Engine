@@ -19,44 +19,74 @@ bool hasAnyTag(const Entity &entity, const std::vector<std::string> &tags) {
 
 // ----- Killable -----
 void Killable::describe(TypeBuilder<Killable> &type) {
-    type.category("Gameplay").description("Can be killed by hazards; comes back after a delay.");
+    type.category("Gameplay")
+        .description(
+            "Can be killed by hazards; plays its death animation, then comes back after a delay.");
     type.field("respawn", &Killable::respawn);
     type.field("respawnDelay", &Killable::respawnDelay).range(0, 60, 0.1);
+    type.field("deathDuration", &Killable::deathDuration)
+        .range(0, 60, 0.05)
+        .tooltip("Seconds the sprite stays visible after dying, for a death animation.");
     type.field("spawnPoint", &Killable::spawnPoint)
         .tooltip("Return here; otherwise the last checkpoint, else the start.");
     type.field("deathSound", &Killable::deathSound).asset("sound");
     type.field("respawnSound", &Killable::respawnSound).asset("sound");
+    type.field("deathEffect", &Killable::deathEffect)
+        .asset("prefab")
+        .tooltip("Effect prefab spawned where it dies.");
+    type.field("respawnEffect", &Killable::respawnEffect)
+        .asset("prefab")
+        .tooltip("Effect prefab spawned where it returns.");
     type.field("alive", &Killable::alive_).readOnly();
 }
 void Killable::onStart(GameContext &) {
     home_ = entity().worldPosition();
+    if (auto *animated = entity().get<AnimatedSprite>())
+        animated->setBool("dead", false);
 }
 void Killable::setRespawnPoint(Vec2 worldPosition) {
     checkpoint_ = worldPosition;
     hasCheckpoint_ = true;
 }
-void Killable::setPresent(bool present) {
+void Killable::setSolid(bool solid) {
     if (auto *body = entity().get<RigidBody>())
-        body->enabled = present;
+        body->enabled = solid;
     for (Collider *collider : entity().getAll<Collider>())
-        collider->enabled = present;
+        collider->enabled = solid;
+}
+void Killable::setVisible(bool visible) {
     for (const EntityId id : entity().scene().subtree(entity().id()))
         if (Entity *node = entity().scene().find(id))
             for (SpriteRenderer *sprite : node->getAll<SpriteRenderer>())
-                sprite->visible = present;
+                sprite->visible = visible;
 }
 void Killable::kill(GameContext &context, EntityId killer) {
     if (!alive_)
         return;
     alive_ = false;
     timer_ = respawnDelay;
-    setPresent(false);
+    dying_ = deathDuration > 0.0F;
+    dyingTimer_ = deathDuration;
+    setSolid(false);
+    setVisible(dying_); // Stays for the death animation, if there is one.
+    if (auto *animated = entity().get<AnimatedSprite>())
+        animated->setBool("dead", true);
     play(context, deathSound);
+    spawnEffect(context, deathEffect, entity().worldPosition());
     context.blackboard().add("deaths", 1);
     context.emit("entity_died", entity().id(), killer);
 }
 void Killable::onFixedUpdate(GameContext &context, float seconds) {
-    if (alive_ || !respawn)
+    if (alive_)
+        return;
+    if (dying_) {
+        dyingTimer_ -= seconds;
+        if (dyingTimer_ <= 0.0F) {
+            dying_ = false;
+            setVisible(false);
+        }
+    }
+    if (!respawn)
         return;
     timer_ -= seconds;
     if (timer_ > 0.0F)
@@ -67,9 +97,16 @@ void Killable::onFixedUpdate(GameContext &context, float seconds) {
     else if (hasCheckpoint_)
         where = checkpoint_;
     alive_ = true;
-    setPresent(true);
+    dying_ = false;
+    setSolid(true);
+    setVisible(true);
     context.teleport(entity(), where);
+    if (auto *animated = entity().get<AnimatedSprite>()) {
+        animated->setBool("dead", false);
+        animated->trigger("respawned");
+    }
     play(context, respawnSound);
+    spawnEffect(context, respawnEffect, where);
     context.emit("entity_respawned", entity().id());
 }
 
@@ -103,6 +140,13 @@ void Collectible::describe(TypeBuilder<Collectible> &type) {
         .tooltip("Blackboard variable to increase (shown by UI text as {name}).");
     type.field("value", &Collectible::value).range(-1000, 1000, 0.5);
     type.field("sound", &Collectible::sound).asset("sound");
+    type.field("collectEffect", &Collectible::collectEffect)
+        .asset("prefab")
+        .tooltip("Effect prefab spawned where it is picked up.");
+}
+void Collectible::onStart(GameContext &context) {
+    if (!variable.empty())
+        context.blackboard().add(variable + "_total", static_cast<double>(value));
 }
 void Collectible::onTriggerEnter(GameContext &context, Entity &other) {
     if (!entity().active() || !matchesActivator(other, collectorTags))
@@ -111,6 +155,7 @@ void Collectible::onTriggerEnter(GameContext &context, Entity &other) {
         return;
     context.blackboard().add(variable, static_cast<double>(value));
     play(context, sound);
+    spawnEffect(context, collectEffect, entity().worldPosition());
     context.emit("collected", entity().id(), other.id());
     entity().setActive(false);
 }
@@ -131,7 +176,9 @@ void Checkpoint::onTriggerEnter(GameContext &context, Entity &other) {
     if (!killable || !matchesActivator(other, activatorTags))
         return;
     killable->setRespawnPoint(entity().worldPosition() + respawnOffset);
-    if (auto *sprite = entity().get<SpriteRenderer>())
+    if (auto *animated = entity().get<AnimatedSprite>())
+        animated->setBool("reached", true); // Art shows the reached state through its controller.
+    else if (auto *sprite = entity().get<SpriteRenderer>())
         sprite->color = activeColor;
     play(context, sound);
     context.emit("checkpoint_reached", entity().id(), other.id());
@@ -174,7 +221,9 @@ void Goal::onStart(GameContext &context) {
     sendSignal(context.scene(), entity().id(), targets, false);
 }
 void Goal::applyVisuals() {
-    if (auto *sprite = entity().get<SpriteRenderer>())
+    if (auto *animated = entity().get<AnimatedSprite>())
+        animated->setBool("satisfied", satisfied_); // Art shows it through its controller.
+    else if (auto *sprite = entity().get<SpriteRenderer>())
         sprite->color = satisfied_ ? satisfiedColor : baseColor_;
 }
 void Goal::onFixedUpdate(GameContext &context, float) {

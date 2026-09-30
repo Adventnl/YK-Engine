@@ -1,0 +1,68 @@
+{
+  "format": "yk.prefab",
+  "version": 1,
+  "root": "4c97d5bdae582024",
+  "entities": [
+    {
+      "id": "4c97d5bdae582024",
+      "name": "Crate",
+      "tags": ["crate"],
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/mechanisms/crate.png",
+            "shape": "Rectangle",
+            "size": [1, 1],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 35,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Dynamic",
+            "gravityScale": 1,
+            "linearDamping": 0,
+            "angularDamping": 0.05,
+            "fixedRotation": true,
+            "bullet": false,
+            "allowSleep": true
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.96, 0.96],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Prop",
+            "friction": 0.9,
+            "restitution": 0,
+            "density": 0.8
+          }
+        }
+      ]
+    }
+  ]
+}

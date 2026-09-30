@@ -57,6 +57,10 @@ class Scene {
     // Depth-first, parents before children, siblings in order. The list is a snapshot, so callbacks
     // may create or destroy entities; destroyed entities are skipped.
     std::vector<EntityId> hierarchyOrder() const;
+    // The same order without a copy. Rebuilt only when the hierarchy changes; the reference is
+    // valid until the next structural change, so use it for read-only passes (rendering, queries),
+    // never across code that may create, destroy or reparent entities.
+    const std::vector<EntityId> &orderedIds() const;
     void forEach(const std::function<void(Entity &)> &visit);
     void forEach(const std::function<void(const Entity &)> &visit) const;
     // The entity and all descendants, depth-first.
@@ -80,5 +84,7 @@ class Scene {
     std::unordered_map<EntityId, std::unique_ptr<Entity>> entities_;
     std::vector<EntityId> roots_;
     std::uint64_t revision_{};
+    mutable std::vector<EntityId> order_;
+    mutable std::uint64_t orderRevision_{~std::uint64_t{0}};
 };
 } // namespace yk

@@ -13,7 +13,7 @@ Status drawAsPlayed(Renderer &renderer, SceneRenderer &sceneRenderer, const Scen
                      scene.settings.background, options.target};
     if (auto status = renderer.beginPass(world); !status)
         return status;
-    Status drawn = sceneRenderer.drawWorld(renderer, scene);
+    Status drawn = sceneRenderer.drawWorld(renderer, scene, {world.camera, viewport.size, true});
     if (drawn && options.colliders)
         drawn = sceneRenderer.drawColliders(renderer, scene);
     if (drawn && options.physicsDebug && physics)

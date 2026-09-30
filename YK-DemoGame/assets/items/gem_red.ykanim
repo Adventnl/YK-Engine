@@ -1,0 +1,15 @@
+{
+  "format": "yk.animation",
+  "version": 2,
+  "texture": "assets/items/gem_red.png",
+  "columns": 4,
+  "rows": 1,
+  "clips": [
+    {
+      "name": "shine",
+      "first": 0,
+      "count": 4,
+      "fps": 6
+    }
+  ]
+}

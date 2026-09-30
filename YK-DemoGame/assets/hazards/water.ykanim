@@ -1,0 +1,15 @@
+{
+  "format": "yk.animation",
+  "version": 2,
+  "texture": "assets/hazards/water.png",
+  "columns": 4,
+  "rows": 1,
+  "clips": [
+    {
+      "name": "flow",
+      "first": 0,
+      "count": 4,
+      "fps": 6
+    }
+  ]
+}

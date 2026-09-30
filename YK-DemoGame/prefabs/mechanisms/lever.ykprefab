@@ -1,0 +1,79 @@
+{
+  "format": "yk.prefab",
+  "version": 1,
+  "root": "23472b3e2099f66a",
+  "entities": [
+    {
+      "id": "23472b3e2099f66a",
+      "name": "Lever",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/mechanisms/lever.png",
+            "shape": "Rectangle",
+            "size": [1, 1.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 3,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/mechanisms/lever.ykanim",
+            "controller": "assets/mechanisms/lever.ykctl",
+            "clip": "",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.9, 1.2],
+            "offset": [0, 0.15],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1
+          }
+        },
+        {
+          "type": "Lever",
+          "properties": {
+            "targets": [],
+            "activatorTags": [],
+            "interactAction": "Interact",
+            "startsOn": false,
+            "cooldown": 0.4,
+            "onColor": "#5adc6eff",
+            "sound": "assets/audio/lever.wav"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -34,6 +34,11 @@ bool matchesActivator(const Entity &entity, const std::vector<std::string> &tags
     return body && body->type != RigidBodyType::Static;
 }
 
+void spawnEffect(GameContext &context, const AssetRef &prefab, Vec2 worldPosition) {
+    if (!prefab.path.empty())
+        context.spawnPrefab(prefab.path, worldPosition); // Failure is reported once by the runtime.
+}
+
 void moveKinematic(GameContext &context, Entity &entity, Vec2 worldTarget) {
     const auto body = context.bodyOf(entity.id());
     const auto *rigid = entity.get<RigidBody>();
