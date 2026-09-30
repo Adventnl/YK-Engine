@@ -38,10 +38,13 @@ CI run 15, commit `6a6e139`: all three jobs green.
 
 | Check | Result |
 |---|---|
-| `ctest` on `release` (39 tests) | all passed (the two that failed once did so because I had started a second `ctest` on the same tree at the same time; run alone they pass) |
-| `scripts/verify.sh headless clang asan dev` after the last code change | see the note at the end of this section |
+| `ctest` on `dev` (Debug, GCC 13) | 39 of 39 passed (about 12 minutes) |
+| `ctest` on `release` | 39 of 39 passed (about 4 minutes) |
+| `ctest` on `asan` (address + undefined behavior sanitizers, including the editor UI scripts, the crash test and the bundle test) | 39 of 39 passed (about 17 minutes) |
+| `ctest` on `clang` (Clang 18 and libc++, what a Mac uses; sign conversions count as errors) | 39 of 39 passed. This preset found a sign conversion in the crash handler that Apple's headers hide (fixed in `6a6e139`). |
+| `ctest` on `headless` (`YK_RUNTIME=OFF`: no SDL, no window; the tests that need none) | 18 of 18 passed (run before the one-line crash-handler cast fix; that code is compiled in this preset too but the fix does not change behavior) |
 | `format-check` (clang-format over the tree), `git diff --check` | clean |
-| Windows cross-build (MinGW-w64) under Wine (previous pass; the Windows-specific code changed little since) | `scripts/verify-windows.sh`: everything passed |
+| Windows cross-build (MinGW-w64) under Wine | passed in the previous pass (`scripts/verify-windows.sh`); not re-run in this one, the native MSVC run above replaces it |
 | The installed programs work where they were put | part of the `install` test |
 | A game with C++ of its own | `game_module*`, `editor_game_module` |
 | A 41,500-entity scene (40,000 sprites, 1,500 falling boxes) | Release, one 2.1 GHz Xeon core: building about 20 ms, drawing a frame about 8 ms (view culling skips 39,411 of 40,000 sprites), one physics step with 1,500 active bodies about 22 ms; a scene that must hold 60 Hz should keep its simultaneously active bodies to a few hundred. |
