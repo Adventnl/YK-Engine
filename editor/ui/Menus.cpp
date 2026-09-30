@@ -1,4 +1,5 @@
 #include "ui/Panels.hpp"
+#include "yk/core/FileIO.hpp"
 #include "yk/core/Log.hpp"
 #include <SDL3/SDL.h>
 #include <algorithm>
@@ -9,7 +10,8 @@ namespace {
 // A menu entry that records where it is under "menu/<path>" for scripts and tests.
 bool item(const std::string &path, const char *label, const char *shortcut = nullptr,
           bool enabled = true, bool selected = false) {
-    const bool clicked = ImGui::MenuItem(label, shortcut, selected, enabled);
+    const bool clicked =
+        ImGui::MenuItem(label, shortcut ? shortcutText(shortcut) : nullptr, selected, enabled);
     markItem("menu/" + path);
     return clicked;
 }
@@ -292,6 +294,8 @@ void menuBuild(EditorState &state) {
         openDialog(state, DialogKind::Export);
     if (item("Build/Run in Player", "Run in Player", "Ctrl+F5", hasProject && !state.playing()))
         runInPlayer(state);
+    if (item("Build/Stop Player", "Stop Player", nullptr, state.playerProcessRunning()))
+        state.stopPlayerProcesses();
     ImGui::Separator();
     if (item("Build/Build and Run", "Build and Run Panel", "Ctrl+Shift+B")) {
         state.layout.sideView = SideView::Build;
@@ -329,35 +333,20 @@ void menuDebug(EditorState &state) {
 void menuHelp(EditorState &state) {
     if (item("Help/Keyboard Shortcuts", "Keyboard Shortcuts"))
         openDialog(state, DialogKind::Shortcuts);
+    std::error_code error;
+    const bool hasLogs = !state.options.logDirectory.empty() &&
+                         std::filesystem::is_directory(state.options.logDirectory, error);
+    if (item("Help/Open Logs Folder", "Open Logs Folder", nullptr, hasLogs)) {
+        const std::string url = toFileUrl(state.options.logDirectory);
+        SDL_OpenURL(url.c_str());
+    }
     if (item("Help/About", "About YK Engine"))
         openDialog(state, DialogKind::About);
 }
 } // namespace
 
 Status runInPlayer(EditorState &state) {
-    if (!state.project)
-        return Error{"No project is open"};
-    const std::filesystem::path player = state.playerExecutable();
-    std::error_code error;
-    if (!std::filesystem::exists(player, error)) {
-        const std::string reason =
-            "The player was not found next to the editor (" + player.string() + ")";
-        state.message("Cannot run the game", reason);
-        return Error{reason};
-    }
-    const std::string executable = player.string();
-    const std::string project = state.project->project().root.string();
-    const char *arguments[] = {executable.c_str(), "--project", project.c_str(), nullptr};
-    SDL_Process *process = SDL_CreateProcess(arguments, false);
-    if (!process) {
-        const std::string reason = std::string("Cannot start the player: ") + SDL_GetError();
-        state.message("Cannot run the game", reason);
-        return Error{reason};
-    }
-    SDL_DestroyProcess(process); // The game keeps running on its own; only our handle goes away.
-    state.addOutput(LogLevel::Info, "Started " + executable + " --project " + project);
-    log(LogLevel::Info, "editor", "Started the game in the standalone player");
-    return success();
+    return state.startPlayerProcess();
 }
 
 void drawMenus(EditorState &state) {

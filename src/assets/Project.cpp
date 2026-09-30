@@ -112,6 +112,10 @@ Json BuildSettings::toJson() const {
     json.set("executable", executable);
     json.set("version", version);
     json.set("identifier", identifier);
+    if (!icon.empty())
+        json.set("icon", icon);
+    if (!copyright.empty())
+        json.set("copyright", copyright);
     Json list = Json::array();
     for (const std::string &path : exclude)
         list.push(path);
@@ -135,7 +139,9 @@ Result<BuildSettings> BuildSettings::fromJson(const Json &json) {
          {std::pair<const char *, std::string *>{"productName", &settings.productName},
           {"executable", &settings.executable},
           {"version", &settings.version},
-          {"identifier", &settings.identifier}})
+          {"identifier", &settings.identifier},
+          {"icon", &settings.icon},
+          {"copyright", &settings.copyright}})
         if (auto status = text(key, *into); !status)
             return Error{status.error()};
     for (const Json &path : json.get("exclude").items()) {

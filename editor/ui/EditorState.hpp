@@ -9,6 +9,7 @@
 #include "yk/graphics/GameView.hpp"
 #include "yk/graphics/Renderer.hpp"
 #include "yk/graphics/SceneRenderer.hpp"
+#include <chrono>
 #include <filesystem>
 #include <functional>
 #include <map>
@@ -19,6 +20,7 @@
 #include <vector>
 
 struct SDL_Window;
+struct SDL_Process;
 
 namespace yk::editor {
 struct EditorOptions {
@@ -28,9 +30,17 @@ struct EditorOptions {
     bool audio{true};
     bool testHooks{false}; // Record widget rectangles so a scripted driver can find them.
     bool persistLayout{true};
+    float uiScale{
+        0.0F}; // The size of the whole interface; 0 follows the display (2 on a Retina Mac).
     // Play advances exactly one 1/60 s tick per editor frame, however long the frame took, so a
     // scripted run is deterministic (a script's "hold d 45" is 0.75 s of game time on any machine).
     bool fixedStep{false};
+    // Diagnostics (set by the host, see yk/core/Diagnostics.hpp): where the log and crash reports
+    // are, and whether the last session ended badly, so the editor can say so.
+    std::filesystem::path logDirectory;
+    bool previousSessionCrashed{false};
+    std::filesystem::path previousCrashReport;
+    std::string debugCrash; // Test hook: crash on purpose after a few frames.
 };
 
 // A panel that shows a render target: the scene view or the game view.
@@ -116,6 +126,9 @@ struct DialogState {
     std::string exportPlayer; // Player program override; empty: the one found for the target.
     bool exportZip{true};
     bool exportReplace{};
+    bool exportSign{true};      // macOS target on a Mac: sign the app.
+    std::string exportIdentity; // Signing identity; empty: ad hoc.
+    bool exportDmg{};           // macOS target on a Mac: also write a .dmg.
     // A folder the Message dialog offers to show in the file manager.
     std::filesystem::path revealPath;
     // The Rename or Move dialog: the file or folder being moved (`text` holds the new path).
@@ -144,11 +157,23 @@ struct OutputLine {
     std::string text;
 };
 
+// A program the editor started (Debug > Run in Player). The editor owns it: it is watched every
+// frame, can be stopped from the Debug menu and is ended when the editor closes, so no game is left
+// running behind a closed editor.
+struct ChildProcess {
+    SDL_Process *handle{};
+    std::string name;
+    std::chrono::steady_clock::time_point started;
+};
+
 // Everything the editor knows at run time, and the actions that change it. Panels read this and
 // call the actions; the actions never draw anything.
 class EditorState {
   public:
     EditorState(const ComponentRegistry &registry, EditorOptions options);
+    ~EditorState();
+    EditorState(const EditorState &) = delete;
+    EditorState &operator=(const EditorState &) = delete;
 
     const ComponentRegistry &registry;
     EditorOptions options;
@@ -287,6 +312,16 @@ class EditorState {
     Result<ExportReport> exportGame(ExportOptions request);
     // Runs `action` now, or after the user decides what to do with unsaved changes.
     void guarded(std::function<void()> action);
+
+    // Runs the open project in the standalone player, as a process the editor keeps track of (a
+    // player already started from here is ended first). Errors are reported in a dialog.
+    Status startPlayerProcess();
+    // Asks the players to close, then ends any that are still running after a moment.
+    void stopPlayerProcesses();
+    bool playerProcessRunning() const {
+        return !children.empty();
+    }
+    std::vector<ChildProcess> children;
 
     // Play mode.
     void startPlay();

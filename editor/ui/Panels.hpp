@@ -23,6 +23,9 @@ Status runInPlayer(EditorState &state);
 
 void hierarchyPanel(EditorState &state);
 void inspectorPanel(EditorState &state);
+// The Inspector's Debug tab: the running game's variables, timing and the inspected entity's live
+// state (DebugPanel.cpp).
+void debugPanel(EditorState &state);
 // The Inspector's view of the file picked in the Explorer (AssetInspector.cpp).
 void assetInspector(EditorState &state);
 void sceneViewPanel(EditorState &state);

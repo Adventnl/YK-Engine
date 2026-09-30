@@ -1,6 +1,5 @@
 #include "WorldImpl.hpp"
 #include <algorithm>
-#include <numbers>
 
 namespace yk::physics {
 namespace {
@@ -138,7 +137,6 @@ Result<std::vector<DebugLine>> World::debugLines(unsigned circleSegments) const 
     std::vector<DebugLine> result;
     std::vector<Vec2> points;
     points.reserve(circleSegments + 2);
-    constexpr float pi = std::numbers::pi_v<float>;
     for (const auto serial : order) {
         const auto &shape = impl_->shapes.at(serial);
         const auto body = impl_->bodies.at(shape.body.serial_).nativeId;

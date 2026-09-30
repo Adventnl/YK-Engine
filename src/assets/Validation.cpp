@@ -1,6 +1,7 @@
 #include "yk/assets/Validation.hpp"
 #include "yk/animation/AnimationController.hpp"
 #include "yk/assets/AssetSource.hpp"
+#include "yk/assets/Icon.hpp"
 #include "yk/components/Components.hpp"
 #include "yk/core/FileIO.hpp"
 #include "yk/core/Log.hpp"
@@ -158,6 +159,32 @@ std::vector<ProjectIssue> validateProject(const Project &project,
                               "start scene '" + project.startScene + "' does not exist"});
     } else {
         issues.push_back({Severity::Warning, Project::fileName, "no start scene is set"});
+    }
+    // The app icon: a real, square PNG (an unusable one would fail only when exporting).
+    if (!project.build.icon.empty()) {
+        const std::string &icon = project.build.icon;
+        if (!fileExists(project, icon)) {
+            issues.push_back(
+                {Severity::Error, Project::fileName, "the app icon '" + icon + "' does not exist"});
+        } else if (auto text = readTextFile(project.resolve(icon).value()); !text) {
+            issues.push_back({Severity::Error, Project::fileName,
+                              "the app icon '" + icon + "' cannot be read: " + text.error()});
+        } else if (auto size = pngSize(text.value()); !size) {
+            issues.push_back({Severity::Error, Project::fileName,
+                              "the app icon '" + icon + "' is " + size.error()});
+        } else if (size.value().width != size.value().height || size.value().width < 128) {
+            issues.push_back({Severity::Error, Project::fileName,
+                              "the app icon '" + icon +
+                                  "' must be square and at least 128 x 128 "
+                                  "pixels (it is " +
+                                  std::to_string(size.value().width) + " x " +
+                                  std::to_string(size.value().height) + ")"});
+        } else if (size.value().width < recommendedIconSize) {
+            issues.push_back({Severity::Warning, Project::fileName,
+                              "the app icon '" + icon + "' is only " +
+                                  std::to_string(size.value().width) +
+                                  " pixels wide; 512 or 1024 looks sharper on a Retina display"});
+        }
     }
     // Standalone asset documents: they must parse, and what they point at must exist.
     for (const AssetEntry &entry : assets) {

@@ -160,13 +160,13 @@ void reflection() {
     CHECK(!property("speed").assign(widget, std::numeric_limits<double>::infinity()) &&
           widget.speed == 5.0F);
     CHECK(property("size").assign(widget, Vec2{500, -3}) &&
-          widget.size == Vec2(100, 0.1F)); // Per-axis clamp.
+          widget.size == Vec2{100, 0.1F}); // Per-axis clamp.
     CHECK(!property("size").assign(widget, Vec2{std::numeric_limits<float>::infinity(), 1}));
     CHECK(property("mode").assign(widget, std::int64_t{2}) && widget.mode == Mode::Gamma);
     CHECK(!property("mode").assign(widget, std::int64_t{3}) &&
           !property("mode").assign(widget, std::int64_t{-1}) && widget.mode == Mode::Gamma);
     CHECK(property("label").assign(widget, std::string("hi")) && widget.label == "hi");
-    CHECK(property("tint").assign(widget, Color{9, 8, 7, 6}) && widget.tint == Color(9, 8, 7, 6));
+    CHECK(property("tint").assign(widget, Color{9, 8, 7, 6}) && widget.tint == Color{9, 8, 7, 6});
     CHECK(property("target").assign(widget, EntityId{5}) && widget.target == EntityId{5});
     CHECK(property("targets").assign(widget, std::vector<EntityId>{{1}, {2}}) &&
           widget.targets.size() == 2);
@@ -376,8 +376,8 @@ void serialization() {
         return;
     Scene &copy = *loaded.value();
     CHECK(copy.size() == scene->size() && copy.settings.name == "Sample" &&
-          copy.settings.gravity == Vec2(0, 20.5F) &&
-          copy.settings.background == Color(10, 20, 30, 255));
+          copy.settings.gravity == Vec2{0, 20.5F} &&
+          copy.settings.background == Color{10, 20, 30, 255});
     CHECK(sceneToJson(copy) == document); // Lossless, including ids and order.
     CHECK(sceneToJson(copy).dump(2) == document.dump(2));
     Entity *kid = copy.findByName("Kid");
@@ -385,7 +385,7 @@ void serialization() {
     CHECK(kid && kid->get<Widget>()->label == "quote\"and\nnewline\xC3\xA9" &&
           kid->get<Widget>()->mode == Mode::Gamma);
     CHECK(kid && kid->get<Widget>()->speed == 0.1F &&
-          kid->get<Widget>()->size == Vec2(3.5F, 0.25F));
+          kid->get<Widget>()->size == Vec2{3.5F, 0.25F});
     CHECK(kid && kid->get<Widget>()->target == kid->parentId() &&
           kid->get<Widget>()->targets.size() == 2);
     CHECK(kid && kid->getAll<Stackable>().size() == 2 && !kid->getAll<Stackable>()[0]->enabled &&
@@ -394,7 +394,7 @@ void serialization() {
     Entity *root = copy.findByName("Root");
     CHECK(root && root->hasTag("solid") && root->hasTag("blue") && root->childIds().size() == 2);
     CHECK(root && root->transform().rotationDegrees == 33.5F &&
-          root->transform().scale == Vec2(2, 0.5F));
+          root->transform().scale == Vec2{2, 0.5F});
     CHECK(document.dump().find("runtimeOnly") ==
           std::string::npos); // Read-only state is not saved.
     CHECK(document.dump(2).find("\"position\": [1.5, -2.25]") != std::string::npos);
@@ -679,7 +679,7 @@ void reapplyingPrefabs() {
     CHECK(level.find(lever.id())->get<Widget>()->target == gateId);
     // Identity and place stay; content comes from the prefab.
     CHECK(instance->name() == "Front Gate" && instance->hasTag("front"));
-    CHECK(instance->transform().position == Vec2(5, 6) &&
+    CHECK(instance->transform().position == Vec2{5, 6} &&
           instance->transform().rotationDegrees == 30.0F);
     CHECK(instance->prefabSource() == source);
     CHECK(instance->get<Widget>()->label == "from the prefab");

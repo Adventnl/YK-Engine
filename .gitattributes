@@ -1,0 +1,12 @@
+# Files are LF in the working tree on every system. Some tests compare bytes (the generated
+# component reference, formatted project files) and exports must not depend on a checkout's
+# core.autocrlf: a Windows clone otherwise turns docs/components.md into CRLF and the demo test fails.
+* text=auto eol=lf
+*.png binary
+*.bmp binary
+*.wav binary
+*.ttf binary
+*.otf binary
+*.icns binary
+*.zip binary
+*.dmg binary

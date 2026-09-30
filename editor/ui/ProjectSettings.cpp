@@ -375,6 +375,11 @@ void settingsBuildTab(Project &draft) {
           "Recorded in the README and the macOS bundle.");
     field("macOS bundle identifier", "identifier", build.identifier, "com.yk.<product>",
           "Reverse-domain name that identifies the app on macOS, e.g. com.mystudio.mygame.");
+    field("App icon", "icon", build.icon, "assets/icon.png",
+          "A square PNG of the game, 1024 x 1024 pixels is best (at least 512). It becomes the "
+          "macOS app's icon and the window icon on Windows and Linux. Empty: the default icon.");
+    field("Copyright", "copyright", build.copyright, "(c) 2026 My Studio",
+          "Shown in the macOS app's information. Optional.");
     ImGui::TextUnformatted("Leave out of the game");
     static std::string excludeText;
     // One path per line; tools/, docs/, scripts and notes never ship anyway.

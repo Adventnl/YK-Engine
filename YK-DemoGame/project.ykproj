@@ -95,5 +95,14 @@
         ]
       }
     ]
+  },
+  "build": {
+    "productName": "",
+    "executable": "",
+    "version": "1.0.0",
+    "identifier": "",
+    "icon": "assets/icon.png",
+    "copyright": "Demo game made with YK Engine",
+    "exclude": []
   }
 }

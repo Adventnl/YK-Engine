@@ -143,26 +143,10 @@ EditorProject::EditorProject(Project project, const ComponentRegistry &registry)
 Result<std::unique_ptr<EditorProject>> EditorProject::create(const std::filesystem::path &directory,
                                                              std::string name,
                                                              const ComponentRegistry &registry) {
-    if (name.empty())
-        return Error{"A project needs a name"};
-    Project project = Project::create(directory, std::move(name));
-    if (std::filesystem::exists(project.file()))
-        return Error{"'" + project.root.string() + "' already contains a project"};
-    std::error_code error;
-    for (const char *folder : {"scenes", "prefabs", "assets"}) {
-        std::filesystem::create_directories(project.root / folder, error);
-        if (error)
-            return Error{"Cannot create '" + (project.root / folder).string() +
-                         "': " + error.message()};
-    }
-    project.layers = layers::standard();
-    project.startScene = "scenes/main.ykscene";
-    const auto scene = startingScene(registry, "Main");
-    if (auto status = yk::saveScene(*scene, project.root / project.startScene); !status)
-        return Error{status.error()};
-    if (auto status = project.save(); !status)
-        return Error{status.error()};
-    std::unique_ptr<EditorProject> created(new EditorProject(std::move(project), registry));
+    auto project = yk::createProject(directory, name, registry);
+    if (!project)
+        return Error{project.error()};
+    std::unique_ptr<EditorProject> created(new EditorProject(std::move(project.value()), registry));
     created->refresh();
     return created;
 }

@@ -13,21 +13,27 @@
 namespace yk::editor {
 enum class SideView { Explorer, Scene, Prefabs, Components, Build };
 enum class PanelView { Console, Problems, Output, Profiler };
+// The tabs of the right-hand panel: the entity/file/scene Inspector, and Debug (the running game's
+// variables, timing and the inspected entity's live state).
+enum class InspectorView { Inspector, Debug };
 // One editor group, or two next to each other or one above the other.
 enum class EditorSplit { None, Right, Down };
 
 const char *name(SideView view);
 const char *name(PanelView view);
 const char *name(EditorSplit split);
+const char *name(InspectorView view);
 std::optional<SideView> sideViewFromName(std::string_view text);
 std::optional<PanelView> panelViewFromName(std::string_view text);
 std::optional<EditorSplit> editorSplitFromName(std::string_view text);
+std::optional<InspectorView> inspectorViewFromName(std::string_view text);
 
 struct WorkbenchMetrics {
     float scale{1.0F}; // Display scale; every size below is in points at scale 1.
-    float titleBar{30.0F};
+    float titleBar{36.0F};
     float activityBar{46.0F};
-    float statusBar{22.0F};
+    float statusBar{26.0F};
+    float gap{4.0F}; // Space between the cards the parts are drawn as, and around them.
     float minSideBar{180.0F};
     float minInspector{240.0F};
     float minPanel{80.0F};
@@ -35,8 +41,14 @@ struct WorkbenchMetrics {
     float minEditorHeight{160.0F};
 };
 
+// `title` to `status` are tiles that cover the window exactly (sashes sit on their borders). What
+// the workbench draws are the cards: each part inset from its tile so that neighbours are one gap
+// apart and the window's edge one gap away, like the panels of VS Code's current look.
 struct WorkbenchRegions {
     Rect title, activity, sideBar, editor, groupA, groupB, inspector, panel, status;
+    // The activity bar and the side bar are one card; an editor group, the panel and the inspector
+    // are one each.
+    Rect leftCard, cardA, cardB, panelCard, inspectorCard;
     bool hasSideBar{}, hasInspector{}, hasPanel{}, hasGroupB{};
 };
 
@@ -50,6 +62,7 @@ struct WorkbenchLayout {
     float panelHeight{210.0F};
     bool panelMaximized{false};
     PanelView panelView{PanelView::Console};
+    InspectorView inspectorView{InspectorView::Inspector};
     EditorSplit split{EditorSplit::None};
     float splitRatio{0.5F}; // Share of the editor area the first group gets.
 

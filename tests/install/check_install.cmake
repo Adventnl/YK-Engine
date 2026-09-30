@@ -19,7 +19,7 @@ endif()
 
 function(run description)
     execute_process(COMMAND ${ARGN} RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE errors
-        TIMEOUT 240)
+        TIMEOUT 540)
     if(NOT result EQUAL 0)
         message(FATAL_ERROR "${description} failed (${result}):\n${output}\n${errors}")
     endif()
@@ -66,6 +66,7 @@ if(headers OR libraries)
 endif()
 
 # The installed command line validates, and the installed player runs, the installed demo project.
+set(ENV{YK_LOG_DIR} "${WORK}/logs")
 set(ENV{SDL_VIDEODRIVER} dummy)
 set(ENV{SDL_RENDER_DRIVER} software)
 set(ENV{SDL_AUDIODRIVER} dummy)

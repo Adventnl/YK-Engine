@@ -40,6 +40,20 @@ MyGame/
 The editor creates `scenes/`, `prefabs/` and `assets/`; nothing requires those names. Hidden files
 and folders (`.git/`) and folders named `build` are not part of the project's file list.
 
+### A game lives in its own repository
+
+A project is only this folder. It does not have to be inside the engine's checkout, and it does not
+know the engine's location: create it anywhere (`yk new path/to/MyGame --name "My Game"`, or **File >
+New Project**), open it with the editor or the player by path (or by double-clicking its
+`project.ykproj`), and export it. The engine's own repository contains one project, `YK-DemoGame/`,
+as a sample and a test; CMake's `YK_DEMO_PROJECT` points the tests, the installation and the macOS
+application at a different checkout (or at none) without touching the engine. A game that needs
+C++ of its own keeps that code in its repository too and pulls the engine in as a dependency
+([BUILDING.md](BUILDING.md#game-modules-custom-c-components)); nothing game-specific is ever added
+to `src/` or `include/`. The `external_project` test does this in a temporary folder whose name has
+a space and an umlaut: create, validate, play and export from other working directories, then run
+the export from a fourth.
+
 ## `project.ykproj`
 
 ```json
@@ -113,9 +127,15 @@ A new project starts with `Player1` (WASD, pad 0), `Player2` (arrow keys, pad 1)
   "executable": "CinderVale",        // program file name without extension; empty: derived
   "version": "1.0.0",
   "identifier": "com.studio.cindervale",   // macOS bundle id; empty: com.yk.<product>
+  "icon": "assets/icon.png",         // square PNG, 512 x 512 or larger; empty: no icon
+  "copyright": "Copyright 2026 Studio",    // shown in the macOS "About"; empty: none
   "exclude": ["art/source", "notes.txt"]   // project-relative files or folders left out
 }
 ```
+
+`icon` is checked by validation (it must exist and be a square PNG of at least 128 pixels; under 512 is a warning, since a Retina display shows it sharper larger).
+The exporter turns it into `AppIcon.icns` for a macOS bundle and the player uses it as the window
+icon on Windows and Linux. Both keys are written only when set, so older projects are unchanged.
 
 Development folders never ship whatever the list says: `tools/`, `docs/`, `build/`, scripts
 (`*.py`), notes (`*.md`), backup and scratch files (`*.bak`, `*.tmp`, `*.orig`, `*~`). See
@@ -294,10 +314,16 @@ Cinder-Vale-windows/                    Cinder Vale.app/Contents/
   CinderVale.exe    the player            MacOS/CinderVale       the player
   data/             the project           Resources/data/        the project
   licenses/         notices               Resources/licenses/    notices
-  README.txt                              Resources/README.txt
-  yk-export.json                          Resources/yk-export.json
+  README.txt                              Resources/AppIcon.icns the game's icon
+  yk-export.json                          Resources/README.txt
+                                          Resources/yk-export.json
                                           Info.plist
 ```
+
+On a Mac the exporter can also sign the bundle (`--sign`: ad hoc, or a Developer ID identity with
+the hardened runtime) and write `Cinder Vale.dmg` (`--dmg`: the app and an Applications link). It
+runs `codesign` and `hdiutil` and checks the signature afterwards; without those tools the option
+is refused with the reason, not skipped.
 
 `data/` holds `project.ykproj` and every project file except the ones listed under
 [Build settings](#build-settings). The player looks for `data/` (or `project/`) next to itself and
@@ -305,6 +331,14 @@ otherwise for a project in the current folder; `--project <dir>` overrides that.
 records the tool version, target, product and file count; it is also how a later export knows it
 may replace this folder. The exported copy is validated on its own before an export is reported as
 done.
+
+**At run time** the exported program finds `data/` beside itself (for a macOS bundle:
+`Contents/Resources`, from the program's real path, not from the working directory), so it works
+from any folder, from Finder or from a terminal, and from a path containing spaces. Its log and
+crash reports go to the system's per-user log folder under the game's executable name
+(`~/Library/Logs/CinderVale/player.log` on a Mac), never into the game folder. If the game cannot
+start (no `data/`, a project that does not load, no display), it says so in the log, on stderr and (when
+there is a display) in a dialog window, and exits with a non-zero status; there is no silent exit.
 
 ## Editor files (not part of a project)
 

@@ -110,14 +110,14 @@ void contextMenu(Tree &tree, EntityId id) {
         state.renameBuffer = tree.scene.find(id)->name();
         state.renameFocus = true;
     }
-    if (ImGui::MenuItem("Duplicate", "Ctrl+D"))
+    if (ImGui::MenuItem("Duplicate", shortcutText("Ctrl+D")))
         tree.doc->duplicateSelection();
     if (ImGui::MenuItem("Delete", "Del"))
         tree.doc->deleteSelection();
     ImGui::Separator();
-    if (ImGui::MenuItem("Move Up", "Alt+Up"))
+    if (ImGui::MenuItem("Move Up", shortcutText("Alt+Up")))
         tree.doc->moveAmongSiblings(id, -1);
-    if (ImGui::MenuItem("Move Down", "Alt+Down"))
+    if (ImGui::MenuItem("Move Down", shortcutText("Alt+Down")))
         tree.doc->moveAmongSiblings(id, 1);
     if (ImGui::MenuItem("Move to Top Level", nullptr, false,
                         tree.scene.find(id)->parentId().value != 0))

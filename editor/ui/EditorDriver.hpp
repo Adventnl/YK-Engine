@@ -26,6 +26,7 @@ namespace yk::editor {
 //   drag A B [ctrl|shift|alt]           press at A, move in steps to B, release
 //   wheel T AMOUNT                      scroll (positive zooms in)
 //   key COMBO                           e.g. ctrl+s, f5, delete, shift+f5, escape
+//                                       ("ctrl" is the shortcut key: Command on macOS)
 //   keydown K | keyup K | hold K N      keys for the game: hold d 60
 //   type TEXT                           text into the focused field
 //   edit T TEXT                         double-click a drag/text field, replace its value, Enter

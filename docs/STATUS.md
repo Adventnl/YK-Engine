@@ -1,9 +1,10 @@
 # Status
 
-What exists, how it was verified, and what is not done. Everything under "Verified" was run in the
-environment this repository was developed in (Linux x86-64, GCC 13, 4 cores); anything that could
-not be run there is under "Not verified". The starting point of this pass is recorded in
-[AUDIT.md](AUDIT.md).
+What exists, how it was verified, and what is not done. "Verified" lists what was actually run:
+locally (Linux x86-64, GCC 13 and Clang 18, 4 cores; Windows cross-built under Wine) and on GitHub's
+real runners (macOS 14 on Apple silicon, Windows Server 2022 with MSVC, Ubuntu 24.04); anything that
+could not be run anywhere is under "Not verified". The starting point of the first pass is recorded
+in [AUDIT.md](AUDIT.md).
 
 ## What exists
 
@@ -13,74 +14,89 @@ not be run there is under "Not verified". The starting point of this pass is rec
 | **Input** | Named actions in per-player action sets stored in the project (WASD for Player1, arrows for Player2, gamepad bindings and axes), evaluated once per tick; edited in the editor. Nothing in the engine or gameplay names a key. |
 | **Animation** | Clips with frame lists, per-frame timing, events and follow-up clips; a data-driven state machine (parameters, conditions, any-state transitions, exit times); sprite flipping from a parameter; previews and timing edits in the editor. Gameplay publishes generic parameters only. |
 | **Gameplay library** | Platformer controller (acceleration, variable jump, coyote time, jump buffering, slopes with ground snapping, moving-platform riding), plates, levers (touch or an interact action), doors, moving platforms, hazards with tag filters, collectibles, checkpoints, spawn points, goals, trigger zones, killable with death animation and respawn, level rules with HUD variables. Camera: fixed, follow, fit targets, smoothing, zoom limits, world bounds. |
-| **Editor** | VS Code-style workbench (title bar with menus and Play controls, activity bar, Explorer / Scene / Prefabs / Components / Build views, scene tabs, split editor, Inspector, Console / Problems / Build Output / Profiler panel, status bar; sizes remembered). Level editing: pan, zoom, marquee and multi-select, move/resize/rotate gizmos, snapping, duplicate, copy/paste, delete, reparent by drag, lock and hide, undo/redo, links and door-target ghosts, overlays. Inspector for entities (multi-selection edits), files (texture import settings, animation preview and timing, controllers, sounds, scenes, prefabs) and the scene's settings. Prefab instances: revert, apply, update others, unpack. Asset import (dialog and drag-and-drop) and file operations that rewrite references (rename, move, delete). Project settings: layers, input map, rendering defaults, build settings. Play/Pause/Step/Stop on a copy of the scene. Validation with a Problems panel. Export dialog. |
+| **Editor** | VS Code-style workbench drawn as outlined cards on a dark canvas like the reference (title bar with menus and a Play/project capsule, activity bar + side bar with Explorer / Scene / Prefabs / Components / Build views and an Open Scenes list, scene tabs, split editor, right card with **Inspector** and **Debug** tabs (live state of the running game), Console / Problems / Build Output / Profiler panel, status bar; every region resizable and collapsible, sizes remembered; Cmd shortcuts on a Mac; `--ui-scale`). Level editing: pan, zoom, marquee and multi-select, move/resize/rotate gizmos, snapping, duplicate, copy/paste, delete, reparent by drag, lock and hide, undo/redo, links and door-target ghosts, overlays. Inspector for entities (multi-selection edits), files (texture import settings, animation preview and timing, controllers, sounds, scenes, prefabs) and the scene's settings. Prefab instances: revert, apply, update others, unpack. Asset import (dialog and drag-and-drop) and file operations that rewrite references (rename, move, delete). Project settings: layers, input map, rendering defaults, build settings. Play/Pause/Step/Stop on a copy of the scene. Validation with a Problems panel. Export dialog. |
 | **Demo game** | *Cinder Vale* in `YK-DemoGame/`: a two-player puzzle platformer with original generated art and audio, 36 prefabs, a 171-entity level and a practice room, made only of engine components and prefabs. It contains no C++. |
-| **Build and packaging** | CMake presets `dev`, `release`, `asan`, `headless`, `windows-cross`; `yk export` and the Export dialog for Windows, macOS and Linux (player, data, notices, README, `Info.plist`, optional reproducible zip); install and CPack archives; the `yk` command line (`validate`, `format`, `info`, `components`, `export`, `targets`); game modules through `yk_add_game_hosts`. |
+| **Application lifecycle** | Per-user log files with rotation, a crash reporter (report + stack trace, next start says so), a running marker for unclean-exit detection, `SIGPIPE`/`SIGHUP` ignored, fatal start-up errors shown in a dialog (never a silent exit), OS-asked executable and bundle paths (nothing depends on the working directory or the source tree), the editor tracks the player it starts and ends it on quit, **Help > Open Logs Folder**. |
+| **macOS distribution** | `scripts/package-macos.sh` builds **`YK Engine.app`** (editor, player, `yk`, icon, demo game, notices, `.ykproj` document type) and **`YKEngine-<version>-macos-<arch>.dmg`**, signs ad hoc or with a Developer ID (`YK_CODESIGN_IDENTITY`, hardened runtime) and optionally notarizes and staples (`YK_NOTARY_PROFILE`); `scripts/verify-macos-app.sh` checks the result like a user would. |
+| **Export pipeline** | `yk export` and the Export dialog write Windows, macOS and Linux games: player renamed after the game, data, notices, README, `Info.plist`, project icon (`AppIcon.icns` from a PNG), copyright, optional reproducible zip; on a Mac also code signing and a `.dmg` (`--sign`, `--dmg`). The exported game has no editor. |
+| **Build and packaging** | CMake presets `dev`, `release`, `asan`, `headless`, `clang`, `windows-cross`; install and CPack archives; the `yk` command line (`new`, `validate`, `format`, `info`, `components`, `export`, `targets`); game modules through `yk_add_game_hosts`; a game can live in its own repository (`yk new`, `YK_DEMO_PROJECT`). |
 | **Documentation** | This folder: [ARCHITECTURE](ARCHITECTURE.md), [BUILDING](BUILDING.md), [EDITOR](EDITOR.md), [PROJECT_FORMAT](PROJECT_FORMAT.md), the generated [component reference](components.md), [physics API](physics.md), [decisions](decisions/). |
 
 ## Verified
 
-Run from the last commit that changed code on this branch (documentation changed after it), by
-`scripts/verify.sh dev release asan headless clang` and `scripts/verify-windows.sh`.
+### On real runners (GitHub Actions, `.github/workflows/ci.yml`)
+
+CI run 15, commit `6a6e139`: all three jobs green.
+
+| Runner | Result |
+|---|---|
+| **macOS 14, Apple silicon, Apple clang, `release`** | Build clean (warnings are errors). Full test suite passed, **including all editor UI scripts in a real Mac build** (the first run there failed 8 of them: Dear ImGui swaps Control and Command on macOS; fixed, see [EDITOR.md](EDITOR.md#keyboard-shortcuts)). `scripts/package-macos.sh` produced `YK Engine.app` and the `.dmg`; `scripts/verify-macos-app.sh` passed: the image mounts and holds the app and an Applications link, the app copied to a path with a space verifies its signature, `iconutil` accepts `AppIcon.icns`, a game exported with `--dmg` and an ad hoc signature verifies and its `.dmg` mounts and holds the app, the exported game started through Launch Services (`open`) from another folder runs, writes `~/Library/Logs/CinderVale/player.log` and closes cleanly, and the editor opens a `.ykproj` document through Launch Services and quits on request with a clean shutdown and no process left. The `.dmg`, screenshots and logs are kept as the run's artifact `macos-engine`. |
+| **Windows Server 2022, MSVC (VS 2022, x64), Release** | Build clean; every registered test passed (37 of 39: `macos_bundle` and `diagnostics_crash` are not registered on Windows), including all editor UI scripts, `external_project` and the install/CPack test. An earlier run failed `demo` only because Git turned the generated component reference into CRLF on checkout; `.gitattributes` (LF everywhere) fixed it. |
+| **Ubuntu 24.04, GCC, `dev` (Debug)** | clang-format check, build and all 39 tests passed (about 17 minutes of tests in Debug). |
+
+### Locally
 
 | Check | Result |
 |---|---|
-| `ctest` on `dev` (Debug, GCC 13) | 34 of 34 passed (about 6 minutes) |
-| `ctest` on `release` | 34 of 34 passed (about 1.5 minutes), also from a fresh `git clone` of the pushed branch built from scratch, so nothing untracked is needed |
-| `ctest` on `asan` (address + undefined behavior sanitizers, including the editor UI scripts) | 34 of 34 passed |
-| `ctest` on `headless` (`YK_RUNTIME=OFF`: no SDL, no window; the tests that need none) | 17 of 17 passed |
-| `ctest` on `clang` (Clang 18 and libc++, what a Mac uses; sign conversions count as errors) | 34 of 34 passed, including the demo playthrough |
+| `ctest` on `dev` (Debug, GCC 13) | 39 of 39 passed (about 12 minutes) |
+| `ctest` on `release` | 39 of 39 passed (about 4 minutes) |
+| `ctest` on `asan` (address + undefined behavior sanitizers, including the editor UI scripts, the crash test and the bundle test) | 39 of 39 passed (about 17 minutes) |
+| `ctest` on `clang` (Clang 18 and libc++, what a Mac uses; sign conversions count as errors) | 39 of 39 passed. This preset found a sign conversion in the crash handler that Apple's headers hide (fixed in `6a6e139`). |
+| `ctest` on `headless` (`YK_RUNTIME=OFF`: no SDL, no window; the tests that need none) | 18 of 18 passed (run before the one-line crash-handler cast fix; that code is compiled in this preset too but the fix does not change behavior) |
 | `format-check` (clang-format over the tree), `git diff --check` | clean |
-| Windows: cross-compiled with MinGW-w64, every test executable run under Wine (20 of 20, including the demo playthrough, which reaches the same result as on Linux, the editor core's file operations and the game module), the demo exported for Windows by the Windows `yk.exe`, the exported `.exe` started and a frame captured | `scripts/verify-windows.sh`: everything passed |
-| The installed programs work where they were put: the installed editor opens and plays the installed sample, the installed `yk` exports it with the notices found in the installation, the exported game runs | part of the `install` test |
-| A game with C++ of its own: its command line validates it (the stock one refuses it), its player runs it, its export runs on its own, its editor edits and plays it | `game_module*`, `editor_game_module` |
-| The engine added as a subdirectory of another project, with `yk_add_game_hosts`: validate, run, export (done once by hand, not part of the suite) | worked |
-| A 41,500-entity scene (40,000 sprites in a 200 x 200 grid, 1,500 falling boxes) | Release, one 2.1 GHz Xeon core for simulation: building it takes about 20 ms, drawing a frame with the software renderer about 8 ms (39,411 of 40,000 sprites are skipped by view culling), and one physics step with 1,500 active bodies about 22 ms, so a scene that must hold 60 Hz should keep its simultaneously active bodies to a few hundred. Debug is about five times slower. |
+| Windows cross-build (MinGW-w64) under Wine | passed in the previous pass (`scripts/verify-windows.sh`); not re-run in this one, the native MSVC run above replaces it |
+| The installed programs work where they were put | part of the `install` test |
+| A game with C++ of its own | `game_module*`, `editor_game_module` |
+| A 41,500-entity scene (40,000 sprites, 1,500 falling boxes) | Release, one 2.1 GHz Xeon core: building about 20 ms, drawing a frame about 8 ms (view culling skips 39,411 of 40,000 sprites), one physics step with 1,500 active bodies about 22 ms; a scene that must hold 60 Hz should keep its simultaneously active bodies to a few hundred. |
 
-What the test suites cover, in the order of the audit's findings:
+What the newest tests cover:
 
-- **The demo is completable, by a bot, through the real runtime and the real input actions**
-  (`demo`: 35.2 simulated seconds, 119 checks): both characters cross the lava, the water, the
-  goo and the stairs, use the lever and both plates, ride the moving platform and reach their
-  exits; each dies only in the hazard that is deadly to it; restart resets the level.
-- **The editor is driven through its real UI by injected mouse and keyboard events**
-  (`editor_workflow`: from an empty project to an exported game; `editor_demo_edit`: links,
-  marquee, resize, rotate, copy/paste, reparent, prefab save/revert/apply/update, scene tabs,
-  validation; `editor_demo_play`, `editor_demo_settings`: input map and export,
-  `editor_demo_assets`: Explorer, import, texture settings, animation timing, sounds, rename,
-  move and delete with reference rewriting; `editor_bad_project`: a start-up project that is not
-  there;
-  `editor_demo_workbench`: activity bar, panel tabs, sashes, split groups, hide and lock,
-  status bar; `editor_layout_*`: the layout survives a restart; `editor_game_module`: a game's
-  own editor).
-- **Non-visual systems have unit tests**: input maps and action evaluation, animation clips and
-  controllers, scene serialization and prefab reapplication, project files and validation,
-  export and zip, editor documents, selection, gizmos, layout arithmetic, asset file operations
-  (moves that rewrite references, rollback, delete), physics, runtime, gameplay, effects, audio.
-- **Rendering is checked against real pixels** (scene, target and render-mode tests read the
-  software renderer's output).
+- **`diagnostics`**: paths (bundle detection, per-system folders, `YK_LOG_DIR`), log rotation and
+  flushing, the running marker and unclean-exit detection; real child processes crash by `abort`,
+  uncaught exception and invalid memory access, and the report and the next start's notice are read.
+- **`diagnostics_crash`**: the real editor crashes on purpose, leaves a report and log, and the next
+  editor start shows the notice (driven through the UI).
+- **`macos_bundle`**: `YK Engine.app` is assembled in a folder the programs were never built in
+  (name with a space) and used from there: `yk` finds the player and notices, an export gets the
+  macOS layout and its program runs from a third folder, the editor finds the sample in `Resources`.
+- **`external_project`**: a new project and a copy of the demo in a temporary folder with a space and
+  an umlaut are validated, played and exported from other working directories; the export runs
+  from a fourth and logs where logs go.
+- **Export tests**: icons and `.icns`, the exact `codesign` and `hdiutil` command lines through a
+  recording runner, a real child process, validation of a bad icon.
+- **`editor_demo_player`**: **Run in Player** starts the real player, the status bar shows it, Stop
+  ends it, and no orphan process is left (checked with `pgrep`).
+- **`editor_demo_workbench`**: the Debug tab, the project capsule menu, the side bar menu, the split
+  button, Open Scenes.
+
+The earlier suites are unchanged in what they cover: the demo is completable by a bot through the
+real runtime and input actions (`demo`, 35.2 simulated seconds, 119 checks); the editor is driven
+through its real UI by injected mouse and keyboard events (`editor_workflow` from an empty project to
+an exported game, `editor_demo_edit/play/settings/assets/workbench`, `editor_layout_*`,
+`editor_bad_project`, `editor_game_module`); non-visual systems have unit tests (input, animation,
+serialization, projects, validation, export and zip, editor documents, selection, gizmos, layout
+arithmetic including the cards, file operations, physics, runtime, gameplay, effects, audio);
+rendering is checked against real pixels.
 
 ## Not verified
 
-- **MSVC / a native Windows build** and the editor's UI scripts on Windows: only the MinGW
-  cross-build under Wine was run (tests, the exported player). MSVC builds with `/W4` but its
-  warnings do not fail the build until a clean run is confirmed. The Windows executables have no
-  icon or version resource and are not signed; file names outside the system's ANSI code page
-  were not tried.
-- **The CI workflow** (`.github/workflows/ci.yml`: Linux, Windows with MSVC, macOS) was written
-  without access to those runners and has not run. It is the way to close the two items above and
-  the macOS one below.
-- **macOS**: the bundle export is implemented and its layout is unit-tested, but nothing was
-  built or run on a Mac (no hardware; the player needs Apple's SDK). The closest check available
-  is the `clang` preset (Clang and libc++ on Linux). No icon, signing or notarization.
-- **High-DPI displays**: scaling is implemented from SDL's display scale but was not seen on one.
-- **Real windows and GPUs**: all UI runs here used SDL's dummy video driver with the software
-  renderer. Layout and behavior are exercised and screenshots reviewed, but hardware-accelerated
-  presentation, native file dialogs and OS drag-and-drop of files were not exercised.
-- **Gamepads**: bindings and axis handling are unit-tested with synthetic input; no physical
-  controller was connected.
-- **Audio output**: sound mixing is tested against SDL's dummy audio device; nothing was
-  listened to.
+- **Notarization and Developer ID signing.** The code path exists (`YK_CODESIGN_IDENTITY`,
+  `YK_NOTARY_PROFILE`, hardened runtime, entitlements) but needs an Apple Developer account, which
+  was not available; only the ad hoc path was run. An app or `.dmg` from the ad hoc build shows
+  Gatekeeper's warning on another Mac (Control-click > Open once).
+- **Universal or Intel macOS builds.** CI builds for Apple silicon only.
+- **High-DPI displays.** Scaling follows SDL's display scale (and `--ui-scale`), but the interface
+  was never looked at on a Retina display, and the screenshots the macOS job keeps were not viewed
+  (the environment this was developed in cannot download run artifacts).
+- **Real GPUs and native file dialogs.** UI runs use SDL's dummy video driver and the software
+  renderer. The macOS job additionally opens a real window through Launch Services, but nobody
+  looked at hardware-accelerated presentation, native open/save dialogs or OS drag-and-drop.
+- **Windows crash reporting** compiles and is hooked in, but has not been run (the crash test is
+  POSIX-only). The exported Windows `.exe` has no icon or version resource and is not signed.
+- **Linux desktop integration.** No `.desktop` file, icon theme entry or AppImage; a Linux export is
+  a folder or zip.
+- **Gamepads and audio output**: bindings and mixing are tested with synthetic input and SDL's
+  dummy devices; no controller was connected and nothing was listened to.
 
 ## Known limitations
 
@@ -96,19 +112,25 @@ What the test suites cover, in the order of the audit's findings:
 - **The Explorer has no thumbnails, no new-folder command and no drag-to-move** (Rename or Move
   takes a path, which creates the folders); the Inspector previews the selected file. File
   operations reload the open scenes, so their undo history starts again.
-- **Console**: filtered by level and text, no timestamps or grouping.
+- **Console**: filtered by level and text, no timestamps or grouping (the log file has timestamps).
+- **No auto-save or crash recovery of unsaved scenes**: after a crash the editor reports it and names
+  the log and report, but unsaved changes are lost.
+- **The editor cannot notarize** an exported game and does not manage signing identities; the export
+  dialog signs with an identity you type (or ad hoc).
 - **Exported data is not packed or encrypted**: `data/` is the project's files.
 - Physics and rendering limits are documented where they apply (CCD and sensor limits in
   [physics.md](physics.md); bitwise cross-platform determinism is not claimed).
 
 ## Highest-value next pass
 
-1. **An embedded scripting language** with per-instance exposed variables, so behaviors are data
+1. **Notarized releases**: run `scripts/package-macos.sh` with a Developer ID and a notary profile
+   in CI secrets, staple, and verify with `spctl` on a clean Mac; add a universal (arm64 + x86_64)
+   build. This is the step between "works on the developer's Mac" and "opens on anyone's Mac".
+2. **See it on a Retina display** and fix what only shows there (icon sizes, 1-pixel borders,
+   font weight); add screenshot review of the CI artifact to the release checklist.
+3. **An embedded scripting language** with per-instance exposed variables, so behaviors are data
    too and games need no C++ (needs dynamic reflection: the biggest cross-cutting change).
-2. **Prefab overrides**: a per-instance list of changed properties, so an update can keep them.
-3. **A tilemap layer** (paint tiles from a palette, with collision), the most common thing a
-   2D level author still builds by hand out of prefabs.
-4. **Native builds on Windows and macOS in CI** (MSVC, Apple clang) with the editor scripts run
-   on each, code signing and icons, and a player template download for cross-platform exports.
-5. **Asset pipeline depth**: file operations and thumbnails in the Explorer, sprite slicing
-   and clip authoring (frame picking) in the Inspector, atlas packing at export time.
+4. **Prefab overrides** and **a tilemap layer**, the two things a 2D level author still works
+   around by hand.
+5. **Editor recovery**: periodic snapshots of unsaved scenes so a crash does not lose work, and
+   Windows crash-report verification plus an icon/version resource for exported `.exe` files.

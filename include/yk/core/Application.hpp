@@ -3,8 +3,10 @@
 #include "yk/core/Time.hpp"
 #include "yk/graphics/Renderer.hpp"
 #include "yk/input/Input.hpp"
+#include <filesystem>
 #include <memory>
 #include <string>
+#include <string_view>
 union SDL_Event;
 namespace yk {
 class Renderer;
@@ -14,6 +16,12 @@ struct ApplicationConfig {
     // A fixed, letterboxed logical resolution. Both zero selects native resolution instead: drawing
     // coordinates are output pixels and Renderer::viewport() follows the window (used by tools).
     int logicalWidth{960}, logicalHeight{540};
+    // A PNG for the window's icon (taskbar and title bar on Windows and Linux; macOS shows the
+    // bundle's icon instead). Unreadable files are logged and ignored.
+    std::filesystem::path iconFile{};
+    // The same from memory (the editor embeds its icon in the executable). Used when iconFile is
+    // empty; the bytes must outlive Application::create.
+    std::string_view iconPng{};
 };
 struct RunOptions {
     unsigned frameLimit{}; // Zero runs until layer/window requests exit.
@@ -43,6 +51,12 @@ class ApplicationLayer {
     virtual Status
     render(Renderer &renderer) = 0; // Submit only; application owns frame boundaries.
 };
+// Tells the person that the program cannot start or has to stop. The message is logged and printed
+// to stderr and, because a program started by double-click has no terminal, also shown in a message
+// box that names the log file. No box appears under SDL's dummy video driver or when YK_NO_DIALOGS
+// is set (tests and headless runs).
+void showFatalError(const std::string &title, const std::string &message);
+
 class Application {
   public:
     static Result<std::unique_ptr<Application>> create(const ApplicationConfig &config);

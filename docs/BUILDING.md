@@ -25,7 +25,7 @@ export YK_DEPS_DIR=/path/to/deps             # or -DYK_DEPS_DIR=... on the cmake
 ```sh
 cmake --preset dev                            # Debug, tests on: build/dev
 cmake --build --preset dev
-ctest --preset dev                            # 34 tests, about six minutes (Debug)
+ctest --preset dev                            # 39 tests, about twelve minutes on four cores (Debug; CI takes about 17)
 ```
 
 | Preset | What it is |
@@ -47,13 +47,25 @@ Programs, in the build folder:
 |---|---|
 | `yk_editor` | The editor ([EDITOR.md](EDITOR.md)). |
 | `yk_player` | Runs a project as a game: `yk_player YK-DemoGame`. `--fixed --frames 120 --capture shot.bmp` runs deterministically for a while and saves the last frame. |
-| `yk` | Command line: `yk validate`, `yk format [--check]`, `yk info`, `yk components`, `yk export`, `yk targets`. Headless. |
+| `yk` | Command line: `yk new`, `yk validate`, `yk format [--check]`, `yk info`, `yk components`, `yk export`, `yk targets`. Headless. |
 
 ```sh
 ./build/dev/yk_editor                        # the welcome screen offers the demo game
 ./build/dev/yk_player YK-DemoGame            # play it: Ember A/D/W/S, Tide arrows
 ./build/dev/yk validate YK-DemoGame
+./build/dev/yk new ~/Games/MyGame --name "My Game"    # a new project anywhere; edit it with yk_editor
 ```
+
+Settings that are read at build or run time (all optional):
+
+| Setting | Where | What it does |
+|---|---|---|
+| `YK_DEPS_DIR` | environment or `-D` | Pre-fetched dependencies (above). |
+| `YK_DEMO_PROJECT` | `-D` | The project the tests, the installation and the macOS app use as the sample (default `YK-DemoGame/`). Point it at a checkout anywhere; with none, the tests that need a game are left out. |
+| `YK_LOG_DIR` | environment, run time | Replaces the folder logs and crash reports are written to. |
+| `YK_NO_DIALOGS` | environment, run time | Reports fatal start-up errors on stderr and in the log only (no message box); the tests set it. |
+| `YK_CODESIGN_IDENTITY`, `YK_NOTARY_PROFILE` | environment | Signing and notarization of the macOS release ([macOS](#macos)). |
+| `--ui-scale <factor>`, `--debug-crash <kind>` | `yk_editor`, `yk_player` (`--debug-crash`) | Larger interface; crash on purpose to see the report. |
 
 ## Tests
 
@@ -73,11 +85,21 @@ Programs, in the build folder:
   real runtime, from the first step to the last exit, and fails when the level cannot be
   completed. It also checks the generated component reference (`docs/components.md`) and that
   each character dies only in the hazard that is deadly to it.
+- **`diagnostics`** covers paths, rotated log files, the running marker and crash reports;
+  **`diagnostics_crash`** runs the real editor and crashes it on purpose, checks the report and that
+  the next start says the session ended badly (not on Windows: the crash reporter is POSIX-only).
+- **`macos_bundle`** assembles `YK Engine.app` from the built programs in a folder the program was
+  never built in (a name with a space), and uses it: `yk` finds the player in `Contents/MacOS`, an
+  export gets the macOS layout, the exported bundle's program runs from a third folder, and the
+  editor finds the sample in `Contents/Resources`. It runs on every system.
+- **`external_project`** creates a project and copies the demo into a temporary folder (with a space
+  and an umlaut) far from the source tree, then validates, plays and exports them from other working
+  directories and runs the export from yet another, checking that its log went to the log folder.
 - **`editor_*`** drive the real editor UI by injected mouse and keyboard events under SDL's dummy
   video driver: a complete workflow from an empty project to an exported game
   (`editor_workflow`), the demo level being edited, played, restyled and exported
   (`editor_demo_edit`, `editor_demo_play`, `editor_demo_settings`, `editor_demo_assets`,
-  `editor_demo_workbench`), the layout surviving a restart (`editor_layout_*`) and a start-up
+  `editor_demo_workbench`, `editor_demo_player`: the tracked standalone player), the layout surviving a restart (`editor_layout_*`) and a start-up
   project that is not there (`editor_bad_project`). Screenshots of
   failures are saved next to the test's working folder (`build/<preset>/editor-tests/<name>/shots`).
 - **`install`** installs the build into a scratch folder, packs it with CPack and checks the
@@ -95,8 +117,8 @@ scripts/verify-windows.sh         # cross-compile for Windows, run all tests und
 Formatting is enforced by clang-format (`cmake --build --preset dev --target format`, and
 `format-check` in CI-style runs). Warnings are errors with GCC and Clang (`-Wall -Wextra -Wpedantic
 -Wconversion -Wshadow -Werror`; Clang also counts sign conversions). MSVC builds with `/W4` and
-reports warnings without failing, because no MSVC run has been confirmed clean yet
-(`-DYK_WARNINGS_AS_ERRORS=ON` enforces `/WX`).
+reports warnings without failing (CI builds with MSVC on every push; `-DYK_WARNINGS_AS_ERRORS=ON`
+enforces `/WX` once a run is confirmed free of them).
 
 The `clang` preset builds everything with Clang and libc++ (what a Mac uses), a stricter standard
 library than GCC's: it has caught missing includes and sign conversions before they reached a Mac.
@@ -121,6 +143,8 @@ project's data (layouts in [PROJECT_FORMAT.md](PROJECT_FORMAT.md#exported-games)
 ```sh
 yk export MyGame --target windows --out dist --zip
 yk export MyGame --target macos --player path/to/macos/yk_player --out dist
+yk export MyGame --target macos --dmg --out dist   # on a Mac: MyGame.app signed ad hoc, plus MyGame.dmg
+yk export MyGame --target macos --sign "Developer ID Application: Name (TEAMID)" --dmg --out dist
 yk targets                                   # which systems have a player program from here
 ```
 
@@ -137,13 +161,28 @@ Or use **Build > Export Game** in the editor. Either way:
   installation or a build tree) and warns when it cannot.
 - Nothing is compressed or encrypted: the data folder is the project's files. `--zip` writes a
   reproducible archive (fixed timestamps, executable bit kept) beside the folder.
+- The project's `build.icon` (a square PNG, 512 px or more) becomes `AppIcon.icns` in a macOS bundle
+  and the window icon elsewhere; `productName`, `version`, `identifier` and `copyright` go into
+  `Info.plist`.
+- `--sign [identity]` and `--dmg` need a Mac (`codesign`, `hdiutil`) and fail with that reason
+  elsewhere. On a Mac an export is signed ad hoc unless `--no-sign` is given, so that the bundle
+  as a whole has a valid seal (Apple silicon requires signed code); ad hoc means "runs on this Mac;
+  elsewhere Control-click > Open once". A Developer ID identity signs with the hardened runtime
+  and a secure timestamp, which is what notarization requires. The export README says which case
+  applies.
+- Notarization (the step that removes the warning on other people's Macs) needs your Apple ID
+  credentials and is not part of `yk export`. On the exported `.dmg`:
+  `xcrun notarytool submit Game.dmg --keychain-profile <profile> --wait` then
+  `xcrun stapler staple Game.dmg` (the profile is made once with
+  `xcrun notarytool store-credentials`).
 
 ## Windows
 
 **Native.** Configure with the `dev` or `release` preset from a Visual Studio x64 Developer
 prompt (or with MinGW-w64), or use CMake's Visual Studio generator; the project builds with
-`/W4`. This path is **not verified in this repository's environment**: the Windows checks
-below were done with MinGW-w64 under Wine, not with MSVC on Windows.
+`/W4`. The CI workflow builds and tests it with MSVC on a real Windows runner
+(see [STATUS.md](STATUS.md) for what passes there); the checks below were done with MinGW-w64
+under Wine.
 
 **From Linux (verified).** With `mingw-w64` (posix threads) and `wine64` installed:
 
@@ -162,13 +201,57 @@ Not done on Windows: an application icon and version resource for the executable
 
 ## macOS
 
-The build is the same CMake project; use `dev` or `release` on a Mac with Xcode's command line
-tools. An export for macOS is an application bundle (`<Product>.app`) with an `Info.plist` and the
-project's data in `Contents/Resources/data`, which is where SDL reports the base path for a
-bundle. **This is implemented and covered by unit tests of the bundle layout, but it has not been
-run on a Mac**, because the environment this was developed in has none, and cross-compiling the
-player needs Apple's SDK. Not done: an `.icns` icon, code signing and notarization; an unsigned
-bundle needs to be opened once through the context menu on a current macOS.
+The build is the same CMake project; use `release` on a Mac with Xcode's command line tools and
+Ninja. The engine is shipped as an ordinary application and disk image:
+
+```sh
+scripts/package-macos.sh                     # configure + build + assemble + sign + .dmg
+scripts/package-macos.sh --no-build          # reuse build/release
+scripts/verify-macos-app.sh                  # check the result the way a user meets it
+```
+
+Output, in `build/macos-dist/`: **`YK Engine.app`** and **`YKEngine-<version>-macos-<arch>.dmg`**
+(the app and an Applications link). CI builds both on a real Mac and keeps them as the artifact
+`macos-engine`, together with the verification's screenshots and logs.
+
+What the application is, so nothing is missing when it is copied to Applications:
+
+- `Contents/MacOS/yk_editor` is the main executable (`CFBundleExecutable`); `yk_player` and `yk` sit
+  next to it. The player is what the editor exports games with, and **Run in Player** starts it.
+- `Contents/Resources` holds `AppIcon.icns`, the sample game (`YK-DemoGame`, offered on the welcome
+  screen), the license notices and these documents. Nothing is read from the build tree or the
+  working directory; the application does not need a terminal, Python, CMake or any script.
+- `Info.plist` declares the `.ykproj` document type, so double-clicking a project (or
+  `open -a "YK Engine" project.ykproj`) opens it in the editor.
+- Logs and crash reports: `~/Library/Logs/YKEngine/Editor/`; settings:
+  `~/Library/Application Support/YKEngine/Editor/`. A start-up failure shows a dialog instead of
+  closing silently. Quit (Cmd+Q, the Dock menu, logging out) closes the window, ends any player the
+  editor started and removes the running marker.
+
+**Signing and notarization.** Without credentials the script signs ad hoc, which is enough to run
+the app on the Mac that built it; an application downloaded elsewhere needs Control-click > Open
+on its first start. For a release, put the credentials in the environment:
+
+```sh
+export YK_CODESIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)"   # in your keychain
+xcrun notarytool store-credentials yk-notary --apple-id you@example.com --team-id TEAMID   # once
+export YK_NOTARY_PROFILE=yk-notary
+scripts/package-macos.sh
+```
+
+With an identity every program and then the bundle are signed with the hardened runtime, the
+entitlements in `packaging/macos/entitlements.plist` and a secure timestamp; with a profile the
+`.dmg` is submitted to Apple, waited for and stapled. **That path has not been run**: it needs an
+Apple Developer account, which was not available. Only the ad hoc path is verified (below and in
+[STATUS.md](STATUS.md)).
+
+**Architectures.** The script builds for the Mac it runs on (Apple silicon in CI). A universal
+binary needs `-DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"` in the `release` preset and both slices of
+SDL and Box2D; it has not been tried.
+
+**Exported games** are `GameName.app` bundles made by the exporter (above): the game's own name and
+icon, the project in `Contents/Resources/data`, no editor and no engine application needed. The
+bundle can be produced on any system for layout checks, but signing and the `.dmg` need a Mac.
 
 ## Game modules (custom C++ components)
 
@@ -217,4 +300,9 @@ keep stable (ADR 0011). The repository builds and runs an example module in its 
   names the expectation.
 - *SDL cannot open a display in CI*: the tests set `SDL_VIDEODRIVER=dummy` and
   `SDL_RENDER_DRIVER=software` themselves; set the same for your own runs.
+- *An application closed by itself, or nothing appeared*: read the log (**Help > Open Logs Folder** in
+  the editor, or `~/Library/Logs/...` on a Mac); a crash leaves `crash-*.txt` with a stack trace.
+  Run the program from a terminal to see stderr too.
+- *"YK Engine" is damaged or cannot be opened* (macOS, a build that is not notarized): Control-click
+  the app, choose Open, confirm once. Or `xattr -dr com.apple.quarantine "YK Engine.app"`.
 - *Behind a proxy*: `scripts/fetch-deps.sh` and `YK_DEPS_DIR` (above).

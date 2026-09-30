@@ -1,25 +1,23 @@
 #include "ui/Panels.hpp"
+#include "yk/core/AppPaths.hpp"
 #include <SDL3/SDL.h>
 #include <algorithm>
 
 namespace yk::editor::ui {
 namespace {
-// The demo game that ships with the engine: beside the editor in an install or a build tree, or in
-// the source checkout.
+// The demo game that ships with the engine: in the Resources of an application bundle, beside the
+// editor or in the share folder of an installation, or the checkout a build tree sits in. Nothing
+// here points at the machine the program was built on.
 std::optional<std::filesystem::path> findDemoProject() {
     std::vector<std::filesystem::path> candidates;
-    if (const char *base = SDL_GetBasePath()) {
-        const std::filesystem::path here(base);
-        candidates.push_back(here / "YK-DemoGame");
-        candidates.push_back(here / ".." / "YK-DemoGame");
-        candidates.push_back(here / ".." / ".." / "YK-DemoGame");
-        candidates.push_back(here / ".." / "share" / "yk-engine" / "YK-DemoGame");
-    }
+    const std::filesystem::path here = yk::executableDirectory();
+    if (const auto resources = yk::bundleResourcesFor(here); !resources.empty())
+        candidates.push_back(resources / "YK-DemoGame");
+    candidates.push_back(here / "YK-DemoGame");
+    candidates.push_back(here / ".." / "YK-DemoGame");
+    candidates.push_back(here / ".." / ".." / "YK-DemoGame");
+    candidates.push_back(here / ".." / "share" / "yk-engine" / "YK-DemoGame");
     candidates.push_back("YK-DemoGame");
-    candidates.push_back("../YK-DemoGame");
-#ifdef YK_SOURCE_DIR
-    candidates.push_back(std::filesystem::path(YK_SOURCE_DIR) / "YK-DemoGame");
-#endif
     for (const auto &candidate : candidates) {
         std::error_code error;
         if (std::filesystem::exists(candidate / Project::fileName, error))
@@ -113,8 +111,9 @@ void welcomePage(EditorState &state) {
     ImGui::Dummy({1.0F, 22.0F});
     ImGui::PushFont(fonts().mono, 12.0F);
     ImGui::TextColored(
-        imColor(vs::textFaint),
-        "Ctrl+O open   Ctrl+Shift+B build   F5 play   Ctrl+J panel   Ctrl+B side bar");
+        imColor(vs::textFaint), "%s",
+        shortcutText(
+            "Ctrl+O open   Ctrl+Shift+B build   F5 play   Ctrl+J panel   Ctrl+B side bar"));
     ImGui::PopFont();
     ImGui::EndGroup();
 }

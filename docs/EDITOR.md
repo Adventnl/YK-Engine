@@ -3,14 +3,29 @@
 `yk_editor` is where levels are built. It edits the same scene files the player runs, and Play runs
 the scene inside the editor with the same runtime the player uses.
 
+On a Mac the editor is **YK Engine.app** (from the `.dmg`, see [BUILDING.md](BUILDING.md#macos)):
+double-click it, or double-click a `.ykproj` file, and nothing else is needed. Elsewhere it is the
+`yk_editor` program. Command line:
+
 ```sh
-yk_editor                           # welcome screen: New Project, Open Project, the demo game
+yk_editor                           # welcome screen: New Project, Open Project, recent projects, the demo game
 yk_editor path/to/project           # open a project (a folder, or its project.ykproj)
 yk_editor path/to/project --scene scenes/level2.ykscene
 yk_editor --size 1920x1080          # window size
+yk_editor --ui-scale 1.25           # make the interface larger (accessibility, unusual displays)
+yk_editor --debug-crash segv        # crash on purpose to see the crash report (abort, segv, throw)
 ```
 
 A project path that cannot be opened is reported in a dialog and the welcome screen stays.
+
+**Where things are kept.** The editor's log, crash reports and settings live in the per-user folders
+of the system, never next to the program: on macOS `~/Library/Logs/YKEngine/Editor/` (`editor.log`,
+earlier runs as `editor.1.log` ...; `crash-editor-*.txt`) and `~/Library/Application Support/YKEngine/Editor/`
+(recent projects, `workbench.json`); on Linux `$XDG_STATE_HOME/YKEngine/Editor/logs` and
+`$XDG_DATA_HOME/YKEngine/Editor`; on Windows `%LOCALAPPDATA%\YKEngine\Editor\Logs` and
+`%APPDATA%\YKEngine\Editor`. **Help > Open Logs Folder** opens it. `YK_LOG_DIR` replaces the log
+folder. If the last session did not end normally, the next start says so once, names the crash
+report and offers to open the folder.
 
 The welcome screen offers **Open the Demo Game** (Cinder Vale, in `YK-DemoGame/`): open it, press
 **F5**, then select the lever and see the arrow to the gate it opens. The demo is a normal project;
@@ -18,46 +33,57 @@ nothing in the editor knows about it.
 
 ## The workbench
 
-The window is laid out like a code editor's:
+The window follows the layout and the look of a current VS Code: thin outlined, softly rounded
+cards on a darker canvas, a cool neutral palette, small type, no decoration.
 
 ```text
 +--------------------------------------------------------------------------------------------+
-| YK  File Edit View Scene Entity Component Build Debug Help    [> || >| [] <-]   [_ = _]     |  title bar
-+----+---------------------+-------------------------------------------+--------------------+
-|    | SCENE               | level01.ykscene *  |  Game                 | INSPECTOR          |
-| A  |  Camera             +-------------------------------------------+                    |
-| c  |  Backdrop           |  move resize rotate | snap 0.5 m | ...    | (an entity, a file |
-| t  |   Far Wall          |  Cinder Vale > Terrain > Ground            |  or the scene)     |
-| i  |  Terrain            |                                            |                    |
-| v  |   Ground Start      |            scene view / game view          |                    |
-| i  |   ...               |                                            |                    |
-| t  |                     +-------------------------------------------+                    |
-| y  |                     | CONSOLE  PROBLEMS  BUILD OUTPUT  PROFILER |                    |
-|    |                     |  [info] Opened scene scenes/level01.ykscene|                    |
-+----+---------------------+-------------------------------------------+--------------------+
-| Cinder Vale   level01.ykscene *   0 0                      171 entities  Snap 0.50 m  60 fps |  status bar
+|  File Edit View Scene Entity Component Build Debug Help  [ > || >| [] <-  | Cinder Vale v ]   |  title bar
+| +----+---------------------+-------------------------------------------+------------------+ |
+| |    | EXPLORER        ... | level01.ykscene *  |  Game        [split][...]| Inspector  Debug | |
+| | A  | > Open Scenes       +-------------------------------------------+                  | |
+| | c  | v Cinder Vale       |  move resize rotate | snap 0.5 m | ...    | (an entity, a    | |
+| | t  |   assets            |  Cinder Vale > Terrain > Ground            |  file, the scene,| |
+| | i  |   prefabs           |                                            |  or the running  | |
+| | v  |   scenes            |            scene view / game view          |  game's state)   | |
+| | i  |                     +-------------------------------------------+                  | |
+| | t  |                     | Console  Problems  Build Output  Profiler |                  | |
+| | y  |                     |  [info] Opened scene scenes/level01.ykscene|                  | |
+| +----+---------------------+-------------------------------------------+------------------+ |
+|  Cinder Vale   level01.ykscene *   0 problems             171 entities  Snap 0.50 m  60 fps  |  status bar
 +--------------------------------------------------------------------------------------------+
 ```
 
-- **Title bar**: the menus, the **Play / Pause / Step / Stop / Restart** controls in the middle, and
-  buttons on the right that show or hide the side bar, the panel and the inspector.
-- **Activity bar** (far left): one icon per side bar view. Click the visible one again to hide the
-  side bar.
-- **Side bar**: **Explorer** (project files), **Scene** (the entity tree), **Prefabs**,
-  **Components** (a catalog of every component with its description) and **Build** (validate, run,
-  export).
+- **Title bar**: the menus, and a capsule holding the **Play / Pause / Step / Stop / Restart**
+  controls and the **project name**. The project name is a real switcher: Open, New, Recent
+  Projects, Project Settings, Close. On the right, buttons show or hide the side bar, the panel and
+  the right card.
+- **Activity bar** (far left, in the same card as the side bar): one icon per side bar view. Click
+  the visible one again to hide the side bar.
+- **Side bar**: **Explorer** (project files, and an *Open Scenes* list to switch between or close
+  scenes), **Scene** (the entity tree), **Prefabs**, **Components** (a catalog of every component
+  with its description) and **Build** (validate, run, export). The `...` in each view's header opens
+  that view's own actions (Explorer: import, refresh, reveal in the file manager; Scene: select,
+  frame).
 - **Editor area**: tabs. Every open scene has a tab (a dot marks unsaved changes) and the **Game**
-  view has one. *View > Editor Layout > Split Right / Split Down* puts the Game view beside or
-  below the scene so you can edit and watch at once; close its tab to unsplit.
-- **Inspector**: shows the selected entity, or the file picked in the Explorer, or (when nothing is
-  selected) the scene's own settings.
+  view has one. The split button, or *View > Editor Layout > Split Right / Split Down*, puts the
+  Game view beside or below the scene so you can edit and watch at once; close its tab to unsplit.
+- **Right card**: two tabs. **Inspector** shows the selected entity, or the file picked in the
+  Explorer, or (when nothing is selected) the scene's own settings. **Debug** shows what is
+  running: the tick, game time and body counts of the play session, the Blackboard variables the
+  gameplay library publishes (level rules, HUD values), and the selected entity's live position,
+  velocity and overlaps. It has a Play button while nothing runs; nothing on it is invented, and
+  what the runtime cannot report is not listed.
 - **Panel**: **Console** (everything the engine and editor log, filterable by level and text),
   **Problems** (the last project check), **Build Output** (export and run messages) and
   **Profiler** (frame times, draw statistics, physics numbers while playing).
-- **Status bar**: project and scene, the problem count (click to open Problems), a running Play
-  is shown in orange, entity and selection counts, snapping, zoom and frame rate.
+- **Status bar**: project and scene, the problem count (click to open Problems), entity and
+  selection counts, snapping, zoom and frame rate. It turns orange while Play runs and yellow while
+  paused, and shows *Player running* while a standalone player started with **Run in Player** is
+  open (the editor tracks that process: **Build > Stop Player** ends it, and quitting the editor
+  ends it too).
 
-Every divider is draggable. Sizes, the visible views, the split and which panel tab is open are
+Every divider is draggable, and every region can be collapsed with the title bar buttons. Sizes, the visible views, the split and which panel tab is open are
 remembered between runs (`workbench.json`); **View > Reset Layout** restores the default.
 
 ## Projects, scenes, prefabs
@@ -208,7 +234,9 @@ authored. Pause (F6), Step (F10) and Restart work as the controls show. While pl
 hierarchy and Inspector show the running copy read-only, and editing is disabled. **Shift+F5**
 stops: the copy is thrown away and the editor is exactly as you left it, including what was
 selected and the undo history. **Debug > Run in Player** (Ctrl+F5) starts the standalone player on
-the project instead, as a separate process.
+the project instead, as a separate process the editor keeps track of: the status bar says *Player
+running*, **Build > Stop Player** ends it, a second Run replaces it, and quitting the editor
+closes it so no helper is left behind.
 
 The Game view's buttons restart the scene and toggle physics shapes, collider outlines and
 statistics. The game hears the keyboard while its view has focus (pressing Play gives it focus);
@@ -226,8 +254,17 @@ bar's problem count is refreshed after saves.
 whether to also write a `.zip`. The export needs the player program built for that system: the
 one next to the editor serves its own system; other systems need their `yk_player` built there
 (or cross-compiled, [BUILDING.md](BUILDING.md)) and given in the *Player program* field or placed
-in `templates/<system>/` beside the editor. The Build view lists which systems are ready. The
-steps go to **Build Output**, and the finished dialog can show the folder.
+in `templates/<system>/` beside the editor (the macOS application carries a macOS player, so a Mac
+exports for macOS with nothing else). The Build view lists which systems are ready. The steps go to
+**Build Output**, and the finished dialog can show the folder.
+
+For macOS the result is `GameName.app`: the game's name and version, its icon (**Project Settings >
+Build > App icon**, a square PNG of at least 512 px, converted to `AppIcon.icns`) and copyright,
+and no editor. On a Mac the dialog also offers **Sign** (ad hoc, or with the identity you type,
+which is what a release needs) and **Disk image (.dmg)**; off a Mac these are disabled and say
+why. The same options are `yk export --dmg --sign`. Notarization needs your Apple credentials
+and is not done by the editor or `yk export`; [BUILDING.md](BUILDING.md#macos) lists the commands
+to run on an exported game.
 
 ## Menus
 
@@ -239,11 +276,15 @@ steps go to **Build Output**, and the finished dialog can show the folder.
 | **Scene** | New/Open/Save Scene, Scene Settings, Frame All, Play Scene |
 | **Entity** | Create, Create Child, Save as Prefab, Instantiate Prefab, Prefab actions, Duplicate, Delete, Activate/Deactivate, Hide, Lock, Move Up/Down |
 | **Component** | Add Component, Remove Component, Browse Components |
-| **Build** | Validate Project, Export Game, Run in Player, the Build view, Build Output |
+| **Build** | Validate Project, Export Game, Run in Player, Stop Player, the Build view, Build Output |
 | **Debug** | Play, Pause, Step, Stop, Restart, physics and collider overlays, statistics |
-| **Help** | Keyboard Shortcuts, About |
+| **Help** | Keyboard Shortcuts, Open Logs Folder, About |
 
 ## Keyboard shortcuts
+
+On a Mac read **Ctrl** as **Cmd** and **Alt** as **Option** (the menus and the shortcut list show
+the Mac spelling); the exception is scene-tab switching, which is **Control+Tab** because Cmd+Tab
+belongs to the system.
 
 | Keys | Action |
 |---|---|
@@ -262,7 +303,7 @@ steps go to **Build Output**, and the finished dialog can show the folder.
 | Ctrl+Shift+E, H, K, X, B | Explorer, Scene, Prefabs, Components, Build view |
 | Ctrl+Shift+Y, M, U | Console, Problems, Build Output |
 | Ctrl+\ | split the editor area |
-| Esc | cancel a drag or a pending pick |
+| Esc | cancel a drag or a pending pick, close an open menu or popup |
 
 ## Recipe: a pressure plate that opens a door
 

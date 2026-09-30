@@ -1,0 +1,11 @@
+# The editor started after a session that crashed: it says so and offers the log folder.
+timeout 60
+expect dialog Message
+expect dialog-text "did not shut down normally"
+expect dialog-text "crash-editor-"
+expect widget dialog/Message/reveal
+capture ${SHOT_DIR}/crash-notice.bmp
+click dialog/Message/ok
+expect no-dialog
+menu "Help/Open Logs Folder"
+quit

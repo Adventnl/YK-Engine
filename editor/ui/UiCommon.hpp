@@ -141,6 +141,29 @@ bool iconButton(const char *id, Icon icon, bool active, const char *tooltip, ImU
 // Text with a small icon in front, for list rows.
 void iconLabel(Icon icon, const char *text, ImU32 tint = 0);
 
+// A shortcut as this system spells it. On macOS the command key does what Control does elsewhere
+// (Dear ImGui swaps the two there), so "Ctrl+S" reads "Cmd+S" and "Alt+Up" reads "Option+Up"; the
+// text passes through unchanged everywhere else. Every label that names keys goes through this.
+const char *shortcutText(const char *text);
+
+// The display scale (1 on a normal display, 2 on Retina): metrics are given in points at 1.
+float displayScale();
+inline float dp(float points) {
+    return points * displayScale();
+}
+
+// A tab drawn as a text label, with a rounded pill behind the active one (the headers of the
+// inspector and the panel). Advances the cursor along the line; returns true when clicked. `badge`
+// is a count drawn after the label in a small colored pill. Registers `id` for scripts.
+bool pillTab(const char *id, const char *label, bool active, float height,
+             const std::string &badge = {}, Color badgeColor = {});
+// The header row of a collapsible section in a side bar view: a chevron and a bold title, with a
+// hairline above when `separator`. Clicking toggles `open`, which is also returned.
+bool sectionHeader(const char *id, const char *title, bool &open, bool separator = true);
+// Places a render-target image at the cursor and advances past it, with its bottom corners rounded
+// to fit the card it sits at the bottom of.
+void imageInCard(const ImTextureRef &texture, ImVec2 size, ImVec2 uv1);
+
 // Style for the contents of a popup menu: VS Code's solid blue highlight under the pointer.
 struct PopupLook {
     PopupLook();

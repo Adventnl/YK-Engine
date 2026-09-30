@@ -14,7 +14,8 @@ editor/ui/                Dear ImGui panels, the workbench, the scripted UI driv
 player/                   yk_player: runs a project as a game (yk::host::runPlayer)
 tools/yk/                 yk: validate, format, info, components, export, targets (yk::host::runTool)
 YK-DemoGame/              the demo game: a project folder (data) and the tools that generate its art
-tests/                    unit, integration, UI scripts, install check
+packaging/                macOS: Info.plist template, entitlements, the script that assembles the .app; icons
+tests/                    unit, integration, UI scripts, install check, macOS bundle and diagnostics checks
 docs/  LICENSES/  cmake/  scripts/  third_party/
 ```
 
@@ -48,6 +49,68 @@ docs/  LICENSES/  cmake/  scripts/  third_party/
 - Nothing in `yk::engine` or `yk::gameplay` includes editor or game headers. Public headers
   contain no Box2D or SDL types. `YK_RUNTIME=OFF` builds everything that needs no window: the
   engine, gameplay, the editor core, the command line and their tests.
+
+## Engine and game are separate, and so are editor and runtime
+
+- **A game is a project folder** the engine reads. The engine's repository contains one as a
+  sample and a test (`YK-DemoGame/`, selectable with `YK_DEMO_PROJECT`); nothing in `src/`,
+  `include/` or `editor/` names it, and a game can live in a repository of its own (`yk new`, the
+  editor's New Project, or a game module that pulls the engine in as a dependency).
+- **The runtime is not the editor.** `yk_player` links `yk::gameplay`, the renderer and audio, and
+  no editor code or Dear ImGui; an exported game is that program plus `data/`. The editor links
+  the same runtime to play a copy of the scene in its own window. On macOS the engine application
+  (`YK Engine.app`) carries the editor, the player (which it exports games with) and `yk`; an
+  exported game carries the player only.
+- **Where files come from** is asked of the operating system, never guessed: `yk/core/AppPaths.hpp`
+  reports the running program's real path (`_NSGetExecutablePath`, `/proc/self/exe`,
+  `GetModuleFileNameW`), the bundle's `Contents/Resources` when the program is in
+  `X.app/Contents/MacOS`, and the per-user folders by each system's convention. Nothing depends on
+  the working directory, on `argv[0]` or on the source tree at run time (`YK_SOURCE_DIR` is a
+  test-only definition).
+
+## Application lifecycle and diagnostics (`core/`)
+
+A program started by double-click has no terminal, so everything a person would have read there is
+kept on disk, and every failure has somewhere to go:
+
+- **`Log`** writes every message to stderr and the in-app console as before, and now also to a
+  rotated log file (`openLogFile`: `editor.log`, earlier runs `editor.1.log` ..., timestamped lines,
+  flushed at once).
+- **`DiagnosticsSession`** (RAII, one per program run) opens the log in the per-user log folder,
+  installs the crash handler, ignores `SIGPIPE`/`SIGHUP` (closing the terminal a program was
+  started from must not kill it) and writes a *running marker* (`<name>-<pid>.session`) that a
+  clean exit removes. A marker left by a process that is no longer alive tells the next start
+  that the last session did not end normally; the editor says so once and points at the crash
+  report and the log folder.
+- **The crash handler** writes `crash-<name>-<pid>-<time>.txt` (application, version, log file,
+  signal, a stack trace) using only async-signal-safe calls, then re-raises the signal so the
+  system's own report still happens. An uncaught C++ exception is logged with its message first.
+  `--debug-crash segv|abort|throw` on the editor and the player crashes on purpose; the
+  `diagnostics_crash` test uses it and reads the report.
+- **`showFatalError`** (`platform/Application.hpp`) is the one way a start-up failure is reported:
+  log, stderr, and a message box when a display exists. Both programs exit non-zero afterwards.
+- **`Process`** (`runProcess`, `ToolRunner`) runs a child and captures its output (`posix_spawnp`).
+  The exporter uses it for `codesign` and `hdiutil` through an injectable runner, which is how the
+  unit tests check the exact commands without a Mac. The editor tracks the player it starts
+  (`EditorState::startPlayerProcess`): polled every frame, ended by *Stop Player*, replaced by a
+  second run, and terminated when the editor quits.
+
+Logs and crash reports: macOS `~/Library/Logs/<org>/<app>`, Linux `$XDG_STATE_HOME/<org>/<app>/logs`,
+Windows `%LOCALAPPDATA%\<org>\<app>\Logs`; `YK_LOG_DIR` overrides (the tests use it so a test
+never writes into a real home).
+
+## macOS bundles (`packaging/macos/`, `assets/Export.cpp`)
+
+`YK Engine.app` is assembled by one CMake script (`assemble-app.cmake`: plain file copying, so a test
+runs it on any system): `Contents/MacOS/{yk_editor,yk_player,yk}`, `Contents/Resources/{AppIcon.icns,
+YK-DemoGame, licenses, docs}` and an `Info.plist` from the template (bundle id, version, a document
+type so a `.ykproj` opens in the editor). `scripts/package-macos.sh` signs it and writes the `.dmg`;
+an exported game is the same layout with the game's player as its only program and its project in
+`Contents/Resources/data`. `SDL_GetBasePath()` reports `Contents/Resources` inside a bundle, which is
+why the editor finds the demo and the exporter finds the player and the notices through
+`../Resources` candidates as well as the build tree's and an installation's layouts. The `macos_bundle`
+test builds a bundle in a foreign folder on any system and uses it (exports, runs the exported
+bundle); `scripts/verify-macos-app.sh` does the same for the signed result on a real Mac.
 
 ## Units and conventions
 
@@ -221,10 +284,18 @@ interface; without a device it plays nothing and never fails the game.
 
 Dear ImGui (docking branch, used as plain windows) with the SDL3 and SDL_Renderer backends, hosted
 by `EditorApp`, an `ApplicationLayer`. The look is neutral and dark (`Theme.cpp`: colors, metrics,
-the embedded Inter, JetBrains Mono and Codicons fonts; `UiCommon.cpp`: icons, buttons,
+the embedded Inter, JetBrains Mono and Codicons fonts; `UiCommon.cpp`: icons, pill tabs, buttons,
 tooltips). `Workbench.cpp` draws the regions the layout computes as borderless windows pinned to
-their rectangles (title bar with the menus and Play controls, activity bar, side bar, editor
-groups with tabs, inspector, panel, status bar, sashes), so nothing floats or docks by accident.
+their rectangles (title bar with the menus and the Play/project capsule, activity bar and side bar
+as one card, editor groups with tabs, the Inspector/Debug card, the panel, status bar, sashes), so
+nothing floats or docks by accident. The layout arithmetic gives each card its rectangle (a gap
+between neighbours, rounded corners); the regions are drawn as outlined cards on a darker canvas
+with the background draw list, and their content is ordinary ImGui inside a transparent child.
+Pixel details that cost time and are worth knowing: ImGui sizes fonts by line height, so icon
+glyphs are centered on the line box and shifted by the text baseline (`drawIcon`); child windows
+ignore padding unless asked (`AlwaysUseWindowPadding`); on macOS Dear ImGui swaps Control and
+Command, so shortcut labels go through `shortcutText` and the scripted driver's `ctrl` means the
+platform's shortcut key.
 Anything that would change the open document while panels are still drawing it (a click on a tab)
 is deferred until the frame ends. Panels are content-only functions: hierarchy, inspector (entity,
 file and scene modes), scene view, game view, Explorer, Prefabs, Components, Build, console,

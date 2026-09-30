@@ -293,6 +293,33 @@ void exportDialog(EditorState &state) {
     ImGui::Checkbox("Replace an earlier export", &dialog.exportReplace);
     markItem("dialog/Export/replace");
     tooltip("Only a folder that an earlier export created is ever replaced.");
+    if (dialog.exportTarget == BuildTarget::MacOS) {
+        // Signing and disk images use Apple's own tools, so they only exist on a Mac; elsewhere the
+        // choices stay visible and switched off, with the reason.
+        const bool onMac = hostTarget() == BuildTarget::MacOS;
+        ImGui::BeginDisabled(!onMac);
+        ImGui::Checkbox("Sign the app", &dialog.exportSign);
+        markItem("dialog/Export/sign");
+        tooltip(onMac ? "Seals the app so it verifies. Without an identity below it is signed ad "
+                        "hoc: it runs on this Mac, other Macs ask before opening it."
+                      : "Needs a Mac: signing uses Apple's codesign.");
+        ImGui::SameLine(0.0F, 24.0F);
+        ImGui::Checkbox("Also write a .dmg disk image", &dialog.exportDmg);
+        markItem("dialog/Export/dmg");
+        tooltip(onMac ? "A disk image with the app and an Applications link, ready to hand out."
+                      : "Needs a Mac: disk images are made with Apple's hdiutil.");
+        ImGui::BeginDisabled(!dialog.exportSign);
+        ImGui::SetNextItemWidth(-FLT_MIN);
+        inputText(
+            "##identity", dialog.exportIdentity, 0,
+            "Signing identity (empty: ad hoc), e.g. Developer ID Application: Studio (TEAMID)");
+        markItem("dialog/Export/identity");
+        ImGui::EndDisabled();
+        ImGui::EndDisabled();
+        if (!onMac)
+            ImGui::TextColored(imColor(palette::dim),
+                               "Export here, then sign and create the .dmg on a Mac.");
+    }
     if (!dialog.browser.current.empty())
         ImGui::TextColored(imColor(palette::dim), "%s",
                            (dialog.browser.current / exportFolderName(project, dialog.exportTarget))
@@ -313,11 +340,18 @@ void exportDialog(EditorState &state) {
         options.player = player;
         options.archive = dialog.exportZip;
         options.overwrite = dialog.exportReplace;
+        if (dialog.exportTarget == BuildTarget::MacOS && hostTarget() == BuildTarget::MacOS) {
+            options.dmg = dialog.exportDmg;
+            if (dialog.exportSign)
+                options.codesign = dialog.exportIdentity.empty() ? "-" : dialog.exportIdentity;
+        }
         if (auto exported = state.exportGame(options); exported) {
             const ExportReport &report = exported.value();
             std::string text = "The game is in:\n" + report.output.string();
             if (!report.archive.empty())
                 text += "\n\nArchive:\n" + report.archive.string();
+            if (!report.diskImage.empty())
+                text += "\n\nDisk image:\n" + report.diskImage.string();
             for (const std::string &warning : report.warnings)
                 text += "\n\nNote: " + warning;
             const std::filesystem::path reveal = report.output.parent_path();
@@ -591,7 +625,7 @@ void shortcutsDialog(EditorState &state) {
         for (const Row &row : rows) {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::TextColored(imColor(palette::selection), "%s", row.keys);
+            ImGui::TextColored(imColor(palette::selection), "%s", shortcutText(row.keys));
             ImGui::TableSetColumnIndex(1);
             ImGui::TextUnformatted(row.action);
         }
@@ -702,10 +736,32 @@ void showDialog(EditorState &state, DialogKind kind, EntityId entity) {
     }
 }
 
+namespace {
+// Dialogs are cards too: rounded, outlined, with a title bar of the raised color and roomy padding.
+struct DialogLook {
+    DialogLook() {
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, dp(metrics::cardRadius + 2.0F));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0F);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {dp(16.0F), dp(12.0F)});
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {dp(8.0F), dp(6.0F)});
+        ImGui::PushStyleColor(ImGuiCol_TitleBg, imColor(vs::raisedBg));
+        ImGui::PushStyleColor(ImGuiCol_TitleBgActive, imColor(vs::raisedBg));
+        ImGui::PushStyleColor(ImGuiCol_Border, imColor(vs::menuBorder));
+    }
+    ~DialogLook() {
+        ImGui::PopStyleColor(3);
+        ImGui::PopStyleVar(4);
+    }
+    DialogLook(const DialogLook &) = delete;
+    DialogLook &operator=(const DialogLook &) = delete;
+};
+} // namespace
+
 void drawDialogs(EditorState &state) {
     DialogState &dialog = state.dialog;
     if (dialog.kind == DialogKind::None)
         return;
+    const DialogLook look;
     const std::string popupId = dialog.title + "###yk_dialog";
     if (dialog.needsOpen) {
         ImGui::OpenPopup(popupId.c_str());

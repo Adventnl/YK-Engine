@@ -17,6 +17,7 @@ function(run description)
     endif()
 endfunction()
 
+set(ENV{YK_LOG_DIR} "${WORK}/logs") # Logs of the programs run here stay in the scratch folder.
 set(exe "")
 if(WIN32)
     set(target windows)

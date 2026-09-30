@@ -47,30 +47,30 @@ void loadFonts(ImGuiIO &io) {
 void applyTheme() {
     ImGuiStyle &style = ImGui::GetStyle();
     ImGui::StyleColorsDark(&style);
-    // Flat and compact: square corners, no window borders (the workbench draws its own dividers),
-    // thin scrollbars, 22 point rows.
+    // Compact and quiet: small radii on controls, no window borders (the workbench outlines its own
+    // cards), thin scrollbars, 22 point rows.
     style.WindowRounding = 0.0F;
     style.ChildRounding = 0.0F;
-    style.FrameRounding = 2.0F;
-    style.PopupRounding = 4.0F;
-    style.ScrollbarRounding = 0.0F;
-    style.GrabRounding = 1.0F;
-    style.TabRounding = 0.0F;
+    style.FrameRounding = 4.0F;
+    style.PopupRounding = 6.0F;
+    style.ScrollbarRounding = 4.0F;
+    style.GrabRounding = 3.0F;
+    style.TabRounding = metrics::controlRadius + 1.0F;
     style.WindowPadding = {8.0F, 6.0F};
     style.FramePadding = {6.0F, 3.0F};
     style.ItemSpacing = {6.0F, 3.0F};
     style.ItemInnerSpacing = {4.0F, 3.0F};
     style.CellPadding = {4.0F, 2.0F};
     style.IndentSpacing = 14.0F;
-    style.ScrollbarSize = 10.0F;
+    style.ScrollbarSize = 9.0F;
     style.GrabMinSize = 8.0F;
     style.WindowBorderSize = 0.0F;
     style.ChildBorderSize = 0.0F;
     style.FrameBorderSize = 0.0F;
     style.PopupBorderSize = 1.0F;
     style.TabBorderSize = 0.0F;
-    style.TabBarBorderSize = 1.0F;
-    style.TabBarOverlineSize = 1.0F;
+    style.TabBarBorderSize = 0.0F;
+    style.TabBarOverlineSize = 0.0F;
     style.SeparatorTextBorderSize = 1.0F;
     style.SeparatorTextPadding = {12.0F, 3.0F};
     style.WindowMenuButtonPosition = ImGuiDir_None;
@@ -84,16 +84,16 @@ void applyTheme() {
     set(ImGuiCol_TextDisabled, vs::textFaint);
     set(ImGuiCol_WindowBg, vs::chromeBg);
     set(ImGuiCol_ChildBg, clear);
-    set(ImGuiCol_PopupBg, vs::editorBg);
-    set(ImGuiCol_Border, vs::border);
+    set(ImGuiCol_PopupBg, vs::raisedBg);
+    set(ImGuiCol_Border, vs::menuBorder);
     set(ImGuiCol_BorderShadow, clear);
     set(ImGuiCol_FrameBg, vs::inputBg);
-    set(ImGuiCol_FrameBgHovered, {58, 58, 58, 255});
-    set(ImGuiCol_FrameBgActive, {64, 64, 64, 255});
+    set(ImGuiCol_FrameBgHovered, {46, 48, 50, 255});
+    set(ImGuiCol_FrameBgActive, {52, 54, 56, 255});
     set(ImGuiCol_TitleBg, vs::chromeBg);
     set(ImGuiCol_TitleBgActive, vs::chromeBg);
     set(ImGuiCol_TitleBgCollapsed, vs::chromeBg);
-    set(ImGuiCol_MenuBarBg, vs::chromeBg);
+    set(ImGuiCol_MenuBarBg, clear);
     set(ImGuiCol_ScrollbarBg, clear);
     set(ImGuiCol_ScrollbarGrab, vs::scrollbar);
     set(ImGuiCol_ScrollbarGrabHovered, vs::scrollbarHover);
@@ -103,30 +103,31 @@ void applyTheme() {
     set(ImGuiCol_SliderGrabActive, {40, 150, 235, 255});
     set(ImGuiCol_Button, vs::secondaryBg);
     set(ImGuiCol_ButtonHovered, vs::secondaryHover);
-    set(ImGuiCol_ButtonActive, {72, 72, 72, 255});
-    set(ImGuiCol_Header, vs::listSelectionInactive);
+    set(ImGuiCol_ButtonActive, {72, 74, 76, 255});
+    set(ImGuiCol_Header, vs::listSelection);
     set(ImGuiCol_HeaderHovered, vs::listHover);
-    set(ImGuiCol_HeaderActive, vs::listSelection);
+    set(ImGuiCol_HeaderActive, {52, 54, 56, 255});
     set(ImGuiCol_Separator, vs::border);
     set(ImGuiCol_SeparatorHovered, vs::focus);
     set(ImGuiCol_SeparatorActive, vs::focus);
     set(ImGuiCol_ResizeGrip, clear);
     set(ImGuiCol_ResizeGripHovered, vs::focus);
     set(ImGuiCol_ResizeGripActive, vs::focus);
-    set(ImGuiCol_Tab, vs::chromeBg);
-    set(ImGuiCol_TabHovered, vs::editorBg);
+    // Tabs: the strip is raised, the selected tab is the editor's own color, others are bare.
+    set(ImGuiCol_Tab, clear);
+    set(ImGuiCol_TabHovered, vs::pillHover);
     set(ImGuiCol_TabSelected, vs::editorBg);
-    set(ImGuiCol_TabSelectedOverline, vs::tabActiveTop);
-    set(ImGuiCol_TabDimmed, vs::chromeBg);
+    set(ImGuiCol_TabSelectedOverline, clear);
+    set(ImGuiCol_TabDimmed, clear);
     set(ImGuiCol_TabDimmedSelected, vs::editorBg);
-    set(ImGuiCol_TabDimmedSelectedOverline, {0, 120, 212, 120});
+    set(ImGuiCol_TabDimmedSelectedOverline, clear);
     set(ImGuiCol_TextSelectedBg, {0, 120, 212, 110});
     set(ImGuiCol_DragDropTarget, {255, 196, 64, 230});
     set(ImGuiCol_NavCursor, vs::focus);
-    set(ImGuiCol_ModalWindowDimBg, {0, 0, 0, 100});
+    set(ImGuiCol_ModalWindowDimBg, {0, 0, 0, 110});
     set(ImGuiCol_TableHeaderBg, vs::chromeBg);
     set(ImGuiCol_TableBorderStrong, vs::border);
-    set(ImGuiCol_TableBorderLight, {36, 36, 36, 255});
+    set(ImGuiCol_TableBorderLight, {36, 38, 40, 255});
     set(ImGuiCol_TableRowBg, clear);
     set(ImGuiCol_TableRowBgAlt, {255, 255, 255, 5});
 }

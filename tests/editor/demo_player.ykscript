@@ -1,0 +1,18 @@
+# Run in Player starts the standalone player as a process the editor keeps track of: it can be
+# stopped from the menu, is replaced by the next run, and is ended when the editor closes (the test
+# runner checks that nothing is left running afterwards).
+timeout 300
+expect project "Cinder Vale"
+expect no-player
+menu "Build/Run in Player"
+expect player-running
+wait 20
+menu "Build/Stop Player"
+expect no-player
+menu "Build/Run in Player"
+expect player-running
+wait 10
+menu "Build/Run in Player"
+expect player-running
+# Left running on purpose: closing the editor ends it.
+quit

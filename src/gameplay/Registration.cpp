@@ -1,4 +1,6 @@
 #include "yk/gameplay/Gameplay.hpp"
+#include "yk/scene/SceneSerializer.hpp"
+#include <filesystem>
 
 namespace yk {
 LayerConfig layers::standard() {
@@ -15,6 +17,32 @@ LayerConfig layers::standard() {
     config.setInteraction(index(prop), index(sensor), true);
     config.setInteraction(index(prop), index(prop), true);
     return config;
+}
+
+Result<Project> createProject(const std::filesystem::path &directory, const std::string &name,
+                              const ComponentRegistry &registry) {
+    if (name.empty())
+        return Error{"A project needs a name"};
+    Project project = Project::create(directory, name);
+    if (std::filesystem::exists(project.file()))
+        return Error{"'" + project.root.string() + "' already contains a project"};
+    std::error_code error;
+    for (const char *folder : {"scenes", "prefabs", "assets"}) {
+        std::filesystem::create_directories(project.root / folder, error);
+        if (error)
+            return Error{"Cannot create '" + (project.root / folder).string() +
+                         "': " + error.message()};
+    }
+    project.layers = layers::standard();
+    project.startScene = "scenes/main.ykscene";
+    Scene scene(registry);
+    scene.settings.name = "Main";
+    scene.createEntity("Main Camera").addComponent("Camera");
+    if (auto status = saveScene(scene, project.root / project.startScene); !status)
+        return Error{status.error()};
+    if (auto status = project.save(); !status)
+        return Error{status.error()};
+    return project;
 }
 
 namespace {

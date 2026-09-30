@@ -223,6 +223,74 @@ void fileRow(EditorState &state, const Node &node) {
     ImGui::PopID();
 }
 
+// The scenes that are open in tabs, like VS Code's "Open Editors": click to switch to one, the dot
+// marks unsaved changes and the cross (on hover) closes it, asking first when there are any.
+void openScenesSection(EditorState &state) {
+    static bool open = true;
+    if (state.sceneTabs.empty())
+        return;
+    if (!sectionHeader("assets/section/open", "Open Scenes", open, false) || !open)
+        return;
+    for (const std::string &path : std::vector<std::string>(state.sceneTabs)) {
+        const std::string name = std::filesystem::path(path).filename().string();
+        const bool current = state.document && state.document->path() == path;
+        const EditorDocument *doc = nullptr;
+        if (current)
+            doc = state.document.get();
+        else if (const auto found = state.background.find(path); found != state.background.end())
+            doc = found->second.document.get();
+        ImGui::PushID(path.c_str());
+        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen |
+                                   ImGuiTreeNodeFlags_SpanFullWidth |
+                                   ImGuiTreeNodeFlags_FramePadding |
+                                   ImGuiTreeNodeFlags_AllowOverlap;
+        if (current)
+            flags |= ImGuiTreeNodeFlags_Selected;
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {dp(14.0F), rowPadding()});
+        ImGui::TreeNodeEx("##openscene", flags);
+        ImGui::PopStyleVar();
+        const bool clicked = ImGui::IsItemClicked(ImGuiMouseButton_Left);
+        const bool hovered = ImGui::IsItemHovered();
+        const ImVec2 min = ImGui::GetItemRectMin(), max = ImGui::GetItemRectMax();
+        markItem("assets/open/" + name);
+        tooltip(path);
+        ImGui::SameLine(0.0F, 2.0F);
+        ImGui::PushStyleColor(ImGuiCol_Text, imColor(current ? vs::text : vs::textDim));
+        iconLabel(Icon::Scene, name.c_str(), packed(colorFor(AssetKind::Scene)));
+        ImGui::PopStyleColor();
+        // The right end: a dot for unsaved changes, a cross to close while the row is hovered.
+        const float right = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+        const ImVec2 mid{right - dp(14.0F), (min.y + max.y) * 0.5F};
+        bool closed = false;
+        if (hovered || (doc && doc->dirty())) {
+            const float box = dp(18.0F);
+            ImGui::SetCursorScreenPos({mid.x - box * 0.5F, mid.y - box * 0.5F});
+            ImGui::InvisibleButton("##closescene", {box, box});
+            const bool overClose = ImGui::IsItemHovered();
+            markItem("assets/open/" + name + "/close");
+            if (overClose)
+                ImGui::GetWindowDrawList()->AddRectFilled({mid.x - box * 0.5F, mid.y - box * 0.5F},
+                                                          {mid.x + box * 0.5F, mid.y + box * 0.5F},
+                                                          packed(vs::pill), dp(4.0F));
+            if (hovered || overClose)
+                drawIcon(*ImGui::GetWindowDrawList(), Icon::Cross, mid, dp(12.0F),
+                         packed(vs::text));
+            else
+                ImGui::GetWindowDrawList()->AddCircleFilled(mid, dp(3.5F), packed(vs::text));
+            closed = ImGui::IsItemClicked(ImGuiMouseButton_Left);
+        }
+        ImGui::PopID();
+        if (closed) {
+            state.closeScene(path);
+            break;
+        }
+        if (clicked && !current) {
+            state.activateScene(path);
+            break;
+        }
+    }
+}
+
 void drawNode(EditorState &state, const Node &node, bool filtering);
 
 void folderRow(EditorState &state, const Node &node, bool filtering) {
@@ -312,6 +380,7 @@ void assetsPanel(EditorState &state) {
     const Node tree = buildTree(state.project->files(), state.assetFilter);
     const bool filtering = !state.assetFilter.empty();
     ImGui::BeginChild("##assettree");
+    openScenesSection(state);
     if (tree.children.empty())
         ImGui::TextDisabled(filtering ? "Nothing matches." : "The project has no files yet.");
     // The project itself is the root of the tree.

@@ -1,9 +1,11 @@
 #include "ui/EditorState.hpp"
+#include "yk/core/AppPaths.hpp"
 #include "yk/core/FileIO.hpp"
 #include "yk/core/Log.hpp"
 #include "yk/scene/SceneSerializer.hpp"
 #include <SDL3/SDL.h>
 #include <algorithm>
+#include <cstdio>
 
 namespace yk::editor {
 std::filesystem::path defaultSettingsDirectory() {
@@ -63,6 +65,10 @@ EditorState::EditorState(const ComponentRegistry &registryRef, EditorOptions opt
     savedLayout = layout;
 }
 
+EditorState::~EditorState() {
+    stopPlayerProcesses();
+}
+
 Status EditorState::initialize(Renderer &rendererRef) {
     renderer = &rendererRef;
     auto created = SceneRenderer::create(*renderer, nullptr);
@@ -79,6 +85,19 @@ Status EditorState::initialize(Renderer &rendererRef) {
         if (!options.scene.empty() && (!document || document->path() != options.scene))
             if (auto scene = openScene(options.scene); !scene)
                 message("Cannot open the scene", scene.error());
+    }
+    if (options.previousSessionCrashed) {
+        std::string text = "The editor did not shut down normally last time.";
+        if (!options.previousCrashReport.empty())
+            text += " A crash report was saved:\n\n" + options.previousCrashReport.string();
+        text +=
+            "\n\nUnsaved changes from that session are not recovered. The log files are in:\n\n" +
+            options.logDirectory.string();
+        log(LogLevel::Warning, "editor", "The previous session did not end normally");
+        if (dialog.kind == DialogKind::None) { // Do not bury a start-up error under this notice.
+            message("The editor closed unexpectedly", text);
+            dialog.revealPath = options.logDirectory;
+        }
     }
     return success();
 }
@@ -459,9 +478,9 @@ void EditorState::addOutput(LogLevel level, const std::string &text) {
 }
 
 std::filesystem::path EditorState::executableDirectory() const {
-    if (const char *path = SDL_GetBasePath())
-        return path;
-    return ".";
+    // Not SDL_GetBasePath: inside a macOS bundle that is Contents/Resources, and the player and the
+    // other programs sit in Contents/MacOS beside the editor.
+    return yk::executableDirectory();
 }
 
 std::optional<std::filesystem::path> EditorState::playerFor(BuildTarget target) const {
@@ -617,6 +636,23 @@ std::string EditorState::windowTitle() const {
 }
 
 void EditorState::tick(double seconds, const InputFrame &gameInput) {
+    // A player that has closed by itself: say how it ended and let go of it.
+    for (auto it = children.begin(); it != children.end();) {
+        int exitCode = 0;
+        if (!SDL_WaitProcess(it->handle, false, &exitCode)) {
+            ++it;
+            continue;
+        }
+        const double ran =
+            std::chrono::duration<double>(std::chrono::steady_clock::now() - it->started).count();
+        char text[160];
+        std::snprintf(text, sizeof text, "%s closed (exit code %d) after %.1f s", it->name.c_str(),
+                      exitCode, ran);
+        addOutput(exitCode == 0 ? LogLevel::Info : LogLevel::Warning, text);
+        log(exitCode == 0 ? LogLevel::Info : LogLevel::Warning, "editor", text);
+        SDL_DestroyProcess(it->handle);
+        it = children.erase(it);
+    }
     if (play)
         play->update(seconds, gameInput);
     if (audio)
@@ -628,6 +664,58 @@ void EditorState::tick(double seconds, const InputFrame &gameInput) {
     }
     if (!imports.empty())
         importAssets(imports, explorerFolder);
+}
+
+Status EditorState::startPlayerProcess() {
+    if (!project)
+        return Error{"No project is open"};
+    const std::filesystem::path player = playerExecutable();
+    std::error_code error;
+    if (!std::filesystem::exists(player, error)) {
+        const std::string reason =
+            "The player was not found next to the editor (" + player.string() + ")";
+        message("Cannot run the game", reason);
+        return Error{reason};
+    }
+    stopPlayerProcesses();
+    const std::string executable = player.string();
+    const std::string projectFolder = project->project().root.string();
+    const char *arguments[] = {executable.c_str(), "--project", projectFolder.c_str(), nullptr};
+    SDL_Process *process = SDL_CreateProcess(arguments, false);
+    if (!process) {
+        const std::string reason = std::string("Cannot start the player: ") + SDL_GetError();
+        message("Cannot run the game", reason);
+        return Error{reason};
+    }
+    children.push_back({process, "The player", std::chrono::steady_clock::now()});
+    addOutput(LogLevel::Info, "Started " + executable + " --project " + projectFolder);
+    log(LogLevel::Info, "editor", "Started the game in the standalone player");
+    return success();
+}
+
+void EditorState::stopPlayerProcesses() {
+    if (children.empty())
+        return;
+    // Ask first (the player treats it like closing its window), then insist after two seconds.
+    for (ChildProcess &child : children)
+        SDL_KillProcess(child.handle, false);
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
+    for (ChildProcess &child : children) {
+        int exitCode = 0;
+        bool exited = SDL_WaitProcess(child.handle, false, &exitCode);
+        while (!exited && std::chrono::steady_clock::now() < deadline) {
+            SDL_Delay(20);
+            exited = SDL_WaitProcess(child.handle, false, &exitCode);
+        }
+        if (!exited) {
+            log(LogLevel::Warning, "editor", child.name + " did not close; ending it");
+            SDL_KillProcess(child.handle, true);
+            SDL_WaitProcess(child.handle, true, &exitCode);
+        }
+        addOutput(LogLevel::Info, child.name + " stopped");
+        SDL_DestroyProcess(child.handle);
+    }
+    children.clear();
 }
 
 void EditorState::queueImport(std::vector<std::filesystem::path> files) {

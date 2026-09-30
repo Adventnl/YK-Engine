@@ -1,6 +1,7 @@
 // yk: command-line tools for YK projects. Headless (no window, no audio): meant for developers,
 // build scripts and CI.
 //
+//   yk new <folder> [--name <name>]  create a project (its own folder, or its own repository)
 //   yk validate [project]          check every scene, prefab and asset (exit 1 on errors)
 //   yk format   [project] [--check]  rewrite scenes, prefabs, animations and the project file the
 //                                  way the editor saves them; --check only reports (exit 1)
@@ -8,7 +9,10 @@
 //   yk components                  print the component reference (Markdown)
 //   yk targets                     which systems a game can be exported for from here
 //   yk export [project] --target windows|macos|linux --out <folder> [--player <file>] [--zip]
-//                                  package the game: the player, the data and the notices
+//                     [--dmg] [--sign <identity>|--no-sign]
+//                                  package the game: the player, the data and the notices; on a Mac
+//                                  the app is code signed (ad hoc unless --sign) and --dmg adds a
+//                                  disk image
 //
 // `project` is a directory or a project.ykproj file; it defaults to the current directory.
 #include "yk/animation/AnimationController.hpp"
@@ -16,6 +20,7 @@
 #include "yk/assets/AssetSource.hpp"
 #include "yk/assets/Export.hpp"
 #include "yk/assets/Validation.hpp"
+#include "yk/core/AppPaths.hpp"
 #include "yk/core/FileIO.hpp"
 #include "yk/core/Log.hpp"
 #include "yk/gameplay/Gameplay.hpp"
@@ -36,6 +41,9 @@ namespace {
 void usage() {
     std::puts(
         "usage: yk <command> [options] [project]\n"
+        "  new <folder>        create a project in <folder> (--name <name>: its name, default: "
+        "the\n"
+        "                      folder's name): a first scene, the standard layers and input sets\n"
         "  validate            check every scene, prefab and asset; exit 1 on errors\n"
         "  format [--check]    write scenes, prefabs, animations and the project file in the\n"
         "                      editor's canonical form (--check: only list what would change)\n"
@@ -48,6 +56,11 @@ void usage() {
         "      --player <file>                  the player built for the target (default: found\n"
         "                                       beside yk or in templates/<target>/)\n"
         "      --zip                            also write a .zip next to it\n"
+        "      --dmg                            macOS app only, on a Mac: also write a .dmg\n"
+        "      --sign <identity>                macOS app only, on a Mac: sign with this identity\n"
+        "                                       ('-' or the default: ad hoc; e.g. \"Developer ID\n"
+        "                                       Application: Studio (TEAMID)\" for distribution)\n"
+        "      --no-sign                        leave the macOS app unsigned\n"
         "      --force                          replace an earlier export\n"
         "project: a directory or project.ykproj (default: the current directory)");
 }
@@ -62,6 +75,12 @@ struct Args {
     std::filesystem::path out, player;
     bool zip{};
     bool force{};
+    bool dmg{};
+    bool noSign{};
+    std::string sign;
+    // new
+    std::string name;
+    bool projectGiven{};
 };
 
 std::optional<Args> parse(int argc, char **argv) {
@@ -80,7 +99,12 @@ std::optional<Args> parse(int argc, char **argv) {
             args.zip = true;
         } else if (arg == "--force") {
             args.force = true;
-        } else if (arg == "--target" || arg == "--out" || arg == "--player") {
+        } else if (arg == "--dmg") {
+            args.dmg = true;
+        } else if (arg == "--no-sign") {
+            args.noSign = true;
+        } else if (arg == "--target" || arg == "--out" || arg == "--player" || arg == "--sign" ||
+                   arg == "--name") {
             const char *text = value();
             if (!text) {
                 std::fprintf(stderr, "yk: %s needs a value\n", arg.c_str());
@@ -90,10 +114,15 @@ std::optional<Args> parse(int argc, char **argv) {
                 args.target = text;
             else if (arg == "--out")
                 args.out = text;
+            else if (arg == "--sign")
+                args.sign = text;
+            else if (arg == "--name")
+                args.name = text;
             else
                 args.player = text;
         } else if (!arg.empty() && arg[0] != '-' && args.project.empty()) {
             args.project = arg;
+            args.projectGiven = true;
         } else {
             std::fprintf(stderr, "yk: unknown argument '%s'\n", arg.c_str());
             return std::nullopt;
@@ -104,14 +133,12 @@ std::optional<Args> parse(int argc, char **argv) {
     return args;
 }
 
-// The folder this program runs from, to find the player and the notices next to it.
-std::filesystem::path executableDirectory(const char *argv0) {
+// The folder this program runs from, to find the player and the notices next to it. Asked of the
+// operating system: argv[0] is only a name when the program was found through PATH.
+std::filesystem::path programDirectory(const char *argv0) {
+    if (const auto here = yk::executablePath(); !here.empty())
+        return here.parent_path();
     std::error_code error;
-#if defined(__linux__)
-    const auto self = std::filesystem::read_symlink("/proc/self/exe", error);
-    if (!error && !self.empty())
-        return self.parent_path();
-#endif
     const auto resolved = std::filesystem::weakly_canonical(argv0, error);
     return error ? std::filesystem::current_path() : resolved.parent_path();
 }
@@ -123,6 +150,28 @@ std::optional<Project> openProject(const Args &args) {
         return std::nullopt;
     }
     return std::move(project.value());
+}
+
+int newProject(const Args &args, const ComponentRegistry &registry) {
+    if (!args.projectGiven) {
+        std::fprintf(stderr,
+                     "yk new: say where the project goes: yk new <folder> [--name <name>]\n");
+        return 2;
+    }
+    const std::filesystem::path folder = std::filesystem::absolute(args.project).lexically_normal();
+    const std::string name = args.name.empty() ? folder.filename().string() : args.name;
+    const auto project = createProject(folder, name, registry);
+    if (!project) {
+        std::fprintf(stderr, "yk new: %s\n", project.error().c_str());
+        return 1;
+    }
+    std::printf("Created the project '%s' in %s\n"
+                "  edit it:  yk_editor \"%s\"\n"
+                "  play it:  yk_player \"%s\"\n"
+                "  package:  yk export \"%s\" --target <windows|macos|linux> --out dist\n",
+                name.c_str(), folder.string().c_str(), folder.string().c_str(),
+                folder.string().c_str(), folder.string().c_str());
+    return 0;
 }
 
 int validate(const Args &args, const ComponentRegistry &registry) {
@@ -320,6 +369,18 @@ int exportProject(const Args &args, const std::filesystem::path &here,
         options.notices = *notices;
     options.archive = args.zip;
     options.overwrite = args.force;
+    options.dmg = args.dmg;
+    if (args.noSign && !args.sign.empty()) {
+        std::fprintf(stderr, "yk export: --sign and --no-sign contradict each other\n");
+        return 2;
+    }
+    // On a Mac the app is signed by default (ad hoc: it verifies and runs there); elsewhere the
+    // tools for it do not exist, so nothing is asked of them unless the user insists.
+    if (!args.sign.empty())
+        options.codesign = args.sign;
+    else if (!args.noSign && options.target == BuildTarget::MacOS &&
+             hostTarget() == BuildTarget::MacOS)
+        options.codesign = "-";
     options.progress = [](const std::string &line) { std::printf("  %s\n", line.c_str()); };
     std::printf("Exporting %s for %s\n", productName(*project).c_str(),
                 displayName(options.target));
@@ -336,6 +397,8 @@ int exportProject(const Args &args, const std::filesystem::path &here,
                 report.value().dataFolder.string().c_str());
     if (!report.value().archive.empty())
         std::printf("  archive: %s\n", report.value().archive.string().c_str());
+    if (!report.value().diskImage.empty())
+        std::printf("  disk image: %s\n", report.value().diskImage.string().c_str());
     return 0;
 }
 } // namespace
@@ -360,6 +423,8 @@ int runTool(int argc, char **argv, const RegisterComponents &registerGame) {
         std::fputs(describeRegistryMarkdown(registry).c_str(), stdout);
         return 0;
     }
+    if (args->command == "new")
+        return newProject(*args, registry);
     if (args->command == "validate")
         return validate(*args, registry);
     if (args->command == "format")
@@ -367,9 +432,9 @@ int runTool(int argc, char **argv, const RegisterComponents &registerGame) {
     if (args->command == "info")
         return info(*args, registry);
     if (args->command == "targets")
-        return targets(executableDirectory(argv[0]));
+        return targets(programDirectory(argv[0]));
     if (args->command == "export")
-        return exportProject(*args, executableDirectory(argv[0]), registry);
+        return exportProject(*args, programDirectory(argv[0]), registry);
     std::fprintf(stderr, "yk: unknown command '%s'\n\n", args->command.c_str());
     usage();
     return 2;

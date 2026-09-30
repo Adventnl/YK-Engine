@@ -3,6 +3,7 @@
 #include "backends/imgui_impl_sdlrenderer3.h"
 #include "imgui.h"
 #include "ui/Panels.hpp"
+#include "yk/core/Diagnostics.hpp"
 #include "yk/core/Log.hpp"
 #include <SDL3/SDL.h>
 #include <algorithm>
@@ -37,8 +38,9 @@ Status EditorApp::initialize(Renderer &renderer) {
     ui::loadFonts(io);
     ui::applyTheme();
     ImGuiStyle &style = ImGui::GetStyle();
-    style.FontSizeBase = 14.0F;
-    const float displayScale = SDL_GetWindowDisplayScale(window_);
+    style.FontSizeBase = ui::metrics::fontSize;
+    const float displayScale =
+        state_.options.uiScale > 0.0F ? state_.options.uiScale : SDL_GetWindowDisplayScale(window_);
     if (displayScale > 1.01F) {
         style.ScaleAllSizes(displayScale);
         style.FontScaleDpi = displayScale;
@@ -73,6 +75,9 @@ bool EditorApp::onCloseRequested() {
 
 bool EditorApp::update(const FrameContext &frame) {
     ++frames_;
+    if (!state_.options.debugCrash.empty() && frames_ == 8 &&
+        !crashOnPurpose(state_.options.debugCrash))
+        log(LogLevel::Error, "editor", "Unknown --debug-crash kind");
     ui::widgets().beginFrame();
     if (hook_)
         hook_(*this);
