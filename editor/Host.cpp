@@ -6,9 +6,11 @@
 #include "yk/gameplay/Gameplay.hpp"
 #include "yk/host/Hosts.hpp"
 #include "yk/scene/RegistryDocs.hpp"
+#include <charconv>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string_view>
 
 using namespace yk;
 using namespace yk::editor;
@@ -24,6 +26,19 @@ struct Options {
     int height{900};
     bool help{};
 };
+
+// "1440x810": both numbers, nothing after them.
+bool parseSize(const char *text, int &width, int &height) {
+    const std::string_view view(text);
+    const auto separator = view.find('x');
+    if (separator == std::string_view::npos)
+        return false;
+    const auto whole = [](std::string_view part, int &out) {
+        const auto parsed = std::from_chars(part.data(), part.data() + part.size(), out);
+        return parsed.ec == std::errc() && parsed.ptr == part.data() + part.size();
+    };
+    return whole(view.substr(0, separator), width) && whole(view.substr(separator + 1), height);
+}
 
 void usage() {
     std::puts("usage: yk_editor [options] [project]\n"
@@ -73,8 +88,8 @@ std::optional<Options> parse(int argc, char **argv) {
             if (arg == "--scene") {
                 options.editor.scene = text;
             } else if (arg == "--size") {
-                if (std::sscanf(text, "%dx%d", &options.width, &options.height) != 2 ||
-                    options.width < 320 || options.height < 240) {
+                if (!parseSize(text, options.width, options.height) || options.width < 320 ||
+                    options.height < 240) {
                     std::fprintf(stderr, "--size wants WIDTHxHEIGHT, at least 320x240\n");
                     return std::nullopt;
                 }

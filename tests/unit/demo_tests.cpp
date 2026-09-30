@@ -364,8 +364,11 @@ void charactersAnimateFromTheirController() {
     game.runtime->teleport(game.entity(ember.name), {28.0F, 16.2F});
     game.tick(60);
     game.tick(120);
-    for (const char *state : {"Idle", "Run", "Jump", "Fall", "Land", "Interact", "Death"})
-        CHECK(game.animationStates[0].contains(state), state);
+    for (const char *state : {"Idle", "Run", "Jump", "Fall", "Land", "Interact", "Death"}) {
+        if (!game.animationStates[0].contains(state))
+            std::fprintf(stderr, "Ember never entered the animation state '%s'\n", state);
+        CHECK(game.animationStates[0].contains(state));
+    }
     CHECK(game.entity(ember.name).get<AnimatedSprite>()->state() ==
           "Idle"); // Alive and well again.
 }
