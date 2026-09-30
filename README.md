@@ -13,13 +13,24 @@ generated art, and no code of its own.
 |---|---|---|
 | **Engine** | Entities and components with reflection, scene/prefab/project files, input actions, animation clips and state machines, a headless fixed-step runtime on Box2D, an SDL3 renderer (layers, culling, tiling, nine-slice, parallax, particles), audio, validation, export. No game rules. | `include/`, `src/` |
 | **Gameplay library** | Reusable mechanics as components: platformer controller, plates, levers, doors, moving platforms, hazards, collectibles, checkpoints, goals, level rules. | `include/yk/gameplay`, `src/gameplay` |
-| **Editor** | Workbench with an Explorer, scene hierarchy, prefabs, component catalog, inspector, tabs and split views, console, problems, profiler; real level editing; Play on a copy of the scene. | `editor/` |
-| **Player and tools** | `yk_player` runs any project; `yk` validates, formats, inspects and exports projects. | `player/`, `tools/yk/` |
-| **Demo game** | *Cinder Vale*: a project folder (data) that consumes the engine, and the scripts that generate its art. | `YK-DemoGame/` |
+| **Editor** | Workbench with an Explorer, scene hierarchy, prefabs, component catalog, inspector, a Debug view of the running game, tabs and split views, console, problems, profiler; real level editing; Play on a copy of the scene. | `editor/` |
+| **Player and tools** | `yk_player` runs any project; `yk` creates, validates, formats, inspects and exports projects. | `player/`, `tools/yk/` |
+| **Packaging** | `YK Engine.app` and its `.dmg` for macOS; the exporter writes a standalone `Game.app` (or Windows/Linux folder) without the editor, with icon, signing and a `.dmg` on a Mac. | `packaging/`, `scripts/`, `src/assets/Export.cpp` |
+| **Demo game** | *Cinder Vale*: a project folder (data) that consumes the engine, and the scripts that generate its art. It is a sample and a test; a game can live in a repository of its own. | `YK-DemoGame/` |
 
-## Try it
+## Use it (macOS)
 
-Requires CMake 3.25+, Ninja and a C++20 compiler (GCC, Clang; MSVC is untested here). The first
+Open the `YKEngine-<version>-macos-<arch>.dmg` (built by `scripts/package-macos.sh`, and kept as the
+`macos-engine` artifact of every CI run), drag **YK Engine** to Applications and open it. The
+welcome screen offers New Project, Open Project, recent projects and the demo game. **Build >
+Export Game** writes a standalone `GameName.app`, optionally signed and in a `.dmg`. No terminal is
+involved; logs and crash reports are in `~/Library/Logs/`. Until the app is notarized with a
+Developer ID (needs an Apple account; see [docs/BUILDING.md](docs/BUILDING.md#macos)), another Mac
+asks for Control-click > Open once.
+
+## Build it
+
+Requires CMake 3.25+, Ninja and a C++20 compiler (GCC, Clang, MSVC; all three are built and tested in CI). The first
 configure downloads hash-pinned Box2D, SDL3 and Dear ImGui. Linux also needs SDL's usual
 development packages. Details, presets and the Windows and macOS notes are in
 [docs/BUILDING.md](docs/BUILDING.md).
@@ -33,6 +44,7 @@ ctest --preset dev --output-on-failure
 ./build/dev/yk_editor YK-DemoGame           # open the demo game in the editor
 ./build/dev/yk_player YK-DemoGame           # play it without the editor
 ./build/dev/yk export YK-DemoGame --target linux --out dist --zip     # package it
+./build/dev/yk new ~/Games/MyGame --name "My Game"                    # a new project anywhere
 ```
 
 Playing the demo: **Ember** uses **A/D** to move, **W** to jump and **S** to use a lever; **Tide**
@@ -56,14 +68,15 @@ include/yk/  src/         engine and gameplay library (Box2D and SDL stay privat
 editor/core  editor/ui    editor: UI-free core library; Dear ImGui workbench, panels, scripted UI driver
 player/  tools/yk/        yk_player and the yk command line
 YK-DemoGame/              the demo game (data) and its art/level generators
-tests/{unit,integration,editor,install}/
+packaging/                macOS bundle template, entitlements, icons
+tests/                    unit, integration, editor UI scripts, install, macOS bundle, diagnostics, external project
 docs/  cmake/  scripts/   documentation, CMake modules and toolchains, verification and packaging scripts
 ```
 
 ## Documentation
 
 - [Architecture](docs/ARCHITECTURE.md): modules, systems, rules of the codebase
-- [Building, testing and shipping](docs/BUILDING.md): presets, tests, packaging, export, Windows and macOS
+- [Building, testing and shipping](docs/BUILDING.md): presets, tests, macOS app and disk image, export, signing, Windows
 - [Editor guide](docs/EDITOR.md): the workbench, level editing, prefabs, assets, play, export, shortcuts
 - [Project format](docs/PROJECT_FORMAT.md): every file the engine reads and writes
 - [Status](docs/STATUS.md): what is verified, how, and what is not done
