@@ -78,6 +78,7 @@ fs::path homeDirectory() {
     return ".";
 }
 
+#if !defined(__APPLE__)
 namespace {
 // $NAME when it is set to an absolute path, else `fallback` (the XDG rules ignore relative values).
 fs::path absoluteEnvironment(std::string_view name, const fs::path &fallback) {
@@ -89,6 +90,7 @@ fs::path absoluteEnvironment(std::string_view name, const fs::path &fallback) {
     return fallback;
 }
 } // namespace
+#endif
 
 UserDirectories userDirectories(std::string_view organization, std::string_view application) {
     fs::path relative;
