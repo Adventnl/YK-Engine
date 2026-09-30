@@ -257,6 +257,12 @@ log "== validation and project settings"
 menu "Build/Validate Project"
 expect panel-view Problems
 expect problems 1
+# Clicking a problem shows what it is about: the scene opens with that entity selected.
+expect widget problems/row/0
+expect scene scenes/practice.ykscene
+click problems/row/0
+expect scene scenes/level01.ykscene
+expect selected "Lever (1)"
 click "panel-tab/Console"
 expect panel-view Console
 menu "File/Project Settings"

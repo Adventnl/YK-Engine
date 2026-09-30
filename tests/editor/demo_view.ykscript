@@ -133,6 +133,27 @@ key ctrl+z
 expect no-component Crate HingeJoint
 expect clean
 
+log "== the right-click menu creates things where the pointer is"
+click scene/FrameAll
+rightclick world:30,3
+expect widget scene/context/create
+expect widget scene/context/paste
+click scene/context/create
+click create-category/Level
+click create/Platform
+expect entity-count 174
+expect position Platform 30,3
+expect selected Platform
+rightclick world:12,3
+expect widget scene/context/duplicate
+click scene/context/delete
+expect entity-count 173
+key ctrl+z
+expect entity-count 174
+key ctrl+z
+expect entity-count 173
+expect clean
+
 log "== the view keeps working while the game plays"
 # Play shows the Game tab; a second editor group keeps the scene view on screen next to it.
 click scene/FrameAll

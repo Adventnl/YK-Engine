@@ -35,8 +35,10 @@ void strip(EditorState &state, ImVec2 start) {
     const float button = 24.0F;
     ImGui::SameLine(ImGui::GetWindowWidth() - 4.0F * (button + 2.0F) - 8.0F);
     ImGui::SetCursorPosY(start.y + 3.0F);
+    ImGui::BeginDisabled(!state.playing()); // There is nothing to restart until the game runs.
     if (iconButton("game/Restart", Icon::Restart, false, "Restart the scene", 0, button))
         state.restartPlay();
+    ImGui::EndDisabled();
     ImGui::SameLine(0.0F, 2.0F);
     if (iconButton("game/PhysicsDebug", Icon::Entity, state.view.gamePhysicsDebug,
                    "Show physics shapes", 0, button))

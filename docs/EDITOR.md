@@ -259,8 +259,10 @@ click elsewhere in the editor to type into the editor again.
 
 **Build > Validate Project** loads every scene and prefab and lists problems in the Problems panel:
 files that do not load, references to missing entities, missing asset files, unknown layers, a
-missing start scene, prefab links to files that are gone. Click a problem to go to it. The status
-bar's problem count is refreshed after saves.
+missing start scene, prefab links to files that are gone, and what a component says is wrong with
+itself (a plate with no targets, a hinge on a body that cannot swing, a lever with no trigger).
+Click a problem to go to it: a scene opens with the entity it is about selected and in view. The
+status bar's problem count is refreshed after saves.
 
 **Build > Export Game** packages the game (see
 [Exported games](PROJECT_FORMAT.md#exported-games)): choose the target system, the folder, and

@@ -760,6 +760,16 @@ void mechanismsAreValidated() {
         mentions(Severity::Warning, "'Still Platform' MovingPlatform: neither travels nor spins"));
     CHECK(!mentions(Severity::Warning, "'Good Plate'"));
     CHECK(!mentions(Severity::Warning, "'Pad'"));
+    // A finding names the entity it is about, so the editor can select it.
+    const auto entityOf = [&](const std::string &text) {
+        for (const ProjectIssue &issue : issues)
+            if (issue.message.find(text) != std::string::npos)
+                return issue.entity;
+        return EntityId{};
+    };
+    CHECK(entityOf("'Bare Plate' PressurePlate: has no targets") == bare.id());
+    CHECK(entityOf("'Deaf Lever' Lever: needs a trigger Collider") == deaf.id());
+    CHECK(entityOf("'Soft Door' Door: needs a Kinematic RigidBody") == softDoor.id());
     std::filesystem::remove_all(root);
 }
 

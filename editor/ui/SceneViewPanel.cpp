@@ -724,25 +724,34 @@ void handleInput(EditorState &state, ViewportPanel &panel) {
 void contextMenu(EditorState &state, ViewportPanel &panel) {
     if (!ImGui::BeginPopup("scene_context"))
         return;
-    if (state.document) {
-        if (ImGui::BeginMenu("Create Here")) {
-            createEntityMenu(state, {}, panel.contextWorld);
-            ImGui::EndMenu();
-        }
-        if (ImGui::MenuItem("Paste Here", shortcutText("Ctrl+V"))) {
-            if (const char *text = ImGui::GetClipboardText(); text && *text)
-                if (auto parsed = Json::parse(text))
-                    if (auto pasted = state.document->paste(parsed.value(), {}, panel.contextWorld);
-                        !pasted)
-                        log(LogLevel::Warning, "editor", pasted.error());
-        }
-        const EntityId selected = state.document->primary();
-        if (selected) {
-            ImGui::Separator();
-            if (ImGui::MenuItem("Duplicate", shortcutText("Ctrl+D")))
-                state.document->duplicateSelection();
-            if (ImGui::MenuItem("Delete", "Del"))
-                state.document->deleteSelection();
+    {
+        const PopupLook look; // Ends before EndPopup, which checks the style stack.
+        if (state.document) {
+            const bool create = ImGui::BeginMenu("Create Here");
+            markItem("scene/context/create");
+            if (create) {
+                createEntityMenu(state, {}, panel.contextWorld);
+                ImGui::EndMenu();
+            }
+            if (ImGui::MenuItem("Paste Here", shortcutText("Ctrl+V"))) {
+                if (const char *text = ImGui::GetClipboardText(); text && *text)
+                    if (auto parsed = Json::parse(text))
+                        if (auto pasted =
+                                state.document->paste(parsed.value(), {}, panel.contextWorld);
+                            !pasted)
+                            log(LogLevel::Warning, "editor", pasted.error());
+            }
+            markItem("scene/context/paste");
+            const EntityId selected = state.document->primary();
+            if (selected) {
+                ImGui::Separator();
+                if (ImGui::MenuItem("Duplicate", shortcutText("Ctrl+D")))
+                    state.document->duplicateSelection();
+                markItem("scene/context/duplicate");
+                if (ImGui::MenuItem("Delete", "Del"))
+                    state.document->deleteSelection();
+                markItem("scene/context/delete");
+            }
         }
     }
     ImGui::EndPopup();

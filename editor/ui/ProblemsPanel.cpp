@@ -5,12 +5,19 @@
 
 namespace yk::editor::ui {
 namespace {
-// Selects what a problem is about: a scene opens in a tab, the project file opens its settings.
+// Shows what a problem is about: a scene opens in a tab with the entity selected and framed, the
+// project file opens its settings.
 void reveal(EditorState &state, const ProjectIssue &issue) {
     if (issue.path == Project::fileName) {
         showDialog(state, DialogKind::ProjectSettings);
     } else if (issue.path.ends_with(sceneExtension)) {
-        state.openScene(issue.path);
+        if (!state.openScene(issue.path))
+            return;
+        if (issue.entity && state.document && state.document->path() == issue.path &&
+            state.document->scene().find(issue.entity)) {
+            state.document->select(issue.entity);
+            state.interaction.frameSelection();
+        }
     } else {
         state.showAssetInExplorer(issue.path);
     }

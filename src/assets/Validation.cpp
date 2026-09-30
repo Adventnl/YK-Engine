@@ -69,17 +69,20 @@ void checkScene(const Project &project, const Scene &scene, const std::string &f
                 std::vector<ProjectIssue> &issues, bool prefab) {
     scene.forEach([&](const Entity &entity) {
         const std::string owner = "'" + entity.name() + "'";
+        // Every finding remembers the entity it is about, so the editor can select it.
+        const auto report = [&](ProjectIssue::Severity severity, std::string message) {
+            issues.push_back({severity, file, std::move(message), entity.id()});
+        };
         if (const std::string &source = entity.prefabSource(); !source.empty()) {
             // The scene holds the instance's whole data, so a missing prefab only breaks
             // Revert/Apply in the editor; still worth knowing about.
             if (!fileExists(project, source))
-                issues.push_back(
-                    {Severity::Warning, file,
-                     owner + " is an instance of prefab '" + source + "', which does not exist"});
+                report(Severity::Warning,
+                       owner + " is an instance of prefab '" + source + "', which does not exist");
             else if (source.size() < 9 || source.compare(source.size() - 9, 9, ".ykprefab") != 0)
-                issues.push_back({Severity::Warning, file,
-                                  owner + " names '" + source + "' as its prefab, which is not a " +
-                                      prefabExtension + " file"});
+                report(Severity::Warning, owner + " names '" + source +
+                                              "' as its prefab, which is not a " + prefabExtension +
+                                              " file");
         }
         for (const auto &component : entity.components()) {
             const std::string where = owner + " " + component->type().name;
@@ -87,11 +90,15 @@ void checkScene(const Project &project, const Scene &scene, const std::string &f
                 std::vector<std::string> problems;
                 component->type().check(entity, *component, CheckContext{prefab}, problems);
                 for (const std::string &problem : problems)
-                    issues.push_back({Severity::Warning, file, where + ": " + problem});
+                    report(Severity::Warning, where + ": " + problem);
             }
-            if (const auto *animated = dynamic_cast<const AnimatedSprite *>(component.get()))
+            if (const auto *animated = dynamic_cast<const AnimatedSprite *>(component.get())) {
+                const std::size_t before = issues.size();
                 checkAnimatedSprite(project, *animated, entity.get<SpriteRenderer>(), where, file,
                                     issues);
+                for (std::size_t i = before; i < issues.size(); ++i)
+                    issues[i].entity = entity.id();
+            }
             for (const PropertyInfo &property : component->type().properties) {
                 if (property.readOnly)
                     continue;
@@ -103,44 +110,39 @@ void checkScene(const Project &project, const Scene &scene, const std::string &f
                     const auto resolved = project.resolve(path);
                     std::error_code error;
                     if (!resolved || !std::filesystem::exists(resolved.value(), error))
-                        issues.push_back(
-                            {Severity::Error, file,
-                             where + "." + property.name + ": missing asset '" + path + "'"});
+                        report(Severity::Error,
+                               where + "." + property.name + ": missing asset '" + path + "'");
                 } else if ((property.isInputSet || property.isInputAction) &&
                            property.type == PropertyType::String) {
                     const std::string &name = std::get<std::string>(value);
                     if (name.empty())
                         continue;
                     if (property.isInputSet && !project.input.findSet(name))
-                        issues.push_back({Severity::Warning, file,
-                                          where + "." + property.name + ": input set '" + name +
-                                              "' is not defined in the project"});
+                        report(Severity::Warning, where + "." + property.name + ": input set '" +
+                                                      name + "' is not defined in the project");
                     if (property.isInputAction) {
                         const auto known = project.input.actionNames();
                         if (std::find(known.begin(), known.end(), name) == known.end())
-                            issues.push_back({Severity::Warning, file,
-                                              where + "." + property.name + ": input action '" +
-                                                  name + "' is not defined in the project"});
+                            report(Severity::Warning, where + "." + property.name +
+                                                          ": input action '" + name +
+                                                          "' is not defined in the project");
                     }
                 } else if (property.isLayer && property.type == PropertyType::String) {
                     const std::string &layer = std::get<std::string>(value);
                     if (project.layers.indexOf(layer) < 0)
-                        issues.push_back({Severity::Warning, file,
-                                          where + "." + property.name +
-                                              ": unknown collision layer '" + layer +
-                                              "' (falls back to layer 0)"});
+                        report(Severity::Warning, where + "." + property.name +
+                                                      ": unknown collision layer '" + layer +
+                                                      "' (falls back to layer 0)");
                 } else if (property.type == PropertyType::EntityReference) {
                     const EntityId target = std::get<EntityId>(value);
                     if (target && !scene.find(target))
-                        issues.push_back(
-                            {Severity::Error, file,
-                             where + "." + property.name + ": refers to a missing entity"});
+                        report(Severity::Error,
+                               where + "." + property.name + ": refers to a missing entity");
                 } else if (property.type == PropertyType::EntityReferenceList) {
                     for (const EntityId target : std::get<std::vector<EntityId>>(value))
                         if (target && !scene.find(target))
-                            issues.push_back(
-                                {Severity::Error, file,
-                                 where + "." + property.name + ": refers to a missing entity"});
+                            report(Severity::Error,
+                                   where + "." + property.name + ": refers to a missing entity");
                 }
             }
         }
@@ -244,8 +246,13 @@ std::vector<ProjectIssue> validateProject(const Project &project,
             auto instance = instantiateSubtree(scratch, prefab.value());
             if (!instance)
                 issues.push_back({Severity::Error, entry.path, instance.error()});
-            else
+            else {
+                // The entities of a prefab exist only in this scratch scene: nothing to select.
+                const std::size_t before = issues.size();
                 checkScene(project, scratch, entry.path, issues, true);
+                for (std::size_t i = before; i < issues.size(); ++i)
+                    issues[i].entity = {};
+            }
         }
     }
     return issues;
