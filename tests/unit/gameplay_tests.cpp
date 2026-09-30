@@ -1254,7 +1254,8 @@ std::optional<PropertyValue> otherValue(const PropertyInfo &property, const Prop
     case PropertyType::Color:
         return Color{12, 34, 56, 78};
     case PropertyType::Enum: {
-        const std::int64_t count = std::max<std::int64_t>(1, property.options.size());
+        const std::int64_t count =
+            std::max<std::int64_t>(1, static_cast<std::int64_t>(property.options.size()));
         return (std::get<std::int64_t>(now) + 1) % count;
     }
     case PropertyType::EntityReference:
