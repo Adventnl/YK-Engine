@@ -144,6 +144,8 @@ const char *glyphOf(Icon icon) {
         return codicon::zoomIn;
     case Icon::ZoomOut:
         return codicon::zoomOut;
+    case Icon::Fit:
+        return codicon::screenFull;
     case Icon::Split:
         return codicon::splitHorizontal;
     case Icon::Animation:

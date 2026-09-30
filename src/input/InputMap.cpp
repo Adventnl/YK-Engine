@@ -146,6 +146,7 @@ InputMap InputMap::standard() {
     global.actions = {
         {"Restart", {key(Key::R), pad(GamepadButton::Back)}},
         {"Pause", {key(Key::P), pad(GamepadButton::Start)}},
+        {"Continue", {key(Key::Enter), pad(GamepadButton::East)}},
     };
     map.sets = {std::move(first), std::move(second), std::move(global)};
     return map;

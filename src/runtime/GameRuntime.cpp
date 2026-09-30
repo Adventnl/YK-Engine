@@ -55,7 +55,8 @@ Result<std::unique_ptr<GameRuntime>> GameRuntime::create(std::unique_ptr<Scene> 
         return Error{"GameRuntime needs a scene"};
     if (!(options.fixedSeconds >= 0.0001 && options.fixedSeconds <= 0.1) ||
         options.maxStepsPerFrame == 0 || !finite(options.viewportSize) ||
-        options.viewportSize.x <= 0 || options.viewportSize.y <= 0)
+        options.viewportSize.x <= 0 || options.viewportSize.y <= 0 ||
+        !(options.transitionSeconds >= 0.0F && options.transitionSeconds <= 30.0F))
         return Error{"Invalid runtime options"};
     if (auto status = options.layers.validate(); !status)
         return Error{status.error()};
@@ -67,12 +68,25 @@ Result<std::unique_ptr<GameRuntime>> GameRuntime::create(std::unique_ptr<Scene> 
     runtime->impl_->startState = sceneToJson(*scene);
     if (auto status = runtime->impl_->rebuild(std::move(scene)); !status)
         return Error{status.error()};
+    if (runtime->impl_->options.startCovered && runtime->impl_->options.transitionSeconds > 0.0F) {
+        runtime->impl_->phase = Impl::Phase::In; // Fades in from black.
+        runtime->impl_->fade = 1.0F;
+    }
     return runtime;
 }
 
 Status GameRuntime::Impl::rebuild(std::unique_ptr<Scene> fresh) {
     scene = std::move(fresh);
     blackboard.clear();
+    for (const auto &[key, value] : options.variables) { // What the previous scene carried over.
+        if (const auto *number = std::get_if<double>(&value))
+            blackboard.set(key, *number);
+        else
+            blackboard.set(key, std::get<std::string>(value));
+        blackboard.keep(key);
+    }
+    inputLocks.clear();
+    announced = false;
     events.clear();
     started.clear();
     destroyQueue.clear();
@@ -119,11 +133,56 @@ void GameRuntime::Impl::startPending() {
     }
 }
 
+void GameRuntime::Impl::beginTransition(bool restart, std::string nextScene) {
+    if (options.transitionSeconds <= 0.0F) { // Instant: what tests and tools want.
+        if (restart)
+            restartWanted = true;
+        else
+            sceneChange = std::move(nextScene);
+        return;
+    }
+    if (phase == Phase::Out || phase == Phase::Covered)
+        return; // Already on the way out; the first request wins.
+    // Fading in when the request comes: turn around from where the fade is, without a jump.
+    phaseTime = phase == Phase::In ? fade * options.transitionSeconds : 0.0F;
+    phase = Phase::Out;
+    restartAfterFade = restart;
+    sceneAfterFade = std::move(nextScene);
+}
+
+void GameRuntime::Impl::advanceTransition(float seconds) {
+    if (phase == Phase::Idle || phase == Phase::Covered)
+        return;
+    const float length = options.transitionSeconds;
+    phaseTime += seconds;
+    if (phase == Phase::Out) {
+        fade = std::min(1.0F, phaseTime / length);
+        if (fade < 1.0F)
+            return;
+        if (restartAfterFade) { // Covered: rebuild at the end of this frame, then show it again.
+            restartWanted = true;
+            phase = Phase::In;
+            phaseTime = 0.0F;
+        } else {
+            sceneChange = sceneAfterFade; // The host swaps in the next scene while it is covered.
+            phase = Phase::Covered;
+        }
+    } else {
+        fade = std::max(0.0F, 1.0F - phaseTime / length);
+        if (fade <= 0.0F)
+            phase = Phase::Idle;
+    }
+}
+
 void GameRuntime::Impl::fixedTick() {
     input.fill(tickInput);
     actions.update(tickInput);
     syncActivation();
     startPending();
+    if (!announced) {
+        announced = true;
+        self.emit("scene_started");
+    }
     const float step = static_cast<float>(options.fixedSeconds);
     forEachComponent([&](Component &component) { component.onFixedUpdate(self, step); });
     if (auto advanced = world->advance(options.fixedSeconds); !advanced)
@@ -135,6 +194,7 @@ void GameRuntime::Impl::fixedTick() {
     events.dispatch();
     ++ticks;
     time = static_cast<double>(ticks) * options.fixedSeconds;
+    advanceTransition(step);
 }
 
 void GameRuntime::Impl::variableUpdate(float seconds) {
@@ -176,6 +236,20 @@ void GameRuntime::update(double frameSeconds, const Keyboard &keyboard) {
     update(frameSeconds, frame);
 }
 
+namespace {
+// Frames arrive a hair off a multiple of the tick (a 60 Hz screen delivers 16.4 ms, then 16.9 ms),
+// and a raw clock turns that into no tick on one frame and two on the next: a visible hitch every
+// few seconds. A frame time within 0.4 ms of one, two or three ticks, or of half a tick (a 120 Hz
+// screen), counts as exactly that; anything else is used as measured.
+double snapFrameTime(double seconds, double step) {
+    constexpr double tolerance = 0.0004;
+    for (const double multiple : {0.5, 1.0, 2.0, 3.0})
+        if (std::abs(seconds - multiple * step) < tolerance)
+            return multiple * step;
+    return seconds;
+}
+} // namespace
+
 void GameRuntime::update(double frameSeconds, const InputFrame &frameInput) {
     auto &state = *impl_;
     if (state.paused)
@@ -184,6 +258,7 @@ void GameRuntime::update(double frameSeconds, const InputFrame &frameInput) {
     if (!std::isfinite(frameSeconds) || frameSeconds < 0)
         frameSeconds = 0;
     const double step = state.options.fixedSeconds;
+    frameSeconds = snapFrameTime(frameSeconds, step);
     state.accumulator += std::min(frameSeconds, 0.25);
     unsigned steps = 0;
     while (state.accumulator + 1e-9 >= step && steps < state.options.maxStepsPerFrame) {
@@ -218,6 +293,10 @@ const std::string &GameRuntime::sceneChangeRequested() const {
 }
 void GameRuntime::clearSceneChangeRequest() {
     impl_->sceneChange.clear();
+    if (impl_->phase == Impl::Phase::Covered) { // The host will not switch: show the game again.
+        impl_->phase = Impl::Phase::In;
+        impl_->phaseTime = 0.0F;
+    }
 }
 void GameRuntime::setPaused(bool paused) {
     impl_->paused = paused;
@@ -385,9 +464,25 @@ Result<EntityId> GameRuntime::spawnPrefab(const std::string &path, Vec2 worldPos
     return spawned;
 }
 void GameRuntime::requestRestart() {
-    impl_->restartWanted = true;
+    impl_->beginTransition(true, {});
 }
 void GameRuntime::requestSceneChange(std::string projectRelativePath) {
-    impl_->sceneChange = std::move(projectRelativePath);
+    impl_->beginTransition(false, std::move(projectRelativePath));
+}
+void GameRuntime::lockInput(const std::string &reason, bool locked) {
+    if (locked)
+        impl_->inputLocks.insert(reason);
+    else
+        impl_->inputLocks.erase(reason);
+}
+bool GameRuntime::inputLocked() const {
+    return !impl_->inputLocks.empty() || impl_->phase == Impl::Phase::Out ||
+           impl_->phase == Impl::Phase::Covered;
+}
+float GameRuntime::screenFade() const {
+    return impl_->fade;
+}
+bool GameRuntime::transitioning() const {
+    return impl_->phase != Impl::Phase::Idle;
 }
 } // namespace yk

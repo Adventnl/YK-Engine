@@ -9,6 +9,11 @@ struct GameViewOptions {
     bool physicsDebug{false}; // Outlines of the actual physics shapes.
     bool colliders{false};    // Outlines of collider components.
     std::string overlay;      // Small debug text in the corner (empty: none).
+    // How far to cover the picture with black, 0 (not at all) .. 1 (fully): a fade between scenes
+    // (GameRuntime::screenFade). Drawn over the world and the UI.
+    float fade{0.0F};
+    // Dim the picture and say PAUSED in the middle (a game the player has paused).
+    bool paused{false};
     // Draw into this render target (from Renderer::createRenderTarget) instead of the frame; the
     // viewport rectangle is then in texture pixels.
     std::optional<TextureHandle> target;

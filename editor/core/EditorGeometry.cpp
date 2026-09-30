@@ -280,6 +280,20 @@ std::vector<Ghost> displacementGhosts(const Entity &entity, float markerHalf) {
     return ghosts;
 }
 
+std::vector<Pin> pinsOf(const Entity &entity) {
+    std::vector<Pin> pins;
+    const auto &components = entity.components();
+    for (std::size_t index = 0; index < components.size(); ++index) {
+        for (const PropertyInfo &property : components[index]->type().properties) {
+            if (!property.isPin || property.type != PropertyType::Vec2)
+                continue;
+            const Vec2 local = std::get<Vec2>(property.get(*components[index]));
+            pins.push_back({index, property.name, transformPoint(entity.worldTransform(), local)});
+        }
+    }
+    return pins;
+}
+
 float snapTo(float value, float step) {
     return step > 0.0F ? std::round(value / step) * step : value;
 }

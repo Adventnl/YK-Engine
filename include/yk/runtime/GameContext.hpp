@@ -62,8 +62,16 @@ class GameContext {
     // document is read once and kept, so gameplay can spawn an effect on every jump.
     virtual Result<EntityId> spawnPrefab(const std::string &path, Vec2 worldPosition,
                                          EntityId parent = {}) = 0;
+    // Restart the scene from its start state, or move to another scene. With a transition set in
+    // the runtime's options (RuntimeOptions::transitionSeconds) the screen fades out first and back
+    // in afterwards; the game keeps running underneath, ignoring input, until the screen is
+    // covered.
     virtual void requestRestart() = 0;
     virtual void requestSceneChange(std::string projectRelativePath) = 0;
+    // While locked, no input reaches the game's actions (a level-complete sequence, a cutscene).
+    // Locks nest by name: the game is locked while any lock is held.
+    virtual void lockInput(const std::string &reason, bool locked) = 0;
+    virtual bool inputLocked() const = 0;
 
     void emit(std::string name, EntityId source = {}, EntityId other = {}) {
         events().emit({std::move(name), source, other});

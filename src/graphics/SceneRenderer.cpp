@@ -552,8 +552,25 @@ Status SceneRenderer::drawColliders(Renderer &renderer, const Scene &scene, int 
             };
             if (collider->shape == ColliderShape::Box) {
                 const Vec2 h = extent * 0.5F;
-                outline = {local({-h.x, -h.y}), local({h.x, -h.y}), local({h.x, h.y}),
-                           local({-h.x, h.y})};
+                const float radius = std::clamp(collider->cornerRadius * std::min(scale.x, scale.y),
+                                                0.0F, 0.49F * std::min(extent.x, extent.y));
+                const Vec2 cut{std::min(collider->chamfer.x * scale.x, 0.49F * extent.x),
+                               std::min(collider->chamfer.y * scale.y, 0.49F * extent.y)};
+                if (cut.x > 0.005F && cut.y > 0.005F) {
+                    outline = {local({-h.x + cut.x, -h.y}), local({h.x - cut.x, -h.y}),
+                               local({h.x, -h.y + cut.y}),  local({h.x, h.y - cut.y}),
+                               local({h.x - cut.x, h.y}),   local({-h.x + cut.x, h.y}),
+                               local({-h.x, h.y - cut.y}),  local({-h.x, -h.y + cut.y})};
+                } else if (radius > 0.0F) {
+                    // Each corner is a quarter circle around a point `radius` inside it.
+                    arc({h.x - radius, -h.y + radius}, radius, -pi / 2, 0, 6);
+                    arc({h.x - radius, h.y - radius}, radius, 0, pi / 2, 6);
+                    arc({-h.x + radius, h.y - radius}, radius, pi / 2, pi, 6);
+                    arc({-h.x + radius, -h.y + radius}, radius, pi, 3 * pi / 2, 6);
+                } else {
+                    outline = {local({-h.x, -h.y}), local({h.x, -h.y}), local({h.x, h.y}),
+                               local({-h.x, h.y})};
+                }
             } else if (collider->shape == ColliderShape::Wedge) {
                 for (const Vec2 corner : wedgePoints(extent * 0.5F, world.scale))
                     outline.push_back(local(corner));

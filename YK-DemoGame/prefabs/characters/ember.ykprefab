@@ -71,7 +71,9 @@
             "layer": "Player",
             "friction": 0,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {

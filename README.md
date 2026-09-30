@@ -5,14 +5,14 @@ placing prefabs and components, wiring them together and pressing **Play**; the 
 a standalone player and can be exported as a desktop game.
 
 **The engine is the product.** The demo game, *Cinder Vale*, is a test of it: a complete
-two-player puzzle platformer (two characters, two hazards, gems, levers, gates, plates, a moving
-platform, checkpoints, exits) built only from the engine's components and prefabs, with original
-generated art, and no code of its own.
+two-player puzzle platformer (two characters, two hazards, gems, levers, gates, plates you can stand
+on and sink, a moving platform, checkpoints, exits, two rooms that lead into each other) built only
+from the engine's components and prefabs, with original generated art, and no code of its own.
 
 | Part | What it is | Where |
 |---|---|---|
 | **Engine** | Entities and components with reflection, scene/prefab/project files, input actions, animation clips and state machines, a headless fixed-step runtime on Box2D, an SDL3 renderer (layers, culling, tiling, nine-slice, parallax, particles), audio, validation, export. No game rules. | `include/`, `src/` |
-| **Gameplay library** | Reusable mechanics as components: platformer controller, plates, levers, doors, moving platforms, hazards, collectibles, checkpoints, goals, level rules. | `include/yk/gameplay`, `src/gameplay` |
+| **Gameplay library** | Reusable mechanics as components: platformer controller, physical plates, levers, doors, moving and rotating platforms, hinges, hazards, collectibles, checkpoints, goals, level flow (intro, retry, completion, next scene), event reactions. | `include/yk/gameplay`, `src/gameplay` |
 | **Editor** | Workbench with an Explorer, scene hierarchy, prefabs, component catalog, inspector, a Debug view of the running game, tabs and split views, console, problems, profiler; real level editing; Play on a copy of the scene. | `editor/` |
 | **Player and tools** | `yk_player` runs any project; `yk` creates, validates, formats, inspects and exports projects. | `player/`, `tools/yk/` |
 | **Packaging** | `YK Engine.app` and its `.dmg` for macOS; the exporter writes a standalone `Game.app` (or Windows/Linux folder) without the editor, with icon, signing and a `.dmg` on a Mac. | `packaging/`, `scripts/`, `src/assets/Export.cpp` |

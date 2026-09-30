@@ -20,11 +20,31 @@ Vec2 feetOf(const Entity &entity) {
 struct Ground {
     bool found{};
     Vec2 normal{0.0F, -1.0F}; // Points from the ground toward the character.
-    Vec2 velocity{};
+    Vec2 velocity{};          // Of the ground under the feet (see groundVelocityAt).
+    Vec2 point{};             // Where the character touches it.
+    physics::BodyHandle body;
 };
 
+// The velocity of the ground at `point`, which is what a rider has to match to stay put on it: a
+// platform that turns or tilts moves faster the farther from its center the rider stands. A turning
+// platform also pulls the rider toward its center each moment (circular motion); without that the
+// rider would drift outward, so half a tick of that pull is added.
+Vec2 groundVelocityAt(physics::World &world, physics::BodyHandle body, Vec2 point, float seconds) {
+    const auto velocity = world.pointVelocity(body, point);
+    if (!velocity)
+        return {};
+    Vec2 result = velocity.value();
+    if (const auto state = world.state(body);
+        state && std::fabs(state.value().angularVelocity) > 1e-3F) {
+        const float turn = state.value().angularVelocity;
+        result += (state.value().worldCenter - point) * (turn * turn * 0.5F * seconds);
+    }
+    return result;
+}
+
 // The most upward-facing touching contact within the walkable slope range.
-Ground probeGround(GameContext &context, physics::BodyHandle body, float cosMaxSlope) {
+Ground probeGround(GameContext &context, physics::BodyHandle body, float cosMaxSlope,
+                   float seconds) {
     Ground ground;
     auto &world = context.physics();
     const auto contacts = world.contacts(body);
@@ -37,22 +57,28 @@ Ground probeGround(GameContext &context, physics::BodyHandle body, float cosMaxS
         const bool weAreFirst = firstBody && firstBody.value() == body;
         const Vec2 normal = weAreFirst ? -contact.normal : contact.normal;
         float closest = 1e9F;
+        Vec2 closestPoint{};
         for (const physics::ContactPoint &point : contact.points)
-            closest = std::min(closest, point.separation);
+            if (point.separation < closest) {
+                closest = point.separation;
+                closestPoint = point.point;
+            }
         if (closest > 0.06F) // A speculative contact that is not actually touching.
             continue;
         const float upward = -normal.y;
         if (upward >= cosMaxSlope && upward > best) {
             best = upward;
             ground.normal = normal;
+            ground.point = closestPoint;
             groundShape = weAreFirst ? contact.second : contact.first;
         }
     }
     if (best > 0.0F) {
         ground.found = true;
-        if (const auto groundBody = world.bodyOf(groundShape))
-            if (const auto state = world.state(groundBody.value()))
-                ground.velocity = state.value().linearVelocity;
+        if (const auto groundBody = world.bodyOf(groundShape)) {
+            ground.body = groundBody.value();
+            ground.velocity = groundVelocityAt(world, ground.body, ground.point, seconds);
+        }
     }
     return ground;
 }
@@ -121,6 +147,14 @@ void PlatformerController::describe(TypeBuilder<PlatformerController> &type) {
     type.field("grounded", &PlatformerController::grounded_).readOnly();
 }
 
+void PlatformerController::onStart(GameContext &context) {
+    // A character falls at up to maxFallSpeed, which is many times its own thickness per tick.
+    // Only a bullet body is swept against moving platforms, plates and doors as well as static
+    // geometry; without it a landing character sinks into them before it is pushed back out.
+    if (const auto body = context.bodyOf(entity().id()))
+        context.physics().setBullet(*body, true);
+}
+
 void PlatformerController::onFixedUpdate(GameContext &context, float seconds) {
     if (const auto *killable = entity().get<Killable>(); killable && !killable->alive())
         return;
@@ -135,15 +169,14 @@ void PlatformerController::onFixedUpdate(GameContext &context, float seconds) {
     const auto *player = entity().get<PlayerInput>();
     float move = 0.0F;
     ButtonState jump;
-    if (player && player->enabled) {
-        const ActionInput &input = context.input();
-        move = input.axis(player->actionSet, moveLeftAction, moveRightAction);
-        jump = input.state(player->actionSet, jumpAction);
+    if (player) { // Reads nothing while the game's input is locked (a fade, a level-complete).
+        move = player->axis(context, moveLeftAction, moveRightAction);
+        jump = player->button(context, jumpAction);
     }
     const float cosMaxSlope = std::cos(degreesToRadians(maxSlopeDegrees));
 
     Vec2 velocity = state.value().linearVelocity;
-    Ground ground = probeGround(context, *body, cosMaxSlope);
+    Ground ground = probeGround(context, *body, cosMaxSlope, seconds);
     // Contact manifolds are computed at the start of a physics step, so right after leaving the
     // ground they are one tick stale. Moving away from the surface (along its normal, so running up
     // a slope does not count) faster than 1 m/s means the character has left it. Judge that against
@@ -174,7 +207,12 @@ void PlatformerController::onFixedUpdate(GameContext &context, float seconds) {
                 if (snapDistance <= groundSnap) {
                     ground.found = true;
                     ground.normal = hit.value()->normal;
+                    ground.point = hit.value()->point;
                     ground.velocity = {};
+                    // Stepping down onto something that moves keeps its motion.
+                    if (const auto groundBody = world.bodyOf(hit.value()->shape))
+                        ground.velocity =
+                            groundVelocityAt(world, groundBody.value(), ground.point, seconds);
                 }
             }
         }

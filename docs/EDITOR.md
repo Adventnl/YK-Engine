@@ -50,7 +50,7 @@ cards on a darker canvas, a cool neutral palette, small type, no decoration.
 | | t  |                     | Console  Problems  Build Output  Profiler |                  | |
 | | y  |                     |  [info] Opened scene scenes/level01.ykscene|                  | |
 | +----+---------------------+-------------------------------------------+------------------+ |
-|  Cinder Vale   level01.ykscene *   0 problems             171 entities  Snap 0.50 m  60 fps  |  status bar
+|  Cinder Vale   level01.ykscene *   0 problems             173 entities  Snap 0.50 m  60 fps  |  status bar
 +--------------------------------------------------------------------------------------------+
 ```
 
@@ -126,9 +126,11 @@ action. The map is validated when you press Save.
 | Rotate tool: drag the knob | rotate (snaps to 15 degrees) |
 | Drag the dashed ghost of a door or moving platform | set how far it moves |
 | Arrow keys (Shift for more) | nudge |
-| **F** / **Home** | frame the selection / everything you can edit |
-| Mouse wheel | zoom at the cursor |
-| Middle or right drag, or Space + left drag | pan |
+| Drag the orange pin of a hinge (or any point field marked as a pin) | move its anchor; it is stored in the entity's own space, so it follows a turned entity |
+| **F** / **Home** | focus the selection / fit everything you can edit |
+| Mouse wheel | zoom at the cursor (a sideways wheel or two-finger swipe pans) |
+| **Ctrl+=**, **Ctrl+-**, **Ctrl+0** | zoom in, zoom out (round levels: 25, 50, 75, 100, 150, 200 ... %), back to 100% |
+| Middle or right drag, or Space + left drag | pan (the cursor shows a hand while Space is held, four arrows while dragging) |
 | Right-click | create here, paste here |
 | Hold **Ctrl** while dragging | toggle grid snapping (the toolbar magnet turns it on and off) |
 | **Esc** | cancel a drag or a pending pick |
@@ -141,10 +143,21 @@ plate together with its door keeps the copy of the plate opening the copy of the
 All** ignores locked and hidden entities, so a huge locked backdrop does not push the level into a
 corner.
 
-The toolbar above the view has the tools, snapping and its grid size, and an **Overlays** menu
-(grid, collider outlines, sprite bounds, pivots, links of the selection or all links, entity
-names, the game camera's frame). The line below the toolbar is a breadcrumb of the selection's
-place in the hierarchy; click a part to select it.
+The toolbar above the view has the tools, snapping and its grid size, an **Overlays** menu (grid,
+collider outlines, sprite bounds, pivots, links of the selection or all links, entity names, the
+game camera's frame) and the view controls: **zoom out**, the **zoom level** (click it for
+25% ... 800%, *Fit the Scene* and *Focus the Selection*), **zoom in**, **fit** (Home) and **focus**
+(F). The same commands are in the **View** menu, and the zoom level is also in the status bar
+(click it to fit the scene). Zooming from a button or a key is about the middle of the view; the
+wheel zooms about the pointer, so the spot you point at stays put. The view controls work while the
+game plays, too (put the scene view beside the Game tab with **Split Right**, since Play shows the
+Game tab). An editor group too narrow for the whole row (a split) keeps the tools, the snap
+switch and the zoom and folds the grid size, overlays, fit and focus into a **...** menu. The line
+below the toolbar is a breadcrumb of the selection's place in the hierarchy; click a part to
+select it.
+
+SDL 3.2 reports no trackpad pinch gesture, so pinch-to-zoom is not available; a two-finger scroll
+zooms like the wheel and a sideways swipe pans.
 
 ### Hierarchy
 
@@ -246,8 +259,10 @@ click elsewhere in the editor to type into the editor again.
 
 **Build > Validate Project** loads every scene and prefab and lists problems in the Problems panel:
 files that do not load, references to missing entities, missing asset files, unknown layers, a
-missing start scene, prefab links to files that are gone. Click a problem to go to it. The status
-bar's problem count is refreshed after saves.
+missing start scene, prefab links to files that are gone, and what a component says is wrong with
+itself (a plate with no targets, a hinge on a body that cannot swing, a lever with no trigger).
+Click a problem to go to it: a scene opens with the entity it is about selected and in view. The
+status bar's problem count is refreshed after saves.
 
 **Build > Export Game** packages the game (see
 [Exported games](PROJECT_FORMAT.md#exported-games)): choose the target system, the folder, and
@@ -272,7 +287,7 @@ to run on an exported game.
 |---|---|
 | **File** | New/Open/Recent Project, New/Open/Save/Save As/Save All/Close Scene, Project Settings, Close Project, Quit |
 | **Edit** | Undo, Redo, Cut, Copy, Paste, Duplicate, Delete, Select All, Deselect, Frame Selected, Frame All |
-| **View** | the side bar views, Side Bar / Inspector / Panel toggles, panel tabs, Maximize Panel, Editor Layout, Overlays, Snap to Grid, Reset Layout |
+| **View** | the side bar views, Side Bar / Inspector / Panel toggles, panel tabs, Maximize Panel, Editor Layout, Overlays, Snap to Grid, Zoom In / Zoom Out / Reset Zoom, Reset Layout |
 | **Scene** | New/Open/Save Scene, Scene Settings, Frame All, Play Scene |
 | **Entity** | Create, Create Child, Save as Prefab, Instantiate Prefab, Prefab actions, Duplicate, Delete, Activate/Deactivate, Hide, Lock, Move Up/Down |
 | **Component** | Add Component, Remove Component, Browse Components |
@@ -293,11 +308,12 @@ belongs to the system.
 | Ctrl+Z, Ctrl+Y (Ctrl+Shift+Z) | undo, redo |
 | Ctrl+C, Ctrl+X, Ctrl+V, Ctrl+D, Delete, Ctrl+A | copy, cut, paste, duplicate, delete, select all |
 | W, R, E | Move, Resize, Rotate tool |
-| F, Home | frame the selection, frame everything |
+| F, Home | focus the selection, fit everything |
+| Ctrl+=, Ctrl+-, Ctrl+0 | zoom in, zoom out, back to 100% |
 | Arrow keys, Shift+arrows | nudge the selection |
 | F2 | rename the selected entity (in the Hierarchy) or rename or move the selected file (in the Explorer) |
 | Alt+Up, Alt+Down | move among siblings |
-| F5, Shift+F5, F6, F10, Ctrl+Shift+F5 | play, stop, pause, step, restart |
+| F5, Shift+F5, F6, F10, Ctrl+Shift+F5 | play, stop, pause, step, restart (the game's own pause key, **P** in the demo, pauses too while the Game view has focus) |
 | Ctrl+F5 | run in the standalone player |
 | Ctrl+B, Ctrl+Alt+B, Ctrl+J | toggle side bar, inspector, panel |
 | Ctrl+Shift+E, H, K, X, B | Explorer, Scene, Prefabs, Components, Build view |
@@ -308,12 +324,41 @@ belongs to the system.
 ## Recipe: a pressure plate that opens a door
 
 1. **+ > Level > Platform**, place it and resize it into a floor.
-2. **+ > Mechanisms > Door** and **Pressure Plate**; move them where they belong.
+2. **+ > Mechanisms > Door** and **Pressure Plate**; move them where they belong. Put the plate's
+   origin on the floor: the slab stands 0.14 above it and sinks into the floor under a load. The
+   plate is a real surface: a character can drop onto it, stand on it and ride it down, and a
+   crate pushed onto it presses it too.
 3. Select the plate. In **PressurePlate > Targets**, press **+ Add** and choose *Door* (or use the
    eyedropper, or drag the door from the hierarchy onto the field). A cyan arrow now runs from the
    plate to the door.
 4. Set the plate's **Activator Tags** if only some characters should press it (empty: anything
-   that can move), and the door's **Open Offset** by dragging its ghost.
+   that can move), **Minimum Mass** to ignore light things, and the door's **Open Offset** by
+   dragging its ghost (or **Open Rotation** for a hinged door).
+5. Want an activation zone instead of a button (a region in the floor that has nothing to stand
+   on)? Give the plate a trigger collider: it senses whoever overlaps the zone, whatever blocks
+   movement (set **Sensing** to *Region* to say so explicitly). The **Problems** panel tells you
+   when a plate has no pad to stand on (or no trigger for *Region*), or no targets.
+
+## Recipe: a seesaw, a swinging bridge
+
+Add a **Collider** and a **RigidBody** (Dynamic), then **HingeJoint**. An orange **pin** appears in
+the scene view at the anchor; drag it to where the plank should pivot (it snaps to the grid like
+everything else). **Connected Body** empty pins the plank to the world, or name another body.
+**Limits** keep the swing between two angles (degrees from where you placed it, positive
+clockwise); **Spring** pulls back toward **Rest Angle** so a seesaw returns to level; **Motor**
+turns it. Characters standing on it are carried by the point they stand on.
+
+## Recipe: a level with a beginning and an end
+
+Add **Level Flow** (**+ > Gameplay**). List the **Goals**; set **Intro Duration** and **Intro
+Message** for a "get ready", **Time Limit**, **Restart On Death**, the **Complete Message**,
+**Complete Delay**, **Next Scene** (picked from the project's scenes with the folder button; a scene
+that does not exist shows in red and as an error in Problems) and the variables to carry into it
+(**Keep Variables**: a gem count). While the level ends, controls are locked and whoever stands in an exit walks into it.
+**Continue Action** (an action of the global set, such as Enter) skips the wait. For things that
+should happen *because* of something (open a hatch two seconds after the third gem, restart a
+platform every ten seconds), use **+ > Gameplay > Event Action**: pick the event, the delay and what
+to do.
 
 ## Recipe: two characters and their world
 
@@ -338,8 +383,8 @@ Widgets register their screen rectangles under stable names (`toolbar/Play`, `hi
 `activity/Explorer`, `dialog/Export/export`, `prop/cooldown`, ...), so scripts survive layout
 changes. Commands include `click`, `drag`, `key`, `type`, `edit`, `menu File/Save Scene`, `capture`
 (a screenshot) and many `expect` checks (selection, properties, links, dialogs, the workbench's
-views, files on disk, runtime positions); the language is described at the top of
-`editor/ui/EditorDriver.hpp`. Scripts run headlessly (SDL's dummy video driver and software
+views, files on disk, runtime positions, the view's zoom and center); the language is described at
+the top of `editor/ui/EditorDriver.hpp`. Scripts run headlessly (SDL's dummy video driver and software
 renderer) on a private copy of the demo project, save screenshots of failed expectations, and
 imply `--fixed-step`: every editor frame advances Play by one 1/60 s tick, so `hold d 45` is
 0.75 s of game time on a slow or busy machine as on a fast one.

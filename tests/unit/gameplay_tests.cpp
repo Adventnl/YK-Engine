@@ -1,117 +1,18 @@
 // Plays the gameplay components headlessly: scripted keyboard input against real physics.
 #include "support/check.hpp"
+#include "support/world.hpp"
 #include "yk/components/Effects.hpp"
 #include "yk/core/Log.hpp"
 #include "yk/gameplay/Gameplay.hpp"
 #include "yk/runtime/GameRuntime.hpp"
 #include "yk/scene/SceneSerializer.hpp"
 #include <cmath>
+#include <optional>
 
 using namespace yk;
+using namespace yk::test;
 
 namespace {
-constexpr float floorTop = 10.0F;
-
-LayerConfig testLayers() {
-    LayerConfig layers = LayerConfig::defaults();
-    for (const char *name : {layers::solid, layers::player, layers::sensor, layers::prop})
-        layers.addLayer(name);
-    const auto index = [&](const char *name) {
-        return static_cast<std::size_t>(layers.indexOf(name));
-    };
-    layers.setInteraction(index(layers::player), index(layers::solid), true);
-    layers.setInteraction(index(layers::player), index(layers::player), true);
-    layers.setInteraction(index(layers::player), index(layers::sensor), true);
-    layers.setInteraction(index(layers::prop), index(layers::solid), true);
-    layers.setInteraction(index(layers::prop), index(layers::player), true);
-    layers.setInteraction(index(layers::prop), index(layers::sensor), true);
-    layers.setInteraction(index(layers::prop), index(layers::prop), true);
-    return layers;
-}
-
-ComponentRegistry makeRegistry() {
-    ComponentRegistry registry;
-    registerEngineComponents(registry);
-    registerGameplayComponents(registry);
-    return registry;
-}
-
-// A scene under construction plus the runtime once started.
-struct World {
-    ComponentRegistry registry = makeRegistry();
-    std::unique_ptr<Scene> scene = std::make_unique<Scene>(registry, 11);
-    std::unique_ptr<GameRuntime> runtime;
-    RecordingAudio audio;
-    MemoryAssets assets;
-    Keyboard keyboard;
-    std::vector<std::string> events;
-
-    Entity &box(const char *name, Vec2 center, Vec2 size, const char *layer = layers::solid) {
-        Entity &entity = scene->createEntity(name);
-        entity.transform().position = center;
-        auto &collider = entity.add<Collider>();
-        collider.size = size;
-        collider.layer = layer;
-        return entity;
-    }
-    Entity &ground(float left = -40.0F, float right = 40.0F) {
-        return box("Ground", {(left + right) / 2, floorTop + 0.5F}, {right - left, 1.0F});
-    }
-    // `actionSet` names the input-map set that drives it ("Player1" is A/D/W, "Player2" the arrow
-    // keys); a set that does not exist leaves the character uncontrolled.
-    Entity &character(const char *name, Vec2 at, const char *actionSet = "Player1",
-                      const char *tag = "") {
-        Entity &entity = scene->createEntity(name);
-        entity.transform().position = at;
-        entity.add<PlatformerController>();
-        entity.get<PlayerInput>()->actionSet = actionSet;
-        entity.add<Killable>();
-        entity.add<SpriteRenderer>().size = {0.6F, 0.95F};
-        if (*tag)
-            entity.addTag(tag);
-        return entity;
-    }
-    GameRuntime &start() {
-        RuntimeOptions options;
-        options.layers = testLayers();
-        options.audio = &audio;
-        options.assets = &assets;
-        auto created = GameRuntime::create(std::move(scene), options);
-        CHECK(created);
-        runtime = std::move(created.value());
-        runtime->events().subscribe(
-            "*", [this](const GameEvent &event) { events.push_back(event.name); });
-        return *runtime;
-    }
-    // Input driver: keys stay down until released; press/release edges last one tick.
-    void down(Key key) {
-        keyboard.set(key, true);
-    }
-    void up(Key key) {
-        keyboard.set(key, false);
-    }
-    void tick(int count = 1) {
-        for (int i = 0; i < count; ++i) {
-            runtime->stepOnce(keyboard);
-            keyboard.beginFrame();
-        }
-    }
-    Entity &at(const char *name) {
-        return *runtime->scene().findByName(name);
-    }
-    Vec2 position(const char *name) {
-        return at(name).worldPosition();
-    }
-    bool happened(const std::string &name) const {
-        return std::find(events.begin(), events.end(), name) != events.end();
-    }
-    int count(const std::string &name) const {
-        return static_cast<int>(std::count(events.begin(), events.end(), name));
-    }
-};
-
-constexpr float restingHeight = floorTop - 0.475F; // Capsule center when standing on the floor.
-
 // The whole animation chain on real physics: the controller publishes generic parameters, the
 // controller asset picks clips, the AnimatedSprite shows frames and mirrors the sprite. No code
 // here or in the controller names a clip.
@@ -1247,7 +1148,20 @@ void defaultsOnAdd() {
     Entity &entity = w.scene->createEntity("Plate");
     CHECK(!entity.add<Collider>().isTrigger);
     entity.add<PressurePlate>();
-    CHECK(entity.get<Collider>()->isTrigger); // Adding the plate configured its collider.
+    // A solid collider becomes a pad: the plate is a kinematic body that can sink.
+    CHECK(!entity.get<Collider>()->isTrigger && entity.get<RigidBody>() &&
+          entity.get<RigidBody>()->type == RigidBodyType::Kinematic);
+    // A zone stays a zone (no body, still a trigger): it presses by overlap, as it always has.
+    Entity &zone = w.scene->createEntity("Zone");
+    zone.add<Collider>().isTrigger = true;
+    zone.add<PressurePlate>();
+    CHECK(zone.get<Collider>()->isTrigger && !zone.has<RigidBody>());
+    // A plate that starts from nothing gets its solid pad and body.
+    Entity &fresh = w.scene->createEntity("Fresh");
+    fresh.add<PressurePlate>();
+    CHECK(fresh.get<Collider>() && !fresh.get<Collider>()->isTrigger &&
+          fresh.get<Collider>()->chamfer.x > 0.0F && fresh.get<RigidBody>() &&
+          fresh.get<RigidBody>()->type == RigidBodyType::Kinematic);
     Entity &hero = w.scene->createEntity("Hero");
     hero.add<PlatformerController>();
     CHECK(hero.get<RigidBody>()->fixedRotation &&
@@ -1315,6 +1229,162 @@ void persistenceAndPrefabs() {
     CHECK(plates == 2 && opened == 1); // Only the copy the character stands on opens its own door.
 }
 
+// A value different from the current one for a field, of the kind the field holds.
+std::optional<PropertyValue> otherValue(const PropertyInfo &property, const PropertyValue &now,
+                                        EntityId target) {
+    switch (property.type) {
+    case PropertyType::Bool:
+        return !std::get<bool>(now);
+    case PropertyType::Int: {
+        const std::int64_t up = std::get<std::int64_t>(now) + 1;
+        if (property.hasRange && static_cast<double>(up) > property.maxValue)
+            return std::get<std::int64_t>(now) - 1;
+        return up;
+    }
+    case PropertyType::Float:
+        if (property.hasRange)
+            return property.minValue + (property.maxValue - property.minValue) * 0.37;
+        return std::get<double>(now) + 0.75;
+    case PropertyType::String:
+        return std::string("sample ") + property.name;
+    case PropertyType::Vec2: {
+        const Vec2 value = std::get<Vec2>(now);
+        return Vec2{value.x + 1.25F, value.y - 0.5F};
+    }
+    case PropertyType::Color:
+        return Color{12, 34, 56, 78};
+    case PropertyType::Enum: {
+        const std::int64_t count =
+            std::max<std::int64_t>(1, static_cast<std::int64_t>(property.options.size()));
+        return (std::get<std::int64_t>(now) + 1) % count;
+    }
+    case PropertyType::EntityReference:
+        return target;
+    case PropertyType::EntityReferenceList:
+        return std::vector<EntityId>{target};
+    case PropertyType::StringList:
+        return std::vector<std::string>{"alpha", "beta"};
+    case PropertyType::Asset:
+        return AssetRef{"assets/sample/" + property.name + ".png"};
+    }
+    return std::nullopt;
+}
+
+// Every registered component keeps every editable field through saving and loading. Each field is
+// given a value other than its default, the scene is written out and read back, and the values are
+// compared field by field: a field a component forgot to register, or one the file format cannot
+// carry, shows up here instead of in somebody's lost level.
+void everyComponentRoundTrips() {
+    World w;
+    const EntityId target = w.scene->createEntity("Other").id();
+    struct Expectation {
+        std::string entity, type;
+        std::vector<std::pair<const PropertyInfo *, Json>> fields;
+    };
+    std::vector<Expectation> expected;
+    std::size_t fields = 0;
+    for (const auto &type : w.registry.types()) {
+        Entity &host = w.scene->createEntity("Host " + type->name);
+        Component *component = host.addComponent(type->name);
+        CHECK(component != nullptr);
+        if (!component)
+            continue;
+        Expectation expectation{host.name(), type->name, {}};
+        for (const PropertyInfo &property : type->properties) {
+            if (property.readOnly)
+                continue;
+            const auto value = otherValue(property, property.get(*component), target);
+            const bool assigned = value && property.assign(*component, *value);
+            if (!assigned) {
+                const std::string what = type->name + "." + property.name + " rejected a value";
+                yk::test::record(false, what.c_str(), __FILE__, __LINE__);
+                continue;
+            }
+            // What the field holds now (the range may have clamped the value).
+            expectation.fields.emplace_back(&property,
+                                            propertyToJson(property, property.get(*component)));
+            ++fields;
+        }
+        expected.push_back(std::move(expectation));
+    }
+    CHECK(fields > 200); // The standard components have a few hundred fields between them.
+
+    const Json saved = sceneToJson(*w.scene);
+    auto loaded = sceneFromJson(Json::parse(saved.dump()).value(), w.registry);
+    CHECK(loaded);
+    if (!loaded)
+        return;
+    CHECK(sceneToJson(*loaded.value()) == saved);
+    for (const Expectation &expectation : expected) {
+        const Entity *host = loaded.value()->findByName(expectation.entity);
+        const Component *component = host ? host->findComponent(expectation.type) : nullptr;
+        CHECK(component != nullptr);
+        if (!component)
+            continue;
+        for (const auto &[property, value] : expectation.fields)
+            if (propertyToJson(*property, property->get(*component)) != value) {
+                const std::string what = expectation.type + "." + property->name + " changed";
+                yk::test::record(false, what.c_str(), __FILE__, __LINE__);
+            }
+    }
+}
+
+// A scene saved before plates were physical, doors could turn, colliders could be rounded and a
+// level had rules for finishing has none of the newer fields. It loads with their defaults and
+// plays as it always did: the plate is a zone that opens the door, and nothing about them changed
+// under it.
+void olderScenesStillWork() {
+    PlateAndDoor level;
+    level.w.character("Hero", {0.0F, restingHeight}, "Player1", "hero");
+    Json saved = sceneToJson(*level.w.scene);
+    const std::vector<std::pair<std::string, std::vector<std::string>>> newer = {
+        {"Collider", {"cornerRadius", "chamfer"}},
+        {"PressurePlate", {"sensing", "pad", "pressSpeed", "acceleration", "minimumMass"}},
+        {"Door", {"openRotation", "rotationSpeed", "stopWhenBlocked"}},
+        {"MovingPlatform", {"acceleration", "spinSpeed", "stopWhenBlocked"}},
+    };
+    int stripped = 0;
+    Json *entities = saved.find("entities");
+    CHECK(entities != nullptr);
+    if (!entities)
+        return;
+    for (std::size_t e = 0; e < entities->size(); ++e) {
+        Json *components = entities->at(e).find("components");
+        if (!components)
+            continue;
+        for (std::size_t c = 0; c < components->size(); ++c) {
+            Json &component = components->at(c);
+            Json *properties = component.find("properties");
+            if (!properties)
+                continue;
+            for (const auto &[type, keys] : newer)
+                if (component.get("type").asString() == type)
+                    for (const std::string &key : keys)
+                        stripped += properties->erase(key) ? 1 : 0;
+        }
+    }
+    CHECK(stripped >= 8); // The colliders, the plate and the door all had newer fields to lose.
+
+    auto loaded = sceneFromJson(saved, level.w.registry);
+    CHECK(loaded);
+    if (!loaded)
+        return;
+    World w;
+    w.scene = std::move(loaded.value());
+    // The newer fields hold their defaults.
+    const auto *plate = w.scene->findByName("Plate")->get<PressurePlate>();
+    CHECK(plate->sensing == PlateSensing::Auto && !plate->pad && plate->acceleration > 0.0F);
+    const auto *door = w.scene->findByName("Door")->get<Door>();
+    CHECK(door->stopWhenBlocked && door->openRotation == 0.0F && door->rotationSpeed > 0.0F);
+    const auto *collider = w.scene->findByName("Plate")->get<Collider>();
+    CHECK(collider->cornerRadius == 0.0F && collider->chamfer == Vec2{});
+    // And it plays as it did: standing in the zone presses the plate and opens the door.
+    w.start();
+    w.tick(90);
+    CHECK(w.at("Plate").get<PressurePlate>()->pressed());
+    CHECK_NEAR(w.at("Door").get<Door>()->openAmount(), 1.0, 1e-6);
+}
+
 void templatesWork() {
     World w;
     CHECK(w.registry.validate());
@@ -1364,5 +1434,7 @@ int main() {
     defaultsOnAdd();
     persistenceAndPrefabs();
     templatesWork();
+    everyComponentRoundTrips();
+    olderScenesStillWork();
     return yk::test::finish("gameplay");
 }

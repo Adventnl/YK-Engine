@@ -58,7 +58,9 @@
             "layer": "Solid",
             "friction": 1,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -66,8 +68,11 @@
           "properties": {
             "travel": [3, 0],
             "speed": 2,
+            "acceleration": 8,
+            "spinSpeed": 0,
             "pause": 0.8,
             "requireSignal": false,
+            "stopWhenBlocked": true,
             "logic": "Any",
             "invert": false
           }

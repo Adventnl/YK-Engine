@@ -127,6 +127,9 @@ class EditorDocument {
     // Keeps the entity where it is in the world.
     Status reparent(EntityId child, EntityId newParent, std::optional<std::size_t> index = {});
     Status moveAmongSiblings(EntityId id, int steps);
+    // False when the entity is already first (steps < 0) or last (steps > 0) among its siblings,
+    // so menus can offer the move only when it does something.
+    bool canMoveAmongSiblings(EntityId id, int steps) const;
     void rename(EntityId id, const std::string &name);
     void setEntityActive(EntityId id, bool active);
     // Editor hints saved with the scene (see Entity::locked, Entity::editorHidden).

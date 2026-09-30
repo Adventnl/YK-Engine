@@ -9,6 +9,7 @@
 #include "yk/gameplay/Gameplay.hpp"
 #include "yk/graphics/GameView.hpp"
 #include "yk/host/Hosts.hpp"
+#include "yk/runtime/GameSession.hpp"
 #include "yk/scene/SceneSerializer.hpp"
 #include <SDL3/SDL.h>
 #include <cstdio>
@@ -28,6 +29,7 @@ struct Options {
     std::string debugCrash; // Test hook: crash after a few frames ("abort", "segv", "throw").
     bool fixedStep{};
     bool audio{true};
+    bool fade{true};
     bool help{};
 };
 
@@ -42,6 +44,7 @@ void usage() {
         "  --keys <script>        replay keys instead of the keyboard, e.g. D@0-120,W@60-62\n"
         "  --fixed                advance a fixed 1/60 s per frame (deterministic)\n"
         "  --no-audio             disable sound\n"
+        "  --no-fade              switch scenes and restart at once, without fading\n"
         "  --debug-crash <kind>   crash on purpose after a few frames (abort, segv or throw) to "
         "test\n"
         "                         crash reports\n"
@@ -78,6 +81,8 @@ std::optional<Options> parse(int argc, char **argv) {
             options.fixedStep = true;
         } else if (arg == "--no-audio") {
             options.audio = false;
+        } else if (arg == "--no-fade") {
+            options.fade = false;
         } else if (!arg.empty() && arg[0] != '-' && options.project.empty()) {
             options.project = arg;
         } else {
@@ -148,43 +153,42 @@ class PlayerLayer final : public ApplicationLayer {
             stats_ = !stats_;
         const double seconds =
             options_.fixedStep ? 1.0 / 60.0 : static_cast<double>(frame.delta.seconds);
-        runtime_->update(seconds, input);
-        ++frameIndex_;
+        if (session_->update(seconds, input))
+            frameIndex_ = 0; // A key script starts over with each scene.
+        else
+            ++frameIndex_;
         if (!options_.debugCrash.empty() && frameIndex_ == 5 &&
             !crashOnPurpose(options_.debugCrash))
             log(LogLevel::Error, "player",
                 "Unknown --debug-crash kind '" + options_.debugCrash + "'");
         if (audio_)
             audio_->update();
-        if (const std::string next = runtime_->sceneChangeRequested(); !next.empty()) {
-            runtime_->clearSceneChangeRequest();
-            pendingScene_ = next;
-        }
         return true;
     }
     Status render(Renderer &renderer) override {
-        if (!pendingScene_.empty()) {
-            const std::string next = std::move(pendingScene_);
-            pendingScene_.clear();
-            if (auto status = load(next, renderer); !status)
-                log(LogLevel::Error, "player", status.error()); // Keep playing the current scene.
-        }
+        GameRuntime &runtime = session_->runtime();
+        runtime.setViewportSize(renderer.viewport());
         GameViewOptions view;
         view.physicsDebug = physicsDebug_;
         view.colliders = colliders_;
+        view.paused = session_->paused();
         if (stats_)
-            view.overlay = "TICK " + std::to_string(runtime_->tick()) + "  BODIES " +
-                           std::to_string(runtime_->physics().stats().bodies);
-        return drawGameView(renderer, *sceneRenderer_, *runtime_, {{0, 0}, renderer.viewport()},
+            view.overlay = "TICK " + std::to_string(runtime.tick()) + "  BODIES " +
+                           std::to_string(runtime.physics().stats().bodies);
+        return drawGameView(renderer, *sceneRenderer_, runtime, {{0, 0}, renderer.viewport()},
                             view);
     }
 
   private:
+    // Starts the game with `sceneFile`; the session goes on to whatever scenes the game asks for.
     Status load(const std::string &sceneFile, Renderer &renderer) {
-        auto path = project_.resolve(sceneFile);
-        if (!path)
-            return Error{path.error()};
-        auto scene = loadScene(path.value(), registry_);
+        const auto read = [this](const std::string &file) -> Result<std::unique_ptr<Scene>> {
+            auto path = project_.resolve(file);
+            if (!path)
+                return Error{path.error()};
+            return loadScene(path.value(), registry_);
+        };
+        auto scene = read(sceneFile);
         if (!scene)
             return Error{scene.error()};
         RuntimeOptions runtimeOptions;
@@ -193,10 +197,12 @@ class PlayerLayer final : public ApplicationLayer {
         runtimeOptions.viewportSize = renderer.viewport();
         runtimeOptions.audio = audio_.get();
         runtimeOptions.assets = &assets_;
-        auto runtime = GameRuntime::create(std::move(scene.value()), runtimeOptions);
-        if (!runtime)
-            return Error{runtime.error()};
-        runtime_ = std::move(runtime.value());
+        runtimeOptions.transitionSeconds = options_.fade ? 0.35F : 0.0F;
+        auto session =
+            GameSession::create(std::move(scene.value()), sceneFile, runtimeOptions, read);
+        if (!session)
+            return Error{session.error()};
+        session_ = std::move(session.value());
         frameIndex_ = 0;
         log(LogLevel::Info, "player", "Loaded scene " + sceneFile);
         return success();
@@ -208,9 +214,8 @@ class PlayerLayer final : public ApplicationLayer {
     ProjectAssets assets_;
     std::unique_ptr<SceneRenderer> sceneRenderer_;
     std::unique_ptr<SdlAudio> audio_;
-    std::unique_ptr<GameRuntime> runtime_;
+    std::unique_ptr<GameSession> session_;
     KeyScript script_;
-    std::string pendingScene_;
     unsigned frameIndex_{};
     bool physicsDebug_{};
     bool colliders_{};

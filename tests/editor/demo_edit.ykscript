@@ -2,7 +2,7 @@
 # the dialogs: selection, links, door target handles, marquee, copy/paste, reparenting, rotation,
 # prefabs, unsaved-changes prompts, project settings and validation.
 timeout 300
-expect entity-count 171
+expect entity-count 173
 expect clean
 
 log "== links and target handles"
@@ -59,7 +59,7 @@ click "hierarchy/Plate Near"
 key ctrl+c
 key ctrl+v
 expect entity "Plate Near (1)"
-expect entity-count 172
+expect entity-count 175
 key ctrl+z
 expect no-entity "Plate Near (1)"
 click "hierarchy/Plate Near"
@@ -67,7 +67,7 @@ key ctrl+d
 expect entity "Plate Near (1)"
 key delete
 expect no-entity "Plate Near (1)"
-expect entity-count 171
+expect entity-count 173
 key ctrl+z
 key ctrl+z
 expect clean
@@ -217,7 +217,7 @@ click activity/Prefabs
 expect side-view Prefabs
 expect widget asset/prefabs/my_lever.ykprefab
 doubleclick asset/prefabs/my_lever.ykprefab
-expect entity-count 172
+expect entity-count 174
 expect dirty
 click activity/Scene
 expect side-view Scene
@@ -233,7 +233,7 @@ expect clean
 click tab/level01.ykscene
 expect scene scenes/level01.ykscene
 expect dirty
-expect entity-count 172
+expect entity-count 174
 
 log "== unsaved changes are never lost silently"
 click tab/practice.ykscene
@@ -253,9 +253,16 @@ menu "File|Open Scene|scenes/practice.ykscene"
 expect scene-tabs 2
 
 log "== validation and project settings"
+# The lever instantiated from the new prefab has no targets, and the Problems panel says so.
 menu "Build/Validate Project"
 expect panel-view Problems
-expect problems 0
+expect problems 1
+# Clicking a problem shows what it is about: the scene opens with that entity selected.
+expect widget problems/row/0
+expect scene scenes/practice.ykscene
+click problems/row/0
+expect scene scenes/level01.ykscene
+expect selected "Lever (1)"
 click "panel-tab/Console"
 expect panel-view Console
 menu "File/Project Settings"
@@ -263,6 +270,19 @@ expect dialog settings
 click dialog/Settings/save
 expect no-dialog
 capture ${SHOT_DIR}/edit-03-playground.bmp
+
+log "== the next scene is picked from the project's scenes"
+click "hierarchy/Level Flow"
+expect selected "Level Flow"
+expect prop "Level Flow" LevelFlow.nextScene scenes/practice.ykscene
+expect widget prop/nextScene/browse
+click prop/nextScene/browse
+expect widget pick/scenes/level01.ykscene
+expect widget pick/scenes/practice.ykscene
+click pick/scenes/level01.ykscene
+expect prop "Level Flow" LevelFlow.nextScene scenes/level01.ykscene
+key ctrl+z
+expect prop "Level Flow" LevelFlow.nextScene scenes/practice.ykscene
 
 log "== closing the window with unsaved changes asks first"
 create Level/Platform

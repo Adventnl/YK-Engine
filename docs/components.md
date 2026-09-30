@@ -142,17 +142,20 @@ Requires: `RigidBody` `Collider` `PlayerInput`
 
 ### PressurePlate
 
-Pressed while a character or object stands in its trigger collider; drives its targets.
-
-Requires: `Collider`
+Pressed while something stands on it (or in its zone); drives its targets. With a kinematic pad it is a real surface that sinks under its load.
 
 | Property | Type | Default | Notes |
 |---|---|---|---|
 | `targets` | entity list | [] | Doors, platforms... that react to this plate. |
 | `activatorTags` | string list | [] | Only entities with one of these tags press it. Empty: any movable body. |
 | `latch` | bool | false | Stay pressed once triggered. |
+| `sensing` | enum | "Auto" | Weight: what rests on the pad presses it. Region: what overlaps a trigger collider of the plate presses it. Auto: Weight for a pad with a solid collider and no trigger, Region otherwise. Options: Auto Weight Region |
+| `pad` | entity | none | The part that sinks and carries: an entity (this one, or a child) with a kinematic RigidBody and a solid Collider. Empty: this entity. |
 | `pressedColor` | color | "#5adc6eff" |  |
-| `pressDepth` | float | 0.08 | (range 0 to 1) |
+| `pressDepth` | float | 0.08 | How far the plate sinks when pressed, in world units. (range 0 to 5) |
+| `pressSpeed` | float | 1.5 | Fastest the plate sinks or rises, m/s. (range 0.01 to 20) |
+| `acceleration` | float | 8 | How quickly it speeds up and slows down, m/s^2. Keep it below gravity so whatever stands on the plate never loses contact. (range 0.1 to 100) |
+| `minimumMass` | float | 0 | Weight sensing: kilograms that must rest on the pad (0: anything). (range 0 to 1000) |
 | `pressSound` | asset | "" |  |
 | `releaseSound` | asset | "" |  |
 | `pressed` | bool | false | (runtime state, not saved) |
@@ -183,8 +186,11 @@ Requires: `RigidBody` `Collider`
 | Property | Type | Default | Notes |
 |---|---|---|---|
 | `openOffset` | vec2 | [0,-3] | How far the door moves when open, in world units (negative Y is up). (range -1000 to 1000) The editor shows the result as a ghost you can drag. |
-| `speed` | float | 3 | (range 0.01 to 100) |
+| `openRotation` | float | 0 | Degrees the door turns about its origin (its hinge) when open; positive turns clockwise on screen. (range -360 to 360) |
+| `speed` | float | 3 | Slide speed, m/s. (range 0.01 to 100) |
+| `rotationSpeed` | float | 90 | Turn speed, degrees per second. (range 1 to 1440) |
 | `startsOpen` | bool | false | Open until signalled, then closes. |
+| `stopWhenBlocked` | bool | true | Hold still while a character or prop is caught between the door and something solid, instead of pushing it through the floor. |
 | `logic` | enum | "Any" | How several sources combine. Options: Any All |
 | `invert` | bool | false |  |
 | `openSound` | asset | "" |  |
@@ -201,8 +207,11 @@ Requires: `RigidBody` `Collider`
 |---|---|---|---|
 | `travel` | vec2 | [4,0] | Offset of the far end, world units. (range -1000 to 1000) The editor shows the result as a ghost you can drag. |
 | `speed` | float | 2 | (range 0.01 to 100) |
+| `acceleration` | float | 8 | How quickly it speeds up and slows down, m/s^2. Below gravity (9.81), things standing on a platform that starts downward stay on it. (range 0.1 to 1000) |
+| `spinSpeed` | float | 0 | Degrees per second the platform turns about its origin while it is moving (positive clockwise on screen). With no travel it is a rotating platform. (range -720 to 720) |
 | `pause` | float | 0.5 | Seconds to wait at each end. (range 0 to 60) |
 | `requireSignal` | bool | false | Only move while signalled. |
+| `stopWhenBlocked` | bool | true | Hold still while a character or prop is squeezed between the platform and something solid (a rising platform under a ceiling). |
 | `logic` | enum | "Any" | Options: Any All |
 | `invert` | bool | false |  |
 
@@ -263,6 +272,8 @@ Requires: `Collider`
 | `targets` | entity list | [] | Receivers driven while the goal is satisfied. |
 | `satisfiedColor` | color | "#5adc6eff" |  |
 | `sound` | asset | "" |  |
+| `enterOnComplete` | bool | true | When the level completes, whoever stands in the exit walks into it and vanishes (the animation parameter `exiting` is set on them meanwhile). |
+| `exitDuration` | float | 0.6 | (range 0.05 to 10) |
 | `satisfied` | bool | false | (runtime state, not saved) |
 
 ### TriggerZone
@@ -282,22 +293,57 @@ Requires: `Collider`
 
 ### LevelFlow
 
-Level rules: complete when every goal is satisfied; optionally restart when anyone dies or a restart action is pressed.
+Level rules: an optional intro, complete when every goal is satisfied, fail on a death or when time runs out, restart, and on to the next scene.
 
 | Property | Type | Default | Notes |
 |---|---|---|---|
 | `goals` | entity list | [] | Goal entities that must all be satisfied at once. |
-| `restartOnDeath` | bool | false | Restart the whole level when anyone dies. |
+| `introDuration` | float | 0 | Seconds the level shows introMessage at the start, ignoring input. 0: none. (range 0 to 30) |
+| `introMessage` | string | "" |  |
+| `restartOnDeath` | bool | false | Fail the level when anyone dies: it starts over after restartDelay. |
+| `timeLimit` | float | 0 | Seconds to complete the level in; the level fails when they run out. 0: no limit. (range 0 to 3600) |
+| `lockInputOnComplete` | bool | true | Ignore the players' input once the level is complete or has failed. |
 | `restartDelay` | float | 1.5 | (range 0 to 30) |
-| `completeDelay` | float | 2.5 | (range 0 to 30) |
-| `nextScene` | string | "" | Project-relative scene to load after completion. |
+| `completeDelay` | float | 2.5 | Seconds between completing the level and moving on to the next scene. (range 0 to 30) |
+| `nextScene` | asset | "" | The scene to load after completion (none: stay on this one). |
 | `restartSet` | string | "Global" |  |
 | `restartAction` | string | "Restart" |  |
+| `continueAction` | string | "" | An action (of restartSet) that skips the wait on the complete or failed screen. |
 | `completeMessage` | string | "LEVEL COMPLETE!" |  |
 | `failMessage` | string | "TRY AGAIN" |  |
+| `timeUpMessage` | string | "TIME'S UP!" |  |
+| `keepVariables` | string list | [] | Game variables (a score, gems collected) carried into the next scene. |
 | `completeSound` | asset | "" |  |
 | `failSound` | asset | "" |  |
-| `state` | enum | "Playing" | Options: Playing Complete Failed (runtime state, not saved) |
+| `state` | enum | "Playing" | Options: Intro Playing Complete Failed (runtime state, not saved) |
+
+### EventAction
+
+When an event happens (after a delay), does things: changes a signal that doors and platforms follow, raises another event, switches entities on or off, triggers animations, changes a game variable, plays a sound, restarts or changes scene. With no event and an interval it is a repeating timer.
+
+Several instances may be added to one entity.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `onEvent` | string | "" | The event that starts it: plate_pressed, lever_toggled, collected, goal_reached, level_completed, scene_started, or any event another component raises. Empty with an interval: a repeating timer. |
+| `from` | entity | none | Only events raised by this entity count. Empty: any. |
+| `delay` | float | 0 | Seconds between the event and the actions. (range 0 to 3600) |
+| `every` | float | 0 | With no onEvent: runs the actions every this many seconds. (range 0 to 3600) |
+| `once` | bool | false | Stop after running once. |
+| `signal` | enum | "None" | Set, clear or toggle the signal this component holds; the targets follow it. Options: None Set Clear Toggle |
+| `targets` | entity list | [] | Doors, platforms... that follow the signal this component holds. |
+| `raiseEvent` | string | "" | Another event to raise (so actions can be chained with delays). |
+| `activate` | entity list | [] | Entities to switch on. |
+| `deactivate` | entity list | [] | Entities to switch off. |
+| `animate` | entity list | [] | Entities whose animation gets the trigger below. |
+| `animationTrigger` | string | "" | A trigger parameter of the entities' animation controllers. |
+| `variableChange` | enum | "None" | Add to a game variable, or set it. Options: None Add Set |
+| `variable` | string | "" |  |
+| `amount` | float | 1 | (range -100000 to 100000) |
+| `sound` | asset | "" |  |
+| `restartLevel` | bool | false |  |
+| `changeScene` | asset | "" | A scene to go to. |
+| `signalOn` | bool | false | (runtime state, not saved) |
 
 ## Input
 
@@ -343,6 +389,30 @@ Several instances may be added to one entity.
 | `friction` | float | 0.6 | (range 0 to 10) |
 | `restitution` | float | 0 | (range 0 to 1) |
 | `density` | float | 1 | (range 0 to 100) |
+| `cornerRadius` | float | 0 | Rounds the corners of a Box, so characters run up low steps and edges instead of catching on them. (range 0 to 10) |
+| `chamfer` | vec2 | [0,0] | Cuts the corners of a Box (x along the top and bottom, y along the sides): a shallow slope lets things slide up onto it, a character walks onto a button, a crate is pushed onto it. Ignores cornerRadius. (range 0 to 10) |
+
+### HingeJoint
+
+Pins the body to a point so it swings or tilts about it: seesaws, bridges, swinging platforms.
+
+Requires: `RigidBody`
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `connectedBody` | entity | none | The entity whose body the hinge is fixed to. Empty: fixed in the world. |
+| `anchor` | vec2 | [0,0] | The pin, in this entity's own space (0, 0 is its origin). (range -1000 to 1000) The editor shows it as a pin you can drag. |
+| `limits` | bool | false | Keep the swing between the two angles. |
+| `lowerAngle` | float | -45 | Degrees from the starting pose, positive clockwise on screen. (range -178 to 178) |
+| `upperAngle` | float | 45 | (range -178 to 178) |
+| `spring` | bool | false | Pull toward restAngle: a lever that returns, a bridge that rises. |
+| `springHertz` | float | 2 | Stiffness as a frequency: how many times a second it would swing to and fro. (range 0.05 to 60) |
+| `springDamping` | float | 0.5 | 1 settles without overshoot; less lets it swing past. (range 0 to 10) |
+| `restAngle` | float | 0 | Where the spring pulls, in degrees from the starting pose. (range -178 to 178) |
+| `motor` | bool | false | Turn at motorSpeed while the torque allows. |
+| `motorSpeed` | float | 90 | Degrees per second. (range -3600 to 3600) |
+| `motorTorque` | float | 20 | The most torque the motor may apply (N m). (range 0 to 100000) |
+| `collideConnected` | bool | false | Let the two connected bodies collide with each other. |
 
 ## Rendering
 
@@ -463,7 +533,7 @@ Offered by the editor's Create menu.
 
 - **Effects**: Particle Emitter; Glow;
 
-- **Gameplay**: Hazard; Collectible; Checkpoint; Goal; Trigger Zone; Spawn Point; Level Flow; Character;
+- **Gameplay**: Hazard; Collectible; Checkpoint; Goal; Trigger Zone; Spawn Point; Level Flow; Event Action; Character;
 
 - **Level**: Platform; Crate;
 

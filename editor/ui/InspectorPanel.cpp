@@ -386,6 +386,7 @@ void assetField(const PropertyView &view, const AssetRef &current) {
                     any = true;
                     if (ImGui::Selectable(entry.path.c_str()))
                         chosen = entry.path;
+                    markItem("pick/" + entry.path);
                 }
             if (!any && kind != "texture" && kind != "sound")
                 ImGui::TextDisabled("No %s assets in this project.", kind.c_str());
@@ -477,7 +478,7 @@ void drawProperty(const PropertyView &view, const Component &component) {
     case PropertyType::Vec2: {
         Vec2 current = std::get<Vec2>(value);
         float speed = property.step > 0.0 ? static_cast<float>(property.step) : 0.02F;
-        if (property.isSize || property.isDisplacement || property.isOffset)
+        if (property.isSize || property.isDisplacement || property.isOffset || property.isPin)
             speed = 0.05F;
         const float low = property.hasRange ? static_cast<float>(property.minValue) : 0.0F;
         const float high = property.hasRange ? static_cast<float>(property.maxValue) : 0.0F;

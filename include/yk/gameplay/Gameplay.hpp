@@ -2,6 +2,7 @@
 #include "yk/assets/Project.hpp"
 #include "yk/components/Components.hpp"
 #include "yk/runtime/GameContext.hpp"
+#include <algorithm>
 #include <map>
 #include <string>
 #include <vector>
@@ -62,13 +63,30 @@ void sendSignal(Scene &scene, EntityId source, const std::vector<EntityRef> &tar
 // accident.
 bool matchesActivator(const Entity &entity, const std::vector<std::string> &tags);
 
+// True when the entity has a trigger Collider: the zone that lets a lever, goal, hazard or pickup
+// notice what enters it. The components' validation uses it to say what a scene is missing.
+bool hasTriggerCollider(const Entity &entity);
+
 // Spawns an effect prefab at `worldPosition` when `prefab` names one; a missing or invalid prefab
 // is reported once by the runtime and otherwise ignored, so effects can never break gameplay.
 void spawnEffect(GameContext &context, const AssetRef &prefab, Vec2 worldPosition);
 
 // Drives a kinematic body toward `worldTarget` within one tick (so riders are carried), or moves
-// the entity directly when it has no body.
+// the entity directly when it has no body. With `worldRotationDegrees` it also turns toward that
+// angle by the shortest way (the body's angular velocity is set, so what stands on it is carried
+// around too).
 void moveKinematic(GameContext &context, Entity &entity, Vec2 worldTarget);
+void moveKinematic(GameContext &context, Entity &entity, Vec2 worldTarget,
+                   float worldRotationDegrees);
+
+// True when something is squeezed between the moving `entity` and something solid on the far side
+// as it moves toward `direction`: a character standing under a gate that is closing, a crate under
+// a platform that rises into a ceiling. Something merely riding the entity (a character on top of a
+// rising platform) is carried, not squeezed, and does not count. Doors and platforms hold still
+// while this is true, instead of pushing what is caught through the floor. The physics reports a
+// contact only when the surfaces are about to touch, so a fast door can reach a few centimeters
+// into what is in its way before it notices; the solver pushes that back out.
+bool pathBlocked(GameContext &context, const Entity &entity, Vec2 direction);
 
 // ----- Character -----------------------------------------------------------------------------
 // Health-less "can be killed, then comes back". Dying takes the entity's body and colliders out of
@@ -150,6 +168,7 @@ class PlatformerController final : public Component {
     int facing() const {
         return facing_;
     }
+    void onStart(GameContext &context) override;
     void onFixedUpdate(GameContext &context, float seconds) override;
 
   private:
@@ -169,15 +188,34 @@ class PlatformerController final : public Component {
 };
 
 // ----- Mechanisms ----------------------------------------------------------------------------
-// While pressed it drives its targets. With an AnimatedSprite it publishes the parameter `pressed`;
-// without one it tints and sinks its sprite.
+// How a plate decides that it is pressed.
+//   Weight  something solid rests on its `pad`: the pad's own contacts are the load, so a jumping
+//           character lands on the plate, stands on it and pushes it down.
+//   Region  something overlaps a trigger collider of the plate (or its pad): an activation zone
+//           that has nothing to do with what blocks movement.
+//   Auto    Weight when the plate has a pad with a solid collider and no trigger collider of its
+//           own, Region otherwise (what the older plates, which were only a zone, need).
+enum class PlateSensing { Auto, Weight, Region };
+const std::vector<std::string> &plateSensingNames();
+
+// While pressed it drives its targets. The plate can be a real object: give `pad` (this entity when
+// empty) a kinematic RigidBody and a solid Collider and the pad is a surface characters and props
+// stand on. It sinks by `pressDepth` under the load, carrying it down, stops at the bottom, and
+// rises when the load is gone. With an AnimatedSprite the plate publishes `pressed` (bool) and
+// `pressAmount` (0 up .. 1 fully down) so art can follow the motion; a plate with neither pad nor
+// AnimatedSprite tints and sinks its sprite.
 class PressurePlate final : public Component {
   public:
     std::vector<EntityRef> targets;
     std::vector<std::string> activatorTags; // Empty: any movable body presses it.
     bool latch{false};                      // Stay pressed once triggered.
-    Color pressedColor{90, 220, 110, 255};  // The sprite's own color is the idle look.
-    float pressDepth{0.08F};                // The sprite sinks by this much while pressed.
+    PlateSensing sensing{PlateSensing::Auto};
+    EntityRef pad;                         // The part that moves and carries; empty: this entity.
+    Color pressedColor{90, 220, 110, 255}; // The sprite's own color is the idle look.
+    float pressDepth{0.08F};               // How far the plate sinks when pressed, world units.
+    float pressSpeed{1.5F};                // Fastest the plate sinks or rises, m/s.
+    float acceleration{8.0F};              // m/s^2; below gravity, so a load never loses contact.
+    float minimumMass{0.0F};               // Weight sensing: kg that must rest on the pad.
     AssetRef pressSound;
     AssetRef releaseSound;
     static void describe(TypeBuilder<PressurePlate> &type);
@@ -185,12 +223,27 @@ class PressurePlate final : public Component {
     bool pressed() const {
         return pressed_;
     }
+    // How far down the plate is, 0 (up) .. 1 (fully pressed).
+    float pressAmount() const {
+        return pressDepth > 1e-5F ? std::clamp(depth_ / pressDepth, 0.0F, 1.0F)
+                                  : (pressed_ ? 1.0F : 0.0F);
+    }
     void onStart(GameContext &context) override;
     void onFixedUpdate(GameContext &context, float seconds) override;
 
   private:
-    void applyVisuals();
+    enum class Mode { Region, Weight };
+    bool senseWeight(GameContext &context, Entity &padEntity) const;
+    bool senseRegion(GameContext &context) const;
+    void applyVisuals(GameContext &context);
+    Mode mode_{Mode::Region};
     bool pressed_{};
+    bool loaded_{};       // Something is on the plate (or in its zone) right now.
+    float unloadedFor_{}; // Seconds since the last tick with a load.
+    float depth_{};       // World units the pad is down.
+    float speed_{};       // Signed speed of the pad along the press direction.
+    Vec2 restLocal_{};    // The pad's position in its parent's frame when it is up.
+    bool bodyDriven_{};
     float baseOffsetY_{};
     Color baseColor_{};
 };
@@ -225,12 +278,17 @@ class Lever final : public Component {
     Color baseColor_{};
 };
 
-// A gate: slides by `openOffset` while its combined signal is active (or, with startsOpen, while it
-// is inactive). Needs a kinematic body so it carries and blocks characters correctly.
+// A gate: slides by `openOffset` and/or turns by `openRotation` about its origin while its combined
+// signal is active (or, with startsOpen, while it is inactive). Sliding doors, hinged doors,
+// drawbridges and the handle of a lever are the same thing. Needs a kinematic body so it carries
+// and blocks characters correctly.
 class Door final : public Component, public SignalReceiver {
   public:
     Vec2 openOffset{0.0F, -3.0F}; // World-space displacement when open.
-    float speed{3.0F};            // m/s
+    float openRotation{0.0F};     // Degrees it turns about its origin when open (a hinged door).
+    bool stopWhenBlocked{true};   // Hold still while something is caught in its way.
+    float speed{3.0F};            // m/s along the offset.
+    float rotationSpeed{90.0F};   // Degrees per second of the turn.
     bool startsOpen{false};
     AssetRef openSound;
     AssetRef closeSound;
@@ -245,19 +303,25 @@ class Door final : public Component, public SignalReceiver {
 
   private:
     Vec2 closedPosition_{};
+    float closedRotation_{};
     float amount_{};
     bool opening_{};
     bool started_{};
 };
 
 // Shuttles between its start and start + travel on a kinematic body, carrying whatever stands on
-// it.
+// it, and can turn about its origin as it goes (a rotating platform: `travel` zero, `spinSpeed`
+// set). Riders move with the point of the platform they stand on.
 class MovingPlatform final : public Component, public SignalReceiver {
   public:
     Vec2 travel{4.0F, 0.0F};
     float speed{2.0F};
-    float pause{0.5F};         // Seconds to wait at each end.
-    bool requireSignal{false}; // Only move while the combined signal is active.
+    float acceleration{8.0F};   // m/s^2 speeding up and slowing down; below gravity so that props
+                                // riding a platform that starts downward stay on it.
+    float spinSpeed{0.0F};      // Degrees per second it turns about its origin while moving.
+    float pause{0.5F};          // Seconds to wait at each end.
+    bool requireSignal{false};  // Only move while the combined signal is active.
+    bool stopWhenBlocked{true}; // Hold still while something is squeezed in its way.
     static void describe(TypeBuilder<MovingPlatform> &type);
 
     void onStart(GameContext &context) override;
@@ -265,7 +329,10 @@ class MovingPlatform final : public Component, public SignalReceiver {
 
   private:
     Vec2 start_{};
+    float startRotation_{};
+    float spin_{}; // Degrees turned since the start.
     float t_{};
+    float speed_{}; // Current speed along the path, m/s (never negative; direction_ has the sign).
     float direction_{1.0F};
     float waiting_{};
 };
@@ -309,25 +376,39 @@ class SpawnPoint final : public Component {
     void onStart(GameContext &context) override;
 };
 
-// An exit: satisfied while an entity carrying `requiredTag` (and alive) stands in it.
+// An exit: satisfied while an entity carrying `requiredTag` (and alive) stands in it. When the
+// level completes (LevelFlow), whoever stands in it walks into it and vanishes over `exitDuration`
+// seconds (`enterOnComplete`): the AnimatedSprite parameter `exiting` is set on them meanwhile, so
+// art can play a "going through the door" clip.
 class Goal final : public Component {
   public:
     std::string requiredTag;
     std::vector<EntityRef> targets;
     Color satisfiedColor{90, 220, 110, 255}; // The sprite's own color is the idle look.
     AssetRef sound;
+    bool enterOnComplete{true};
+    float exitDuration{0.6F};
     static void describe(TypeBuilder<Goal> &type);
 
     bool satisfied() const {
         return satisfied_;
     }
+    // Starts the walk into the exit for whoever is in it. LevelFlow calls it on completion.
+    void beginExit(GameContext &context);
     void onStart(GameContext &context) override;
     void onFixedUpdate(GameContext &context, float seconds) override;
 
   private:
+    struct Visitor {
+        EntityId entity;
+        Vec2 from;
+    };
     void applyVisuals();
     bool satisfied_{};
     Color baseColor_{};
+    std::vector<Visitor> leaving_;
+    float leavingTime_{};
+    bool exiting_{};
 };
 
 // A trigger region that raises named events and drives targets while occupied.
@@ -351,21 +432,42 @@ class TriggerZone final : public Component {
 };
 
 // ----- Level rules ---------------------------------------------------------------------------
-// The rules of a level: it completes when every listed Goal is satisfied at once, can restart when
-// anyone dies or when a person presses the restart action, and can continue to another scene. It
-// publishes `level_state` ("playing", "complete", "failed"), `level_message` and `level_time`
-// (whole seconds) to the Blackboard, so UiText can show them, and raises "level_completed".
+// The rules of a level, as a small state machine:
+//
+//   intro     (optional) the level shows `introMessage` and the game ignores input for
+//             `introDuration` seconds;
+//   playing   the clock runs; the level completes when every listed Goal is satisfied at once, and
+//             fails when anyone dies (`restartOnDeath`) or `timeLimit` runs out;
+//   complete  input is locked (`lockInputOnComplete`), whoever stands in an exit walks into it
+//             (Goal::beginExit), `completeMessage` shows, and after `completeDelay` seconds the
+//             game moves on to `nextScene` (staying put when it is empty);
+//   failed    `failMessage` shows and after `restartDelay` seconds the level starts over.
+//
+// A person can press `restartAction` at any time to start over, and `continueAction` on the
+// complete or failed screen to move on without waiting. Restarts and scene changes fade the screen
+// (the host sets the runtime's transition time). It publishes `level_state` ("intro", "playing",
+// "complete", "failed"), `level_message`, `level_time` (whole seconds played) and `level_time_left`
+// (with a time limit) to the Blackboard, so UiText can show them, and raises "level_started",
+// "level_completed" and "level_failed". `keepVariables` names the Blackboard variables (a score,
+// the gems collected) that are carried into the next scene.
 class LevelFlow final : public Component {
   public:
     std::vector<EntityRef> goals;
+    float introDuration{0.0F};
+    std::string introMessage;
     bool restartOnDeath{false};
+    float timeLimit{0.0F}; // Seconds; 0 is no limit.
+    bool lockInputOnComplete{true};
     float restartDelay{1.5F};
     float completeDelay{2.5F};
-    std::string nextScene; // Project-relative scene to load after completion; empty stays.
+    AssetRef nextScene; // The scene to load after completion (a picker in the editor); none stays.
     std::string restartSet{"Global"};
     std::string restartAction{"Restart"};
+    std::string continueAction; // Skips the wait on the complete or failed screen. Empty: none.
     std::string completeMessage{"LEVEL COMPLETE!"};
     std::string failMessage{"TRY AGAIN"};
+    std::string timeUpMessage{"TIME'S UP!"};
+    std::vector<std::string> keepVariables;
     AssetRef completeSound;
     AssetRef failSound;
     static void describe(TypeBuilder<LevelFlow> &type);
@@ -373,16 +475,83 @@ class LevelFlow final : public Component {
     bool completed() const {
         return state_ == State::Complete;
     }
+    bool failed() const {
+        return state_ == State::Failed;
+    }
     void onStart(GameContext &context) override;
     void onFixedUpdate(GameContext &context, float seconds) override;
     void onDestroy(GameContext &context) override;
 
   private:
-    enum class State { Playing, Complete, Failed };
+    enum class State { Intro, Playing, Complete, Failed };
+    void fail(GameContext &context, const std::string &message);
+    void publish(GameContext &context, const char *state, const std::string &message);
     State state_{State::Playing};
     float timer_{};
     float elapsed_{};
     EventBus::Subscription deathSubscription_{};
+};
+
+// ----- Reactions -----------------------------------------------------------------------------
+enum class SignalChange { None, Set, Clear, Toggle };
+enum class VariableChange { None, Add, Set };
+const std::vector<std::string> &signalChangeNames();
+const std::vector<std::string> &variableChangeNames();
+
+// "When this happens, after that long, do these things": the glue between events that mechanisms
+// raise ("plate_pressed", "lever_toggled", "collected", "goal_reached", "level_completed",
+// "scene_started"...) and what should follow, with no code. It waits for `onEvent` (optionally only
+// from `from`), lets `delay` seconds pass, and then does whatever it is set up to do, in this
+// order: change the signal it holds (doors, platforms and other receivers listing it as a target
+// follow that signal), raise another event, switch entities on and off, set a trigger on entities'
+// animations, change a game variable, play a sound, restart the level or go to another scene. With
+// no `onEvent` and an `every` it is a repeating timer; `scene_started` plus a `delay` is a
+// one-shot timer that starts with the level.
+class EventAction final : public Component {
+  public:
+    std::string onEvent;
+    EntityRef from;    // Only events raised by this entity count. Empty: any.
+    float delay{0.0F}; // Seconds from the event to the actions.
+    float every{0.0F}; // With no onEvent: run the actions every this many seconds.
+    bool once{false};  // Stop after running once.
+    SignalChange signal{SignalChange::None};
+    std::vector<EntityRef> targets; // Receivers that follow the signal this component holds.
+    std::string raiseEvent;
+    std::vector<EntityRef> activate;
+    std::vector<EntityRef> deactivate;
+    std::vector<EntityRef> animate;
+    std::string animationTrigger; // Set on the AnimatedSprite of each `animate` entity.
+    VariableChange variableChange{VariableChange::None};
+    std::string variable;
+    float amount{1.0F};
+    AssetRef sound;
+    bool restartLevel{false};
+    AssetRef changeScene; // A scene to go to.
+    static void describe(TypeBuilder<EventAction> &type);
+
+    // The signal it holds right now (what `targets` follow).
+    bool signalOn() const {
+        return signal_;
+    }
+    int runCount() const {
+        return runs_;
+    }
+    void onStart(GameContext &context) override;
+    void onFixedUpdate(GameContext &context, float seconds) override;
+    void onDestroy(GameContext &context) override;
+
+  private:
+    void run(GameContext &context, EntityId other);
+    struct Pending {
+        double due;
+        EntityId other;
+    };
+    std::vector<Pending> pending_;
+    EventBus::Subscription subscription_{};
+    bool signal_{};
+    bool finished_{};
+    float timer_{};
+    int runs_{};
 };
 
 // Registers every component above plus generic entity templates (Platform, Door, ...).

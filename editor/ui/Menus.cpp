@@ -179,6 +179,14 @@ void menuView(EditorState &state) {
     if (item("View/Snap to Grid", "Snap to Grid", nullptr, true, state.interaction.snap.enabled))
         state.interaction.snap.enabled = !state.interaction.snap.enabled;
     ImGui::Separator();
+    const bool hasView = state.interaction.bound();
+    if (item("View/Zoom In", "Zoom In", "Ctrl+=", hasView))
+        state.interaction.zoomStep(1);
+    if (item("View/Zoom Out", "Zoom Out", "Ctrl+-", hasView))
+        state.interaction.zoomStep(-1);
+    if (item("View/Reset Zoom", "Reset Zoom to 100%", "Ctrl+0", hasView))
+        state.interaction.zoomTo(100.0F);
+    ImGui::Separator();
     if (item("View/Reset Layout", "Reset Layout"))
         state.layout = {};
 }
@@ -253,9 +261,11 @@ void menuEntity(EditorState &state) {
              entity != nullptr))
         state.document->setLocked(state.document->selectionRoots(), !entity->locked());
     ImGui::Separator();
-    if (item("Entity/Move Up", "Move Up", "Alt+Up", entity != nullptr))
+    if (item("Entity/Move Up", "Move Up", "Alt+Up",
+             entity != nullptr && state.document->canMoveAmongSiblings(selected, -1)))
         state.document->moveAmongSiblings(selected, -1);
-    if (item("Entity/Move Down", "Move Down", "Alt+Down", entity != nullptr))
+    if (item("Entity/Move Down", "Move Down", "Alt+Down",
+             entity != nullptr && state.document->canMoveAmongSiblings(selected, 1)))
         state.document->moveAmongSiblings(selected, 1);
 }
 

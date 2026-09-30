@@ -20,8 +20,14 @@ class PlayerInput final : public Component {
     std::string actionSet{"Player1"};
     static void describe(TypeBuilder<PlayerInput> &type);
 
+    // What the person is doing: nothing while this component is disabled, or while the game's
+    // input is locked (GameContext::lockInput: a level-complete sequence, a fade between scenes).
+    // Components that answer to a person read their actions through here, not from the raw input.
     ButtonState button(const GameContext &context, std::string_view action) const;
     float value(const GameContext &context, std::string_view action) const;
+    // value(positive) - value(negative), in -1..+1.
+    float axis(const GameContext &context, std::string_view negative,
+               std::string_view positive) const;
 };
 
 // ----- Rendering ---------------------------------------------------------------------------
@@ -156,7 +162,39 @@ class Collider final : public Component {
     float friction{0.6F};
     float restitution{0.0F};
     float density{1.0F};
+    // Rounds the corners of a Box (world units, before entity scale). A low step or the edge of a
+    // button that is rounded lets a character run up onto it instead of catching on the corner.
+    float cornerRadius{0.0F};
+    // Cuts the corners of a Box: how far along each side the cut starts, x along the top and
+    // bottom, y along the left and right (world units, before entity scale). A shallow slope
+    // (wide x, small y) lets things slide up onto the box: a character walks onto a button, a
+    // crate is pushed onto it. A Box with a chamfer is an octagon and ignores cornerRadius.
+    Vec2 chamfer{0.0F, 0.0F};
     static void describe(TypeBuilder<Collider> &type);
+};
+
+// Pins the entity's body to a point so that it swings or tilts about it: a seesaw, a drawbridge, a
+// swinging platform, a door on a hinge that a character can push. The pin is `anchor`, a point in
+// this entity's own space. `connectedBody` names another entity with a body that the pin is fixed
+// to (a plank on a fulcrum: the plank's hinge names the fulcrum); left empty, the pin is fixed in
+// the world. Angles are measured from the pose the scene has at the start, positive clockwise on
+// screen. Needs a Dynamic RigidBody: the physics moves it, it stands or lies on nothing else.
+class HingeJoint final : public Component {
+  public:
+    EntityRef connectedBody;
+    Vec2 anchor{0.0F, 0.0F};
+    bool limits{false}; // Keep the swing between lowerAngle and upperAngle.
+    float lowerAngle{-45.0F};
+    float upperAngle{45.0F};
+    bool spring{false}; // Pull toward restAngle (a lever that returns, a bridge that rises).
+    float springHertz{2.0F};
+    float springDamping{0.5F};
+    float restAngle{0.0F};
+    bool motor{false}; // Turn at motorSpeed as long as the torque allows.
+    float motorSpeed{90.0F};
+    float motorTorque{20.0F};
+    bool collideConnected{false}; // Let the two bodies touch each other.
+    static void describe(TypeBuilder<HingeJoint> &type);
 };
 
 // ----- Camera ------------------------------------------------------------------------------
@@ -185,12 +223,14 @@ class Camera final : public Component {
     // Where this camera looks: the smoothed runtime state once the game is running, the authored
     // position and height before that.
     CameraView view() const;
+    // Follows once per fixed tick (after the tick's physics), not once per drawn frame.
     void onLateUpdate(GameContext &context, float seconds) override;
 
   private:
     Vec2 position_{};
     float height_{};
     bool initialized_{};
+    double lastTime_{-1.0}; // Simulated time of the last step.
 };
 
 // ----- Audio -------------------------------------------------------------------------------

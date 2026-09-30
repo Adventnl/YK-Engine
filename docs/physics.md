@@ -49,9 +49,11 @@ specified velocity without gravity. Dynamic bodies respond to gravity, forces,
 contacts and constraints. Shapes provide mass through density (kg/m^2).
 Use fixedRotation for bodies that should not rotate.
 
-Geometry is local to the body. Box uses half-extents and optional local center/angle;
-Circle has radius/center; Capsule has two centers/radius. Polygon accepts 3-8 distinct
-convex hull vertices, in any order. Duplicate, interior and collinear points are
+Geometry is local to the body. Box uses half-extents and optional local center/angle, and an
+optional `cornerRadius` that rounds its four corners while `halfExtents` stays the outer size (it
+must be smaller than the shorter half extent); Circle has radius/center; Capsule has two
+centers/radius. Polygon accepts 3-8 distinct convex hull vertices, in any order, and an optional
+`radius` that rounds its outline by growing it. Duplicate, interior and collinear points are
 rejected; concave shapes should be decomposed into multiple convex shapes on one body.
 Segments are two-sided, have no area and are limited to static/kinematic bodies.
 Segment sensors are rejected. Minimum radius/half-extent/endpoint separation is 0.005 m.
@@ -76,6 +78,12 @@ Forces/torques are cleared after each solver tick. Apply a sustained force befor
 If advance performs several ticks, a force applied before it affects the first tick.
 A force remains pending when no tick is executed. Impulses change velocity immediately.
 Off-center force/impulse takes an optional world-space application point.
+
+state reports the pose, the velocity **of the center of mass** (the origin for kinematic and static
+bodies), the angular velocity and `worldCenter`, the center of mass in world space, which is what a
+body rotates about. pointVelocity(body, worldPoint) is the velocity of that point of the body: the
+linear velocity plus the angular velocity crossed with the offset from the center of mass. A
+character standing on a rotating platform needs exactly that, not the body's own velocity.
 
 setPose teleports and resets interpolation. setEnabled(false) removes the body from
 simulation/queries and clears native velocity; setEnabled(true) wakes it. Set the
@@ -119,8 +127,10 @@ solid geometry. Queries obey QueryFilter; results sort by engine creation serial
 Disabled bodies are excluded. Segment point queries have no solid interior.
 
 Distance joints enforce a rest length, or use springHertz/dampingRatio for a spring.
-Revolute joints connect local anchors, with optional angle limits and motor speed/torque.
-Reference angles are normalized modulo 2pi to preserve equivalent rotations.
+Revolute joints connect local anchors, with optional angle limits, motor speed/torque and a
+rotational spring (`enableSpring`, `springHertz`, `springDampingRatio`, `targetAngle`, relative to the
+reference angle: a seesaw that returns to level, a lever that snaps back). Reference angles are
+normalized modulo 2pi to preserve equivalent rotations.
 Joint definitions require distinct bodies in this world and at least one dynamic body.
 Destroying either body invalidates its attached joint. More joint types are not exposed.
 
@@ -132,9 +142,14 @@ The adapter draws collider outlines; it does not drive sprite transforms or simu
 
 ## Limits
 
-Continuous collision is enabled by default; bullet bodies add fast-body handling
-against dynamic/kinematic bodies. Bullet-vs-bullet CCD and continuously swept sensors
-are not guaranteed. Sensors are evaluated at discrete ticks; fast visitors may skip
+Continuous collision is enabled by default, but a body that is not a bullet is only swept against
+*static* shapes: a fast dynamic body can end up inside a kinematic one (a sinking plate, a closing
+door) before the solver reacts. setBullet(body, true) adds fast-body handling against dynamic and
+kinematic bodies too; `PlatformerController` sets it on its character, and it is what a fast
+projectile needs. Contacts (and so the load a plate senses, or the squeeze a door notices) only
+exist within the solver's speculative margin, about 2 cm, so a mechanism can overlap what it
+presses on by a few centimeters before it knows. Bullet-vs-bullet CCD and continuously swept
+sensors are not guaranteed. Sensors are evaluated at discrete ticks; fast visitors may skip
 thin triggers. Ray casts can help for explicit fast-path detection; shape casts and
 one-way-platform policy are not exposed. Character movement is not part of this API: the gameplay
 library's `PlatformerController` drives a dynamic capsule by velocity and detects ground from the

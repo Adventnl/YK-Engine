@@ -91,6 +91,10 @@
           {
             "name": "Pause",
             "bindings": ["Key:P", "Pad:Start"]
+          },
+          {
+            "name": "Continue",
+            "bindings": ["Key:Enter", "Pad:East"]
           }
         ]
       }

@@ -232,6 +232,21 @@ void handleShortcuts(EditorState &state) {
     if (!state.document)
         return;
     EditorDocument &doc = *state.document;
+    // Moving the view changes no scene, so it works while the game plays as well.
+    if (!ImGui::GetIO().WantTextInput) {
+        SceneInteraction &view = state.interaction;
+        if (pressed(ImGuiKey_Home))
+            view.frameAll();
+        if (pressed(ImGuiMod_Ctrl | ImGuiKey_Equal) ||
+            pressed(ImGuiMod_Ctrl | ImGuiMod_Shift | ImGuiKey_Equal) ||
+            pressed(ImGuiMod_Ctrl | ImGuiKey_KeypadAdd))
+            view.zoomStep(1);
+        if (pressed(ImGuiMod_Ctrl | ImGuiKey_Minus) ||
+            pressed(ImGuiMod_Ctrl | ImGuiKey_KeypadSubtract))
+            view.zoomStep(-1);
+        if (pressed(ImGuiMod_Ctrl | ImGuiKey_0) || pressed(ImGuiMod_Ctrl | ImGuiKey_Keypad0))
+            view.zoomTo(100.0F);
+    }
     if (state.playing()) {
         if (pressed(ImGuiKey_Escape) && state.pick)
             state.pick.reset();
@@ -296,8 +311,6 @@ void handleShortcuts(EditorState &state) {
         else if (state.interaction.dragging())
             state.interaction.cancelDrag();
     }
-    if (pressed(ImGuiKey_Home))
-        state.interaction.frameAll();
     const bool sceneActive = state.sceneView.hovered || state.sceneView.focused;
     if (sceneActive) {
         if (pressed(ImGuiKey_F))

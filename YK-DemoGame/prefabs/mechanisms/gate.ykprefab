@@ -70,15 +70,20 @@
             "layer": "Solid",
             "friction": 0.4,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
           "type": "Door",
           "properties": {
             "openOffset": [0, -3.2],
+            "openRotation": 0,
             "speed": 4,
+            "rotationSpeed": 90,
             "startsOpen": false,
+            "stopWhenBlocked": true,
             "logic": "Any",
             "invert": false,
             "openSound": "assets/audio/gate_open.wav",

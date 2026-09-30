@@ -373,6 +373,17 @@ Status EditorDocument::moveAmongSiblings(EntityId id, int steps) {
     return outcome ? *outcome : Status(Error{"Reorder did not run"});
 }
 
+bool EditorDocument::canMoveAmongSiblings(EntityId id, int steps) const {
+    const Entity *entity = scene_->find(id);
+    if (!entity || steps == 0)
+        return false;
+    const auto siblings = siblingsOf(*scene_, *entity);
+    const auto found = std::find(siblings.begin(), siblings.end(), id);
+    if (found == siblings.end())
+        return false;
+    return steps < 0 ? found != siblings.begin() : std::next(found) != siblings.end();
+}
+
 void EditorDocument::rename(EntityId id, const std::string &name) {
     change("Rename", [&](Scene &scene) {
         if (Entity *entity = scene.find(id))

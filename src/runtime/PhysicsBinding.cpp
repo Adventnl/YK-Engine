@@ -39,8 +39,27 @@ std::optional<physics::Geometry> makeGeometry(const Collider &collider,
         rotated(worldCenter - bodyWorld.position, -degreesToRadians(bodyWorld.rotationDegrees));
     const float angle = degreesToRadians(colliderWorld.rotationDegrees - bodyWorld.rotationDegrees);
     switch (collider.shape) {
-    case ColliderShape::Box:
-        return physics::Box{extent * 0.5F, center, angle};
+    case ColliderShape::Box: {
+        const Vec2 half = extent * 0.5F;
+        const Vec2 cut{std::min(collider.chamfer.x * scale.x, 0.49F * extent.x),
+                       std::min(collider.chamfer.y * scale.y, 0.49F * extent.y)};
+        if (cut.x > 0.005F && cut.y > 0.005F) { // An octagon: the box with its corners cut off.
+            physics::Polygon octagon;
+            for (const Vec2 corner :
+                 {Vec2{-half.x + cut.x, -half.y}, Vec2{half.x - cut.x, -half.y},
+                  Vec2{half.x, -half.y + cut.y}, Vec2{half.x, half.y - cut.y},
+                  Vec2{half.x - cut.x, half.y}, Vec2{-half.x + cut.x, half.y},
+                  Vec2{-half.x, half.y - cut.y}, Vec2{-half.x, -half.y + cut.y}})
+                octagon.vertices.push_back(center + rotated(corner, angle));
+            return octagon;
+        }
+        physics::Box box{half, center, angle, 0.0F};
+        // Rounding shrinks with the entity and never eats the whole box (a degenerate inner
+        // rectangle would not be a valid shape).
+        box.cornerRadius = std::clamp(collider.cornerRadius * std::min(scale.x, scale.y), 0.0F,
+                                      0.49F * std::min(extent.x, extent.y));
+        return box;
+    }
     case ColliderShape::Circle:
         return physics::Circle{0.5F * collider.size.x * std::max(scale.x, scale.y), center};
     case ColliderShape::Capsule: {
@@ -79,6 +98,7 @@ Status GameRuntime::Impl::buildWorld() {
     shapesByEntity.clear();
     triggerShapes.clear();
     overlaps.clear();
+    hingeAnchors.clear();
     bindEntities(scene->hierarchyOrder());
     return success();
 }
@@ -168,6 +188,75 @@ void GameRuntime::Impl::bindEntities(const std::vector<EntityId> &ids) {
                 triggerShapes.push_back(shape.value().serial());
         }
     }
+    for (const EntityId id : ids) // Joints last, so both bodies of a hinge exist.
+        if (Entity *entity = scene->find(id))
+            for (const HingeJoint *hinge : entity->getAll<HingeJoint>())
+                bindHinge(*entity, *hinge);
+}
+
+void GameRuntime::Impl::bindHinge(Entity &entity, const HingeJoint &hinge) {
+    Entity *ownerB = bodyOwner(entity);
+    const auto recordB = ownerB ? bodies.find(ownerB->id()) : bodies.end();
+    if (recordB == bodies.end() || recordB->second.type != physics::BodyType::Dynamic) {
+        log(LogLevel::Warning, "physics",
+            "'" + entity.name() + "': a HingeJoint needs a Dynamic RigidBody to swing");
+        return;
+    }
+    const Transform2D worldB = ownerB->worldTransform();
+    const Vec2 pivot = transformPoint(entity.worldTransform(), hinge.anchor);
+    physics::RevoluteJointDef definition;
+    definition.second = recordB->second.body;
+    definition.localAnchorSecond =
+        rotated(pivot - worldB.position, -degreesToRadians(worldB.rotationDegrees));
+    physics::BodyHandle anchorBody;
+    if (Entity *connected = scene->find(hinge.connectedBody)) {
+        Entity *ownerA = bodyOwner(*connected);
+        const auto recordA = ownerA ? bodies.find(ownerA->id()) : bodies.end();
+        if (recordA == bodies.end() || ownerA == ownerB) {
+            log(LogLevel::Warning, "physics",
+                "'" + entity.name() + "': the HingeJoint's connected body '" + connected->name() +
+                    "' has no body of its own to be pinned to");
+            return;
+        }
+        const Transform2D worldA = ownerA->worldTransform();
+        definition.first = recordA->second.body;
+        definition.localAnchorFirst =
+            rotated(pivot - worldA.position, -degreesToRadians(worldA.rotationDegrees));
+        definition.referenceAngle =
+            degreesToRadians(worldB.rotationDegrees - worldA.rotationDegrees);
+    } else {
+        physics::BodyDef anchor;
+        anchor.type = physics::BodyType::Static;
+        anchor.pose.position = pivot;
+        auto created = world->createBody(anchor);
+        if (!created) {
+            log(LogLevel::Warning, "physics", "'" + entity.name() + "': " + created.error());
+            return;
+        }
+        anchorBody = created.value();
+        definition.first = anchorBody;
+        definition.referenceAngle = degreesToRadians(worldB.rotationDegrees);
+    }
+    constexpr float limit = 178.0F;
+    definition.enableLimit = hinge.limits;
+    definition.lowerAngle = degreesToRadians(std::clamp(hinge.lowerAngle, -limit, limit));
+    definition.upperAngle = degreesToRadians(std::clamp(hinge.upperAngle, hinge.lowerAngle, limit));
+    definition.enableSpring = hinge.spring;
+    definition.springHertz = hinge.springHertz;
+    definition.springDampingRatio = hinge.springDamping;
+    definition.targetAngle = degreesToRadians(std::clamp(hinge.restAngle, -limit, limit));
+    definition.enableMotor = hinge.motor;
+    definition.motorSpeed = degreesToRadians(hinge.motorSpeed);
+    definition.maxMotorTorque = hinge.motorTorque;
+    definition.collideConnected = hinge.collideConnected;
+    if (auto joint = world->createRevoluteJoint(definition); !joint) {
+        log(LogLevel::Warning, "physics", "'" + entity.name() + "': " + joint.error());
+        if (anchorBody.serial() != 0)
+            world->destroy(anchorBody);
+        return;
+    }
+    if (anchorBody.serial() != 0)
+        hingeAnchors[entity.id()] = anchorBody;
 }
 
 void GameRuntime::Impl::unbindEntities(const std::vector<EntityId> &ids) {
@@ -185,6 +274,11 @@ void GameRuntime::Impl::unbindEntities(const std::vector<EntityId> &ids) {
             shapesByEntity.erase(found);
         }
         overlaps.erase(id);
+        if (const auto anchor = hingeAnchors.find(id); anchor != hingeAnchors.end()) {
+            if (world->valid(anchor->second))
+                world->destroy(anchor->second);
+            hingeAnchors.erase(anchor);
+        }
         if (const auto body = bodies.find(id); body != bodies.end()) {
             entityByBody.erase(body->second.body.serial());
             if (world->valid(body->second.body))
@@ -329,7 +423,8 @@ void GameRuntime::Impl::updateTriggers() {
 
 void GameRuntime::Impl::dispatchCollisions() {
     for (const physics::Event &event : world->events()) {
-        if (event.type != physics::EventType::ContactBegin)
+        const bool begin = event.type == physics::EventType::ContactBegin;
+        if (!begin && event.type != physics::EventType::ContactEnd)
             continue;
         const auto first = shapes.find(event.first.serial());
         const auto second = shapes.find(event.second.serial());
@@ -342,13 +437,20 @@ void GameRuntime::Impl::dispatchCollisions() {
             continue;
         GameContext &context = self;
         const auto call = [&](Entity &subject, Entity &other, Vec2 normal) {
+            if (!subject.activeInHierarchy())
+                return; // A callback earlier in this tick may have deactivated it.
             std::vector<Component *> components;
             for (const auto &component : subject.components())
                 components.push_back(component.get());
-            for (Component *component : components)
-                if (component->enabled)
-                    component->onCollisionEnter(context, other,
-                                                {event.point, normal, event.approachSpeed});
+            for (Component *component : components) {
+                if (!component->enabled)
+                    continue;
+                const CollisionInfo info{event.point, normal, event.approachSpeed};
+                if (begin)
+                    component->onCollisionEnter(context, other, info);
+                else
+                    component->onCollisionExit(context, other, info);
+            }
         };
         call(*a, *b, event.normal);
         call(*b, *a, -event.normal);

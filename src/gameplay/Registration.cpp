@@ -83,6 +83,7 @@ void registerGameplayComponents(ComponentRegistry &registry) {
     registry.add<Goal>("Goal");
     registry.add<TriggerZone>("TriggerZone");
     registry.add<LevelFlow>("LevelFlow");
+    registry.add<EventAction>("EventAction");
 
     registry.addTemplate(
         {"Platform", "Level", [](Scene &scene, Vec2 at) {
@@ -108,15 +109,15 @@ void registerGameplayComponents(ComponentRegistry &registry) {
                               return door.id();
                           }});
     registry.addTemplate({"Pressure Plate", "Mechanisms", [](Scene &scene, Vec2 at) {
+                              // A slab whose top is 0.14 above the origin (put the origin on the
+                              // floor); it sinks into the floor under a load. Adding the component
+                              // gives it its kinematic body and a solid pad the size of the art.
                               Entity &plate = place(scene, "Pressure Plate", at);
                               auto &sprite = plate.add<SpriteRenderer>();
-                              sprite.size = {1.2F, 0.2F};
+                              sprite.size = {1.4F, 0.5F};
+                              sprite.offset = {0.0F, 0.11F};
                               sprite.color = {200, 70, 60, 255};
-                              sprite.layer = 1;
-                              auto &collider = plate.add<Collider>();
-                              collider.size = {1.0F, 0.5F};
-                              collider.offset = {0.0F, -0.15F};
-                              collider.layer = layers::sensor;
+                              sprite.layer = -1; // Behind the floor, so the sunk part is hidden.
                               plate.add<PressurePlate>();
                               return plate.id();
                           }});
@@ -172,6 +173,11 @@ void registerGameplayComponents(ComponentRegistry &registry) {
                               Entity &flow = place(scene, "Level Flow", at);
                               flow.add<LevelFlow>();
                               return flow.id();
+                          }});
+    registry.addTemplate({"Event Action", "Gameplay", [](Scene &scene, Vec2 at) {
+                              Entity &action = place(scene, "Event Action", at);
+                              action.add<EventAction>();
+                              return action.id();
                           }});
     registry.addTemplate({"Character", "Gameplay", [](Scene &scene, Vec2 at) {
                               Entity &character = place(scene, "Character", at);

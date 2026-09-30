@@ -161,8 +161,25 @@ Result<ShapeHandle> World::createShape(BodyHandle body, const Geometry &geometry
                 } else if constexpr (std::is_same_v<T, Box>) {
                     if (!positiveDimension(geometryValue.halfExtents.x) ||
                         !positiveDimension(geometryValue.halfExtents.y) ||
-                        !bounded(geometryValue.center) || !bounded(geometryValue.angleRadians))
+                        !bounded(geometryValue.center) || !bounded(geometryValue.angleRadians) ||
+                        !nonnegative(geometryValue.cornerRadius))
                         return {};
+                    const float radius = geometryValue.cornerRadius;
+                    if (radius > 0.0F) {
+                        // The rounded box is described by its inner box plus the radius; keep
+                        // the inner box a real rectangle.
+                        const float inner =
+                            std::min(geometryValue.halfExtents.x, geometryValue.halfExtents.y) -
+                            radius;
+                        if (inner < minimumDimension)
+                            return {};
+                        const auto rounded =
+                            b2MakeOffsetRoundedBox(geometryValue.halfExtents.x - radius,
+                                                   geometryValue.halfExtents.y - radius,
+                                                   physics::native(geometryValue.center),
+                                                   b2MakeRot(geometryValue.angleRadians), radius);
+                        return b2CreatePolygonShape(record.nativeId, &shape, &rounded);
+                    }
                     const auto box =
                         b2MakeOffsetBox(geometryValue.halfExtents.x, geometryValue.halfExtents.y,
                                         physics::native(geometryValue.center),
@@ -190,7 +207,8 @@ Result<ShapeHandle> World::createShape(BodyHandle body, const Geometry &geometry
                     }
                 } else {
                     if (geometryValue.vertices.size() < 3 ||
-                        geometryValue.vertices.size() > B2_MAX_POLYGON_VERTICES)
+                        geometryValue.vertices.size() > B2_MAX_POLYGON_VERTICES ||
+                        !nonnegative(geometryValue.radius))
                         return {};
                     std::array<b2Vec2, B2_MAX_POLYGON_VERTICES> points{};
                     for (std::size_t i = 0; i < geometryValue.vertices.size(); ++i) {
@@ -203,7 +221,7 @@ Result<ShapeHandle> World::createShape(BodyHandle body, const Geometry &geometry
                     if (hull.count != static_cast<int>(geometryValue.vertices.size()) ||
                         !b2ValidateHull(&hull))
                         return {};
-                    const auto polygon = b2MakePolygon(&hull, 0);
+                    const auto polygon = b2MakePolygon(&hull, geometryValue.radius);
                     return b2CreatePolygonShape(record.nativeId, &shape, &polygon);
                 }
             },
@@ -270,10 +288,22 @@ Result<BodyState> World::state(BodyHandle body) const {
     if (!valid(body))
         return invalidHandle();
     const auto id = impl_->bodies.at(body.serial_).nativeId;
-    return BodyState{
-        poseOf(id),          vector(b2Body_GetLinearVelocity(id)), b2Body_GetAngularVelocity(id),
-        b2Body_GetMass(id),  b2Body_GetRotationalInertia(id),      b2Body_IsAwake(id),
-        b2Body_IsEnabled(id)};
+    return BodyState{poseOf(id),
+                     vector(b2Body_GetLinearVelocity(id)),
+                     b2Body_GetAngularVelocity(id),
+                     b2Body_GetMass(id),
+                     b2Body_GetRotationalInertia(id),
+                     vector(b2Body_GetWorldCenterOfMass(id)),
+                     b2Body_IsAwake(id),
+                     b2Body_IsEnabled(id)};
+}
+Result<Vec2> World::pointVelocity(BodyHandle body, Vec2 worldPoint) const {
+    if (!valid(body))
+        return invalidHandle();
+    if (!bounded(worldPoint))
+        return Error{"Invalid world point"};
+    return vector(b2Body_GetWorldPointVelocity(impl_->bodies.at(body.serial_).nativeId,
+                                               physics::native(worldPoint)));
 }
 Result<BodyHandle> World::bodyOf(ShapeHandle shape) const {
     if (!valid(shape))
@@ -343,6 +373,12 @@ Status World::setGravityScale(BodyHandle body, float scale) {
     if (!bounded(scale))
         return Error{"Invalid gravity scale"};
     b2Body_SetGravityScale(impl_->bodies.at(body.serial_).nativeId, scale);
+    return success();
+}
+Status World::setBullet(BodyHandle body, bool bullet) {
+    if (!valid(body))
+        return invalidHandle();
+    b2Body_SetBullet(impl_->bodies.at(body.serial_).nativeId, bullet);
     return success();
 }
 Status World::setFriction(ShapeHandle shape, float friction) {

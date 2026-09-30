@@ -2,6 +2,7 @@
 #include "yk/components/Components.hpp"
 #include <algorithm>
 #include <cmath>
+#include <iterator>
 
 namespace yk::editor {
 namespace {
@@ -50,6 +51,25 @@ void ViewCamera::zoomAt(Vec2 pixel, Vec2 viewport, float factor) {
     center += before - toWorld(pixel, viewport);
 }
 
+float ViewCamera::steppedZoom(int direction) const {
+    static constexpr float ladder[] = {5.0F,   10.0F,  25.0F,  50.0F,  75.0F,  100.0F,  150.0F,
+                                       200.0F, 300.0F, 400.0F, 600.0F, 800.0F, 1000.0F, 1250.0F};
+    // A stop the zoom is already within a percent of counts as where it is, so that a stop reached
+    // by stepping is not stepped onto again.
+    const float now = percent();
+    const auto pixels = [](float percentage) { return percentage / 100.0F * actualSize; };
+    if (direction > 0) {
+        for (const float stop : ladder)
+            if (stop > now * 1.01F)
+                return std::clamp(pixels(stop), minZoom, maxZoom);
+        return maxZoom;
+    }
+    for (auto stop = std::rbegin(ladder); stop != std::rend(ladder); ++stop)
+        if (*stop < now / 1.01F)
+            return std::clamp(pixels(*stop), minZoom, maxZoom);
+    return minZoom;
+}
+
 void ViewCamera::frame(Rect area, Vec2 viewport, float margin) {
     center = yk::center(area);
     const float width = std::max(area.size.x, 1.0F) * margin;
@@ -70,6 +90,17 @@ void SceneInteraction::panBy(Vec2 pixels) {
 
 void SceneInteraction::zoomAt(Vec2 pixel, float factor) {
     camera.zoomAt(pixel, viewport, factor);
+}
+
+void SceneInteraction::zoomStep(int direction) {
+    if (direction == 0)
+        return;
+    camera.zoomAt(viewport * 0.5F, viewport, camera.steppedZoom(direction) / camera.zoom);
+}
+
+void SceneInteraction::zoomTo(float percent) {
+    camera.zoomAt(viewport * 0.5F, viewport,
+                  percent / 100.0F * ViewCamera::actualSize / camera.zoom);
 }
 
 void SceneInteraction::frameSelection() {
@@ -122,6 +153,9 @@ std::vector<Handle> SceneInteraction::handles() const {
     std::size_t index = 0;
     for (const Ghost &ghost : displacementGhosts(*entity, half))
         result.push_back({HandleKind::Ghost, index++, toScreen(ghost.box.center)});
+    index = 0;
+    for (const Pin &pin : pinsOf(*entity))
+        result.push_back({HandleKind::Pin, index++, toScreen(pin.world)});
     if (tool == Tool::Resize) {
         if (const auto box = gizmoBox(*entity)) {
             const float radians = degreesToRadians(box->rotationDegrees);
@@ -157,9 +191,9 @@ Handle SceneInteraction::hitHandle(Vec2 pixel) const {
                                     3.0F, handleRadiusPixels);
     }
     for (const Handle &handle : handles()) {
-        const float reach = handle.kind == HandleKind::Ghost || handle.kind == HandleKind::Rotate
-                                ? handleRadiusPixels + 2.0F
-                                : radius;
+        const bool grabby = handle.kind == HandleKind::Ghost || handle.kind == HandleKind::Rotate ||
+                            handle.kind == HandleKind::Pin;
+        const float reach = grabby ? handleRadiusPixels + 2.0F : radius;
         const float gap = distance(handle.screen, pixel);
         if (gap <= reach && gap < bestDistance) {
             best = handle;
@@ -204,6 +238,13 @@ void SceneInteraction::pointerPressed(Vec2 pixel, Modifiers modifiers) {
         beginGhost(handle);
         if (ghost_.id) {
             mode_ = Mode::Ghost;
+            return;
+        }
+        break;
+    case HandleKind::Pin:
+        beginPin(handle);
+        if (pin_.id) {
+            mode_ = Mode::Pin;
             return;
         }
         break;
@@ -284,6 +325,9 @@ void SceneInteraction::pointerMoved(Vec2 pixel, Modifiers modifiers) {
         case Mode::Rotating:
             document_->beginChange("Rotate");
             break;
+        case Mode::Pin:
+            document_->beginChange("Move Pin");
+            break;
         default:
             document_->beginChange("Move Target");
             break;
@@ -301,6 +345,9 @@ void SceneInteraction::pointerMoved(Vec2 pixel, Modifiers modifiers) {
         break;
     case Mode::Ghost:
         updateGhost(world, modifiers);
+        break;
+    case Mode::Pin:
+        updatePin(world, modifiers);
         break;
     default:
         break;
@@ -364,6 +411,7 @@ void SceneInteraction::clearDrag() {
     resize_ = {};
     rotate_ = {};
     ghost_ = {};
+    pin_ = {};
 }
 
 void SceneInteraction::nudge(Vec2 direction, bool large) {
@@ -574,5 +622,35 @@ void SceneInteraction::updateGhost(Vec2 world, Modifiers modifiers) {
         return;
     const Vec2 displacement = snapTo(world + ghost_.grab - ghost_.boxCenter, snapStep(modifiers));
     property->assign(component, displacement);
+}
+
+void SceneInteraction::beginPin(Handle handle) {
+    pin_ = {};
+    const Entity *entity = document_->scene().find(document_->primary());
+    if (!entity)
+        return;
+    const auto pins = pinsOf(*entity);
+    if (handle.index >= pins.size())
+        return;
+    const Pin &pin = pins[handle.index];
+    pin_.id = entity->id();
+    pin_.component = pin.componentIndex;
+    pin_.property = pin.property;
+    pin_.grab = pin.world - pressWorld_;
+}
+
+void SceneInteraction::updatePin(Vec2 world, Modifiers modifiers) {
+    Scene &scene = document_->edit();
+    Entity *entity = scene.find(pin_.id);
+    if (!entity || pin_.component >= entity->components().size())
+        return;
+    Component &component = *entity->components()[pin_.component];
+    const PropertyInfo *property = component.type().find(pin_.property);
+    if (!property)
+        return;
+    // The grid is the world's, so the pin lands on a grid point and is then put back in the
+    // entity's own space.
+    const Vec2 target = snapTo(world + pin_.grab, snapStep(modifiers));
+    property->assign(component, inverseTransformPoint(entity->worldTransform(), target));
 }
 } // namespace yk::editor

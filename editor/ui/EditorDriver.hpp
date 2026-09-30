@@ -34,9 +34,11 @@ namespace yk::editor {
 //   create Level/Platform               "+" in the hierarchy, then category and template
 //   capture FILE.bmp                    save a screenshot
 //   timeout N                           frames a target or expectation may take to appear
+//   remember-view                       note the scene view's center (expect view-offset)
 //   report ENTITY | log TEXT | closewindow | quit
 //   expect ...                          see check() in EditorDriver.cpp: selected, prop, position,
-//                                       size, links, playing, dirty, dialog, runtime-moved, ...
+//                                       size, links, playing, dirty, dialog, runtime-moved, zoom,
+//                                       view-center, view-shows, ...
 // clang-format on
 class EditorDriver {
   public:
@@ -85,6 +87,7 @@ class EditorDriver {
     bool focused_{};
     Point mouse_{};
     Point from_{}, to_{};
+    Point rememberedView_{}; // The scene view's center at the last `remember-view`.
     std::filesystem::path failureDirectory_;
     bool wasPlaying_{};
     std::map<std::string, Point> runtimeStart_; // Entity name -> position when Play started.

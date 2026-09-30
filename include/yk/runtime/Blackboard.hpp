@@ -1,5 +1,6 @@
 #pragma once
 #include <map>
+#include <set>
 #include <string>
 #include <string_view>
 #include <variant>
@@ -23,6 +24,20 @@ class Blackboard {
     }
     void clear() {
         values_.clear();
+        kept_.clear();
+    }
+    // Marks a variable to be carried into the next scene (a score, the lives left, what was
+    // collected): the host hands kept() to the runtime it starts for the next scene.
+    void keep(const std::string &key) {
+        kept_.insert(key);
+    }
+    // The kept variables and their values now (variables that were never set are not included).
+    std::map<std::string, Value> kept() const {
+        std::map<std::string, Value> result;
+        for (const std::string &key : kept_)
+            if (const auto found = values_.find(key); found != values_.end())
+                result.emplace(key, found->second);
+        return result;
     }
     const std::map<std::string, Value> &values() const {
         return values_;
@@ -34,5 +49,6 @@ class Blackboard {
 
   private:
     std::map<std::string, Value> values_;
+    std::set<std::string> kept_;
 };
 } // namespace yk

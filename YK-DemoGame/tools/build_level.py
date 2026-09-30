@@ -131,9 +131,9 @@ class Level:
                 overrides={"MovingPlatform": {"travel": [3, 0], "speed": 1.8, "pause": 1.4}})
         s.place(P + "mechanisms/shuttle.ykprefab", "Shuttle Goo", (27.5, UPPER + 0.23), parent="Mechanisms",
                 overrides={"MovingPlatform": {"travel": [3, 0], "speed": 2.0, "pause": 0.6, "requireSignal": True}})
-        s.place(P + "mechanisms/plate.ykprefab", "Plate Near", (33.4, UPPER - 0.25), parent="Mechanisms",
+        s.place(P + "mechanisms/plate.ykprefab", "Plate Near", (33.4, UPPER + 0.016), parent="Mechanisms",
                 overrides={"PressurePlate": {"targets": [ref("Shuttle Goo")]}})
-        s.place(P + "mechanisms/plate.ykprefab", "Plate Far", (25.0, UPPER - 0.25), parent="Mechanisms",
+        s.place(P + "mechanisms/plate.ykprefab", "Plate Far", (25.0, UPPER + 0.016), parent="Mechanisms",
                 overrides={"PressurePlate": {"targets": [ref("Shuttle Goo")]}})
         s.place(P + "mechanisms/checkpoint.ykprefab", "Checkpoint", (23.5, GROUND - 0.75), parent="Mechanisms")
         s.place(P + "mechanisms/crate.ykprefab", "Crate", (33.0, GROUND - 0.5), parent="Mechanisms")
@@ -233,8 +233,10 @@ class Level:
                                        playOnStart=True)
         s.add(audio)
         rules = Node("Level Flow")
+        # Both characters walk into their exits, the level shows LEVEL COMPLETE, and after a few
+        # seconds (or Enter) the game fades to the next room.
         rules.add("LevelFlow", goals=[ref("Ember Exit"), ref("Tide Exit")], completeSound="assets/audio/complete.wav",
-                  completeDelay=4.0)
+                  completeDelay=4.0, nextScene="scenes/practice.ykscene", continueAction="Continue")
         s.add(rules)
         s.place(P + "level/hud.ykprefab", "HUD", (0, 0))
 
@@ -279,7 +281,7 @@ class Practice(Level):
         self.platform("Shelf", 17.0, 24.5, floor - 4.0, thickness=1.0)
         s.group("Mechanisms")
         s.place(P + "mechanisms/crate.ykprefab", "Crate", (16.2, floor - 0.5), parent="Mechanisms")
-        s.place(P + "mechanisms/plate.ykprefab", "Plate", (18.5, floor - 0.25), parent="Mechanisms",
+        s.place(P + "mechanisms/plate.ykprefab", "Plate", (18.5, floor + 0.016), parent="Mechanisms",
                 overrides={"PressurePlate": {"targets": [ref("Gate")]}})
         s.place(P + "mechanisms/gate.ykprefab", "Gate", (21.0, floor - 1.5), parent="Mechanisms")
         s.place(P + "mechanisms/checkpoint.ykprefab", "Checkpoint", (12.0, floor - 0.75), parent="Mechanisms")
@@ -298,7 +300,8 @@ class Practice(Level):
         s.place(P + "level/spawn_point.ykprefab", "Tide Spawn", (3.8, y), parent="Characters",
                 overrides={"SpawnPoint": {"character": ref("Tide")}})
         rules = Node("Level Flow")
-        rules.add("LevelFlow", goals=[ref("Ember Exit"), ref("Tide Exit")], completeSound="assets/audio/complete.wav")
+        rules.add("LevelFlow", goals=[ref("Ember Exit"), ref("Tide Exit")], completeSound="assets/audio/complete.wav",
+                  completeDelay=3.0, nextScene="scenes/level01.ykscene", continueAction="Continue")
         s.add(rules)
         s.place(P + "level/hud.ykprefab", "HUD", (0, 0))
         s.write("scenes/practice.ykscene")

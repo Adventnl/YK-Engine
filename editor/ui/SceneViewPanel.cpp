@@ -144,6 +144,8 @@ std::string handleName(const Handle &handle) {
         return "Rotate";
     case HandleKind::Ghost:
         return "Ghost" + std::to_string(handle.index);
+    case HandleKind::Pin:
+        return "Pin" + std::to_string(handle.index);
     default:
         return "Body";
     }
@@ -164,6 +166,7 @@ void drawGizmoHandles(const Canvas &canvas, const EditorState &state) {
                         IM_COL32(255, 255, 255, 200));
 
     const auto ghosts = displacementGhosts(*primary, half);
+    const auto pins = pinsOf(*primary);
     for (const Handle &handle : ui.handles()) {
         const bool hot = hovered.kind == handle.kind && hovered.index == handle.index;
         const ImVec2 c{canvas.origin.x + handle.screen.x, canvas.origin.y + handle.screen.y};
@@ -200,6 +203,22 @@ void drawGizmoHandles(const Canvas &canvas, const EditorState &state) {
             canvas.list.AddConvexPolyFilled(
                 diamond, 4, hot ? packed(palette::selection) : packed(palette::ghost));
             canvas.list.AddPolyline(diamond, 4, edge, ImDrawFlags_Closed, 1.5F);
+            break;
+        }
+        case HandleKind::Pin: {
+            // A hinge's anchor: a ring and crosshair, tied to the entity's origin by a dashed line.
+            const ImU32 tone = hot ? packed(palette::selection) : packed(palette::pin);
+            const ImVec2 from = canvas.at(primary->worldPosition());
+            if (distance(vec(from), vec(c)) > 10.0F)
+                dashedLine(canvas.list, from, c, faded(palette::pin, 0.7F), 1.5F);
+            canvas.list.AddCircleFilled(c, 8.0F, faded(palette::pin, 0.25F));
+            canvas.list.AddCircle(c, 8.0F, tone, 20, 2.0F);
+            canvas.list.AddLine({c.x - 12.0F, c.y}, {c.x + 12.0F, c.y}, tone, 1.5F);
+            canvas.list.AddLine({c.x, c.y - 12.0F}, {c.x, c.y + 12.0F}, tone, 1.5F);
+            canvas.list.AddCircleFilled(c, 2.5F, tone);
+            if (hot && !ui.dragging() && handle.index < pins.size())
+                ImGui::SetTooltip("Drag to move the %s",
+                                  label(pins[handle.index].property).c_str());
             break;
         }
         default:
@@ -347,8 +366,148 @@ void separator() {
     ImGui::SameLine(0.0F, 6.0F);
 }
 
-// One row above the view: the tools (move, resize, rotate), snapping, the overlays menu and the
-// pointer position. Widget ids are stable ("toolbar/Move") so scripts and tests can find them.
+constexpr float gridSteps[] = {0.1F, 0.25F, 0.5F, 1.0F, 2.0F};
+// The width the whole toolbar row needs; a narrower editor group (a split) folds part of it away.
+constexpr float fullToolbarWidth = 420.0F;
+
+// Something is selected that Focus can frame: the running game has no selection to frame.
+bool hasFocusTarget(const EditorState &state) {
+    return state.document && !state.playing() && !state.document->selection().empty();
+}
+
+// What the scene view draws, as toggles (the overlays popup, or its place in the "more" menu).
+void overlayItems(EditorState &state) {
+    ViewOptions &view = state.view;
+    const auto item = [&](const char *id, const char *text, bool &value) {
+        const bool clicked = ImGui::MenuItem(text, nullptr, value);
+        markItem(std::string("overlay/") + id);
+        if (clicked)
+            value = !value;
+    };
+    item("Grid", "Grid", view.grid);
+    item("Colliders", "Collider outlines", view.colliders);
+    item("Sprites", "Sprite bounds", view.spriteBounds);
+    item("Pivots", "Pivot points", view.pivots);
+    item("Links", "Links of the selection", view.links);
+    item("AllLinks", "Every link in the scene", view.allLinks);
+    item("Names", "Entity names", view.labels);
+    item("Camera", "Game camera frame", view.cameraFrame);
+}
+
+// The zoom level as a flat text button ("100%"). Returns true when clicked.
+bool zoomLevelButton(float percent) {
+    char text[16];
+    std::snprintf(text, sizeof text, "%ld%%", std::lround(static_cast<double>(percent)));
+    const ImVec2 size{54.0F, 26.0F};
+    const ImVec2 origin = ImGui::GetCursorScreenPos();
+    ImGui::PushID("view/Zoom");
+    const bool pressed = ImGui::InvisibleButton("##level", size);
+    const bool hovered = ImGui::IsItemHovered();
+    ImGui::PopID();
+    markItem("view/Zoom");
+    ImDrawList &list = *ImGui::GetWindowDrawList();
+    if (hovered || ImGui::IsItemActive())
+        list.AddRectFilled(origin, {origin.x + size.x, origin.y + size.y},
+                           faded(Color{90, 93, 94, 80}, ImGui::GetStyle().Alpha), 5.0F);
+    ImGui::PushFont(fonts().mono, 12.0F);
+    const ImVec2 extent = ImGui::CalcTextSize(text);
+    list.AddText({origin.x + (size.x - extent.x) * 0.5F, origin.y + (size.y - extent.y) * 0.5F},
+                 packed(hovered ? vs::textBright : Color{190, 190, 190, 255}), text);
+    ImGui::PopFont();
+    if (hovered)
+        ImGui::SetTooltip("Zoom level: click for presets, or scroll the wheel over the view");
+    return pressed;
+}
+
+// What the zoom level offers: round levels, and framing.
+void zoomMenu(EditorState &state) {
+    SceneInteraction &ui = state.interaction;
+    const PopupLook look;
+    const float now = ui.camera.percent();
+    for (const float level : {25.0F, 50.0F, 100.0F, 200.0F, 400.0F, 800.0F}) {
+        char text[16];
+        std::snprintf(text, sizeof text, "%g%%", static_cast<double>(level));
+        const bool clicked = ImGui::MenuItem(
+            text, level == 100.0F ? shortcutText("Ctrl+0") : nullptr, std::abs(now - level) < 0.5F);
+        markItem(std::string("zoom/") + text);
+        if (clicked)
+            ui.zoomTo(level);
+    }
+    ImGui::Separator();
+    if (ImGui::MenuItem("Fit the Scene", "Home"))
+        ui.frameAll();
+    markItem("zoom/Fit");
+    if (ImGui::MenuItem("Focus the Selection", "F", false, hasFocusTarget(state)))
+        ui.frameSelection();
+    markItem("zoom/Focus");
+}
+
+// Zoom out, the level, zoom in and, in a wide row, fit everything and focus the selection. They
+// only move the view, so they work while the game plays as well.
+void viewControls(EditorState &state, bool compact) {
+    SceneInteraction &ui = state.interaction;
+    ImGui::BeginDisabled(!ui.bound());
+    if (iconButton("view/ZoomOut", Icon::ZoomOut, false, "Zoom out (Ctrl+-)"))
+        ui.zoomStep(-1);
+    ImGui::SameLine(0.0F, 0.0F);
+    if (zoomLevelButton(ui.camera.percent()))
+        ImGui::OpenPopup("zoom_menu");
+    if (ImGui::BeginPopup("zoom_menu")) {
+        zoomMenu(state);
+        ImGui::EndPopup();
+    }
+    ImGui::SameLine(0.0F, 0.0F);
+    if (iconButton("view/ZoomIn", Icon::ZoomIn, false, "Zoom in (Ctrl+=)"))
+        ui.zoomStep(1);
+    if (!compact) {
+        ImGui::SameLine(0.0F, 2.0F);
+        if (iconButton("scene/FrameAll", Icon::Fit, false,
+                       "Fit the whole scene in the view (Home)"))
+            ui.frameAll();
+        ImGui::SameLine(0.0F, 2.0F);
+        ImGui::BeginDisabled(!hasFocusTarget(state));
+        if (iconButton("view/Focus", Icon::Target, false, "Focus the selection (F)"))
+            ui.frameSelection();
+        ImGui::EndDisabled();
+    }
+    ImGui::EndDisabled();
+}
+
+// What a narrow row folds away: the grid size, the overlays, fit and focus.
+void moreMenu(EditorState &state, bool editing) {
+    SceneInteraction &ui = state.interaction;
+    const PopupLook look;
+    const bool sizes = ImGui::BeginMenu("Grid Size", editing);
+    markItem("more/GridSize");
+    if (sizes) {
+        for (const float step : gridSteps) {
+            char text[16];
+            std::snprintf(text, sizeof text, "%g m", static_cast<double>(step));
+            if (ImGui::MenuItem(text, nullptr, std::abs(step - ui.snap.grid) < 1e-4F))
+                ui.snap.grid = step;
+            markItem(std::string("more/grid/") + text);
+        }
+        ImGui::EndMenu();
+    }
+    const bool overlays = ImGui::BeginMenu("Overlays");
+    markItem("more/Overlays");
+    if (overlays) {
+        overlayItems(state);
+        ImGui::EndMenu();
+    }
+    ImGui::Separator();
+    if (ImGui::MenuItem("Fit the Scene", "Home", false, ui.bound()))
+        ui.frameAll();
+    markItem("more/Fit");
+    if (ImGui::MenuItem("Focus the Selection", "F", false, hasFocusTarget(state)))
+        ui.frameSelection();
+    markItem("more/Focus");
+}
+
+// One row above the view: the tools (move, resize, rotate), snapping, the overlays menu, the zoom
+// and framing controls, and the pointer position. A row too narrow for all of it (a split editor)
+// keeps the tools, the snap switch and the zoom, and folds the rest into a "..." menu. Widget ids
+// are stable ("toolbar/Move") so scripts and tests can find them.
 void toolbar(EditorState &state, bool hoveredLastFrame, ImVec2 start) {
     ImDrawList &list = *ImGui::GetWindowDrawList();
     const ImVec2 origin = ImGui::GetWindowPos();
@@ -357,6 +516,7 @@ void toolbar(EditorState &state, bool hoveredLastFrame, ImVec2 start) {
                        packed(vs::editorBg));
     ImGui::SetCursorPos({start.x + 6.0F, start.y + 2.0F});
     const bool editing = state.document != nullptr && !state.playing();
+    const bool compact = ImGui::GetWindowWidth() < fullToolbarWidth;
     SceneInteraction &interaction = state.interaction;
     ImGui::BeginDisabled(!editing);
     if (iconButton("toolbar/Move", Icon::Move, interaction.tool == Tool::Move, "Move (W)"))
@@ -371,67 +531,70 @@ void toolbar(EditorState &state, bool hoveredLastFrame, ImVec2 start) {
     if (iconButton("toolbar/Snap", Icon::Snap, interaction.snap.enabled,
                    "Snap to grid (hold Ctrl while dragging to toggle)"))
         interaction.snap.enabled = !interaction.snap.enabled;
-    ImGui::SameLine(0.0F, 2.0F);
-    ImGui::SetNextItemWidth(70.0F);
-    static constexpr float steps[] = {0.1F, 0.25F, 0.5F, 1.0F, 2.0F};
-    char current[16];
-    std::snprintf(current, sizeof current, "%g m", static_cast<double>(interaction.snap.grid));
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {6.0F, 2.0F});
-    const bool comboOpen = ImGui::BeginCombo("##grid", current);
-    markItem("toolbar/GridSize");
-    if (comboOpen) {
-        for (const float step : steps) {
-            char item[16];
-            std::snprintf(item, sizeof item, "%g m", static_cast<double>(step));
-            if (ImGui::Selectable(item, std::abs(step - interaction.snap.grid) < 1e-4F))
-                interaction.snap.grid = step;
+    if (!compact) {
+        ImGui::SameLine(0.0F, 2.0F);
+        ImGui::SetNextItemWidth(70.0F);
+        char current[16];
+        std::snprintf(current, sizeof current, "%g m", static_cast<double>(interaction.snap.grid));
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {6.0F, 2.0F});
+        const bool comboOpen = ImGui::BeginCombo("##grid", current);
+        markItem("toolbar/GridSize");
+        if (comboOpen) {
+            for (const float step : gridSteps) {
+                char item[16];
+                std::snprintf(item, sizeof item, "%g m", static_cast<double>(step));
+                if (ImGui::Selectable(item, std::abs(step - interaction.snap.grid) < 1e-4F))
+                    interaction.snap.grid = step;
+            }
+            ImGui::EndCombo();
         }
-        ImGui::EndCombo();
+        ImGui::PopStyleVar();
     }
-    ImGui::PopStyleVar();
     ImGui::EndDisabled();
     separator();
-    if (iconButton("toolbar/Overlays", Icon::Layers, false, "Overlays: what the scene view draws"))
-        ImGui::OpenPopup("overlays_menu");
-    if (ImGui::BeginPopup("overlays_menu")) {
-        ViewOptions &view = state.view;
-        const auto item = [&](const char *id, const char *text, bool &value) {
-            const bool clicked = ImGui::MenuItem(text, nullptr, value);
-            markItem(std::string("overlay/") + id);
-            if (clicked)
-                value = !value;
-        };
-        item("Grid", "Grid", view.grid);
-        item("Colliders", "Collider outlines", view.colliders);
-        item("Sprites", "Sprite bounds", view.spriteBounds);
-        item("Pivots", "Pivot points", view.pivots);
-        item("Links", "Links of the selection", view.links);
-        item("AllLinks", "Every link in the scene", view.allLinks);
-        item("Names", "Entity names", view.labels);
-        item("Camera", "Game camera frame", view.cameraFrame);
-        ImGui::EndPopup();
+    if (!compact) {
+        if (iconButton("toolbar/Overlays", Icon::Layers, false,
+                       "Overlays: what the scene view draws"))
+            ImGui::OpenPopup("overlays_menu");
+        if (ImGui::BeginPopup("overlays_menu")) {
+            {
+                const PopupLook look;
+                overlayItems(state);
+            }
+            ImGui::EndPopup();
+        }
+        separator();
     }
-    ImGui::SameLine(0.0F, 2.0F);
-    if (iconButton("scene/FrameAll", Icon::Target, false, "Frame the whole scene (Home)"))
-        state.interaction.frameAll();
+    viewControls(state, compact);
+    if (compact) {
+        ImGui::SameLine(0.0F, 2.0F);
+        if (iconButton("toolbar/More", Icon::More, false,
+                       "More: grid size, overlays, fit and focus"))
+            ImGui::OpenPopup("toolbar_more");
+        if (ImGui::BeginPopup("toolbar_more")) {
+            moreMenu(state, editing);
+            ImGui::EndPopup();
+        }
+    }
 
-    const ImGuiIO &io = ImGui::GetIO();
-    char text[96];
+    // Where the pointer is in the world, when the row has room left for it.
     if (hoveredLastFrame && state.interaction.bound()) {
+        const float taken = ImGui::GetItemRectMax().x - ImGui::GetWindowPos().x;
+        const ImGuiIO &io = ImGui::GetIO();
         const Vec2 world = state.interaction.toWorld(vec(io.MousePos) - state.sceneView.origin);
-        std::snprintf(text, sizeof text, "x %.2f   y %.2f   %d%%", static_cast<double>(world.x),
-                      static_cast<double>(world.y),
-                      static_cast<int>(state.interaction.camera.zoom / 48.0F * 100.0F));
-    } else {
-        std::snprintf(text, sizeof text, "%d%%",
-                      static_cast<int>(state.interaction.camera.zoom / 48.0F * 100.0F));
+        char text[64];
+        std::snprintf(text, sizeof text, "x %.2f   y %.2f", static_cast<double>(world.x),
+                      static_cast<double>(world.y));
+        ImGui::PushFont(fonts().mono, 12.0F);
+        const float width = ImGui::CalcTextSize(text).x;
+        const float at = ImGui::GetWindowWidth() - width - 12.0F;
+        if (at > taken + 10.0F) {
+            ImGui::SameLine(at);
+            ImGui::AlignTextToFramePadding();
+            ImGui::TextColored(imColor(palette::dim), "%s", text);
+        }
+        ImGui::PopFont();
     }
-    const float width = ImGui::CalcTextSize(text).x;
-    ImGui::SameLine(ImGui::GetWindowWidth() - width - 12.0F);
-    ImGui::AlignTextToFramePadding();
-    ImGui::PushFont(fonts().mono, 12.0F);
-    ImGui::TextColored(imColor(palette::dim), "%s", text);
-    ImGui::PopFont();
 }
 
 // The path to the selected entity, like VS Code's breadcrumbs: scene > parent > entity. Every part
@@ -487,8 +650,11 @@ void handleInput(EditorState &state, ViewportPanel &panel) {
     const bool spaceHeld =
         ImGui::IsKeyDown(ImGuiKey_Space) && !io.WantTextInput && !state.playing();
 
+    // The wheel zooms at the pointer; a sideways wheel or trackpad swipe pans.
     if (hovered && io.MouseWheel != 0.0F)
         ui.zoomAt(mouse, std::pow(1.12F, io.MouseWheel));
+    if (hovered && io.MouseWheelH != 0.0F)
+        ui.panBy({io.MouseWheelH * 48.0F, 0.0F});
 
     // Panning: middle or right drag, or Space + left drag.
     if (hovered && (ImGui::IsMouseClicked(ImGuiMouseButton_Middle) ||
@@ -504,6 +670,12 @@ void handleInput(EditorState &state, ViewportPanel &panel) {
         else
             panel.panning = false;
     }
+    // A right click that did not drag opens the context menu, so only a real drag shows the pan
+    // cursor; Space held over the view announces that a left drag will pan.
+    if (panel.panning && distance(vec(io.MousePos), panel.rightPress) >= 4.0F)
+        ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+    else if (hovered && spaceHeld)
+        ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
     if (hovered && ImGui::IsMouseReleased(ImGuiMouseButton_Right) &&
         distance(vec(io.MousePos), panel.rightPress) < 4.0F && !state.playing() && state.document) {
         panel.contextWorld = snapTo(ui.toWorld(mouse), ui.snap.enabled ? ui.snap.grid : 0.0F);
@@ -552,25 +724,34 @@ void handleInput(EditorState &state, ViewportPanel &panel) {
 void contextMenu(EditorState &state, ViewportPanel &panel) {
     if (!ImGui::BeginPopup("scene_context"))
         return;
-    if (state.document) {
-        if (ImGui::BeginMenu("Create Here")) {
-            createEntityMenu(state, {}, panel.contextWorld);
-            ImGui::EndMenu();
-        }
-        if (ImGui::MenuItem("Paste Here", shortcutText("Ctrl+V"))) {
-            if (const char *text = ImGui::GetClipboardText(); text && *text)
-                if (auto parsed = Json::parse(text))
-                    if (auto pasted = state.document->paste(parsed.value(), {}, panel.contextWorld);
-                        !pasted)
-                        log(LogLevel::Warning, "editor", pasted.error());
-        }
-        const EntityId selected = state.document->primary();
-        if (selected) {
-            ImGui::Separator();
-            if (ImGui::MenuItem("Duplicate", shortcutText("Ctrl+D")))
-                state.document->duplicateSelection();
-            if (ImGui::MenuItem("Delete", "Del"))
-                state.document->deleteSelection();
+    {
+        const PopupLook look; // Ends before EndPopup, which checks the style stack.
+        if (state.document) {
+            const bool create = ImGui::BeginMenu("Create Here");
+            markItem("scene/context/create");
+            if (create) {
+                createEntityMenu(state, {}, panel.contextWorld);
+                ImGui::EndMenu();
+            }
+            if (ImGui::MenuItem("Paste Here", shortcutText("Ctrl+V"))) {
+                if (const char *text = ImGui::GetClipboardText(); text && *text)
+                    if (auto parsed = Json::parse(text))
+                        if (auto pasted =
+                                state.document->paste(parsed.value(), {}, panel.contextWorld);
+                            !pasted)
+                            log(LogLevel::Warning, "editor", pasted.error());
+            }
+            markItem("scene/context/paste");
+            const EntityId selected = state.document->primary();
+            if (selected) {
+                ImGui::Separator();
+                if (ImGui::MenuItem("Duplicate", shortcutText("Ctrl+D")))
+                    state.document->duplicateSelection();
+                markItem("scene/context/duplicate");
+                if (ImGui::MenuItem("Delete", "Del"))
+                    state.document->deleteSelection();
+                markItem("scene/context/delete");
+            }
         }
     }
     ImGui::EndPopup();

@@ -25,7 +25,7 @@ export YK_DEPS_DIR=/path/to/deps             # or -DYK_DEPS_DIR=... on the cmake
 ```sh
 cmake --preset dev                            # Debug, tests on: build/dev
 cmake --build --preset dev
-ctest --preset dev                            # 39 tests, about twelve minutes on four cores (Debug; CI takes about 17)
+ctest --preset dev                            # 42 tests, about twelve minutes on four cores (Debug; CI takes about 17)
 ```
 
 | Preset | What it is |
@@ -73,8 +73,16 @@ Settings that are read at build or run time (all optional):
 
 - **Unit and integration suites** for every module: core, JSON, physics, scene and reflection,
   input, animation, assets, effects, audio, the runtime, the gameplay library, the export
-  pipeline, the editor core (documents, selection, gizmos, projects, prefabs, layout), the
-  renderer and audio backends (software renderer and dummy audio, no window needed).
+  pipeline, the editor core (documents, selection, gizmos and pins, the view's zoom, projects,
+  prefabs, layout), the renderer and audio backends (software renderer and dummy audio, no window
+  needed). Two suites play the mechanisms and the level rules on real physics: **`mechanisms`**
+  (plates that sink under a character, a crate or a stack, rotating and tilting platforms that carry
+  their riders, hinged doors and seesaws, crush protection, collision enter and exit, the frame rate
+  not changing the result, the validation messages) and **`level_flow`** (intro, completion
+  sequence, failure and retry, the fade between scenes and the session that follows a scene change,
+  variables carried over, event reactions and timers). `gameplay` also saves and loads every field
+  of every registered component with non-default values and loads a scene written before the newer
+  fields existed.
 - **`stress`** runs a 41,500-entity scene (40,000 sprites, 1,500 falling bodies) through the real
   runtime and renderer: nothing may be lost, nearly everything off screen must be culled, and the
   time budgets are loose enough to catch only a cost that grows with the square of the scene.
@@ -99,7 +107,8 @@ Settings that are read at build or run time (all optional):
   video driver: a complete workflow from an empty project to an exported game
   (`editor_workflow`), the demo level being edited, played, restyled and exported
   (`editor_demo_edit`, `editor_demo_play`, `editor_demo_settings`, `editor_demo_assets`,
-  `editor_demo_workbench`, `editor_demo_player`: the tracked standalone player), the layout surviving a restart (`editor_layout_*`) and a start-up
+  `editor_demo_workbench`, `editor_demo_view`: zoom, fit, focus, panning, pins, the right-click
+  menu, `editor_demo_player`: the tracked standalone player), the layout surviving a restart (`editor_layout_*`) and a start-up
   project that is not there (`editor_bad_project`). Screenshots of
   failures are saved next to the test's working folder (`build/<preset>/editor-tests/<name>/shots`).
 - **`install`** installs the build into a scratch folder, packs it with CPack and checks the

@@ -41,7 +41,9 @@ Result<JointHandle> World::createRevoluteJoint(const RevoluteJointDef &definitio
         !bounded(definition.lowerAngle) || !bounded(definition.upperAngle) ||
         definition.lowerAngle < -angleLimit || definition.upperAngle > angleLimit ||
         definition.lowerAngle > definition.upperAngle || !bounded(definition.motorSpeed) ||
-        !nonnegative(definition.maxMotorTorque))
+        !nonnegative(definition.maxMotorTorque) || !nonnegative(definition.springHertz) ||
+        !nonnegative(definition.springDampingRatio) || !bounded(definition.targetAngle) ||
+        std::fabs(definition.targetAngle) > angleLimit)
         return Error{"Invalid revolute joint definition or angle limits"};
     auto &first = impl_->bodies.at(definition.first.serial_);
     auto &second = impl_->bodies.at(definition.second.serial_);
@@ -60,6 +62,10 @@ Result<JointHandle> World::createRevoluteJoint(const RevoluteJointDef &definitio
     joint.enableMotor = definition.enableMotor;
     joint.motorSpeed = definition.motorSpeed;
     joint.maxMotorTorque = definition.maxMotorTorque;
+    joint.enableSpring = definition.enableSpring && definition.springHertz > 0;
+    joint.hertz = definition.springHertz;
+    joint.dampingRatio = definition.springDampingRatio;
+    joint.targetAngle = definition.targetAngle;
     joint.collideConnected = definition.collideConnected;
     const auto id = b2CreateRevoluteJoint(impl_->world, &joint);
     const auto handle = impl_->handle<JointTag>();

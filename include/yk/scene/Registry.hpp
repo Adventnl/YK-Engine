@@ -14,6 +14,13 @@ namespace yk {
 class Scene;
 class Entity;
 
+// What a component's validation is told about where it is being checked.
+struct CheckContext {
+    // A prefab is checked on its own, before it is wired to anything: a plate or a door in a prefab
+    // has no targets yet, and that is not a mistake.
+    bool prefab{};
+};
+
 // Everything the engine knows about one component class.
 struct ComponentType {
     std::string name;
@@ -28,6 +35,13 @@ struct ComponentType {
     // entity so it can configure dependencies (a plate turns its Collider into a trigger). Never
     // runs while loading saved data, so it cannot overwrite what was saved.
     std::function<void(Entity &, Component &)> onAdded;
+    // Mistakes this component can be checked for in a saved scene or prefab (a plate with nothing
+    // to stand on, a hinge on a body that cannot swing), each appended as a plain sentence naming
+    // what to change. Run by validateProject and shown in the editor's Problems panel; never at run
+    // time.
+    std::function<void(const Entity &, const Component &, const CheckContext &,
+                       std::vector<std::string> &)>
+        check;
     bool allowMultiple{};
     bool hiddenInMenus{}; // Not offered by the editor's Add Component menu.
     bool screenSpace{};   // Positioned in screen pixels, not the world (UI); no world gizmo.
@@ -169,6 +183,12 @@ class FieldBuilder {
         info_->isDisplacement = true;
         return *this;
     }
+    // A point in the entity's own space (a hinge's anchor). The editor draws it as a pin in the
+    // scene view and lets the user drag it.
+    FieldBuilder &pin() {
+        info_->isPin = true;
+        return *this;
+    }
     // A string naming a set ("Player1") of the project's input map; the editor offers a picker.
     FieldBuilder &inputSet() {
         info_->isInputSet = true;
@@ -210,6 +230,17 @@ template <class T> class TypeBuilder {
     TypeBuilder &onAdd(std::function<void(Entity &, T &)> hook) {
         type_->onAdded = [hook = std::move(hook)](Entity &entity, Component &component) {
             hook(entity, static_cast<T &>(component));
+        };
+        return *this;
+    }
+    // Registers the component's own validation (see ComponentType::check).
+    TypeBuilder &check(std::function<void(const Entity &, const T &, const CheckContext &,
+                                          std::vector<std::string> &)>
+                           hook) {
+        type_->check = [hook = std::move(hook)](const Entity &entity, const Component &component,
+                                                const CheckContext &context,
+                                                std::vector<std::string> &problems) {
+            hook(entity, static_cast<const T &>(component), context, problems);
         };
         return *this;
     }

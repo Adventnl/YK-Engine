@@ -23,6 +23,14 @@ hold up 6
 wait 4
 capture ${SHOT_DIR}/sample-02-play.bmp
 
+# The game's own pause key (P) pauses and resumes it while the Game view has the keyboard, and is
+# heard while paused.
+hold p 2
+expect paused
+wait 10
+hold p 2
+expect running
+
 # The running copy can be inspected but not edited.
 click "hierarchy/Gate"
 expect selected Gate

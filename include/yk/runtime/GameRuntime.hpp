@@ -1,5 +1,6 @@
 #pragma once
 #include "yk/runtime/GameContext.hpp"
+#include <map>
 #include <memory>
 #include <string>
 
@@ -12,6 +13,19 @@ struct RuntimeOptions {
     InputMap inputMap{InputMap::standard()};
     AudioSink *audio{nullptr};          // Borrowed; nullptr discards sound requests.
     const AssetSource *assets{nullptr}; // Borrowed; nullptr means no asset access.
+    // A restart or a change of scene fades the screen to black and back over this many seconds each
+    // way (zero: instant, which is what tests and tools want; the player and the editor set it).
+    float transitionSeconds{0.0F};
+    // The screen starts black and fades in: the scene that follows another one.
+    bool startCovered{false};
+    // The variables the scene starts with: what the previous scene kept (Blackboard::keep). They
+    // are back after a restart of this scene too.
+    std::map<std::string, Blackboard::Value> variables;
+    // The action of the project's input map that pauses and resumes the game, which a GameSession
+    // handles for its host (so the player and the editor's Play mode pause alike). No action name:
+    // the game cannot be paused by its player.
+    std::string pauseSet{"Global"};
+    std::string pauseAction{"Pause"};
 };
 
 // Executes a scene: builds the physics world from RigidBody/Collider components, then runs fixed
@@ -38,9 +52,18 @@ class GameRuntime final : public GameContext {
     // Rebuilds the scene from its start state and clears variables and events. requestRestart()
     // does this automatically at the end of the current update, never in the middle of a hook.
     Status restart();
-    // Set by requestSceneChange; the host (player or editor) decides what to do with it.
+    // Set by requestSceneChange once the screen has faded out (at once without a transition); the
+    // host (player or editor) decides what to do with it (GameSession does it for both). The
+    // variables to carry over are in blackboard().kept(). Clearing the request without switching
+    // scenes fades the screen back in, so a scene that could not be loaded does not stay black.
     const std::string &sceneChangeRequested() const;
     void clearSceneChangeRequest();
+
+    // How far the screen has faded for a restart or a change of scene: 0 clear, 1 covered. The host
+    // draws it over the game view (GameViewOptions::fade).
+    float screenFade() const;
+    // A restart or scene change is fading the screen out or back in.
+    bool transitioning() const;
 
     void setPaused(bool paused);
     bool paused() const;
@@ -75,6 +98,8 @@ class GameRuntime final : public GameContext {
                                  EntityId parent = {}) override;
     void requestRestart() override;
     void requestSceneChange(std::string projectRelativePath) override;
+    void lockInput(const std::string &reason, bool locked) override;
+    bool inputLocked() const override;
 
     const physics::World &physics() const;
 

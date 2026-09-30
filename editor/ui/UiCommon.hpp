@@ -51,6 +51,7 @@ inline constexpr Color axisY{90, 200, 110, 150};
 inline constexpr Color linkOut{90, 210, 255, 255};
 inline constexpr Color linkIn{255, 150, 90, 255};
 inline constexpr Color ghost{120, 230, 170, 255};
+inline constexpr Color pin{255, 170, 70, 255};
 inline constexpr Color camera{200, 200, 255, 200};
 inline constexpr Color info{55, 148, 255, 255};
 inline constexpr Color warning{204, 167, 0, 255};
@@ -126,6 +127,7 @@ enum class Icon {
     Layers,
     ZoomIn,
     ZoomOut,
+    Fit,
     Split,
     Animation,
     Code,

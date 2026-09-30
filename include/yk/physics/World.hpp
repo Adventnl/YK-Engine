@@ -26,6 +26,10 @@ class World {
     bool valid(JointHandle joint) const;
 
     Result<BodyState> state(BodyHandle body) const;
+    // Velocity of the material point of `body` that is at `worldPoint` right now: the linear
+    // velocity plus the rotation about the center of mass. What a rider standing on a turning or
+    // tilting platform has to match, and the reason a rotating platform can carry.
+    Result<Vec2> pointVelocity(BodyHandle body, Vec2 worldPoint) const;
     Result<BodyHandle> bodyOf(ShapeHandle shape) const;
     Status setPose(BodyHandle body, Pose pose); // Teleport; resets interpolation for this body.
     Status setVelocity(BodyHandle body, Vec2 linear, float angular = 0);
@@ -34,6 +38,10 @@ class World {
     Status setFilter(ShapeHandle shape, CollisionFilter filter);
     Status setGravity(Vec2 gravity);
     Status setGravityScale(BodyHandle body, float scale);
+    // Continuous collision against moving platforms and other bodies as well as static ones. A
+    // fast body (a falling character) otherwise sinks into a kinematic surface by as much as it
+    // travels in one tick before being pushed back out. Costs a little per fast bullet per tick.
+    Status setBullet(BodyHandle body, bool bullet);
     // Live material edits; friction/restitution combine with the touching shape as at creation.
     Status setFriction(ShapeHandle shape, float friction);
     Status setRestitution(ShapeHandle shape, float restitution);

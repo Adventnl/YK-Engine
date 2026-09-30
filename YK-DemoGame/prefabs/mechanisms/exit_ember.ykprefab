@@ -58,7 +58,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -67,7 +69,9 @@
             "requiredTag": "Ember",
             "targets": [],
             "satisfiedColor": "#5adc6eff",
-            "sound": "assets/audio/exit.wav"
+            "sound": "assets/audio/exit.wav",
+            "enterOnComplete": true,
+            "exitDuration": 0.6
           }
         }
       ]

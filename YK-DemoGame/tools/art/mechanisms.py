@@ -62,22 +62,26 @@ def plate(out_dir, texture_dir):
     for i, f in enumerate(frames):
         img.paste(f, (i * PLATE_W, 0))
     save(img, os.path.join(out_dir, "plate.png"))
+    plate_animation(out_dir, texture_dir)
+
+
+def plate_animation(out_dir, texture_dir):
+    """The clips and the state machine of the plate. The pad is a real body that sinks under a load;
+    the plate publishes how far down it is (`pressAmount`, 0 up .. 1 fully down) and the brass cap
+    follows it: up, half way, down, with a little hysteresis so that it cannot flicker between two
+    frames while the pad is at rest."""
     write_json(os.path.join(out_dir, "plate.ykanim"), anim_doc(texture_dir + "plate.png", 3, 1, [
         {"name": "up", "frames": [0], "fps": 1},
+        {"name": "mid", "frames": [1], "fps": 1},
         {"name": "down", "frames": [2], "fps": 1},
-        {"name": "press", "frames": [0, 1, 2], "fps": 30, "loop": False},
-        {"name": "release", "frames": [2, 1, 0], "fps": 20, "loop": False},
     ]))
     write_json(os.path.join(out_dir, "plate.ykctl"), controller_doc(
-        [{"name": "pressed", "type": "bool"}], "Up",
-        [{"name": "Up", "clip": "up"}, {"name": "Press", "clip": "press"}, {"name": "Down", "clip": "down"},
-         {"name": "Release", "clip": "release"}],
-        [{"from": "Up", "to": "Press", "when": [{"parameter": "pressed"}]},
-         {"from": "Press", "to": "Down", "exitTime": 1.0},
-         {"from": "Press", "to": "Release", "when": [{"parameter": "pressed", "value": False}]},
-         {"from": "Down", "to": "Release", "when": [{"parameter": "pressed", "value": False}]},
-         {"from": "Release", "to": "Up", "exitTime": 1.0},
-         {"from": "Release", "to": "Press", "when": [{"parameter": "pressed"}]}]))
+        [{"name": "pressAmount", "type": "float"}], "Up",
+        [{"name": "Up", "clip": "up"}, {"name": "Mid", "clip": "mid"}, {"name": "Down", "clip": "down"}],
+        [{"from": "Up", "to": "Mid", "when": [{"parameter": "pressAmount", "op": ">", "value": 0.25}]},
+         {"from": "Mid", "to": "Down", "when": [{"parameter": "pressAmount", "op": ">", "value": 0.8}]},
+         {"from": "Down", "to": "Mid", "when": [{"parameter": "pressAmount", "op": "<", "value": 0.75}]},
+         {"from": "Mid", "to": "Up", "when": [{"parameter": "pressAmount", "op": "<", "value": 0.2}]}]))
 
 
 # ---------------------------------------------------------------------------------- lever

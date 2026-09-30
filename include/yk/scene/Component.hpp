@@ -43,6 +43,9 @@ class Component {
     virtual void onTriggerEnter(GameContext &, Entity & /*other*/) {}
     virtual void onTriggerExit(GameContext &, Entity & /*other*/) {}
     virtual void onCollisionEnter(GameContext &, Entity & /*other*/, const CollisionInfo &) {}
+    // The solid contact with `other` ended (it moved away, or one of them was disabled). The point
+    // and normal are empty: the contact no longer exists.
+    virtual void onCollisionExit(GameContext &, Entity & /*other*/, const CollisionInfo &) {}
     // Immediately before the runtime removes the entity or shuts down.
     virtual void onDestroy(GameContext &) {}
 
