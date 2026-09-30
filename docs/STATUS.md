@@ -68,7 +68,7 @@ where Apple clang rejected a size-to-signed conversion in a new test that GCC an
 | Clang 18 (with libstdc++), `release` | the whole tree builds with every warning an error and none raised; the `clang` preset itself (libc++) is not available on this machine, see "Not verified" |
 | `format-check` (clang-format over the tree), `git diff --check` | clean (`scripts/verify.sh`) |
 | Windows cross-build (MinGW-w64) under Wine | passed in the earlier pass (`scripts/verify-windows.sh`); not re-run in this one, the native MSVC run above replaces it |
-| The standalone player | started with the demo project under the software renderer for 90 frames and captured (the level, the HUD, the characters); again with a scripted P press (the picture dims and says PAUSED). Nobody played it. |
+| The standalone player | started with the demo project under the software renderer for 90 frames and captured (the level, the HUD, the characters); again with a scripted P press (the picture dims and says PAUSED); and in the practice room with scripted keys (`--keys "D@0-165,Right@0-150"`, 420 frames), whose captured frame shows the crate pushed onto the plate resting on it with the plate sunk, the gate above open (its indicator green) and both characters beside them. Nobody played it. |
 | The installed programs work where they were put | part of the `install` test |
 | A game with C++ of its own | `game_module*`, `editor_game_module` |
 | A 41,500-entity scene (40,000 sprites, 1,500 falling boxes) | Release, one 2.1 GHz Xeon core: building about 20 ms, drawing a frame about 8 ms (view culling skips 39,411 of 40,000 sprites), one physics step with 1,500 active bodies about 22 ms; a scene that must hold 60 Hz should keep its simultaneously active bodies to a few hundred. (Measured in an earlier pass; the `stress` test still passes its budgets.) |
@@ -146,11 +146,11 @@ rendering is checked against real pixels.
   `Pause` actions have pad bindings, East and Start, that no pad has pressed).
 - **How the game and the new editor controls feel on a real display.** The mechanisms, the level
   flow and the scene view were exercised headlessly (real physics, scripted input, real UI events
-  under the software renderer), and the standalone player was started and captured (the level, then
-  the paused overlay). Nobody played the demo with a keyboard, moved the mouse wheel over the scene
-  view, or looked at the plates and platforms at a display's own refresh rate. Rendering the whole
-  editor at high zoom levels is slow under the software renderer, so the UI scripts stay at 100% and
-  below; a GPU does not have that problem, but it was not tried.
+  under the software renderer), and the standalone player was started and captured (the level, the
+  paused overlay, a crate on a plate with the gate open). Nobody played the demo with a keyboard,
+  moved the mouse wheel over the scene view, or looked at the plates and platforms at a display's own
+  refresh rate. Rendering the whole editor at high zoom levels is slow under the software renderer,
+  so the UI scripts stay at 100% and below; a GPU does not have that problem, but it was not tried.
 - **The `clang` preset** (Clang with libc++) could not run on the machine used for this pass (no
   libc++). Clang 18 with libstdc++ built everything without a warning, and the macOS job on GitHub
   (Apple clang and libc++) is the check that stands in for it.
@@ -186,6 +186,10 @@ rendering is checked against real pixels.
   is 55 degrees) unless it has a chamfer or a ramp, which is why plates have a sloped rim.
 - **The scene view draws a hinge's pin but not its swing, and a hinged door's open pose is edited as
   a number** (the ghost of a door that only slides is drawn and draggable).
+- **Screen-space UI is laid out in pixels and does not scale with the window.** The demo's HUD (a
+  score at each side, the timer in the middle) needs about 600 pixels of width; in a narrower Game
+  view, such as a pane of a split editor, the timer overlaps the scores. Scaling by a reference
+  height, as game UI toolkits do, is the usual answer and is not built.
 - **`EventAction` has no conditions** (this event AND that one): anything a chain of events,
   delays and signals cannot say is a component in a game module, as before.
 - **Ctrl+= and Ctrl+-** zoom the scene view on keyboards where "=" and "-" are keys; SDL 3.2 reports
