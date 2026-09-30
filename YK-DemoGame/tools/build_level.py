@@ -131,9 +131,9 @@ class Level:
                 overrides={"MovingPlatform": {"travel": [3, 0], "speed": 1.8, "pause": 1.4}})
         s.place(P + "mechanisms/shuttle.ykprefab", "Shuttle Goo", (27.5, UPPER + 0.23), parent="Mechanisms",
                 overrides={"MovingPlatform": {"travel": [3, 0], "speed": 2.0, "pause": 0.6, "requireSignal": True}})
-        s.place(P + "mechanisms/plate.ykprefab", "Plate Near", (33.4, UPPER - 0.25), parent="Mechanisms",
+        s.place(P + "mechanisms/plate.ykprefab", "Plate Near", (33.4, UPPER + 0.016), parent="Mechanisms",
                 overrides={"PressurePlate": {"targets": [ref("Shuttle Goo")]}})
-        s.place(P + "mechanisms/plate.ykprefab", "Plate Far", (25.0, UPPER - 0.25), parent="Mechanisms",
+        s.place(P + "mechanisms/plate.ykprefab", "Plate Far", (25.0, UPPER + 0.016), parent="Mechanisms",
                 overrides={"PressurePlate": {"targets": [ref("Shuttle Goo")]}})
         s.place(P + "mechanisms/checkpoint.ykprefab", "Checkpoint", (23.5, GROUND - 0.75), parent="Mechanisms")
         s.place(P + "mechanisms/crate.ykprefab", "Crate", (33.0, GROUND - 0.5), parent="Mechanisms")
@@ -279,7 +279,7 @@ class Practice(Level):
         self.platform("Shelf", 17.0, 24.5, floor - 4.0, thickness=1.0)
         s.group("Mechanisms")
         s.place(P + "mechanisms/crate.ykprefab", "Crate", (16.2, floor - 0.5), parent="Mechanisms")
-        s.place(P + "mechanisms/plate.ykprefab", "Plate", (18.5, floor - 0.25), parent="Mechanisms",
+        s.place(P + "mechanisms/plate.ykprefab", "Plate", (18.5, floor + 0.016), parent="Mechanisms",
                 overrides={"PressurePlate": {"targets": [ref("Gate")]}})
         s.place(P + "mechanisms/gate.ykprefab", "Gate", (21.0, floor - 1.5), parent="Mechanisms")
         s.place(P + "mechanisms/checkpoint.ykprefab", "Checkpoint", (12.0, floor - 0.75), parent="Mechanisms")

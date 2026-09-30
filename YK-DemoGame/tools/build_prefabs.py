@@ -9,7 +9,7 @@ Run:  python3 build_prefabs.py     (then `yk format ..` to write them in canonic
 import os
 import sys
 
-from authoring import Node, write_prefab
+from authoring import Node, make_id, write_prefab
 
 PROJECT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
@@ -191,13 +191,22 @@ def build_characters():
 # ---------------------------------------------------------------------------------- mechanisms
 def build_mechanisms():
     out = {}
+    # A plate is a real object. The root holds the art (a tray and a brass cap that follows how far
+    # down the pad is); the pad, a child, is a kinematic body with a solid, rounded collider: the
+    # surface a character lands on, stands on and pushes down. The art sits behind the terrain
+    # (layer below TERRAIN), so the part of the tray that is set into the floor is hidden by it.
     plate = Node("Plate")
     plate.add("SpriteRenderer", texture="assets/mechanisms/plate.png", size=[2, 0.5], columns=3, rows=1,
-              layer=MECHANISM)
+              layer=TERRAIN - 1)
     plate.add("AnimatedSprite", animation="assets/mechanisms/plate.ykanim",
               controller="assets/mechanisms/plate.ykctl", flipParameter="")
-    plate.add("Collider", size=[1.7, 0.3], offset=[0, 0.1], isTrigger=True, layer="Sensor")
-    plate.add("PressurePlate", pressSound=sound("plate_down"), releaseSound=sound("plate_up"))
+    pad = Node("Pad", at=(0, 0.094))  # Its top is 0.14 above the floor the plate is set into.
+    pad.add("RigidBody", type="Kinematic")
+    # The edges slope down to below the floor line: a crate pushed at the plate meets a ramp, not a lip.
+    pad.add("Collider", size=[1.4, 0.5], offset=[0, 0], chamfer=[0.35, 0.2], layer="Solid", friction=0.8)
+    plate.child(pad)
+    plate.add("PressurePlate", pad=make_id("prefab:prefabs/mechanisms/plate.ykprefab", "Plate/Pad"),
+              pressDepth=0.094, pressSound=sound("plate_down"), releaseSound=sound("plate_up"))
     out["mechanisms/plate"] = plate
 
     lever = Node("Lever")

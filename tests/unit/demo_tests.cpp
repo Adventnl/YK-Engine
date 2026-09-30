@@ -273,7 +273,9 @@ void levelIsCompletable() {
     };
     climbStairs(ember);
     CHECK(game.until(300, [&] { return game.walkTo(ember, 33.4F, 0.2F); }));
-    CHECK(game.entity("Plate Near").get<PressurePlate>()->pressed());
+    // The plate is a real object: it sinks under her, and is pressed once it is down.
+    CHECK(
+        game.until(120, [&] { return game.entity("Plate Near").get<PressurePlate>()->pressed(); }));
     climbStairs(tide);
 
     // 6. The pit of goo kills both, and the only way across is a platform that runs only while a
@@ -286,7 +288,8 @@ void levelIsCompletable() {
     CHECK(game.until(900, [&] { return gooX() < 27.6F; })); // Carried across.
     CHECK(game.until(300, [&] { return game.walkTo(tide, 25.0F, 0.2F); }));
     CHECK(game.alive(tide) && game.pos(tide).y < 10.2F);
-    CHECK(game.entity("Plate Far").get<PressurePlate>()->pressed());
+    CHECK(
+        game.until(120, [&] { return game.entity("Plate Far").get<PressurePlate>()->pressed(); }));
     // Ember steps off her plate; the far plate keeps the platform going for her.
     CHECK(game.until(300, [&] { return game.walkTo(ember, 32.6F, 0.2F); }));
     CHECK(game.until(900, [&] { return gooX() > 30.4F; }));

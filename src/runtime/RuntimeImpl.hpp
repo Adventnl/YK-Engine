@@ -78,11 +78,15 @@ struct GameRuntime::Impl {
     std::vector<std::uint64_t> triggerShapes;           // Creation order, for stable callbacks.
     std::map<EntityId, std::vector<EntityId>> overlaps; // Trigger entity -> visitors.
     std::vector<EntityId> noOverlaps;
+    // The immovable body a HingeJoint with no connected entity is pinned to (owned by the runtime,
+    // destroyed with the hinge's entity).
+    std::unordered_map<EntityId, physics::BodyHandle> hingeAnchors;
 
     Status buildWorld();
     void bindEntities(const std::vector<EntityId> &ids);
     void unbindEntities(const std::vector<EntityId> &ids);
     BodyRecord *ensureBody(Entity &owner, bool implicit);
+    void bindHinge(Entity &entity, const HingeJoint &hinge);
     void syncActivation();
     void syncTransforms();
     void updateTriggers();

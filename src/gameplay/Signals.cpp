@@ -1,5 +1,7 @@
 #include "yk/gameplay/Gameplay.hpp"
 #include <algorithm>
+#include <cmath>
+#include <optional>
 
 namespace yk {
 const std::vector<std::string> &signalLogicNames() {
@@ -39,16 +41,39 @@ void spawnEffect(GameContext &context, const AssetRef &prefab, Vec2 worldPositio
         context.spawnPrefab(prefab.path, worldPosition); // Failure is reported once by the runtime.
 }
 
-void moveKinematic(GameContext &context, Entity &entity, Vec2 worldTarget) {
+namespace {
+void moveKinematicTo(GameContext &context, Entity &entity, Vec2 worldTarget,
+                     std::optional<float> worldRotationDegrees) {
     const auto body = context.bodyOf(entity.id());
     const auto *rigid = entity.get<RigidBody>();
+    const Transform2D current = entity.worldTransform();
     if (!body || !rigid || rigid->type == RigidBodyType::Static) {
-        entity.setWorldPosition(worldTarget);
+        Transform2D moved = current;
+        moved.position = worldTarget;
+        if (worldRotationDegrees)
+            moved.rotationDegrees = *worldRotationDegrees;
+        entity.setWorldTransform(moved);
         if (body)
-            context.teleport(entity, worldTarget);
+            context.teleport(entity, worldTarget); // Puts the body at the entity's new pose.
         return;
     }
-    context.physics().setVelocity(*body,
-                                  (worldTarget - entity.worldPosition()) / context.fixedDelta());
+    // Velocities that arrive exactly at the target after one tick, so the solver carries whatever
+    // rests on the body (and turns it about the body's origin when a rotation is asked for).
+    float angular = 0.0F;
+    if (worldRotationDegrees)
+        angular = degreesToRadians(
+                      std::remainder(*worldRotationDegrees - current.rotationDegrees, 360.0F)) /
+                  context.fixedDelta();
+    context.physics().setVelocity(*body, (worldTarget - current.position) / context.fixedDelta(),
+                                  angular);
+}
+} // namespace
+
+void moveKinematic(GameContext &context, Entity &entity, Vec2 worldTarget) {
+    moveKinematicTo(context, entity, worldTarget, std::nullopt);
+}
+void moveKinematic(GameContext &context, Entity &entity, Vec2 worldTarget,
+                   float worldRotationDegrees) {
+    moveKinematicTo(context, entity, worldTarget, worldRotationDegrees);
 }
 } // namespace yk

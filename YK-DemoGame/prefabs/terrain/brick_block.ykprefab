@@ -46,7 +46,9 @@
             "layer": "Solid",
             "friction": 0.4,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         }
       ]

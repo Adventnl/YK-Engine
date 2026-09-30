@@ -2,6 +2,7 @@
 #include "yk/assets/Project.hpp"
 #include "yk/components/Components.hpp"
 #include "yk/runtime/GameContext.hpp"
+#include <algorithm>
 #include <map>
 #include <string>
 #include <vector>
@@ -67,8 +68,12 @@ bool matchesActivator(const Entity &entity, const std::vector<std::string> &tags
 void spawnEffect(GameContext &context, const AssetRef &prefab, Vec2 worldPosition);
 
 // Drives a kinematic body toward `worldTarget` within one tick (so riders are carried), or moves
-// the entity directly when it has no body.
+// the entity directly when it has no body. With `worldRotationDegrees` it also turns toward that
+// angle by the shortest way (the body's angular velocity is set, so what stands on it is carried
+// around too).
 void moveKinematic(GameContext &context, Entity &entity, Vec2 worldTarget);
+void moveKinematic(GameContext &context, Entity &entity, Vec2 worldTarget,
+                   float worldRotationDegrees);
 
 // ----- Character -----------------------------------------------------------------------------
 // Health-less "can be killed, then comes back". Dying takes the entity's body and colliders out of
@@ -150,6 +155,7 @@ class PlatformerController final : public Component {
     int facing() const {
         return facing_;
     }
+    void onStart(GameContext &context) override;
     void onFixedUpdate(GameContext &context, float seconds) override;
 
   private:
@@ -169,15 +175,34 @@ class PlatformerController final : public Component {
 };
 
 // ----- Mechanisms ----------------------------------------------------------------------------
-// While pressed it drives its targets. With an AnimatedSprite it publishes the parameter `pressed`;
-// without one it tints and sinks its sprite.
+// How a plate decides that it is pressed.
+//   Weight  something solid rests on its `pad`: the pad's own contacts are the load, so a jumping
+//           character lands on the plate, stands on it and pushes it down.
+//   Region  something overlaps a trigger collider of the plate (or its pad): an activation zone
+//           that has nothing to do with what blocks movement.
+//   Auto    Weight when the plate has a pad with a solid collider and no trigger collider of its
+//           own, Region otherwise (what the older plates, which were only a zone, need).
+enum class PlateSensing { Auto, Weight, Region };
+const std::vector<std::string> &plateSensingNames();
+
+// While pressed it drives its targets. The plate can be a real object: give `pad` (this entity when
+// empty) a kinematic RigidBody and a solid Collider and the pad is a surface characters and props
+// stand on. It sinks by `pressDepth` under the load, carrying it down, stops at the bottom, and
+// rises when the load is gone. With an AnimatedSprite the plate publishes `pressed` (bool) and
+// `pressAmount` (0 up .. 1 fully down) so art can follow the motion; a plate with neither pad nor
+// AnimatedSprite tints and sinks its sprite.
 class PressurePlate final : public Component {
   public:
     std::vector<EntityRef> targets;
     std::vector<std::string> activatorTags; // Empty: any movable body presses it.
     bool latch{false};                      // Stay pressed once triggered.
-    Color pressedColor{90, 220, 110, 255};  // The sprite's own color is the idle look.
-    float pressDepth{0.08F};                // The sprite sinks by this much while pressed.
+    PlateSensing sensing{PlateSensing::Auto};
+    EntityRef pad;                         // The part that moves and carries; empty: this entity.
+    Color pressedColor{90, 220, 110, 255}; // The sprite's own color is the idle look.
+    float pressDepth{0.08F};               // How far the plate sinks when pressed, world units.
+    float pressSpeed{1.5F};                // Fastest the plate sinks or rises, m/s.
+    float acceleration{8.0F};              // m/s^2; below gravity, so a load never loses contact.
+    float minimumMass{0.0F};               // Weight sensing: kg that must rest on the pad.
     AssetRef pressSound;
     AssetRef releaseSound;
     static void describe(TypeBuilder<PressurePlate> &type);
@@ -185,12 +210,27 @@ class PressurePlate final : public Component {
     bool pressed() const {
         return pressed_;
     }
+    // How far down the plate is, 0 (up) .. 1 (fully pressed).
+    float pressAmount() const {
+        return pressDepth > 1e-5F ? std::clamp(depth_ / pressDepth, 0.0F, 1.0F)
+                                  : (pressed_ ? 1.0F : 0.0F);
+    }
     void onStart(GameContext &context) override;
     void onFixedUpdate(GameContext &context, float seconds) override;
 
   private:
-    void applyVisuals();
+    enum class Mode { Region, Weight };
+    bool senseWeight(GameContext &context, Entity &padEntity) const;
+    bool senseRegion(GameContext &context) const;
+    void applyVisuals(GameContext &context);
+    Mode mode_{Mode::Region};
     bool pressed_{};
+    bool loaded_{};       // Something is on the plate (or in its zone) right now.
+    float unloadedFor_{}; // Seconds since the last tick with a load.
+    float depth_{};       // World units the pad is down.
+    float speed_{};       // Signed speed of the pad along the press direction.
+    Vec2 restLocal_{};    // The pad's position in its parent's frame when it is up.
+    bool bodyDriven_{};
     float baseOffsetY_{};
     Color baseColor_{};
 };
@@ -225,12 +265,16 @@ class Lever final : public Component {
     Color baseColor_{};
 };
 
-// A gate: slides by `openOffset` while its combined signal is active (or, with startsOpen, while it
-// is inactive). Needs a kinematic body so it carries and blocks characters correctly.
+// A gate: slides by `openOffset` and/or turns by `openRotation` about its origin while its combined
+// signal is active (or, with startsOpen, while it is inactive). Sliding doors, hinged doors,
+// drawbridges and the handle of a lever are the same thing. Needs a kinematic body so it carries
+// and blocks characters correctly.
 class Door final : public Component, public SignalReceiver {
   public:
     Vec2 openOffset{0.0F, -3.0F}; // World-space displacement when open.
-    float speed{3.0F};            // m/s
+    float openRotation{0.0F};     // Degrees it turns about its origin when open (a hinged door).
+    float speed{3.0F};            // m/s along the offset.
+    float rotationSpeed{90.0F};   // Degrees per second of the turn.
     bool startsOpen{false};
     AssetRef openSound;
     AssetRef closeSound;
@@ -245,17 +289,22 @@ class Door final : public Component, public SignalReceiver {
 
   private:
     Vec2 closedPosition_{};
+    float closedRotation_{};
     float amount_{};
     bool opening_{};
     bool started_{};
 };
 
 // Shuttles between its start and start + travel on a kinematic body, carrying whatever stands on
-// it.
+// it, and can turn about its origin as it goes (a rotating platform: `travel` zero, `spinSpeed`
+// set). Riders move with the point of the platform they stand on.
 class MovingPlatform final : public Component, public SignalReceiver {
   public:
     Vec2 travel{4.0F, 0.0F};
     float speed{2.0F};
+    float acceleration{8.0F};  // m/s^2 speeding up and slowing down; below gravity so that props
+                               // riding a platform that starts downward stay on it.
+    float spinSpeed{0.0F};     // Degrees per second it turns about its origin while moving.
     float pause{0.5F};         // Seconds to wait at each end.
     bool requireSignal{false}; // Only move while the combined signal is active.
     static void describe(TypeBuilder<MovingPlatform> &type);
@@ -265,7 +314,10 @@ class MovingPlatform final : public Component, public SignalReceiver {
 
   private:
     Vec2 start_{};
+    float startRotation_{};
+    float spin_{}; // Degrees turned since the start.
     float t_{};
+    float speed_{}; // Current speed along the path, m/s (never negative; direction_ has the sign).
     float direction_{1.0F};
     float waiting_{};
 };

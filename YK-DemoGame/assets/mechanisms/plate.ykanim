@@ -11,21 +11,14 @@
       "fps": 1
     },
     {
-      "name": "down",
-      "frames": [2],
+      "name": "mid",
+      "frames": [1],
       "fps": 1
     },
     {
-      "name": "press",
-      "frames": [0, 1, 2],
-      "fps": 30,
-      "loop": false
-    },
-    {
-      "name": "release",
-      "frames": [2, 1, 0],
-      "fps": 20,
-      "loop": false
+      "name": "down",
+      "frames": [2],
+      "fps": 1
     }
   ]
 }

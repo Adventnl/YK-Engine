@@ -149,6 +149,57 @@ void Collider::describe(TypeBuilder<Collider> &type) {
     type.field("friction", &Collider::friction).range(0, 10, 0.05);
     type.field("restitution", &Collider::restitution).range(0, 1, 0.05);
     type.field("density", &Collider::density).range(0, 100, 0.1);
+    type.field("cornerRadius", &Collider::cornerRadius)
+        .range(0, 10, 0.01)
+        .tooltip("Rounds the corners of a Box, so characters run up low steps and edges instead "
+                 "of catching on them.");
+    type.field("chamfer", &Collider::chamfer)
+        .range(0, 10, 0.01)
+        .tooltip("Cuts the corners of a Box (x along the top and bottom, y along the sides): a "
+                 "shallow slope lets things slide up onto it, a character walks onto a button, a "
+                 "crate is pushed onto it. Ignores cornerRadius.");
+}
+
+void HingeJoint::describe(TypeBuilder<HingeJoint> &type) {
+    type.category("Physics")
+        .description("Pins the body to a point so it swings or tilts about it: seesaws, bridges, "
+                     "swinging platforms.")
+        .dependsOn("RigidBody")
+        .onAdd([](Entity &entity, HingeJoint &) {
+            if (auto *body = entity.get<RigidBody>())
+                body->type = RigidBodyType::Dynamic;
+        });
+    type.field("connectedBody", &HingeJoint::connectedBody)
+        .tooltip("The entity whose body the hinge is fixed to. Empty: fixed in the world.");
+    type.field("anchor", &HingeJoint::anchor)
+        .range(-1000, 1000, 0.05)
+        .offset()
+        .tooltip("The pin, in this entity's own space (0, 0 is its origin).");
+    type.field("limits", &HingeJoint::limits).tooltip("Keep the swing between the two angles.");
+    type.field("lowerAngle", &HingeJoint::lowerAngle)
+        .range(-178, 178, 1)
+        .tooltip("Degrees from the starting pose, positive clockwise on screen.");
+    type.field("upperAngle", &HingeJoint::upperAngle).range(-178, 178, 1);
+    type.field("spring", &HingeJoint::spring)
+        .tooltip("Pull toward restAngle: a lever that returns, a bridge that rises.");
+    type.field("springHertz", &HingeJoint::springHertz)
+        .range(0.05, 60, 0.05)
+        .tooltip("Stiffness as a frequency: how many times a second it would swing to and fro.");
+    type.field("springDamping", &HingeJoint::springDamping)
+        .range(0, 10, 0.05)
+        .tooltip("1 settles without overshoot; less lets it swing past.");
+    type.field("restAngle", &HingeJoint::restAngle)
+        .range(-178, 178, 1)
+        .tooltip("Where the spring pulls, in degrees from the starting pose.");
+    type.field("motor", &HingeJoint::motor).tooltip("Turn at motorSpeed while the torque allows.");
+    type.field("motorSpeed", &HingeJoint::motorSpeed)
+        .range(-3600, 3600, 1)
+        .tooltip("Degrees per second.");
+    type.field("motorTorque", &HingeJoint::motorTorque)
+        .range(0, 100000, 1)
+        .tooltip("The most torque the motor may apply (N m).");
+    type.field("collideConnected", &HingeJoint::collideConnected)
+        .tooltip("Let the two connected bodies collide with each other.");
 }
 
 void Camera::describe(TypeBuilder<Camera> &type) {
@@ -318,6 +369,7 @@ void registerEngineComponents(ComponentRegistry &registry) {
     registry.add<PlayerInput>("PlayerInput");
     registry.add<RigidBody>("RigidBody");
     registry.add<Collider>("Collider").allowMultiple();
+    registry.add<HingeJoint>("HingeJoint");
     registry.add<Camera>("Camera");
     registry.add<AudioSource>("AudioSource");
     registry.add<AnimatedSprite>("AnimatedSprite");

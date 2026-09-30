@@ -3,8 +3,8 @@
   "version": 1,
   "parameters": [
     {
-      "name": "pressed",
-      "type": "bool"
+      "name": "pressAmount",
+      "type": "float"
     }
   ],
   "entry": "Up",
@@ -14,64 +14,56 @@
       "clip": "up"
     },
     {
-      "name": "Press",
-      "clip": "press"
+      "name": "Mid",
+      "clip": "mid"
     },
     {
       "name": "Down",
       "clip": "down"
-    },
-    {
-      "name": "Release",
-      "clip": "release"
     }
   ],
   "transitions": [
     {
       "from": "Up",
-      "to": "Press",
+      "to": "Mid",
       "when": [
         {
-          "parameter": "pressed"
+          "parameter": "pressAmount",
+          "op": ">",
+          "value": 0.25
         }
       ]
     },
     {
-      "from": "Press",
+      "from": "Mid",
       "to": "Down",
-      "exitTime": 1
-    },
-    {
-      "from": "Press",
-      "to": "Release",
       "when": [
         {
-          "parameter": "pressed",
-          "value": false
+          "parameter": "pressAmount",
+          "op": ">",
+          "value": 0.8
         }
       ]
     },
     {
       "from": "Down",
-      "to": "Release",
+      "to": "Mid",
       "when": [
         {
-          "parameter": "pressed",
-          "value": false
+          "parameter": "pressAmount",
+          "op": "<",
+          "value": 0.75
         }
       ]
     },
     {
-      "from": "Release",
+      "from": "Mid",
       "to": "Up",
-      "exitTime": 1
-    },
-    {
-      "from": "Release",
-      "to": "Press",
       "when": [
         {
-          "parameter": "pressed"
+          "parameter": "pressAmount",
+          "op": "<",
+          "value": 0.2
         }
       ]
     }

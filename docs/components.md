@@ -142,17 +142,20 @@ Requires: `RigidBody` `Collider` `PlayerInput`
 
 ### PressurePlate
 
-Pressed while a character or object stands in its trigger collider; drives its targets.
-
-Requires: `Collider`
+Pressed while something stands on it (or in its zone); drives its targets. With a kinematic pad it is a real surface that sinks under its load.
 
 | Property | Type | Default | Notes |
 |---|---|---|---|
 | `targets` | entity list | [] | Doors, platforms... that react to this plate. |
 | `activatorTags` | string list | [] | Only entities with one of these tags press it. Empty: any movable body. |
 | `latch` | bool | false | Stay pressed once triggered. |
+| `sensing` | enum | "Auto" | Weight: what rests on the pad presses it. Region: what overlaps a trigger collider of the plate presses it. Auto: Weight for a pad with a solid collider and no trigger, Region otherwise. Options: Auto Weight Region |
+| `pad` | entity | none | The part that sinks and carries: an entity (this one, or a child) with a kinematic RigidBody and a solid Collider. Empty: this entity. |
 | `pressedColor` | color | "#5adc6eff" |  |
-| `pressDepth` | float | 0.08 | (range 0 to 1) |
+| `pressDepth` | float | 0.08 | How far the plate sinks when pressed, in world units. (range 0 to 5) |
+| `pressSpeed` | float | 1.5 | Fastest the plate sinks or rises, m/s. (range 0.01 to 20) |
+| `acceleration` | float | 8 | How quickly it speeds up and slows down, m/s^2. Keep it below gravity so whatever stands on the plate never loses contact. (range 0.1 to 100) |
+| `minimumMass` | float | 0 | Weight sensing: kilograms that must rest on the pad (0: anything). (range 0 to 1000) |
 | `pressSound` | asset | "" |  |
 | `releaseSound` | asset | "" |  |
 | `pressed` | bool | false | (runtime state, not saved) |
@@ -183,7 +186,9 @@ Requires: `RigidBody` `Collider`
 | Property | Type | Default | Notes |
 |---|---|---|---|
 | `openOffset` | vec2 | [0,-3] | How far the door moves when open, in world units (negative Y is up). (range -1000 to 1000) The editor shows the result as a ghost you can drag. |
-| `speed` | float | 3 | (range 0.01 to 100) |
+| `openRotation` | float | 0 | Degrees the door turns about its origin (its hinge) when open; positive turns clockwise on screen. (range -360 to 360) |
+| `speed` | float | 3 | Slide speed, m/s. (range 0.01 to 100) |
+| `rotationSpeed` | float | 90 | Turn speed, degrees per second. (range 1 to 1440) |
 | `startsOpen` | bool | false | Open until signalled, then closes. |
 | `logic` | enum | "Any" | How several sources combine. Options: Any All |
 | `invert` | bool | false |  |
@@ -201,6 +206,8 @@ Requires: `RigidBody` `Collider`
 |---|---|---|---|
 | `travel` | vec2 | [4,0] | Offset of the far end, world units. (range -1000 to 1000) The editor shows the result as a ghost you can drag. |
 | `speed` | float | 2 | (range 0.01 to 100) |
+| `acceleration` | float | 8 | How quickly it speeds up and slows down, m/s^2. Below gravity (9.81), things standing on a platform that starts downward stay on it. (range 0.1 to 1000) |
+| `spinSpeed` | float | 0 | Degrees per second the platform turns about its origin while it is moving (positive clockwise on screen). With no travel it is a rotating platform. (range -720 to 720) |
 | `pause` | float | 0.5 | Seconds to wait at each end. (range 0 to 60) |
 | `requireSignal` | bool | false | Only move while signalled. |
 | `logic` | enum | "Any" | Options: Any All |
@@ -343,6 +350,30 @@ Several instances may be added to one entity.
 | `friction` | float | 0.6 | (range 0 to 10) |
 | `restitution` | float | 0 | (range 0 to 1) |
 | `density` | float | 1 | (range 0 to 100) |
+| `cornerRadius` | float | 0 | Rounds the corners of a Box, so characters run up low steps and edges instead of catching on them. (range 0 to 10) |
+| `chamfer` | vec2 | [0,0] | Cuts the corners of a Box (x along the top and bottom, y along the sides): a shallow slope lets things slide up onto it, a character walks onto a button, a crate is pushed onto it. Ignores cornerRadius. (range 0 to 10) |
+
+### HingeJoint
+
+Pins the body to a point so it swings or tilts about it: seesaws, bridges, swinging platforms.
+
+Requires: `RigidBody`
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `connectedBody` | entity | none | The entity whose body the hinge is fixed to. Empty: fixed in the world. |
+| `anchor` | vec2 | [0,0] | The pin, in this entity's own space (0, 0 is its origin). (range -1000 to 1000) |
+| `limits` | bool | false | Keep the swing between the two angles. |
+| `lowerAngle` | float | -45 | Degrees from the starting pose, positive clockwise on screen. (range -178 to 178) |
+| `upperAngle` | float | 45 | (range -178 to 178) |
+| `spring` | bool | false | Pull toward restAngle: a lever that returns, a bridge that rises. |
+| `springHertz` | float | 2 | Stiffness as a frequency: how many times a second it would swing to and fro. (range 0.05 to 60) |
+| `springDamping` | float | 0.5 | 1 settles without overshoot; less lets it swing past. (range 0 to 10) |
+| `restAngle` | float | 0 | Where the spring pulls, in degrees from the starting pose. (range -178 to 178) |
+| `motor` | bool | false | Turn at motorSpeed while the torque allows. |
+| `motorSpeed` | float | 90 | Degrees per second. (range -3600 to 3600) |
+| `motorTorque` | float | 20 | The most torque the motor may apply (N m). (range 0 to 100000) |
+| `collideConnected` | bool | false | Let the two connected bodies collide with each other. |
 
 ## Rendering
 

@@ -143,6 +143,7 @@ if(BUILD_TESTING)
         yk_add_test(${suite} tests/unit/${suite}_tests.cpp LIBS yk::engine TIMEOUT 30)
     endforeach()
     yk_add_test(gameplay tests/unit/gameplay_tests.cpp LIBS yk::gameplay TIMEOUT 120)
+    yk_add_test(mechanisms tests/unit/mechanisms_tests.cpp LIBS yk::gameplay TIMEOUT 120)
     yk_add_test(export tests/unit/export_tests.cpp LIBS yk::gameplay TIMEOUT 60)
     # The demo game is a separate project (YK-DemoGame) that only consumes the engine; this plays it.
     if(YK_HAVE_DEMO)

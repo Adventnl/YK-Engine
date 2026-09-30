@@ -504,7 +504,9 @@
             "layer": "Solid",
             "friction": 0.4,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         }
       ]
@@ -554,7 +556,9 @@
             "layer": "Solid",
             "friction": 0.4,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         }
       ]
@@ -604,7 +608,9 @@
             "layer": "Solid",
             "friction": 0.4,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         }
       ]
@@ -654,7 +660,9 @@
             "layer": "Solid",
             "friction": 0.8,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         }
       ]
@@ -704,7 +712,9 @@
             "layer": "Solid",
             "friction": 0.8,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         }
       ]
@@ -754,7 +764,9 @@
             "layer": "Solid",
             "friction": 0.8,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         }
       ]
@@ -804,7 +816,9 @@
             "layer": "Solid",
             "friction": 0.4,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         }
       ]
@@ -854,7 +868,9 @@
             "layer": "Solid",
             "friction": 0.4,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         }
       ]
@@ -904,7 +920,9 @@
             "layer": "Solid",
             "friction": 0.5,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         }
       ]
@@ -954,7 +972,9 @@
             "layer": "Solid",
             "friction": 0.4,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         }
       ]
@@ -1004,7 +1024,9 @@
             "layer": "Solid",
             "friction": 0.4,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         }
       ]
@@ -1054,7 +1076,9 @@
             "layer": "Solid",
             "friction": 0.8,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         }
       ]
@@ -1104,7 +1128,9 @@
             "layer": "Solid",
             "friction": 0.8,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         }
       ]
@@ -1154,7 +1180,9 @@
             "layer": "Solid",
             "friction": 0.8,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         }
       ]
@@ -1204,7 +1232,9 @@
             "layer": "Solid",
             "friction": 0.8,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         }
       ]
@@ -1254,7 +1284,9 @@
             "layer": "Solid",
             "friction": 0.8,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         }
       ]
@@ -1304,7 +1336,9 @@
             "layer": "Solid",
             "friction": 0.8,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         }
       ]
@@ -1354,7 +1388,9 @@
             "layer": "Solid",
             "friction": 0.8,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         }
       ]
@@ -1404,7 +1440,9 @@
             "layer": "Solid",
             "friction": 0.4,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         }
       ]
@@ -1476,7 +1514,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -1612,7 +1652,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -1748,7 +1790,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -1884,7 +1928,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -2020,7 +2066,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -2156,7 +2204,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -2292,7 +2342,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -2428,7 +2480,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -2564,7 +2618,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -2710,7 +2766,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -2796,14 +2854,18 @@
             "layer": "Solid",
             "friction": 0.4,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
           "type": "Door",
           "properties": {
             "openOffset": [0, -3.2],
+            "openRotation": 0,
             "speed": 4,
+            "rotationSpeed": 90,
             "startsOpen": false,
             "logic": "Any",
             "invert": false,
@@ -2870,7 +2932,9 @@
             "layer": "Solid",
             "friction": 1,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -2878,6 +2942,8 @@
           "properties": {
             "travel": [3, 0],
             "speed": 1.8,
+            "acceleration": 8,
+            "spinSpeed": 0,
             "pause": 1.4,
             "requireSignal": false,
             "logic": "Any",
@@ -2943,7 +3009,9 @@
             "layer": "Solid",
             "friction": 1,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -2951,6 +3019,8 @@
           "properties": {
             "travel": [3, 0],
             "speed": 2,
+            "acceleration": 8,
+            "spinSpeed": 0,
             "pause": 0.6,
             "requireSignal": true,
             "logic": "Any",
@@ -2965,7 +3035,7 @@
       "parent": "072d5602006b12fa",
       "prefab": "prefabs/mechanisms/plate.ykprefab",
       "transform": {
-        "position": [33.4, 10.25],
+        "position": [33.4, 10.516],
         "rotation": 0,
         "scale": [1, 1]
       },
@@ -2978,7 +3048,7 @@
             "size": [2, 0.5],
             "offset": [0, 0],
             "color": "#ffffffff",
-            "layer": 20,
+            "layer": 9,
             "order": 0,
             "flipX": false,
             "visible": true,
@@ -3005,30 +3075,61 @@
           }
         },
         {
-          "type": "Collider",
-          "properties": {
-            "shape": "Box",
-            "size": [1.7, 0.3],
-            "offset": [0, 0.1],
-            "oneWay": false,
-            "isTrigger": true,
-            "detectTriggers": false,
-            "layer": "Sensor",
-            "friction": 0.6,
-            "restitution": 0,
-            "density": 1
-          }
-        },
-        {
           "type": "PressurePlate",
           "properties": {
             "targets": ["4dafbb036bbd4f40"],
             "activatorTags": [],
             "latch": false,
+            "sensing": "Auto",
+            "pad": "6589607dccb60f5c",
             "pressedColor": "#5adc6eff",
-            "pressDepth": 0.08,
+            "pressDepth": 0.094,
+            "pressSpeed": 1.5,
+            "acceleration": 8,
+            "minimumMass": 0,
             "pressSound": "assets/audio/plate_down.wav",
             "releaseSound": "assets/audio/plate_up.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "6589607dccb60f5c",
+      "name": "Pad",
+      "parent": "4c3db2b27e3f090e",
+      "transform": {
+        "position": [0, 0.094],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Kinematic",
+            "gravityScale": 1,
+            "linearDamping": 0,
+            "angularDamping": 0.05,
+            "fixedRotation": false,
+            "bullet": false,
+            "allowSleep": true
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.4, 0.5],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.8,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0.35, 0.2]
           }
         }
       ]
@@ -3039,7 +3140,7 @@
       "parent": "072d5602006b12fa",
       "prefab": "prefabs/mechanisms/plate.ykprefab",
       "transform": {
-        "position": [25, 10.25],
+        "position": [25, 10.516],
         "rotation": 0,
         "scale": [1, 1]
       },
@@ -3052,7 +3153,7 @@
             "size": [2, 0.5],
             "offset": [0, 0],
             "color": "#ffffffff",
-            "layer": 20,
+            "layer": 9,
             "order": 0,
             "flipX": false,
             "visible": true,
@@ -3079,30 +3180,61 @@
           }
         },
         {
-          "type": "Collider",
-          "properties": {
-            "shape": "Box",
-            "size": [1.7, 0.3],
-            "offset": [0, 0.1],
-            "oneWay": false,
-            "isTrigger": true,
-            "detectTriggers": false,
-            "layer": "Sensor",
-            "friction": 0.6,
-            "restitution": 0,
-            "density": 1
-          }
-        },
-        {
           "type": "PressurePlate",
           "properties": {
             "targets": ["4dafbb036bbd4f40"],
             "activatorTags": [],
             "latch": false,
+            "sensing": "Auto",
+            "pad": "dc98ca43ce1854c1",
             "pressedColor": "#5adc6eff",
-            "pressDepth": 0.08,
+            "pressDepth": 0.094,
+            "pressSpeed": 1.5,
+            "acceleration": 8,
+            "minimumMass": 0,
             "pressSound": "assets/audio/plate_down.wav",
             "releaseSound": "assets/audio/plate_up.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "dc98ca43ce1854c1",
+      "name": "Pad",
+      "parent": "3901abe758e504c0",
+      "transform": {
+        "position": [0, 0.094],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Kinematic",
+            "gravityScale": 1,
+            "linearDamping": 0,
+            "angularDamping": 0.05,
+            "fixedRotation": false,
+            "bullet": false,
+            "allowSleep": true
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.4, 0.5],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.8,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0.35, 0.2]
           }
         }
       ]
@@ -3164,7 +3296,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -3236,7 +3370,9 @@
             "layer": "Prop",
             "friction": 0.9,
             "restitution": 0,
-            "density": 0.8
+            "density": 0.8,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         }
       ]
@@ -3308,7 +3444,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -3447,7 +3585,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -3597,7 +3737,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -3707,7 +3849,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -3817,7 +3961,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -3927,7 +4073,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -4037,7 +4185,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -4147,7 +4297,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -4257,7 +4409,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -4367,7 +4521,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -4477,7 +4633,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -4587,7 +4745,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -4697,7 +4857,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -4807,7 +4969,9 @@
             "layer": "Sensor",
             "friction": 0.6,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -4939,7 +5103,9 @@
             "layer": "Player",
             "friction": 0,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {
@@ -5129,7 +5295,9 @@
             "layer": "Player",
             "friction": 0,
             "restitution": 0,
-            "density": 1
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
           }
         },
         {

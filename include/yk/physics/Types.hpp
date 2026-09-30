@@ -49,10 +49,11 @@ struct BodyDef {
 };
 struct BodyState {
     Pose pose;
-    Vec2 linearVelocity;
+    Vec2 linearVelocity; // Of the center of mass (the origin for kinematic and static bodies).
     float angularVelocity{};
     float mass{};
     float rotationalInertia{};
+    Vec2 worldCenter; // Center of mass in world space: what the body rotates about.
     bool awake{};
     bool enabled{};
 };
@@ -82,6 +83,10 @@ struct Box {
     Vec2 halfExtents{0.5F, 0.5F};
     Vec2 center{};
     float angleRadians{};
+    // Rounds the four corners: `halfExtents` stays the outer size. A rounded top edge lets a
+    // character slide up a low step instead of catching on its corner. Must be smaller than the
+    // shorter half extent.
+    float cornerRadius{};
 };
 struct Capsule {
     Vec2 first{0, -0.5F};
@@ -94,6 +99,7 @@ struct Segment {
 };
 struct Polygon {
     std::vector<Vec2> vertices; // 3-8 distinct convex hull vertices, in any order.
+    float radius{};             // Rounds the outline by growing it by this much (zero: sharp).
 };
 using Geometry = std::variant<Circle, Box, Capsule, Segment, Polygon>;
 
@@ -165,6 +171,12 @@ struct RevoluteJointDef {
     bool enableMotor{};
     float motorSpeed{};
     float maxMotorTorque{};
+    // A rotational spring that pulls the joint toward `targetAngle` (relative to the reference
+    // angle): seesaws that return to level, levers that snap back, doors that close on their own.
+    bool enableSpring{};
+    float springHertz{2.0F};
+    float springDampingRatio{0.5F};
+    float targetAngle{};
     bool collideConnected{};
 };
 struct DebugLine {
