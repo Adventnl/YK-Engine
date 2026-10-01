@@ -149,7 +149,7 @@ void GameData::add(const Json &original, const std::string &file,
     data::warnUnknown(document,
                       {"format", "version", "name", "description", "stats", "effects", "items",
                        "lootTables", "lootPools", "recipes", "quests", "factions", "schedules",
-                       "tables"},
+                       "security", "tables"},
                       warnings);
     for (const std::string &warning : warnings)
         problems.push_back({file, warning, false});
@@ -160,6 +160,7 @@ void GameData::add(const Json &original, const std::string &file,
     quests.load(document, file, problems);
     factions.load(document, file, problems);
     schedules.load(document, file, problems);
+    security.load(document, file, problems);
     if (document.contains("tables")) {
         if (!document.get("tables").isObject()) {
             problems.push_back({file, "'tables' must be an object of named tables", true});
@@ -185,6 +186,7 @@ void GameData::check(const RuleCatalog *rules, std::vector<DataProblem> &problem
     quests.check(problems);
     factions.check(problems);
     schedules.check(problems);
+    security.check(problems);
     if (!rules)
         return;
     visitRules([&](const RuleSource &source) { checkRules(*rules, source, problems); });
@@ -217,6 +219,8 @@ bool GameData::known(std::string_view kind, std::string_view id) const {
         return quests.quests.contains(id);
     if (kind == "faction")
         return factions.factions.contains(id);
+    if (kind == "lockdown")
+        return security.lockdowns.contains(id);
     if (kind == "schedule")
         return schedules.schedules.contains(id);
     return true;
@@ -228,6 +232,7 @@ void GameData::visitRules(const RuleSourceVisitor &visit) const {
     recipes.visitRules(visit);
     quests.visitRules(visit);
     schedules.visitRules(visit);
+    security.visitRules(visit);
 }
 void GameData::visitAssets(const AssetRefVisitor &visit) const {
     items.visitAssets(visit);

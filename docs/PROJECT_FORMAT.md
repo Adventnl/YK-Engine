@@ -447,6 +447,39 @@ the violation system). The facts `zone.id`, `zone.room`, `zone.purpose`, `zone.r
 A zone's `navigationArea` and `navigationCost` shape the navigation grid: an agent that forbids the
 area walks around it.
 
+### Security: `"security"` in a `.ykdata`
+
+Alert levels and lockdowns, with nothing about doors or guards built in: every effect is a list of
+rule actions, and AI brains and access conditions read the state as facts (`security.level`,
+`security.levelId`, `security.lockdown`, `security.remaining`) or predicates (`SecurityLevel`,
+`LockdownActive`).
+
+```json
+{ "security": {
+    "levels": [
+      { "id": "normal", "name": "Normal" },
+      { "id": "alert", "name": "Increased patrol", "decay": 120,
+        "onEnter": [ { "type": "SetVariable", "name": "patrols_doubled", "value": true } ],
+        "onExit":  [ { "type": "SetVariable", "name": "patrols_doubled", "value": false } ] },
+      { "id": "lockdown", "name": "Lockdown" } ],
+    "lockdowns": [
+      { "id": "riot", "name": "Riot", "countdown": 90, "level": "lockdown",
+        "onStart": [ { "type": "SetVariable", "name": "doors_sealed", "value": true } ],
+        "onEnd":   [ { "type": "SetVariable", "name": "doors_sealed", "value": false } ],
+        "onFail":  [ { "type": "EmitEvent", "event": "riot.lost" } ] } ] } }
+```
+
+- Levels are ordered; `SetSecurityLevel` takes an id or a number, `RaiseSecurity {by}` moves up or
+  down and stops at the ends. Leaving a level runs its `onExit`, entering runs `onEnter`, and
+  `security.changed` is raised. `decay` is the seconds without a raise before it falls one level.
+- `StartLockdown` / `EndLockdown`: the lockdown's `level` is entered, `countdown` seconds count down
+  (`lockdown.countdown` each second) and when they run out `onFail` runs and `lockdown.ended` is
+  raised with `failed: true`. Only one lockdown runs at a time.
+- An **`AccessPolicy`** component on a door, terminal or gate says who may use it: `allowedFactions`
+  (by what the user looks like, unless `countDisguise` is off), `allowedRoles`, an `access`
+  condition (a keycard, a quest, the time of day, the security level) and `lockedDuringLockdown`.
+  Rules ask with `AccessAllowed {target, entity}`.
+
 ### Quests: `*.ykquest`, or `"quests"` in a `.ykdata`
 
 ```json

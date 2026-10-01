@@ -935,6 +935,19 @@ An area of the world with a name, tags, a purpose and a say in who may be there.
 | `navigationArea` | string | "" | The navigation area its ground belongs to ("restricted"): agents may avoid it. |
 | `navigationCost` | float | 1 | How much dearer it is to walk here (a multiplier on the path cost). (range 1 to 20) |
 
+### AccessPolicy
+
+Who may use this: factions, roles and a condition (keycard, quest, time of day, security level). Doors, terminals and interactions ask it.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `allowedFactions` | string list | [] |  |
+| `allowedRoles` | string list | [] |  |
+| `access` | json | null | A condition that must hold for the user ({"type": "HasToken", ...}); empty: none. |
+| `countDisguise` | bool | true | Faction checks go by what the user looks like. |
+| `lockedDuringLockdown` | bool | false | Nobody may use it while a lockdown runs. |
+| `deniedMessage` | string | "" |  |
+
 ## UI
 
 ### UiText
