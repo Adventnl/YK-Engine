@@ -154,6 +154,7 @@ if(BUILD_TESTING)
     yk_add_test(docs tests/unit/docs_tests.cpp LIBS yk::engine TIMEOUT 30
         DEFINITIONS YK_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
     yk_add_test(gameplay tests/unit/gameplay_tests.cpp LIBS yk::gameplay TIMEOUT 120)
+    yk_add_test(character tests/unit/character_tests.cpp LIBS yk::gameplay TIMEOUT 60)
     yk_add_test(navigation_agent tests/unit/navigation_agent_tests.cpp LIBS yk::gameplay TIMEOUT 300)
     yk_add_test(mechanisms tests/unit/mechanisms_tests.cpp LIBS yk::gameplay TIMEOUT 120)
     yk_add_test(level_flow tests/unit/level_flow_tests.cpp LIBS yk::gameplay TIMEOUT 120)

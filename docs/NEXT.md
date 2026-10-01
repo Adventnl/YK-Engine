@@ -13,8 +13,9 @@ which commands to run. Written at the end of every pass; the newest pass is firs
 - Phase C: world levels and per-level physics, spatial hash and `SpatialIndexService`, tilesets and
   tilemaps (runtime, collision, rendering), world grid, multi-level navigation, `NavigationAgent`,
   `CharacterMotor`.
-- Phase D (partial) and E: stats, status effects, health with knockout, items, inventories,
-  equipment, containers, pickups, loot tables and pools, crafting.
+- Phase D and E: stats, status effects, health with knockout, items, inventories, equipment,
+  containers, pickups, loot tables and pools, crafting; the player controller on `CharacterMotor`
+  (effects, stamina) and equipment drawn as appearance layers.
 - Phase J: the rule language, `RuleSet`, `RuleService`, quests and objectives (`QuestLog`), dialogue
   graphs, cutscene sequences (`SequencePlayer`); `Camera::hold/release` and the cinematic screen fade.
   Still open from J: converting `EventAction` to rules.
@@ -25,7 +26,7 @@ which commands to run. Written at the end of every pass; the newest pass is firs
 - `Json` properties are edited as text.
 - Stamina exists as a stat; it has no consumers until movement and combat exist.
 - The save contract exists on components; nothing assembles a save game yet.
-- Equipment appearance layers are stored in item data (`equip.appearance`) but nothing draws them.
+- Appearance layers are drawn as child sprites; there is no art and no pixel-level test of them.
 
 ### Failed or dropped
 
@@ -37,16 +38,15 @@ which commands to run. Written at the end of every pass; the newest pass is firs
 1. Phase J remainder: convert `EventAction` to rules (`yk` command and an editor action) while
    keeping the component. A sequence cue that pathfinds a character comes with the navigation
    actions of phase F.
-2. Phase D remainder: `PlayerCharacterController` on `CharacterMotor`, appearance layers.
-3. Phase K: vendored Lua 5.4, sandbox, `ScriptComponent`, API, hot reload.
-4. Phases F-H: world clock, schedules, zones, factions, perception and noise, AI brains and the AI
+2. Phase K: vendored Lua 5.4, sandbox, `ScriptComponent`, API, hot reload.
+3. Phases F-H: world clock, schedules, zones, factions, perception and noise, AI brains and the AI
    debugger, crime and security, access policy.
-5. Phase I and L: combat, carrying, tool actions on the world, destructibles, vents, hiding, search.
-6. Phase M: `SaveGame` assembled from the component and service contract, slots, migration.
-7. Phase N: runtime UI framework with reference-resolution scaling, inventory/container/crafting
+4. Phase I and L: combat, carrying, tool actions on the world, destructibles, vents, hiding, search.
+5. Phase M: `SaveGame` assembled from the component and service contract, slots, migration.
+6. Phase N: runtime UI framework with reference-resolution scaling, inventory/container/crafting
    screens, HUD, minimap.
-8. Phase O: `YK-SimulationDemo/` and its two escape routes as headless tests.
-9. Phases P-S: local multiplayer, networking, authoring tools, packages, installer, CI.
+7. Phase O: `YK-SimulationDemo/` and its two escape routes as headless tests.
+8. Phases P-S: local multiplayer, networking, authoring tools, packages, installer, CI.
 
 ### Files that matter
 

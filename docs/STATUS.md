@@ -46,8 +46,8 @@ Inspector edits their components, and definition files show a summary there.
 | Loot tables and pools (must-exist items dealt among a group), seeded per container | VERIFIED | `loot_crafting` (1,881 checks) |
 | Crafting: recipes, stations, learned recipes, stat requirements, tools worn | VERIFIED | `loot_crafting`; no crafting screen yet |
 | Component save contract (`saveState`/`loadState`) | FOUNDATION | implemented on stats, effects, health, inventory, container, pickup, crafter, rules; **no `SaveGame` assembling them yet** |
-| Character appearance layers | NOT STARTED | |
-| Player character controller on `CharacterMotor` | NOT STARTED | `TopDownController` (exploration) is unchanged |
+| Character appearance layers (`AppearanceLayers`: equipment drawn as layered child sprites that follow the body's frame) | FUNCTIONAL | `character`; logic and validation tested, **no pixel-level render test and no art**; layer sheets must match the body's grid |
+| `CharacterMotor` honours effects (`no_move`, `no_sprint`, `move.speed`) and spends stamina to run; `PlayerCharacterController` (named actions, held or toggled run) | VERIFIED | `character` (101 checks), `navigation_agent`; `TopDownController` (exploration) is unchanged |
 | Quests and objectives: conditions, counted events, manual objectives, `after`, time limits, failure, rewards, repeatable and gated, saved state | VERIFIED | `quests` (155 checks); **no quest log screen or editor** |
 | Dialogue graphs: speakers, expression portraits, choices with conditions/`once`/actions, branches, logic nodes; linear pages still work | VERIFIED | `dialogue` (134 checks), validation of the graph and its rules; the renderer draws portrait sides and choices; **no graph editor** |
 | Cutscene sequences (`.ykseq`, `SequencePlayer`): fades, camera moves, walks, waits, events, conversations, any rule action; skip and stop | VERIFIED | `sequence` (310 checks); **no timeline editor**; a cue that pathfinds a character needs the AI phase; not saved mid-play |
@@ -74,7 +74,7 @@ Inspector edits their components, and definition files show a summary there.
   `exploration` and the editor scripts, which show the platformer and exploration projects did not
   regress. New suites: `foundation` 416, `world` 90, `tilemap` 106, `navigation` 299,
   `navigation_agent` 76, `rules` 44,445, `stats` 283, `items` 329, `loot_crafting` 1,881,
-  `quests` 155, `dialogue` 134, `sequence` 310 checks.
+  `quests` 155, `dialogue` 134, `sequence` 310, `docs` 14, `character` 101 checks.
 - Not yet re-run for this program: `release`, `asan`, `headless` presets (new code is plain C++ with no
   platform dependence; the sanitizer run is listed in [NEXT.md](NEXT.md)).
 

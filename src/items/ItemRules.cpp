@@ -1,5 +1,6 @@
 #include "yk/core/Log.hpp"
 #include "yk/data/GameData.hpp"
+#include "yk/items/Appearance.hpp"
 #include "yk/items/Crafting.hpp"
 #include "yk/items/Inventory.hpp"
 #include "yk/items/Loot.hpp"
@@ -329,5 +330,6 @@ void registerItemComponents(ComponentRegistry &registry) {
     registry.add<Pickup>("Pickup");
     registry.add<CraftingStation>("CraftingStation");
     registry.add<Crafter>("Crafter");
+    registry.add<AppearanceLayers>("AppearanceLayers");
 }
 } // namespace yk

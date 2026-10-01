@@ -154,7 +154,7 @@ void StatSet::settle(GameContext &context, const StatDefinition &definition, Ent
 }
 
 double StatSet::add(GameContext &context, std::string_view stat, double delta,
-                    const std::string &cause) {
+                    const std::string &cause, bool quiet) {
     const auto found = entries_.find(stat);
     const StatDefinition *definition = catalog_ ? catalog_->stats.find(stat) : nullptr;
     if (found == entries_.end() || !definition || !std::isfinite(delta))
@@ -166,7 +166,7 @@ double StatSet::add(GameContext &context, std::string_view stat, double delta,
     entry.base = std::clamp(entry.base + delta, min(stat), std::max(max(stat), min(stat)));
     if (delta < 0.0)
         entry.lastReduced = context.time();
-    settle(context, *definition, entry, before, cause, true);
+    settle(context, *definition, entry, before, cause, !quiet);
     return value(stat) - before;
 }
 
@@ -200,10 +200,10 @@ bool StatSet::canSpend(std::string_view stat, double amount) const {
     return has(stat) && value(stat) + epsilon >= amount;
 }
 bool StatSet::spend(GameContext &context, std::string_view stat, double amount,
-                    const std::string &cause) {
+                    const std::string &cause, bool quiet) {
     if (amount < 0.0 || !canSpend(stat, amount))
         return false;
-    add(context, stat, -amount, cause);
+    add(context, stat, -amount, cause, quiet);
     return true;
 }
 

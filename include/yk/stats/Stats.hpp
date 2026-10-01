@@ -151,14 +151,16 @@ class StatSet final : public Component {
 
     // Changes the stored number by `delta` (damage, spending, healing) and returns how much the
     // value really changed after the limits. `cause` names why ("damage:fire", "item:coffee").
+    // `quiet` leaves out the stat.changed event of this change (a drain that happens every tick,
+    // like a sprint, would raise sixty a second); thresholds and the limits still raise theirs.
     double add(GameContext &context, std::string_view stat, double delta,
-               const std::string &cause = {});
+               const std::string &cause = {}, bool quiet = false);
     double set(GameContext &context, std::string_view stat, double value,
                const std::string &cause = {});
     // Spends `amount` when there is that much (stamina for a sprint); false and unchanged
     // otherwise.
     bool spend(GameContext &context, std::string_view stat, double amount,
-               const std::string &cause = {});
+               const std::string &cause = {}, bool quiet = false);
     bool canSpend(std::string_view stat, double amount) const;
 
     // Modifiers: `source` groups them so a whole group can be removed at once. A modifier with a

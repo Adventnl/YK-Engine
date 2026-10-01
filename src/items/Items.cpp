@@ -383,7 +383,8 @@ void ItemCatalog::visitAssets(
             visit(item.file, label + " worldPrefab", item.worldPrefab, "prefab");
         if (item.equip && item.equip->appearance.isObject())
             for (std::size_t i = 0; i < item.equip->appearance.size(); ++i)
-                if (item.equip->appearance.valueAt(i).isString())
+                if (item.equip->appearance.valueAt(i).isString() &&
+                    !item.equip->appearance.valueAt(i).asString().empty())
                     visit(item.file,
                           label + " appearance '" + item.equip->appearance.keyAt(i) + "'",
                           item.equip->appearance.valueAt(i).asString(), "texture");

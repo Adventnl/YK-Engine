@@ -264,6 +264,14 @@ recipes, free tables) with per-file problem reporting ([ADR 0021](decisions/0021
 `Inventory`, `Container`, `Pickup`, `Crafter` and `CraftingStation` give them things. Components with
 run-time state of their own implement `Component::saveState/loadState` (the save game contract).
 
+### Characters (`gameplay/Character.hpp`, `items/Appearance.hpp`)
+
+One `CharacterMotor` per character turns an intent into movement; the player's
+`PlayerCharacterController`, a navigation agent, a cutscene or a script only set the intent. The motor
+reads the character's status effects (`no_move`, `no_sprint`, `move.speed`) and spends stamina to
+run ([ADR 0024](decisions/0024-one-character-motor-effects-as-flags-and-equipment-as-layers.md)).
+`AppearanceLayers` draws what a character wears as child sprites that copy the body's frame.
+
 ### Quests, conversations and cutscenes (`sim/`)
 
 Story is data on the same rule language ([ADR 0023](decisions/0023-quests-conversations-and-cutscenes-are-data-on-the-rule-language.md)).

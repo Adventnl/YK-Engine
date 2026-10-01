@@ -18,6 +18,18 @@ Plays a sound on start or on request.
 
 ## Character
 
+### AppearanceLayers
+
+Draws the character's look as layers over its body sprite (outfit, hair, hat...): each layer follows the body's frame and shows what the equipment worn in the Inventory says, else the default.
+
+Requires: `SpriteRenderer`
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `layers` | string list | [] | Layer names, bottom to top. Items name them in equip.appearance. |
+| `defaults` | json | {} | Layer name -> texture shown when nothing worn names one. |
+| `orderStep` | float | 0.001 | (range 0.0001 to 0.1) |
+
 ### CharacterMotor
 
 Moves a top-down character on a zero-gravity body. Players, navigation agents, scripts and status effects all steer it through the same intent, so every character accelerates, turns and animates by the same rules.
@@ -33,6 +45,24 @@ Updates in the Motor phase of the tick.
 | `acceleration` | float | 30 | (range 0 to 500) |
 | `deceleration` | float | 40 | (range 0 to 500) |
 | `faceMovement` | bool | true |  |
+| `runStaminaPerSecond` | float | 0 | Stamina spent per second of running; 0 makes running free. (range 0 to 100) |
+| `runResumeStamina` | float | 10 | After running out of stamina, how much it must recover before running again. (range 0 to 100) |
+| `staminaStat` | string | "stamina" | The stat running spends (a StatSet on the same entity). |
+
+### PlayerCharacterController
+
+Lets a person walk and run a CharacterMotor with the named actions of an input set. The motor decides what the character may do (stunned, out of breath, slowed).
+
+Requires: `PlayerInput` `CharacterMotor`
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `leftAction` | string | "MoveLeft" |  |
+| `rightAction` | string | "MoveRight" |  |
+| `upAction` | string | "MoveUp" |  |
+| `downAction` | string | "MoveDown" |  |
+| `runAction` | string | "Run" | Held to run; empty: the character never runs. |
+| `toggleRun` | bool | false | A press switches running on and off instead of holding it. |
 
 ## Characters
 
