@@ -219,6 +219,51 @@ by default), which a paused runtime could not hear itself; the player dims the p
 PAUSED (`GameViewOptions::paused`). The standalone player and the editor's Play mode both drive a session, so they cannot
 disagree ([ADR 0015](decisions/0015-level-flow-and-transitions-belong-to-the-runtime.md)).
 
+### Update order and services
+
+Each fixed tick runs in this order ([ADR 0017](decisions/0017-services-and-update-phases.md)):
+
+1. input actions are evaluated; components that were added are started (`onStart`); `scene_started`
+   is raised once;
+2. the event bus is told the time and delayed events whose time has come are queued;
+3. **before the physics step**, for each phase in order, the *services* of the phase tick and then
+   the components of that phase run their `onFixedUpdate`: `Clock` (world time, calendars),
+   `PreUpdate` (scripts, rules, stat regeneration, status effects, health recovery),
+   `Decision` (AI and schedule agents choose goals), `Gameplay` (the default phase: every
+   component written before phases existed, so their behaviour is unchanged), `Steering`
+   (navigation agents, avoidance), `Motor` (character motors turn intents into velocities);
+4. tilemaps that changed rebuild their static colliders; the physics world steps; transforms are
+   written back; trigger overlaps and collision callbacks fire;
+5. **after it**: `Perception` (sight, hearing, awareness) and `PostSimulation` (the spatial index,
+   inventories collecting what lies near, pickups, loot, crafting stations);
+6. entities queued with `destroyLater` are removed, the event queue is dispatched, the tick count
+   advances and the interpolation snapshot is taken.
+
+A frame then runs one variable update and late update. Services are created on first use
+(`context.services().get<T>()`) and belong to one run of one scene (`RuleService`,
+`RandomService`, `DataService`, `SpatialIndexService`, `LootService`, `NavigationService`).
+
+### The world model (`world/`, `navigation/`)
+
+One scene is one continuous simulation with several **levels** (floors, roof, vents, underground):
+`SceneSettings::levels`, `WorldLayer`, `levelOf(entity)`, per-level physics filtering and
+per-level queries ([ADR 0016](decisions/0016-one-world-many-floors.md)). `SpatialHash` and the
+`SpatialIndexService` answer "what is near here" without scanning; `Tileset`/`Tilemap` hold large
+maps as chunked sparse layers with merged static colliders ([ADR 0022](decisions/0022-tilemaps-are-a-component-with-chunked-layers.md));
+`WorldGrid` gives navigation, line of sight and sound transmission one view of the same tiles; and
+`NavigationWorld` plans paths over it with budgets ([ADR 0020](decisions/0020-navigation-on-a-multi-level-grid.md)).
+
+### Rules, stats, items and definitions (`rules/`, `stats/`, `items/`, `data/`)
+
+`RuleCatalog` (an extension slot of the registry) holds the conditions, actions and fact namespaces
+every module contributes; `RuleSet` runs WHEN/IF/THEN rules, and the same language is used inside item
+uses, effects, recipes and container permissions ([ADR 0018](decisions/0018-one-condition-and-action-language.md)).
+`GameData` loads a project's definition files (stats, status effects, items, loot tables and pools,
+recipes, free tables) with per-file problem reporting ([ADR 0021](decisions/0021-definitions-are-versioned-data-in-gamedata.md));
+`StatSet`, `StatusEffects` and `Health` give characters numbers, conditions and damage;
+`Inventory`, `Container`, `Pickup`, `Crafter` and `CraftingStation` give them things. Components with
+run-time state of their own implement `Component::saveState/loadState` (the save game contract).
+
 ## Gameplay library (`gameplay/`)
 
 Sources (`PressurePlate`, `Lever`, `Goal`, `TriggerZone`, `EventAction`) list `targets`; receivers
