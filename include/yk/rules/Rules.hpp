@@ -54,7 +54,7 @@ struct RuleContext {
                                        const char *fallback = "self") const;
     // The catalog of the running game's registry, if it has one.
     const RuleCatalog *catalog() const;
-    // Reads a fact: "var.name", "actor.stat.health", "world.time.hour", ... none when unknown.
+    // Reads a fact: "var.name", "actor.stat.health", "clock.hour", ... none when unknown.
     std::optional<Value> fact(std::string_view path) const;
     // A JSON argument that is either a literal or a "$fact.path" reference.
     Value argument(const Json &json) const;

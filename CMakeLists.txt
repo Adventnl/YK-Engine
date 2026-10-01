@@ -147,7 +147,7 @@ endif()
 target_compile_definitions(yk_engine PUBLIC YK_HAS_RUNTIME=$<BOOL:${YK_RUNTIME}>)
 
 if(BUILD_TESTING)
-    foreach(suite core diagnostics physics json animation scene game_runtime audio input assets effects foundation world tilemap navigation rules stats items loot_crafting quests dialogue sequence identity)
+    foreach(suite core diagnostics physics json animation scene game_runtime audio input assets effects foundation world tilemap navigation rules stats items loot_crafting quests dialogue sequence identity clock)
         yk_add_test(${suite} tests/unit/${suite}_tests.cpp LIBS yk::engine TIMEOUT 30)
     endforeach()
     # The examples in docs/PROJECT_FORMAT.md load without a problem.

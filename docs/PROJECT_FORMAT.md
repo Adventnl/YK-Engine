@@ -316,8 +316,8 @@ editor's Problems panel all read them the same way, with the same messages
 
 | Extension | Holds | Read by |
 |---|---|---|
-| `.ykdata` | any of the sections `stats`, `effects`, `items`, `lootTables`, `lootPools`, `recipes`, `quests`, `factions`, `tables` | `GameData` |
-| `.ykitem`, `.ykrecipe`, `.ykquest` | the same sections, or just one definition (an object with an `id`) | `GameData` |
+| `.ykdata` | any of the sections `stats`, `effects`, `items`, `lootTables`, `lootPools`, `recipes`, `quests`, `factions`, `schedules`, `tables` | `GameData` |
+| `.ykitem`, `.ykrecipe`, `.ykquest`, `.ykschedule` | the same sections, or just one definition (an object with an `id`) | `GameData` |
 | `.ykloot` | `tables` and `pools` | `GameData` |
 | `.ykdialogue` | a list of pages, or a graph of nodes | the `Dialogue` component |
 | `.ykseq` | a cutscene: a timeline of cues | the `SequencePlayer` component |
@@ -389,6 +389,45 @@ predicates `Relation`, `InFaction` and `HasRole`, the facts `identity.*` and `re
 the actions `ChangeRelationship`, `SetFaction` and `SetRole` work with them. A status effect with the
 flag `disguise.<faction>` makes its wearer look like a member of that faction to anything that asks
 for the `perceived` relation.
+
+### Schedules: `*.ykschedule`, or `"schedules"` in a `.ykdata`
+
+```json
+{ "schedules": [
+    { "id": "inmate", "name": "Inmate routine", "roles": ["inmate"], "blocks": [
+        { "id": "wake", "from": "06:00", "to": "07:00", "activity": "Wake up",
+          "destination": "home", "behavior": "idle" },
+        { "id": "roll", "from": "07:00", "to": "08:00", "activity": "Roll call",
+          "destination": { "zone": "lineup" }, "behavior": "stand", "tolerance": 5,
+          "requires": { "enter": "zone:lineup", "stay": 30 }, "tags": ["mandatory"],
+          "onStart": [{ "type": "SetVariable", "name": "roll_call", "value": true }] },
+        { "id": "lunch", "from": "12:00", "to": "13:00", "activity": "Lunch",
+          "destination": "purpose:dining", "behavior": "eat" },
+        { "id": "visits", "from": "09:00", "to": "10:00", "activity": "Visiting hour",
+          "days": [5, 6], "behavior": "visit" },
+        { "id": "night", "from": "22:00", "to": "06:00", "activity": "Lights out",
+          "destination": { "point": [2, 3] }, "behavior": "sleep" } ] } ] }
+```
+
+A schedule is a routine over the day, as data: each block has a `from` and `to` (a block that ends
+before it starts wraps past midnight), an `activity` (a label for people and rules), a `destination`
+(`home`, a zone, a room, a `purpose` any room or zone can have, an entity or a point; the block's
+AI decides how to get there), a `behavior` (the word the character's AI maps to what it does there),
+a `tolerance` in minutes before arriving late, optional `days` (weekday numbers 0-6, counting from
+the game's first day), `priority` where blocks overlap, `requires` (for a routine that is enforced,
+the player's: be in a place, stay a while, do something) and rule actions to run when it starts and
+ends. Times with no block are free time. A character follows a schedule through a `ScheduleAgent`
+component, the one named or the one that lists its `roles`. The world clock behind it is a
+`ClockSettings` component on any entity (a scene may carry one; without it the clock starts on day 1
+at 06:00 and runs a minute of the world per second): `minutesPerSecond`, `startDay`, `startTime`,
+`startPaused`, `dayStarts`, `nightStarts`. Rules read the clock as the facts `clock.hour`,
+`clock.minute`, `clock.day`, `clock.weekday`, `clock.time`, `clock.daylight`..., test it with the
+predicates `TimeBetween` and `IsDaylight`, change it with `SetTime`, `SkipTime`, `PauseClock`,
+`ResumeClock` and `SetClockScale`, and react to the events `clock.minute`, `clock.hour`, `clock.day`
+and `clock.daylight`: `{"when": "clock.minute", "data": {"time": "06:00"}, "then": [...]}` runs at
+06:00. A `ScheduleAgent` raises `schedule.block_started`, `schedule.block_ended`,
+`schedule.arrived` and `schedule.late` for the rules to answer, and its state is read with the facts
+`schedule.activity`, `schedule.block`, `schedule.next`, `schedule.minutesLeft`, `schedule.late`...
 
 ### Quests: `*.ykquest`, or `"quests"` in a `.ykdata`
 

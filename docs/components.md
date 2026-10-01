@@ -882,6 +882,29 @@ Updates in the PostSimulation phase of the tick.
 | `forgetPerSecond` | float | 0 | Feelings fade toward neutral by this fraction per second; 0: they last. (range 0 to 1) |
 | `start` | json | {} | Starting feelings: {"npc.warden": {"opinion": 20, "trust": 5, "hostility": 0}}. |
 
+### ClockSettings
+
+Where the world clock starts and how fast it runs. Optional: without one it starts on day 1 at 06:00 and runs a minute of the world per second.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `minutesPerSecond` | float | 1 | Minutes of the world per real second (1: a day lasts 24 real minutes). (range 0 to 3600) |
+| `startDay` | int | 1 | (range 1 to 100000) |
+| `startTime` | string | "06:00" | HH:MM |
+| `startPaused` | bool | false |  |
+| `dayStarts` | string | "06:00" | HH:MM: when daylight begins. |
+| `nightStarts` | string | "20:00" | HH:MM: when it ends. |
+
+### ScheduleAgent
+
+Follows a daily schedule on the world clock: which block this character is in, which is next, whether it arrived in time. An AI brain goes where the block says; rules react to its events.
+
+Updates in the PreUpdate phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `schedule` | string | "" | A schedule id; empty: the schedule that lists this character's role. |
+
 ## UI
 
 ### UiText

@@ -6,6 +6,7 @@
 #include "yk/runtime/Services.hpp"
 #include "yk/sim/Factions.hpp"
 #include "yk/sim/Quests.hpp"
+#include "yk/sim/Schedule.hpp"
 #include "yk/stats/Stats.hpp"
 #include <functional>
 #include <map>
@@ -27,6 +28,7 @@ class GameData {
     RecipeCatalog recipes;
     QuestCatalog quests;
     FactionCatalog factions;
+    ScheduleCatalog schedules;
     // Named tables for what only the game knows (a prison's names, a shop's price list); scripts
     // and rules read them by name.
     std::map<std::string, Json> tables;

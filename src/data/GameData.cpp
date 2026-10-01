@@ -12,11 +12,9 @@ struct FileKind {
     const char *extension;
     const char *format;
 };
-constexpr FileKind fileKinds[] = {{".ykdata", "yk.data"},
-                                  {".ykitem", "yk.item"},
-                                  {".ykrecipe", "yk.recipe"},
-                                  {".ykloot", "yk.loot"},
-                                  {".ykquest", "yk.quest"}};
+constexpr FileKind fileKinds[] = {{".ykdata", "yk.data"},     {".ykitem", "yk.item"},
+                                  {".ykrecipe", "yk.recipe"}, {".ykloot", "yk.loot"},
+                                  {".ykquest", "yk.quest"},   {".ykschedule", "yk.schedule"}};
 
 const FileKind &kindOf(const std::string &file) {
     for (const FileKind &kind : fileKinds)
@@ -45,6 +43,8 @@ Json normalize(const Json &original, const std::string &file) {
         return *recipe;
     if (auto quest = wrapSingle(".ykquest", "quests"))
         return *quest;
+    if (auto schedule = wrapSingle(".ykschedule", "schedules"))
+        return *schedule;
     if (file.ends_with(".ykloot") && !original.contains("lootTables") &&
         !original.contains("lootPools")) {
         Json wrapped = Json::object();
@@ -148,7 +148,8 @@ void GameData::add(const Json &original, const std::string &file,
     std::vector<std::string> warnings;
     data::warnUnknown(document,
                       {"format", "version", "name", "description", "stats", "effects", "items",
-                       "lootTables", "lootPools", "recipes", "quests", "factions", "tables"},
+                       "lootTables", "lootPools", "recipes", "quests", "factions", "schedules",
+                       "tables"},
                       warnings);
     for (const std::string &warning : warnings)
         problems.push_back({file, warning, false});
@@ -158,6 +159,7 @@ void GameData::add(const Json &original, const std::string &file,
     recipes.load(document, file, problems);
     quests.load(document, file, problems);
     factions.load(document, file, problems);
+    schedules.load(document, file, problems);
     if (document.contains("tables")) {
         if (!document.get("tables").isObject()) {
             problems.push_back({file, "'tables' must be an object of named tables", true});
@@ -182,6 +184,7 @@ void GameData::check(const RuleCatalog *rules, std::vector<DataProblem> &problem
     recipes.check(items, stats, problems);
     quests.check(problems);
     factions.check(problems);
+    schedules.check(problems);
     if (!rules)
         return;
     visitRules([&](const RuleSource &source) { checkRules(*rules, source, problems); });
@@ -214,6 +217,8 @@ bool GameData::known(std::string_view kind, std::string_view id) const {
         return quests.quests.contains(id);
     if (kind == "faction")
         return factions.factions.contains(id);
+    if (kind == "schedule")
+        return schedules.schedules.contains(id);
     return true;
 }
 
@@ -222,6 +227,7 @@ void GameData::visitRules(const RuleSourceVisitor &visit) const {
     items.visitRules(visit);
     recipes.visitRules(visit);
     quests.visitRules(visit);
+    schedules.visitRules(visit);
 }
 void GameData::visitAssets(const AssetRefVisitor &visit) const {
     items.visitAssets(visit);
@@ -239,6 +245,7 @@ std::vector<std::pair<std::string, std::string>> GameData::summary() const {
     count("Recipes", recipes.recipes.size());
     count("Quests", quests.quests.size());
     count("Factions", factions.factions.size());
+    count("Schedules", schedules.schedules.size());
     count("Loot tables", loot.tables.size());
     count("Loot pools", loot.pools.size());
     count("Tables", tables.size());

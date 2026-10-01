@@ -280,6 +280,13 @@ others); `Relationships` keeps personal feelings by persistent id, and `relation
 (optionally as the observer *perceives* the subject, which disguises change). Perception, witnesses,
 access control, schedules, jobs and the AI all ask these two questions instead of knowing faction names.
 
+### The world clock and schedules (`sim/Clock.hpp`, `sim/Schedule.hpp`)
+
+`WorldClock` is a service in the `Clock` phase: simulation time (day, hour, minute) apart from real
+seconds, with named pauses, set and skip, callbacks, `clock.*` events and facts. Schedules are
+definitions in `GameData`; a `ScheduleAgent` follows one on the clock and raises the block events
+that AI brains, rules and (for the player) enforced routines build on.
+
 ### Quests, conversations and cutscenes (`sim/`)
 
 Story is data on the same rule language ([ADR 0023](decisions/0023-quests-conversations-and-cutscenes-are-data-on-the-rule-language.md)).
