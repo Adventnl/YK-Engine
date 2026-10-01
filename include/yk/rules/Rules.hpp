@@ -199,6 +199,24 @@ class RuleCatalog {
 // need none). Called by every host's registry setup before the other modules add theirs.
 void registerCoreRules(RuleCatalog &catalog);
 
+// ---- Events a rule, an objective or a script waits for ---------------------------------------
+// An event name or pattern ("interacted", "crime.*", "*"), who must have raised it, who it must
+// have been done to, and the values its payload must carry.
+struct EventTrigger {
+    std::string pattern;
+    std::string source; // "" any, "self", "name:Gate", "tag:guard"...
+    std::string other;
+    Json dataFilter; // Object of key -> literal.
+
+    // From "crime.*" or {"event": ..., "source": ..., "other": ..., "data": {...}}.
+    static Result<EventTrigger> fromJson(const Json &json);
+    Json toJson() const;
+    // `self` is the entity the trigger belongs to (what "self" names).
+    bool matches(GameContext &game, EntityId self, const GameEvent &event) const;
+};
+// Whether an event name matches a pattern: equal, "*", or the prefix before ".*".
+bool eventNameMatches(std::string_view pattern, std::string_view name);
+
 // ---- Rules: WHEN event IF condition THEN actions ------------------------------------------------
 struct Rule {
     std::string id;

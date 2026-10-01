@@ -4,6 +4,7 @@
 #include "yk/items/Inventory.hpp"
 #include "yk/rules/RuleSet.hpp"
 #include "yk/runtime/GameContext.hpp"
+#include "yk/sim/Quests.hpp"
 #include "yk/stats/Stats.hpp"
 #include "yk/world/Tilemap.hpp"
 #include "yk/world/WorldLevels.hpp"
@@ -463,6 +464,7 @@ void registerEngineComponents(ComponentRegistry &registry) {
     registerRuleComponents(registry);
     registerStatComponents(registry);
     registerItemComponents(registry);
+    registerQuestComponents(registry);
     const auto place = [](Scene &scene, Vec2 at, const char *name) -> Entity & {
         Entity &entity = scene.createEntity(name);
         entity.setWorldPosition(at);

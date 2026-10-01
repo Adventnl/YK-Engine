@@ -4,15 +4,6 @@
 #include <functional>
 
 namespace yk {
-bool RuleService::eventMatches(const std::string &pattern, const std::string &name) {
-    if (pattern.empty())
-        return false;
-    if (pattern == "*" || pattern == name)
-        return true;
-    return pattern.size() >= 2 && pattern.ends_with(".*") && name.size() > pattern.size() - 1 &&
-           name.compare(0, pattern.size() - 1, pattern, 0, pattern.size() - 1) == 0;
-}
-
 void RuleService::onStart(GameContext &context) {
     subscription_ = context.events().subscribe(
         EventBus::anyEvent, [this, &context](const GameEvent &event) { dispatch(context, event); });
@@ -107,38 +98,17 @@ void RuleService::dispatch(GameContext &context, const GameEvent &event) {
             Entry &entry = owner.entries[i];
             const Rule &rule = entry.rule;
             if (!rule.enabled || entry.fired || rule.event.empty() ||
-                !eventMatches(rule.event, event.name))
+                !eventNameMatches(rule.event, event.name))
                 continue;
             if (rule.cooldown > 0.0 && clock_ - entry.lastFired < rule.cooldown)
                 continue;
-            // Who it must have come from.
-            RuleContext probe(context);
-            probe.self = owner.id;
-            probe.actor = event.other ? event.other : event.source;
-            probe.target = event.other ? event.source : EntityId{};
-            const auto sameEntity = [&](const std::string &spec, EntityId id) {
-                if (spec.empty())
-                    return true;
-                if (!id)
-                    return false;
-                for (const Entity *match : probe.resolve(spec))
-                    if (match->id() == id)
-                        return true;
-                return false;
-            };
-            if (!sameEntity(rule.source, event.source) || !sameEntity(rule.other, event.other))
+            EventTrigger trigger;
+            trigger.pattern = rule.event;
+            trigger.source = rule.source;
+            trigger.other = rule.other;
+            trigger.dataFilter = rule.dataFilter;
+            if (!trigger.matches(context, owner.id, event))
                 continue;
-            if (rule.dataFilter.isObject()) {
-                bool matches = true;
-                for (std::size_t k = 0; k < rule.dataFilter.size() && matches; ++k) {
-                    const Json &have = event.data.get(rule.dataFilter.keyAt(k));
-                    const auto wanted = valueFromJson(rule.dataFilter.valueAt(k));
-                    const auto got = valueFromJson(have);
-                    matches = wanted && got && valuesEqual(got.value(), wanted.value());
-                }
-                if (!matches)
-                    continue;
-            }
             fire(context, owner, entry, &event);
         }
     }

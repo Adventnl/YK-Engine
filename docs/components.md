@@ -733,6 +733,18 @@ Requires: `RigidBody`
 | `motorTorque` | float | 20 | The most torque the motor may apply (N m). (range 0 to 100000) |
 | `collideConnected` | bool | false | Let the two connected bodies collide with each other. |
 
+## Quests
+
+### QuestLog
+
+The quests of a character (or of the world: put one on a scenario entity): which are active, complete or failed, and how far each objective is. Conditions see this entity as the actor.
+
+Updates in the PreUpdate phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `begin` | string list | [] | Quests started when the scene starts. |
+
 ## Rendering
 
 ### SpriteRenderer

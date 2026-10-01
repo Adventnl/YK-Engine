@@ -562,6 +562,79 @@ void RuleCatalog::check(const std::vector<Action> &actions, RuleReport &report) 
     }
 }
 
+// ---- Event triggers -----------------------------------------------------------------------------
+bool eventNameMatches(std::string_view pattern, std::string_view name) {
+    if (pattern.empty())
+        return false;
+    if (pattern == "*" || pattern == name)
+        return true;
+    return pattern.size() >= 2 && pattern.ends_with(".*") && name.size() > pattern.size() - 1 &&
+           name.compare(0, pattern.size() - 1, pattern, 0, pattern.size() - 1) == 0;
+}
+
+Result<EventTrigger> EventTrigger::fromJson(const Json &json) {
+    EventTrigger trigger;
+    if (json.isString()) {
+        trigger.pattern = json.asString();
+    } else if (json.isObject()) {
+        trigger.pattern = json.get("event").asString();
+        trigger.source = json.get("source").asString();
+        trigger.other = json.get("other").asString();
+        if (json.contains("data")) {
+            if (!json.get("data").isObject())
+                return Error{"'data' must be an object of values the event data must match"};
+            trigger.dataFilter = json.get("data");
+        }
+    } else {
+        return Error{"an event trigger is an event name or {\"event\": ..., \"source\": ..., "
+                     "\"other\": ..., \"data\": {...}}"};
+    }
+    if (trigger.pattern.empty())
+        return Error{"an event trigger needs the event it waits for"};
+    return trigger;
+}
+
+Json EventTrigger::toJson() const {
+    Json json = Json::object();
+    json.set("event", pattern);
+    if (!source.empty())
+        json.set("source", source);
+    if (!other.empty())
+        json.set("other", other);
+    if (dataFilter.isObject())
+        json.set("data", dataFilter);
+    return json;
+}
+
+bool EventTrigger::matches(GameContext &game, EntityId self, const GameEvent &event) const {
+    if (!eventNameMatches(pattern, event.name))
+        return false;
+    RuleContext probe(game);
+    probe.self = self;
+    probe.actor = event.other ? event.other : event.source;
+    probe.target = event.other ? event.source : EntityId{};
+    const auto sameEntity = [&](const std::string &spec, EntityId id) {
+        if (spec.empty())
+            return true;
+        if (!id)
+            return false;
+        for (const Entity *match : probe.resolve(spec))
+            if (match->id() == id)
+                return true;
+        return false;
+    };
+    if (!sameEntity(source, event.source) || !sameEntity(other, event.other))
+        return false;
+    if (dataFilter.isObject())
+        for (std::size_t k = 0; k < dataFilter.size(); ++k) {
+            const auto wanted = valueFromJson(dataFilter.valueAt(k));
+            const auto got = valueFromJson(event.data.get(dataFilter.keyAt(k)));
+            if (!wanted || !got || !valuesEqual(got.value(), wanted.value()))
+                return false;
+        }
+    return true;
+}
+
 // ---- Rules --------------------------------------------------------------------------------------
 Result<Rule> Rule::fromJson(const Json &json) {
     if (!json.isObject())

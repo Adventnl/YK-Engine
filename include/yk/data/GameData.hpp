@@ -4,6 +4,7 @@
 #include "yk/items/Items.hpp"
 #include "yk/items/Loot.hpp"
 #include "yk/runtime/Services.hpp"
+#include "yk/sim/Quests.hpp"
 #include "yk/stats/Stats.hpp"
 #include <functional>
 #include <map>
@@ -23,6 +24,7 @@ class GameData {
     ItemCatalog items;
     LootCatalog loot;
     RecipeCatalog recipes;
+    QuestCatalog quests;
     // Named tables for what only the game knows (a prison's names, a shop's price list); scripts
     // and rules read them by name.
     std::map<std::string, Json> tables;

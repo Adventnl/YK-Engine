@@ -80,7 +80,6 @@ class RuleService final : public Service, public RuleScheduler {
     };
     void dispatch(GameContext &context, const GameEvent &event);
     void fire(GameContext &context, Owner &owner, Entry &entry, const GameEvent *event);
-    static bool eventMatches(const std::string &pattern, const std::string &name);
 
     std::map<Handle, Owner> owners_;
     Handle nextHandle_{1};

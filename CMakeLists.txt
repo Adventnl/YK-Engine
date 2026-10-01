@@ -147,7 +147,7 @@ endif()
 target_compile_definitions(yk_engine PUBLIC YK_HAS_RUNTIME=$<BOOL:${YK_RUNTIME}>)
 
 if(BUILD_TESTING)
-    foreach(suite core diagnostics physics json animation scene game_runtime audio input assets effects foundation world tilemap navigation rules stats items loot_crafting)
+    foreach(suite core diagnostics physics json animation scene game_runtime audio input assets effects foundation world tilemap navigation rules stats items loot_crafting quests)
         yk_add_test(${suite} tests/unit/${suite}_tests.cpp LIBS yk::engine TIMEOUT 30)
     endforeach()
     yk_add_test(gameplay tests/unit/gameplay_tests.cpp LIBS yk::gameplay TIMEOUT 120)
