@@ -234,6 +234,7 @@ ComponentRegistry makeRegistry() {
     registry.add<PhaseProbe<UpdatePhase::Decision>>("DecisionProbe");
     registry.add<PhaseProbe<UpdatePhase::Gameplay>>("GameplayProbe");
     registry.add<PhaseProbe<UpdatePhase::Steering>>("SteeringProbe");
+    registry.add<PhaseProbe<UpdatePhase::Motor>>("MotorProbe");
     registry.add<PhaseProbe<UpdatePhase::Perception>>("PerceptionProbe");
     registry.add<PhaseProbe<UpdatePhase::PostSimulation>>("PostProbe");
     registry.add<Mover>("Mover");
@@ -257,6 +258,7 @@ void phasesAndServices() {
     mover.add<Collider>();
     mover.add<PhaseProbe<UpdatePhase::PostSimulation>>();
     mover.add<PhaseProbe<UpdatePhase::Perception>>();
+    mover.add<PhaseProbe<UpdatePhase::Motor>>();
     mover.add<PhaseProbe<UpdatePhase::Steering>>();
     mover.add<PhaseProbe<UpdatePhase::Gameplay>>();
     mover.add<PhaseProbe<UpdatePhase::Decision>>();
@@ -278,8 +280,9 @@ void phasesAndServices() {
     for (const std::string &line : trace)
         if (line.find(':') != std::string::npos && line.rfind("service:", 0) != 0)
             probes.push_back(line);
-    CHECK(probes == (std::vector<std::string>{"Clock:0", "PreUpdate:0", "Decision:0", "Gameplay:0",
-                                              "Steering:0", "Perception:2", "PostSimulation:2"}));
+    CHECK(probes ==
+          (std::vector<std::string>{"Clock:0", "PreUpdate:0", "Decision:0", "Gameplay:0",
+                                    "Steering:0", "Motor:0", "Perception:2", "PostSimulation:2"}));
     // The services of a phase run before the components of that phase.
     const auto at = [&](const std::string &line) {
         return std::find(trace.begin(), trace.end(), line) - trace.begin();

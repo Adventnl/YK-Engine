@@ -69,7 +69,7 @@ yk_target(yk_engine)
 # Reusable gameplay components (plates, doors, controllers...). Depends only on the engine.
 add_library(yk_gameplay STATIC src/gameplay/Signals.cpp src/gameplay/Controller.cpp
     src/gameplay/Mechanisms.cpp src/gameplay/Interactions.cpp src/gameplay/Level.cpp src/gameplay/Events.cpp
-    src/gameplay/Registration.cpp src/gameplay/Exploration.cpp)
+    src/gameplay/Registration.cpp src/gameplay/Exploration.cpp src/gameplay/Character.cpp)
 file(GLOB YK_GAMEPLAY_MODULE_SOURCES CONFIGURE_DEPENDS src/gameplay/sim/*.cpp)
 target_sources(yk_gameplay PRIVATE ${YK_GAMEPLAY_MODULE_SOURCES})
 add_library(yk::gameplay ALIAS yk_gameplay)
@@ -147,10 +147,11 @@ endif()
 target_compile_definitions(yk_engine PUBLIC YK_HAS_RUNTIME=$<BOOL:${YK_RUNTIME}>)
 
 if(BUILD_TESTING)
-    foreach(suite core diagnostics physics json animation scene game_runtime audio input assets effects foundation world tilemap)
+    foreach(suite core diagnostics physics json animation scene game_runtime audio input assets effects foundation world tilemap navigation)
         yk_add_test(${suite} tests/unit/${suite}_tests.cpp LIBS yk::engine TIMEOUT 30)
     endforeach()
     yk_add_test(gameplay tests/unit/gameplay_tests.cpp LIBS yk::gameplay TIMEOUT 120)
+    yk_add_test(navigation_agent tests/unit/navigation_agent_tests.cpp LIBS yk::gameplay TIMEOUT 300)
     yk_add_test(mechanisms tests/unit/mechanisms_tests.cpp LIBS yk::gameplay TIMEOUT 120)
     yk_add_test(level_flow tests/unit/level_flow_tests.cpp LIBS yk::gameplay TIMEOUT 120)
     yk_add_test(export tests/unit/export_tests.cpp LIBS yk::gameplay TIMEOUT 60)

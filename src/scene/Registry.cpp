@@ -14,6 +14,8 @@ const char *updatePhaseName(UpdatePhase phase) {
         return "Gameplay";
     case UpdatePhase::Steering:
         return "Steering";
+    case UpdatePhase::Motor:
+        return "Motor";
     case UpdatePhase::Perception:
         return "Perception";
     case UpdatePhase::PostSimulation:

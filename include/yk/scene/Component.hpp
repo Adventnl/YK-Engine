@@ -19,13 +19,14 @@ enum class UpdatePhase : std::uint8_t {
     PreUpdate,      // scripts and rules that react to what happened last tick
     Decision,       // AI and schedule agents choose goals and targets
     Gameplay,       // the default: controllers, mechanisms, movement intent
-    Steering,       // navigation agents and avoidance turn goals into velocities
+    Steering,       // navigation agents and avoidance turn goals into movement intents
+    Motor,          // character motors turn intents into velocities, just before the step
     Perception,     // after physics: sight, hearing and awareness see where everything ended up
     PostSimulation, // stat regeneration, status expiry, security timers
 };
-inline constexpr std::size_t updatePhaseCount = 7;
+inline constexpr std::size_t updatePhaseCount = 8;
 inline constexpr bool runsBeforePhysics(UpdatePhase phase) {
-    return phase <= UpdatePhase::Steering;
+    return phase <= UpdatePhase::Motor;
 }
 const char *updatePhaseName(UpdatePhase phase);
 
