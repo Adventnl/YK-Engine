@@ -87,6 +87,10 @@ bool PropertyInfo::assign(Component &component, PropertyValue value) const {
         if (!std::holds_alternative<AssetRef>(value))
             return false;
         break;
+    case PropertyType::Json:
+        if (!std::holds_alternative<Json>(value))
+            return false;
+        break;
     }
     return set(component, value);
 }
@@ -137,6 +141,8 @@ Json propertyToJson(const PropertyInfo &property, const PropertyValue &value) {
     }
     case PropertyType::Asset:
         return Json(std::get<AssetRef>(value).path);
+    case PropertyType::Json:
+        return std::get<Json>(value);
     }
     return Json();
 }
@@ -221,6 +227,8 @@ Result<PropertyValue> propertyFromJson(const PropertyInfo &property, const Json 
         if (!json.isString())
             return mismatch("an asset path string");
         return PropertyValue{AssetRef{json.asString()}};
+    case PropertyType::Json:
+        return PropertyValue{json};
     }
     return mismatch("a supported value");
 }

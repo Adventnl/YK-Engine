@@ -289,6 +289,8 @@ std::string formatValue(const Scene &scene, const PropertyInfo &property,
     }
     case PropertyType::Asset:
         return std::get<AssetRef>(value).path;
+    case PropertyType::Json:
+        return std::get<Json>(value).dump();
     }
     return {};
 }

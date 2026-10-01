@@ -3,6 +3,7 @@
 #include "yk/runtime/GameRuntime.hpp"
 #include "yk/runtime/Services.hpp"
 #include "yk/scene/SceneSerializer.hpp"
+#include "yk/world/Tilemap.hpp"
 #include <array>
 #include <map>
 #include <set>
@@ -104,6 +105,20 @@ struct GameRuntime::Impl {
     // The immovable body a HingeJoint with no connected entity is pinned to (owned by the runtime,
     // destroyed with the hinge's entity).
     std::unordered_map<EntityId, physics::BodyHandle> hingeAnchors;
+
+    // ---- Tile maps (TilemapBinding.cpp): solid tiles become static bodies, one per chunk ----
+    struct TilemapBinding {
+        std::shared_ptr<const Tileset> tileset;
+        std::uint64_t sequence{}; // Edits of the map already applied.
+        std::map<std::pair<int, ChunkKey>, physics::BodyHandle> bodies; // (layer, chunk).
+    };
+    std::unordered_map<EntityId, TilemapBinding> tilemaps;
+    std::map<std::string, std::shared_ptr<const Tileset>> tilesets;
+    void bindTilemap(Entity &entity, Tilemap &map);
+    void rebuildTileChunk(Entity &entity, const Tilemap &map, TilemapBinding &binding,
+                          int layerIndex, ChunkKey key);
+    void unbindTilemap(EntityId id);
+    void syncTilemaps();
 
     Status buildWorld();
     void bindEntities(const std::vector<EntityId> &ids);

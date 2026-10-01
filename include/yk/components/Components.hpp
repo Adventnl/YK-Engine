@@ -266,6 +266,9 @@ class Camera final : public Component {
     // The same, `alpha` (0..1) of the way from the previous tick's view to the current one, for
     // drawing at a display rate above the simulation's.
     CameraView viewAt(float alpha) const;
+    // The world level the camera is looking at: that of its first target that is in the scene, else
+    // the first level. The game view uses it to show the right floor.
+    int focusLevel() const;
     // Follows once per fixed tick, after the tick's physics and after everything it follows has
     // moved (the PostSimulation phase), not once per drawn frame.
     void onFixedUpdate(GameContext &context, float seconds) override;

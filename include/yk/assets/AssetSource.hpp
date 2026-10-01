@@ -44,6 +44,7 @@ enum class AssetKind {
     Controller,
     Dialogue,
     TextureMeta,
+    Tileset,
     Other
 };
 struct AssetEntry {

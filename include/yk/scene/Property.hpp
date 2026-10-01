@@ -31,12 +31,16 @@ enum class PropertyType {
     EntityReference,
     EntityReferenceList,
     StringList,
-    Asset
+    Asset,
+    // Free-form structured data (a tile map's chunks, a list of rules). Stored and saved as the
+    // JSON it is; the Inspector shows a summary and a tool of the component's own edits it.
+    Json
 };
 
 // Enum values travel as their integer index into PropertyInfo::options.
-using PropertyValue = std::variant<bool, std::int64_t, double, std::string, Vec2, Color, EntityId,
-                                   std::vector<EntityId>, std::vector<std::string>, AssetRef>;
+using PropertyValue =
+    std::variant<bool, std::int64_t, double, std::string, Vec2, Color, EntityId,
+                 std::vector<EntityId>, std::vector<std::string>, AssetRef, yk::Json>;
 
 // Reflection record for one editable, serializable component field.
 struct PropertyInfo {
@@ -56,6 +60,10 @@ struct PropertyInfo {
     bool isPin{};                     // Vec2 point in the entity's space, drawn as a draggable pin.
     bool isInputSet{};                // String naming a set of the project's input map.
     bool isInputAction{};             // String naming an action of the project's input map.
+    // A string (or list of strings) that names something defined elsewhere: "item", "quest",
+    // "level", "faction", "stat", ... The editor offers a picker of what exists and validation
+    // reports a name that does not exist. Empty: plain text.
+    std::string refKind;
     bool multiline{};
     PropertyValue defaultValue;
     std::function<PropertyValue(const Component &)> get;

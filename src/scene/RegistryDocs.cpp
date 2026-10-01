@@ -29,6 +29,8 @@ const char *typeName(PropertyType type) {
         return "string list";
     case PropertyType::Asset:
         return "asset";
+    case PropertyType::Json:
+        return "json";
     }
     return "?";
 }
@@ -50,6 +52,10 @@ std::string valueText(const PropertyInfo &property) {
     case PropertyType::StringList: {
         const std::string text = propertyToJson(property, value).dump();
         return text == "null" ? "none" : text;
+    }
+    case PropertyType::Json: {
+        const std::string text = propertyToJson(property, value).dump();
+        return text.size() > 40 ? "(structured data)" : text;
     }
     }
     return {};
@@ -86,6 +92,9 @@ std::string describeRegistryMarkdown(const ComponentRegistry &registry) {
                 out << "Several instances may be added to one entity.\n\n";
             if (type->screenSpace)
                 out << "Screen space: placed in pixels on the screen, not in the world.\n\n";
+            if (type->phase != UpdatePhase::Gameplay)
+                out << "Updates in the " << updatePhaseName(type->phase)
+                    << " phase of the tick.\n\n";
             out << "| Property | Type | Default | Notes |\n|---|---|---|---|\n";
             for (const PropertyInfo &property : type->properties) {
                 std::string notes = property.tooltip;

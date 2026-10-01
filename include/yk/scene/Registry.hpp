@@ -79,6 +79,8 @@ template <class M> constexpr PropertyType propertyTypeOf() {
         return PropertyType::StringList;
     else if constexpr (std::is_same_v<M, AssetRef>)
         return PropertyType::Asset;
+    else if constexpr (std::is_same_v<M, Json>)
+        return PropertyType::Json;
     else
         static_assert(sizeof(M) == 0, "unsupported component field type");
 }
@@ -200,6 +202,12 @@ class FieldBuilder {
         info_->isInputAction = true;
         return *this;
     }
+    // The string (or each string of the list) names a definition of this kind ("item", "quest",
+    // "level", "faction", ...): picker in the editor, existence checked by validation.
+    FieldBuilder &ref(std::string kind) {
+        info_->refKind = std::move(kind);
+        return *this;
+    }
     FieldBuilder &multiline() {
         info_->multiline = true;
         return *this;
@@ -257,6 +265,31 @@ template <class T> class TypeBuilder {
     TypeBuilder &screenSpace() {
         type_->screenSpace = true;
         return *this;
+    }
+    // Declares a field that is not a plain member: its value is produced by `read` and taken by
+    // `write` (which returns false for a value it cannot accept). For data a component keeps in a
+    // richer form than one of the reflected types and exposes as JSON (a tile map, a rule list).
+    template <class M>
+    FieldBuilder computed(std::string name, std::function<M(const T &)> read,
+                          std::function<bool(T &, const M &)> write) {
+        if (type_->find(name))
+            throw std::logic_error("component '" + type_->name + "' declares field '" + name +
+                                   "' twice");
+        PropertyInfo info;
+        info.name = std::move(name);
+        info.type = detail::propertyTypeOf<M>();
+        info.get = [read](const Component &component) {
+            return detail::toPropertyValue(read(static_cast<const T &>(component)));
+        };
+        info.set = [write](Component &component, const PropertyValue &value) {
+            M converted{};
+            return detail::fromPropertyValue(converted, value) &&
+                   write(static_cast<T &>(component), converted);
+        };
+        const T reference{};
+        info.defaultValue = detail::toPropertyValue(read(reference));
+        type_->properties.push_back(std::move(info));
+        return FieldBuilder(type_->properties.back());
     }
     // Declares an editable field. Members of base classes are accepted.
     template <class C, class M> FieldBuilder field(std::string name, M C::*member) {

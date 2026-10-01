@@ -538,6 +538,8 @@ Draws a texture or a colored placeholder shape.
 
 Defines what the game shows. The first primary camera is used.
 
+Updates in the PostSimulation phase of the tick.
+
 | Property | Type | Default | Notes |
 |---|---|---|---|
 | `primary` | bool | true |  |
@@ -632,6 +634,28 @@ Screen-space conversation with optional portrait and JSON pages.
 | `advanceSet` | string | "Player1" |  |
 | `advanceAction` | string | "Interact" |  |
 | `charactersPerSecond` | float | 45 | (range 0 to 300) |
+
+## World
+
+### WorldLayer
+
+Puts this entity (and everything below it) on a world level: a floor, a roof, the vents, underground. Entities on different levels never collide, see each other or share navigation. Without it an entity is on its parent's level, or the first level.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `level` | string | "" | A level id from the scene's World Levels. Empty: the parent's level or the first. |
+
+### Tilemap
+
+A grid of tiles from a tileset on any number of layers and world levels: floors, walls, terrain, roofs, vents, tunnels. The tileset says which tiles are solid, opaque, slow or breakable. Paint it with the tile tool; entities and prefabs sit alongside it.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `tileset` | asset | "" |  |
+| `cellSize` | vec2 | [1,1] | World units per tile. The entity's position is the top-left corner of cell (0, 0). (range 0.05 to 100) |
+| `collisionLayer` | string | "Solid" | Project collision layer of the solid tiles. |
+| `drawLayer` | int | -10 | Draw layer of the map's layers whose own sort layer is 0. (range -1000 to 1000) |
+| `layers` | json | [] | The tile layers: edited with the tile tool. |
 
 ## Entity templates
 

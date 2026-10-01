@@ -51,8 +51,14 @@ add_library(yk_engine STATIC src/core/Log.cpp src/core/Time.cpp src/core/Color.c
     src/assets/Export.cpp src/assets/Icon.cpp src/components/Components.cpp src/components/Dialogue.cpp
     src/components/Effects.cpp
     src/runtime/Blackboard.cpp src/runtime/EventBus.cpp src/runtime/GameRuntime.cpp src/runtime/GameSession.cpp
-    src/runtime/PhysicsBinding.cpp src/runtime/Services.cpp src/core/Value.cpp src/assets/Validation.cpp
+    src/runtime/PhysicsBinding.cpp src/runtime/TilemapBinding.cpp src/runtime/Services.cpp src/core/Value.cpp src/assets/Validation.cpp
     src/physics/World.cpp src/physics/Queries.cpp src/physics/Joints.cpp)
+# The simulation program's modules (docs/ESCAPISTS2_BUILD_PLAN.md) are folders of their own: every
+# .cpp in them belongs to the engine, so adding a file needs no edit here.
+file(GLOB YK_ENGINE_MODULE_SOURCES CONFIGURE_DEPENDS
+    src/world/*.cpp src/navigation/*.cpp src/rules/*.cpp src/stats/*.cpp src/items/*.cpp
+    src/sim/*.cpp src/ai/*.cpp src/save/*.cpp src/data/*.cpp)
+target_sources(yk_engine PRIVATE ${YK_ENGINE_MODULE_SOURCES})
 add_library(yk::engine ALIAS yk_engine)
 target_include_directories(yk_engine PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
     PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/third_party")
@@ -64,6 +70,8 @@ yk_target(yk_engine)
 add_library(yk_gameplay STATIC src/gameplay/Signals.cpp src/gameplay/Controller.cpp
     src/gameplay/Mechanisms.cpp src/gameplay/Interactions.cpp src/gameplay/Level.cpp src/gameplay/Events.cpp
     src/gameplay/Registration.cpp src/gameplay/Exploration.cpp)
+file(GLOB YK_GAMEPLAY_MODULE_SOURCES CONFIGURE_DEPENDS src/gameplay/sim/*.cpp)
+target_sources(yk_gameplay PRIVATE ${YK_GAMEPLAY_MODULE_SOURCES})
 add_library(yk::gameplay ALIAS yk_gameplay)
 target_link_libraries(yk_gameplay PUBLIC yk_engine)
 yk_target(yk_gameplay)
@@ -139,7 +147,7 @@ endif()
 target_compile_definitions(yk_engine PUBLIC YK_HAS_RUNTIME=$<BOOL:${YK_RUNTIME}>)
 
 if(BUILD_TESTING)
-    foreach(suite core diagnostics physics json animation scene game_runtime audio input assets effects foundation)
+    foreach(suite core diagnostics physics json animation scene game_runtime audio input assets effects foundation world tilemap)
         yk_add_test(${suite} tests/unit/${suite}_tests.cpp LIBS yk::engine TIMEOUT 30)
     endforeach()
     yk_add_test(gameplay tests/unit/gameplay_tests.cpp LIBS yk::gameplay TIMEOUT 120)
@@ -194,6 +202,8 @@ if(BUILD_TESTING)
         yk_add_test(sdl_audio tests/integration/sdl_audio_tests.cpp LIBS yk::engine SDL3::SDL3
             ENVIRONMENT "SDL_AUDIODRIVER=dummy" TIMEOUT 30)
         yk_add_test(scene_render tests/integration/scene_render_tests.cpp LIBS yk::engine SDL3::SDL3
+            ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software" TIMEOUT 30)
+        yk_add_test(tilemap_render tests/integration/tilemap_render_tests.cpp LIBS yk::engine SDL3::SDL3
             ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software" TIMEOUT 30)
         # Sanitizer builds run this ten times slower: the budgets it checks and its timeout grow.
         set(yk_stress_slowdown 1)

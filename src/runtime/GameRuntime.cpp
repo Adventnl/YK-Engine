@@ -226,6 +226,7 @@ void GameRuntime::Impl::fixedTick() {
     for (std::size_t index = 0; index < updatePhaseCount; ++index)
         if (runsBeforePhysics(static_cast<UpdatePhase>(index)))
             runPhase(static_cast<UpdatePhase>(index), step);
+    syncTilemaps(); // Tiles changed this tick (a wall broken) are solid or open before the step.
     if (auto advanced = world->advance(options.fixedSeconds); !advanced)
         log(LogLevel::Error, "physics", advanced.error());
     syncTransforms();
@@ -422,6 +423,21 @@ GameRuntime::animationController(const std::string &path) {
     impl_->animationControllers.emplace(path, loaded);
     return loaded;
 }
+std::shared_ptr<const Tileset> GameRuntime::tileset(const std::string &path) {
+    const auto cached = impl_->tilesets.find(path);
+    if (cached != impl_->tilesets.end())
+        return cached->second;
+    std::shared_ptr<const Tileset> loaded;
+    auto document = readJsonAsset(impl_->options.assets, path);
+    auto set =
+        document ? Tileset::fromJson(document.value()) : Result<Tileset>(Error{document.error()});
+    if (set)
+        loaded = std::make_shared<const Tileset>(std::move(set.value()));
+    else
+        log(LogLevel::Warning, "world", "Cannot load tileset " + path + ": " + set.error());
+    impl_->tilesets.emplace(path, loaded);
+    return loaded;
+}
 Blackboard &GameRuntime::blackboard() {
     return impl_->blackboard;
 }
@@ -521,6 +537,17 @@ Result<EntityId> GameRuntime::spawnPrefab(const std::string &path, Vec2 worldPos
     if (!spawned && impl_->failedPrefabs.insert(path).second)
         log(LogLevel::Warning, "runtime", "Cannot spawn prefab " + path + ": " + spawned.error());
     return spawned;
+}
+void GameRuntime::notifyLevelChanged(Entity &entity, int from, int to) {
+    for (const EntityId id : impl_->scene->subtree(entity.id())) {
+        const auto record = impl_->bodies.find(id);
+        if (record != impl_->bodies.end())
+            impl_->world->setLevel(record->second.body, levelOf(*impl_->scene->find(id)));
+    }
+    Json data = Json::object();
+    data.set("from", from);
+    data.set("to", to);
+    events().emit(GameEvent("level_changed", entity.id(), {}, std::move(data)));
 }
 void GameRuntime::requestRestart() {
     impl_->beginTransition(true, {});

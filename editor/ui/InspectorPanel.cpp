@@ -537,6 +537,19 @@ void drawProperty(const PropertyView &view, const Component &component) {
     case PropertyType::Asset:
         assetField(view, std::get<AssetRef>(value));
         break;
+    case PropertyType::Json: {
+        // Structured data is edited by the component's own tool; the Inspector says how much there
+        // is.
+        const Json &data = std::get<Json>(value);
+        const std::size_t bytes = data.isNull() ? 0 : data.dump().size();
+        ImGui::TextColored(imColor(vs::textDim), "%s",
+                           bytes == 0 ? "empty"
+                                      : (std::to_string(bytes) + " bytes of data").c_str());
+        markItem(id);
+        tooltip("Structured data. It is saved with the scene and edited with this component's own "
+                "tool.");
+        break;
+    }
     }
 }
 

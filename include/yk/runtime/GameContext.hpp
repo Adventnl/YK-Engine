@@ -9,6 +9,7 @@
 #include "yk/runtime/EventBus.hpp"
 #include "yk/runtime/Services.hpp"
 #include "yk/scene/Scene.hpp"
+#include "yk/world/Tileset.hpp"
 #include <memory>
 #include <optional>
 
@@ -37,6 +38,9 @@ class GameContext {
     virtual std::shared_ptr<const AnimationSet> animationSet(const std::string &path) = 0;
     virtual std::shared_ptr<const AnimationController>
     animationController(const std::string &path) = 0;
+    // A tileset asset, loaded once and shared; null (after logging the reason) when it is missing
+    // or invalid.
+    virtual std::shared_ptr<const Tileset> tileset(const std::string &path) = 0;
     virtual Blackboard &blackboard() = 0;
     virtual EventBus &events() = 0;
     // The running game's services (clock, navigation, spatial index, ...): see Services.hpp.
@@ -75,6 +79,11 @@ class GameContext {
     // Locks nest by name: the game is locked while any lock is held.
     virtual void lockInput(const std::string &reason, bool locked) = 0;
     virtual bool inputLocked() const = 0;
+
+    // An entity (and what it carries) was put on another world level: the runtime moves its
+    // physics bodies, snaps its drawn position and raises "level_changed" (data: from, to).
+    // WorldLayer::moveTo is the way to change a level; components do not call this directly.
+    virtual void notifyLevelChanged(Entity &entity, int from, int to) = 0;
 
     void emit(std::string name, EntityId source = {}, EntityId other = {}) {
         events().emit({std::move(name), source, other});

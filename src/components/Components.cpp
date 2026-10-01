@@ -2,6 +2,8 @@
 #include "yk/components/Effects.hpp"
 #include "yk/core/Log.hpp"
 #include "yk/runtime/GameContext.hpp"
+#include "yk/world/Tilemap.hpp"
+#include "yk/world/WorldLevels.hpp"
 #include <algorithm>
 #include <cmath>
 
@@ -282,6 +284,12 @@ CameraView Camera::view() const {
         return {position_, height_};
     return {entity().worldPosition(), orthographicHeight};
 }
+int Camera::focusLevel() const {
+    for (const EntityRef reference : targets)
+        if (const Entity *target = entity().scene().find(reference))
+            return std::max(levelOf(*target), 0);
+    return std::max(levelOf(entity()), 0);
+}
 CameraView Camera::viewAt(float alpha) const {
     if (!initialized_)
         return view();
@@ -446,6 +454,8 @@ void registerEngineComponents(ComponentRegistry &registry) {
     registry.add<Camera>("Camera");
     registry.add<AudioSource>("AudioSource");
     registry.add<AnimatedSprite>("AnimatedSprite");
+    registry.add<WorldLayer>("WorldLayer");
+    registry.add<Tilemap>("Tilemap");
     registerEffectComponents(registry);
     const auto place = [](Scene &scene, Vec2 at, const char *name) -> Entity & {
         Entity &entity = scene.createEntity(name);

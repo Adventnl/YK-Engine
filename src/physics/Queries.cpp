@@ -34,12 +34,32 @@ Result<std::optional<RayHit>> World::rayCast(Vec2 origin, Vec2 translation,
         return Error{"Invalid ray origin, translation, or endpoint"};
     if (translation.x == 0 && translation.y == 0)
         return std::optional<RayHit>{};
-    const auto hit =
-        b2World_CastRayClosest(impl_->world, native(origin), native(translation), native(filter));
-    if (!hit.hit)
-        return std::optional<RayHit>{};
-    return std::optional<RayHit>{RayHit{impl_->shapeHandle(hit.shapeId), vector(hit.point),
-                                        vector(hit.normal), hit.fraction}};
+    if (filter.level == allLevels) {
+        const auto hit = b2World_CastRayClosest(impl_->world, native(origin), native(translation),
+                                                native(filter));
+        if (!hit.hit)
+            return std::optional<RayHit>{};
+        return std::optional<RayHit>{RayHit{impl_->shapeHandle(hit.shapeId), vector(hit.point),
+                                            vector(hit.normal), hit.fraction}};
+    }
+    // A ray on one level ignores the shapes of the others: take the closest of the rest.
+    struct Context {
+        const Impl *impl;
+        int level;
+        std::optional<RayHit> best;
+    } context{impl_.get(), filter.level, std::nullopt};
+    b2World_CastRay(
+        impl_->world, native(origin), native(translation), native(filter),
+        [](b2ShapeId id, b2Vec2 point, b2Vec2 normal, float fraction, void *raw) {
+            auto &query = *static_cast<Context *>(raw);
+            if (!Impl::levelsMeet(query.impl->levelOf(id), query.level))
+                return -1.0F; // Not on this level: the ray goes on through it.
+            query.best =
+                RayHit{query.impl->shapeHandle(id), vector(point), vector(normal), fraction};
+            return fraction; // Clip the ray here: only something closer matters now.
+        },
+        &context);
+    return std::move(context.best);
 }
 Result<std::vector<ShapeHandle>> World::queryAabb(Rect bounds, QueryFilter filter) const {
     impl_->assertThread();
@@ -49,13 +69,19 @@ Result<std::vector<ShapeHandle>> World::queryAabb(Rect bounds, QueryFilter filte
     struct Context {
         const Impl *impl;
         b2AABB bounds;
+        int level;
         std::vector<ShapeHandle> results;
-    } context{impl_.get(), {native(bounds.position), native(bounds.position + bounds.size)}, {}};
+    } context{impl_.get(),
+              {native(bounds.position), native(bounds.position + bounds.size)},
+              filter.level,
+              {}};
     context.results.reserve(impl_->shapes.size());
     b2World_OverlapAABB(
         impl_->world, context.bounds, native(filter),
         [](b2ShapeId id, void *rawContext) {
             auto &query = *static_cast<Context *>(rawContext);
+            if (!Impl::levelsMeet(query.impl->levelOf(id), query.level))
+                return true;
             // The broad phase uses enlarged proxies. Exclude their padding from public results.
             const auto actual = geometryBounds(id);
             if (actual.lowerBound.x <= query.bounds.upperBound.x &&

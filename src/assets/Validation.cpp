@@ -5,6 +5,7 @@
 #include "yk/components/Components.hpp"
 #include "yk/core/FileIO.hpp"
 #include "yk/core/Log.hpp"
+#include "yk/data/Definitions.hpp"
 #include "yk/scene/SceneSerializer.hpp"
 #include <algorithm>
 #include <filesystem>
@@ -251,6 +252,9 @@ std::vector<ProjectIssue> validateProject(const Project &project,
                                   "import settings for '" + texture + "', which does not exist"});
         }
     }
+    for (const AssetEntry &entry : assets)
+        if (isDefinitionKind(entry.kind))
+            validateDefinitionFile(project, entry, issues);
     for (const AssetEntry &entry : assets) {
         if (entry.kind != AssetKind::Scene && entry.kind != AssetKind::Prefab)
             continue;

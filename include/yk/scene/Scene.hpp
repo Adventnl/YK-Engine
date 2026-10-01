@@ -2,6 +2,7 @@
 #include "yk/core/Color.hpp"
 #include "yk/core/Result.hpp"
 #include "yk/scene/Entity.hpp"
+#include "yk/world/WorldLevels.hpp"
 #include <cstdint>
 #include <functional>
 #include <optional>
@@ -14,6 +15,8 @@ struct SceneSettings {
     std::string name{"Untitled"};
     Vec2 gravity{0.0F, 9.81F}; // +Y down, meters per second squared.
     Color background{28, 32, 44, 255};
+    // The floors of this world (ground, upstairs, roof, vents, underground). Empty: one level.
+    WorldLevelSet levels;
 };
 
 // Owns a hierarchy of entities. A scene is plain data: it can be edited, saved and cloned without a

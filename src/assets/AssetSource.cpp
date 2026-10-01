@@ -38,6 +38,8 @@ AssetKind classifyAsset(const std::string &path) {
         return AssetKind::Dialogue;
     if (extension == ".ykmeta")
         return AssetKind::TextureMeta;
+    if (extension == ".yktileset")
+        return AssetKind::Tileset;
     return AssetKind::Other;
 }
 const char *assetKindName(AssetKind kind) {
@@ -58,6 +60,8 @@ const char *assetKindName(AssetKind kind) {
         return "dialogue";
     case AssetKind::TextureMeta:
         return "texture meta";
+    case AssetKind::Tileset:
+        return "tileset";
     case AssetKind::Other:
         return "other";
     }

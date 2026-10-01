@@ -231,6 +231,7 @@ ResolvedTexture SceneRenderer::textureSettings(const std::string &path) {
 }
 
 void SceneRenderer::reload(Renderer &renderer, const std::string &path) {
+    tilesets_.erase(path);
     const auto found = textures_.find(path);
     if (found == textures_.end())
         return;
@@ -242,7 +243,7 @@ void SceneRenderer::reload(Renderer &renderer, const std::string &path) {
 
 Status SceneRenderer::drawSprite(Renderer &renderer, const Entity &entity, const Transform2D &world,
                                  const SpriteRenderer &sprite, const WorldView &view,
-                                 const Rect &visible, bool culling) {
+                                 const Rect &visible, bool culling, float strength) {
     (void)entity;
     ++stats_.sprites;
     const Vec2 scale{std::fabs(world.scale.x), std::fabs(world.scale.y)};
@@ -272,6 +273,9 @@ Status SceneRenderer::drawSprite(Renderer &renderer, const Entity &entity, const
                   visible,
                   0};
     sink.proto.tint = sprite.color;
+    if (strength < 1.0F) // A faded world level.
+        sink.proto.tint.a = static_cast<std::uint8_t>(static_cast<float>(sprite.color.a) *
+                                                      std::clamp(strength, 0.0F, 1.0F));
     sink.proto.layer = sprite.layer;
     sink.proto.depth =
         sprite.ySort ? world.position.y + sprite.sortOffset + sprite.order : sprite.order;
@@ -482,6 +486,173 @@ Status SceneRenderer::drawLight(Renderer &renderer, const Transform2D &world, co
     return renderer.submit(quad);
 }
 
+std::shared_ptr<const Tileset> SceneRenderer::tilesetFor(const std::string &path) {
+    const auto cached = tilesets_.find(path);
+    if (cached != tilesets_.end())
+        return cached->second;
+    std::shared_ptr<const Tileset> loaded;
+    std::string failure = "no asset source";
+    if (assets_) {
+        auto text = assets_->readText(path);
+        auto document = text ? Json::parse(text.value()) : Result<Json>(Error{text.error()});
+        auto set = document ? Tileset::fromJson(document.value())
+                            : Result<Tileset>(Error{document.error()});
+        if (set)
+            loaded = std::make_shared<const Tileset>(std::move(set.value()));
+        else
+            failure = set.error();
+    }
+    if (!loaded)
+        log(LogLevel::Warning, "render", "Tileset '" + path + "' unavailable (" + failure + ")");
+    tilesets_.emplace(path, loaded);
+    return loaded;
+}
+
+namespace {
+// The eight ways a tile can be turned or mirrored, as the rotation (degrees, clockwise on screen)
+// and horizontal flip the renderer draws with (it flips, then rotates). Tiled's rule: transpose
+// first, then flip horizontally, then vertically.
+struct Orientation {
+    float degrees{};
+    bool flip{};
+};
+Orientation orientationOf(std::int32_t flags) {
+    struct Matrix {
+        int a, b, c, d; // [[a, b], [c, d]]
+    };
+    const auto multiply = [](Matrix l, Matrix r) {
+        return Matrix{l.a * r.a + l.b * r.c, l.a * r.b + l.b * r.d, l.c * r.a + l.d * r.c,
+                      l.c * r.b + l.d * r.d};
+    };
+    Matrix m{1, 0, 0, 1};
+    if ((flags & tile::transpose) != 0)
+        m = multiply(Matrix{0, 1, 1, 0}, m);
+    if ((flags & tile::flipX) != 0)
+        m = multiply(Matrix{-1, 0, 0, 1}, m);
+    if ((flags & tile::flipY) != 0)
+        m = multiply(Matrix{1, 0, 0, -1}, m);
+    const Matrix rotations[4] = {{1, 0, 0, 1}, {0, -1, 1, 0}, {-1, 0, 0, -1}, {0, 1, -1, 0}};
+    for (int flip = 0; flip < 2; ++flip)
+        for (int turn = 0; turn < 4; ++turn) {
+            const Matrix candidate =
+                multiply(rotations[turn], flip != 0 ? Matrix{-1, 0, 0, 1} : Matrix{1, 0, 0, 1});
+            if (candidate.a == m.a && candidate.b == m.b && candidate.c == m.c &&
+                candidate.d == m.d)
+                return {static_cast<float>(turn) * 90.0F, flip != 0};
+        }
+    return {};
+}
+// A stable color for a tile with no art, so a map can be laid out and played with a bare tileset.
+Color placeholderColor(int index, bool solid) {
+    const auto channel = [&](int mix) {
+        return static_cast<std::uint8_t>(90 + ((index * mix) % 120));
+    };
+    return solid ? Color{channel(37), channel(23), channel(11), 255}
+                 : Color{static_cast<std::uint8_t>(channel(11) / 2),
+                         static_cast<std::uint8_t>(channel(23) / 2 + 40),
+                         static_cast<std::uint8_t>(channel(37) / 2 + 30), 255};
+}
+} // namespace
+
+Status SceneRenderer::drawTilemap(Renderer &renderer, const Entity &entity, const Tilemap &map,
+                                  const WorldView &view, const Rect &visible, bool culling) {
+    (void)entity;
+    if (map.layers.empty())
+        return success();
+    const std::shared_ptr<const Tileset> set =
+        map.tileset.path.empty() ? nullptr : tilesetFor(map.tileset.path);
+    TextureHandle sheet;
+    bool haveSheet = false;
+    if (set && !set->texture.empty()) {
+        const TextureInfo &info = textureFor(renderer, set->texture);
+        if (info.handle) {
+            sheet = *info.handle;
+            haveSheet = true;
+        }
+    }
+    auto white = renderer.builtinTexture(BuiltinTexture::White);
+    if (!white)
+        return Error{white.error()};
+    const Vec2 cell = map.cellSizeInWorld();
+    if (!(cell.x > 0.0F) || !(cell.y > 0.0F))
+        return success();
+    const Vec2 origin = map.entity().worldPosition();
+    const WorldLevelSet &levels = map.entity().scene().settings.levels;
+    // The visible rectangle in cells (inclusive), widened by one so a partly visible tile draws.
+    int firstX = -1000000, firstY = -1000000, lastX = 1000000, lastY = 1000000;
+    if (culling) {
+        firstX = static_cast<int>(std::floor((visible.position.x - origin.x) / cell.x)) - 1;
+        firstY = static_cast<int>(std::floor((visible.position.y - origin.y) / cell.y)) - 1;
+        lastX = static_cast<int>(
+                    std::floor((visible.position.x + visible.size.x - origin.x) / cell.x)) +
+                1;
+        lastY = static_cast<int>(
+                    std::floor((visible.position.y + visible.size.y - origin.y) / cell.y)) +
+                1;
+    }
+    for (const TileLayer &layer : map.layers) {
+        if (!layer.visible || layer.opacity <= 0.0F)
+            continue;
+        float levelStrength = 1.0F;
+        if (view.levelAlpha && !levels.empty()) {
+            const int level = levels.indexOf(layer.level);
+            if (level >= 0 && static_cast<std::size_t>(level) < view.levelAlpha->size())
+                levelStrength = (*view.levelAlpha)[static_cast<std::size_t>(level)];
+        }
+        const float strength = layer.opacity * levelStrength;
+        if (strength <= 0.0F)
+            continue;
+        const auto alpha = static_cast<std::uint8_t>(std::clamp(strength, 0.0F, 1.0F) * 255.0F);
+        for (const auto &[key, chunk] : layer.chunks()) {
+            const int cx0 = chunkOrigin(key.x), cy0 = chunkOrigin(key.y);
+            if (cx0 + tileChunkSize - 1 < firstX || cx0 > lastX ||
+                cy0 + tileChunkSize - 1 < firstY || cy0 > lastY) {
+                ++stats_.tileChunksCulled;
+                continue;
+            }
+            for (int ly = 0; ly < tileChunkSize; ++ly) {
+                const int y = cy0 + ly;
+                if (y < firstY || y > lastY)
+                    continue;
+                for (int lx = 0; lx < tileChunkSize; ++lx) {
+                    const int x = cx0 + lx;
+                    const std::int32_t value = chunk.get(lx, ly);
+                    if (x < firstX || x > lastX || tile::empty(value))
+                        continue;
+                    const int index = tile::index(value);
+                    const int frame = set ? set->frameAt(index, view.time) : index;
+                    Sprite quad;
+                    quad.transform.position = {origin.x + (static_cast<float>(x) + 0.5F) * cell.x,
+                                               origin.y + (static_cast<float>(y) + 0.5F) * cell.y};
+                    quad.size = cell;
+                    quad.layer = map.drawLayer + layer.sortLayer;
+                    quad.depth = layer.ySort
+                                     ? origin.y + static_cast<float>(y + 1) * cell.y + layer.order
+                                     : layer.order;
+                    const Orientation orientation = orientationOf(tile::flags(value));
+                    quad.transform.rotationDegrees = orientation.degrees;
+                    quad.flipHorizontal = orientation.flip;
+                    if (haveSheet) {
+                        quad.texture = sheet;
+                        quad.source = set->sourceRect(frame);
+                        quad.tint = {255, 255, 255, alpha};
+                    } else {
+                        quad.texture = white.value();
+                        Color color = placeholderColor(frame, set && set->properties(index).solid);
+                        color.a = alpha;
+                        quad.tint = color;
+                    }
+                    if (auto submitted = renderer.submit(quad); !submitted)
+                        return submitted;
+                    ++stats_.tiles;
+                    ++stats_.quads;
+                }
+            }
+        }
+    }
+    return success();
+}
+
 Status SceneRenderer::drawWorld(Renderer &renderer, const Scene &scene, const WorldView &view) {
     stats_ = {};
     const bool culling = view.viewport.x > 0.0F && view.viewport.y > 0.0F;
@@ -489,11 +660,20 @@ Status SceneRenderer::drawWorld(Renderer &renderer, const Scene &scene, const Wo
     static const std::type_index spriteType(typeid(SpriteRenderer));
     static const std::type_index emitterType(typeid(ParticleEmitter));
     static const std::type_index lightType(typeid(Light2D));
+    static const std::type_index tilemapType(typeid(Tilemap));
     for (const EntityId id : scene.orderedIds()) {
         const Entity *entity = scene.find(id);
         if (!entity || !entity->activeInHierarchy() ||
             (view.editorView && entity->hiddenInHierarchy()))
             continue;
+        // A world level the game view is not showing hides what is on it (a floor above the one
+        // the player is on); a faded one tints it.
+        float levelStrength = 1.0F;
+        if (view.levelAlpha && !scene.settings.levels.empty()) {
+            const int level = levelOf(*entity);
+            if (level >= 0 && static_cast<std::size_t>(level) < view.levelAlpha->size())
+                levelStrength = (*view.levelAlpha)[static_cast<std::size_t>(level)];
+        }
         // Where the entity is drawn, worked out once and only if it has something to draw.
         std::optional<Transform2D> placed;
         const auto placement = [&]() -> const Transform2D & {
@@ -506,6 +686,16 @@ Status SceneRenderer::drawWorld(Renderer &renderer, const Scene &scene, const Wo
             if (!component->enabled)
                 continue;
             const std::type_index type = component->type().type;
+            if (type == tilemapType) {
+                if (auto drawn =
+                        drawTilemap(renderer, *entity, static_cast<const Tilemap &>(*component),
+                                    view, visible, culling);
+                    !drawn)
+                    return drawn;
+                continue;
+            }
+            if (levelStrength <= 0.0F)
+                continue;
             if (type == emitterType) {
                 if (auto drawn = drawParticles(renderer, placement(),
                                                static_cast<const ParticleEmitter &>(*component),
@@ -527,8 +717,8 @@ Status SceneRenderer::drawWorld(Renderer &renderer, const Scene &scene, const Wo
             const auto &sprite = static_cast<const SpriteRenderer &>(*component);
             if (!sprite.enabled || !sprite.visible || sprite.color.a == 0)
                 continue;
-            if (auto drawn =
-                    drawSprite(renderer, *entity, placement(), sprite, view, visible, culling);
+            if (auto drawn = drawSprite(renderer, *entity, placement(), sprite, view, visible,
+                                        culling, levelStrength);
                 !drawn)
                 return drawn;
         }

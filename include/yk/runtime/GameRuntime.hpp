@@ -82,6 +82,7 @@ class GameRuntime final : public GameContext {
     std::shared_ptr<const AnimationSet> animationSet(const std::string &path) override;
     std::shared_ptr<const AnimationController>
     animationController(const std::string &path) override;
+    std::shared_ptr<const Tileset> tileset(const std::string &path) override;
     Blackboard &blackboard() override;
     EventBus &events() override;
     Services &services() override;
@@ -104,6 +105,7 @@ class GameRuntime final : public GameContext {
     Result<EntityId> spawn(const Json &prefab, Vec2 worldPosition, EntityId parent = {}) override;
     Result<EntityId> spawnPrefab(const std::string &path, Vec2 worldPosition,
                                  EntityId parent = {}) override;
+    void notifyLevelChanged(Entity &entity, int from, int to) override;
     void requestRestart() override;
     void requestSceneChange(std::string projectRelativePath) override;
     void lockInput(const std::string &reason, bool locked) override;
