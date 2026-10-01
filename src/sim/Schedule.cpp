@@ -4,6 +4,7 @@
 #include "yk/runtime/GameContext.hpp"
 #include "yk/sim/Clock.hpp"
 #include "yk/sim/Identity.hpp"
+#include "yk/sim/Zones.hpp"
 #include <algorithm>
 #include <set>
 
@@ -433,6 +434,12 @@ void ScheduleAgent::describe(TypeBuilder<ScheduleAgent> &type) {
     type.field("schedule", &ScheduleAgent::schedule)
         .ref("schedule")
         .tooltip("A schedule id; empty: the schedule that lists this character's role.");
+    type.field("detectArrival", &ScheduleAgent::detectArrival)
+        .tooltip("Notice by itself when the character is at the block's destination.");
+    type.field("enforce", &ScheduleAgent::enforce)
+        .tooltip(
+            "Track what the blocks require (be in a place, stay, do something) and say when it "
+            "was not done: the player's routine.");
     type.check([](const Entity &, const ScheduleAgent &agent, const CheckContext &context,
                   std::vector<std::string> &problems) {
         if (!agent.schedule.empty() && context.known && !context.known("schedule", agent.schedule))
@@ -445,8 +452,28 @@ void ScheduleAgent::onStart(GameContext &context) {
     refresh(context);
 }
 
-void ScheduleAgent::onDestroy(GameContext &) {
+void ScheduleAgent::onDestroy(GameContext &context) {
+    stopListening(context);
     current_ = nullptr;
+}
+
+void ScheduleAgent::stopListening(GameContext &context) {
+    if (subscription_ != 0)
+        context.events().unsubscribe(subscription_);
+    subscription_ = 0;
+}
+
+// A block that wants an action done: any event of that name raised by (or to) this character.
+void ScheduleAgent::listenForAction(GameContext &context) {
+    stopListening(context);
+    if (!enforce || !current_ || !current_->requirement || current_->requirement->action.empty())
+        return;
+    const std::string wanted = current_->requirement->action;
+    subscription_ = context.events().subscribe(EventBus::anyEvent, [this, wanted](
+                                                                       const GameEvent &event) {
+        if (event.name == wanted && (event.source == entity().id() || event.other == entity().id()))
+            actionDone_ = true;
+    });
 }
 
 void ScheduleAgent::refresh(GameContext &context) {
@@ -461,6 +488,7 @@ void ScheduleAgent::refresh(GameContext &context) {
     } else if (const auto *who = entity().get<Identity>()) {
         definition_ = data.schedules.forRole(who->role);
     }
+    stopListening(context);
     current_ = nullptr;
     upcoming_ = nullptr;
     minutesUntilNext_ = -1;
@@ -469,9 +497,56 @@ void ScheduleAgent::refresh(GameContext &context) {
     evaluate(context);
 }
 
-void ScheduleAgent::onFixedUpdate(GameContext &context, float) {
+void ScheduleAgent::onFixedUpdate(GameContext &context, float seconds) {
     if (context.services().get<WorldClock>().minuteCounter() != seenMinute_)
         evaluate(context);
+    track(context, seconds);
+}
+
+double ScheduleAgent::requirementProgress() const {
+    if (!current_ || !current_->requirement)
+        return 0.0;
+    if (requirementMet_)
+        return 1.0;
+    const ScheduleRequirement &need = *current_->requirement;
+    if (need.stay > 0.0)
+        return std::min(1.0, stayed_ / need.stay);
+    return entered_ || need.enter.empty() ? 0.5 : 0.0;
+}
+
+// What happens between minutes: noticing arrival, and keeping count of what the block requires.
+void ScheduleAgent::track(GameContext &context, float seconds) {
+    if (!current_)
+        return;
+    const bool needsLooking =
+        (!arrived_ && detectArrival) || (enforce && current_->requirement && !requirementMet_);
+    if (!needsLooking)
+        return;
+    const ZoneService &zones = context.services().get<ZoneService>();
+    sinceLook_ += seconds;
+    if (!arrived_ && detectArrival && sinceLook_ >= 0.1F &&
+        current_->destination.kind != ScheduleDestination::Kind::None &&
+        zones.isAt(context, current_->destination, entity()))
+        reportArrived(context);
+    if (enforce && current_ && current_->requirement && !requirementMet_) {
+        const ScheduleRequirement &need = *current_->requirement;
+        const bool inside = !requirementPlace_ || zones.isAt(context, *requirementPlace_, entity());
+        if (inside) {
+            entered_ = true;
+            stayed_ += seconds;
+        } else {
+            stayed_ = 0.0; // The stay is unbroken: leaving starts it over.
+        }
+        const bool placeOk =
+            need.enter.empty() ? true : (need.stay > 0.0 ? stayed_ >= need.stay : entered_);
+        const bool actionOk = need.action.empty() || actionDone_;
+        if (placeOk && actionOk) {
+            requirementMet_ = true;
+            announce(context, "schedule.requirement_met", *current_);
+        }
+    }
+    if (sinceLook_ >= 0.1F)
+        sinceLook_ = 0.0F;
 }
 
 int ScheduleAgent::minutesLeft() const {
@@ -505,12 +580,36 @@ void ScheduleAgent::run(GameContext &context, const std::vector<Action> &actions
 void ScheduleAgent::switchTo(GameContext &context, const ScheduleBlock *block) {
     if (current_) {
         const ScheduleBlock *old = current_;
+        if (enforce && old->requirement && !requirementMet_ && !excusedInBlock_) {
+            Json missed = Json::object();
+            missed.set("block", old->id);
+            missed.set("activity", old->activity);
+            missed.set("schedule", definition_ ? definition_->id : std::string());
+            missed.set("entered", entered_);
+            missed.set("stayed", stayed_);
+            missed.set("action", actionDone_);
+            missed.set("required", old->requirement->enter);
+            context.events().emit(
+                GameEvent("schedule.requirement_missed", entity().id(), {}, std::move(missed)));
+        }
         run(context, old->onEnd, *old);
         announce(context, "schedule.block_ended", *old);
     }
     current_ = block;
     arrived_ = block && block->destination.kind == ScheduleDestination::Kind::None;
     late_ = false;
+    entered_ = false;
+    stayed_ = 0.0;
+    actionDone_ = false;
+    requirementMet_ = false;
+    excusedInBlock_ = excused();
+    requirementPlace_.reset();
+    if (current_ && current_->requirement && !current_->requirement->enter.empty()) {
+        auto place = ScheduleDestination::fromJson(Json(current_->requirement->enter));
+        if (place)
+            requirementPlace_ = place.value();
+    }
+    listenForAction(context);
     if (current_) {
         announce(context, "schedule.block_started", *current_);
         run(context, current_->onStart, *current_);
@@ -554,10 +653,12 @@ void ScheduleAgent::reportArrived(GameContext &context) {
 
 void ScheduleAgent::excuse(GameContext &, const std::string &reason, bool on) {
     const auto found = std::find(excuses_.begin(), excuses_.end(), reason);
-    if (on && found == excuses_.end())
+    if (on && found == excuses_.end()) {
         excuses_.push_back(reason);
-    else if (!on && found != excuses_.end())
+        excusedInBlock_ = true; // What is missed while excused is not held against the character.
+    } else if (!on && found != excuses_.end()) {
         excuses_.erase(found);
+    }
 }
 
 Json ScheduleAgent::saveState() const {
@@ -565,6 +666,11 @@ Json ScheduleAgent::saveState() const {
     state.set("block", current_ ? current_->id : std::string());
     state.set("arrived", arrived_);
     state.set("late", late_);
+    state.set("entered", entered_);
+    state.set("stayed", stayed_);
+    state.set("actionDone", actionDone_);
+    state.set("requirementMet", requirementMet_);
+    state.set("excused", excusedInBlock_);
     return state;
 }
 
@@ -574,6 +680,11 @@ Status ScheduleAgent::loadState(GameContext &, const Json &state) {
     if (current_ && current_->id == state.get("block").asString()) {
         arrived_ = state.get("arrived").asBool(arrived_);
         late_ = state.get("late").asBool(late_);
+        entered_ = state.get("entered").asBool(entered_);
+        stayed_ = state.get("stayed").asNumber(stayed_);
+        actionDone_ = state.get("actionDone").asBool(actionDone_);
+        requirementMet_ = state.get("requirementMet").asBool(requirementMet_);
+        excusedInBlock_ = state.get("excused").asBool(excusedInBlock_);
     }
     return success();
 }
@@ -610,6 +721,10 @@ std::optional<Value> scheduleFact(RuleContext &, Entity *subject, std::string_vi
         return Value{agent->arrived()};
     if (rest == "late")
         return Value{agent->late()};
+    if (rest == "requirementMet")
+        return Value{agent->requirementMet()};
+    if (rest == "requirementProgress")
+        return Value{agent->requirementProgress()};
     return std::nullopt;
 }
 } // namespace

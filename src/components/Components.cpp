@@ -9,6 +9,7 @@
 #include "yk/sim/Quests.hpp"
 #include "yk/sim/Schedule.hpp"
 #include "yk/sim/Sequence.hpp"
+#include "yk/sim/Zones.hpp"
 #include "yk/stats/Stats.hpp"
 #include "yk/world/Tilemap.hpp"
 #include "yk/world/WorldLevels.hpp"
@@ -478,6 +479,7 @@ void registerEngineComponents(ComponentRegistry &registry) {
     registerSequenceComponents(registry);
     registerIdentityComponents(registry);
     registerScheduleComponents(registry);
+    registerZoneComponents(registry);
     const auto place = [](Scene &scene, Vec2 at, const char *name) -> Entity & {
         Entity &entity = scene.createEntity(name);
         entity.setWorldPosition(at);

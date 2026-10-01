@@ -429,6 +429,24 @@ and `clock.daylight`: `{"when": "clock.minute", "data": {"time": "06:00"}, "then
 `schedule.arrived` and `schedule.late` for the rules to answer, and its state is read with the facts
 `schedule.activity`, `schedule.block`, `schedule.next`, `schedule.minutesLeft`, `schedule.late`...
 
+Where a block sends a character is found through **zones**: a `Zone` component on an entity (a box,
+circle or polygon in the scene) gives a place an `id`, a `name`, `tags`, `purposes` ("dining",
+"sleep"), a `priority` where zones overlap, a `capacity`, who may be in it (`allowedFactions`,
+`allowedRoles`, an `access` condition, the `owner`'s persistent id, `countDisguise`) and
+`environment` flags (`{"dark": true}`). A `room` is a zone that is also a place to be sent to, owned
+and searched. `"destination": {"zone": "yard"}`, `{"room": "cafeteria"}` and
+`"purpose:dining"` (the nearest zone with that purpose and a free place) resolve to a spot inside;
+a `ScheduleAgent` notices by itself when its character is at the destination (`schedule.arrived`),
+and with `enforce` it checks the block's `requires`: it must **enter** a place, **stay** there for
+some seconds without leaving, or **do** something (an event of that name raised by the character),
+and raises `schedule.requirement_met` or, at the end of the block, `schedule.requirement_missed` for
+rules to punish. Entering and leaving are `zone.entered` and `zone.exited`; entering a zone without
+access, when the zone `enforce`s it, is `zone.trespass` (its `trespassViolation` names what it is for
+the violation system). The facts `zone.id`, `zone.room`, `zone.purpose`, `zone.restricted`,
+`zone.env.<flag>` and the predicates `InZone`, `ZoneAllows` and `ZoneOccupied` ask where someone is.
+A zone's `navigationArea` and `navigationCost` shape the navigation grid: an agent that forbids the
+area walks around it.
+
 ### Quests: `*.ykquest`, or `"quests"` in a `.ykdata`
 
 ```json

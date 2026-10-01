@@ -4,6 +4,7 @@
 #include "yk/rules/Rules.hpp"
 #include "yk/runtime/GameContext.hpp"
 #include "yk/sim/Factions.hpp"
+#include "yk/sim/Zones.hpp"
 #include "yk/stats/Stats.hpp"
 #include <algorithm>
 
@@ -78,11 +79,14 @@ void Identity::onStart(GameContext &context) {
     auto &actors = context.services().get<ActorService>();
     id = actors.add(entity().id(), id, entity().name());
     registered_ = true;
+    home_ = entity().worldPosition();
 }
 
 void Identity::onDestroy(GameContext &context) {
     if (!registered_)
         return;
+    if (auto *zones = context.services().find<ZoneService>())
+        zones->forget(context, entity().id());
     context.services().get<ActorService>().remove(entity().id(), id);
     registered_ = false;
 }

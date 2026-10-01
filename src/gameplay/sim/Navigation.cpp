@@ -1,6 +1,7 @@
 #include "yk/gameplay/Navigation.hpp"
 #include "yk/core/Log.hpp"
 #include "yk/gameplay/Exploration.hpp"
+#include "yk/sim/Zones.hpp"
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -105,9 +106,8 @@ void NavigationObstacle::onDestroy(GameContext &context) {
                     service->world_.grid().addSightBlockers(record.cells, -1);
                 record.applied = false;
             }
-        std::erase_if(service->obstacles_, [&](const auto &record) {
-            return record.entity == entity().id();
-        });
+        std::erase_if(service->obstacles_,
+                      [&](const auto &record) { return record.entity == entity().id(); });
     }
 }
 
@@ -144,9 +144,9 @@ void NavigationDoor::describe(TypeBuilder<NavigationDoor> &type) {
 nav::DoorState NavigationDoor::state(GameContext &context) const {
     if (source == DoorSource::StateGate)
         if (const auto *gate = entity().get<StateGate>())
-            return gate->open() ? nav::DoorState::Open
-                                : (gate->locked(context) ? nav::DoorState::Locked
-                                                         : nav::DoorState::Closed);
+            return gate->open()
+                       ? nav::DoorState::Open
+                       : (gate->locked(context) ? nav::DoorState::Locked : nav::DoorState::Closed);
     if (source == DoorSource::Mechanism)
         if (const auto *door = entity().get<Door>())
             return door->openAmount() > 0.5F ? nav::DoorState::Open : nav::DoorState::Closed;
@@ -309,8 +309,9 @@ CellRect NavigationService::footprint(const Entity &entity, Vec2 size, Vec2 offs
     const Vec2 extent = hadamard(size, {std::fabs(world.scale.x), std::fabs(world.scale.y)}) * 0.5F;
     const float angle = degreesToRadians(world.rotationDegrees);
     // The axis-aligned box around the (possibly turned) rectangle.
-    const Vec2 corners[4] = {rotated({-extent.x, -extent.y}, angle), rotated({extent.x, -extent.y}, angle),
-                             rotated({extent.x, extent.y}, angle), rotated({-extent.x, extent.y}, angle)};
+    const Vec2 corners[4] = {
+        rotated({-extent.x, -extent.y}, angle), rotated({extent.x, -extent.y}, angle),
+        rotated({extent.x, extent.y}, angle), rotated({-extent.x, extent.y}, angle)};
     Vec2 low = center + corners[0], high = low;
     for (const Vec2 corner : corners) {
         low = {std::min(low.x, center.x + corner.x), std::min(low.y, center.y + corner.y)};
@@ -363,7 +364,8 @@ void NavigationService::recomputeCells(GameContext &context, int level, int minX
                 map.worldToCell(cellMiddle, tx, ty);
                 for (const TileLayer &layer : map.layers) {
                     const int layerLevel = levels.indexOf(layer.level);
-                    if (layerLevel != everyLevel && (layerLevel == unknownLevel ? 0 : layerLevel) != level)
+                    if (layerLevel != everyLevel &&
+                        (layerLevel == unknownLevel ? 0 : layerLevel) != level)
                         continue;
                     const std::int32_t value = layer.cell(tx, ty);
                     if (tile::empty(value))
@@ -371,15 +373,18 @@ void NavigationService::recomputeCells(GameContext &context, int level, int minX
                     const TileProperties &props = source.tiles->properties(tile::index(value));
                     bool covers = true;
                     if (props.collider) {
-                        // A post or a thin wall blocks the nav cells it overlaps by a quarter or more.
+                        // A post or a thin wall blocks the nav cells it overlaps by a quarter or
+                        // more.
                         const Vec2 corner = map.cellToWorld(tx, ty);
                         const Vec2 size = map.cellSizeInWorld();
                         const Rect box{corner + hadamard(props.collider->position, size),
                                        hadamard(props.collider->size, size)};
-                        const float overlapX = std::min(box.position.x + box.size.x, rect.position.x + rect.size.x) -
-                                               std::max(box.position.x, rect.position.x);
-                        const float overlapY = std::min(box.position.y + box.size.y, rect.position.y + rect.size.y) -
-                                               std::max(box.position.y, rect.position.y);
+                        const float overlapX =
+                            std::min(box.position.x + box.size.x, rect.position.x + rect.size.x) -
+                            std::max(box.position.x, rect.position.x);
+                        const float overlapY =
+                            std::min(box.position.y + box.size.y, rect.position.y + rect.size.y) -
+                            std::max(box.position.y, rect.position.y);
                         covers = overlapX > 0.0F && overlapY > 0.0F &&
                                  overlapX * overlapY >= 0.25F * rect.size.x * rect.size.y;
                     }
@@ -392,12 +397,35 @@ void NavigationService::recomputeCells(GameContext &context, int level, int minX
                             cell.area = static_cast<std::uint8_t>(area);
                     if (props.cost > 1.0F)
                         cell.cost = std::max(cell.cost, fixedCost(props.cost));
-                    cell.noiseDamping = std::max(
-                        cell.noiseDamping,
-                        static_cast<std::uint8_t>(std::clamp(props.noiseDamping, 0.0F, 1.0F) * 255.0F));
+                    cell.noiseDamping =
+                        std::max(cell.noiseDamping,
+                                 static_cast<std::uint8_t>(
+                                     std::clamp(props.noiseDamping, 0.0F, 1.0F) * 255.0F));
                 }
             }
         }
+    // Zones can make ground dearer or put it in a navigation area (a restricted yard that guards'
+    // routes may avoid).
+    for (const Zone *zone : context.services().get<ZoneService>().all(context)) {
+        if (zone->level() != level ||
+            (zone->navigationArea.empty() && !(zone->navigationCost > 1.0F)))
+            continue;
+        const int area = zone->navigationArea.empty() ? -1 : world_.areaId(zone->navigationArea);
+        const Rect box = zone->bounds();
+        int zx0 = 0, zy0 = 0, zx1 = 0, zy1 = 0;
+        grid.worldToCell(box.position, zx0, zy0);
+        grid.worldToCell(box.position + box.size, zx1, zy1);
+        for (int y = std::max(zy0, minY); y <= std::min(zy1, maxY); ++y)
+            for (int x = std::max(zx0, minX); x <= std::min(zx1, maxX); ++x) {
+                if (!zone->contains(yk::center(grid.cellRect(x, y))))
+                    continue;
+                GridCell &cell = grid.at(level, x, y);
+                if (area >= 0)
+                    cell.area = static_cast<std::uint8_t>(area);
+                if (zone->navigationCost > 1.0F)
+                    cell.cost = std::max(cell.cost, fixedCost(zone->navigationCost));
+            }
+    }
     grid.markDirty({level, minX, minY, maxX, maxY});
 }
 
@@ -439,8 +467,8 @@ void NavigationService::rebuildStatic(GameContext &context) {
             include(entity->worldPosition());
     }
     float cell = settings && settings->cellSize > 0.0F ? settings->cellSize
-                 : smallestTile > 0.0F                  ? smallestTile / 3.0F
-                                                        : 0.5F;
+                 : smallestTile > 0.0F                 ? smallestTile / 3.0F
+                                                       : 0.5F;
     cell = std::clamp(cell, 0.05F, 4.0F);
     if (settings && settings->boundsMin != settings->boundsMax) {
         include(settings->boundsMin);
@@ -460,8 +488,8 @@ void NavigationService::rebuildStatic(GameContext &context) {
                (static_cast<double>(high.y - low.y) / static_cast<double>(cell)) * levels >
            maxCells) {
         cell *= 1.5F;
-        log(LogLevel::Warning, "navigation", "The navigation grid is too large; cell size raised to " +
-                                                 std::to_string(cell) + " m");
+        log(LogLevel::Warning, "navigation",
+            "The navigation grid is too large; cell size raised to " + std::to_string(cell) + " m");
     }
     GridSpec spec;
     spec.origin = low;
@@ -474,6 +502,7 @@ void NavigationService::rebuildStatic(GameContext &context) {
     if (settings)
         for (const std::string &name : settings->areas)
             world_.areaId(name);
+    zoneRevision_ = context.services().get<ZoneService>().revision();
     for (int level = 0; level < spec.levels; ++level)
         recomputeCells(context, level, 0, 0, spec.width - 1, spec.height - 1);
     // Everything that lived in the old grid is applied again.
@@ -517,16 +546,19 @@ void NavigationService::syncTilemaps(GameContext &context) {
                                world_.grid().spec().height - 1);
         } else {
             for (const TileChange &change : changes) {
-                if (change.layer < 0 || static_cast<std::size_t>(change.layer) >= map->layers.size())
+                if (change.layer < 0 ||
+                    static_cast<std::size_t>(change.layer) >= map->layers.size())
                     continue;
-                const int layerLevel = levels.indexOf(map->layers[static_cast<std::size_t>(change.layer)].level);
+                const int layerLevel =
+                    levels.indexOf(map->layers[static_cast<std::size_t>(change.layer)].level);
                 const Vec2 corner = map->cellToWorld(change.x, change.y);
                 const Vec2 size = map->cellSizeInWorld();
                 int x0 = 0, y0 = 0, x1 = 0, y1 = 0;
                 world_.grid().worldToCell(corner + Vec2{0.002F, 0.002F}, x0, y0);
                 world_.grid().worldToCell(corner + size - Vec2{0.002F, 0.002F}, x1, y1);
                 for (int level = 0; level < world_.grid().spec().levels; ++level)
-                    if (layerLevel == everyLevel || (layerLevel == unknownLevel ? 0 : layerLevel) == level)
+                    if (layerLevel == everyLevel ||
+                        (layerLevel == unknownLevel ? 0 : layerLevel) == level)
                         recomputeCells(context, level, x0, y0, x1, y1);
             }
         }
@@ -634,13 +666,13 @@ void NavigationService::syncLinks(GameContext &context) {
             record.navId = world_.addLink(def);
             link->navId_ = record.navId;
         } else if (const nav::LinkDef *current = world_.link(record.navId);
-                   current && !(current->kind == def.kind && current->fromLevel == def.fromLevel &&
-                                current->from == def.from && current->toLevel == def.toLevel &&
-                                current->to == def.to && current->open == def.open &&
-                                current->cost == def.cost && current->capacity == def.capacity &&
-                                current->capabilities == def.capabilities &&
-                                current->access == def.access &&
-                                current->bidirectional == def.bidirectional)) {
+                   current &&
+                   !(current->kind == def.kind && current->fromLevel == def.fromLevel &&
+                     current->from == def.from && current->toLevel == def.toLevel &&
+                     current->to == def.to && current->open == def.open &&
+                     current->cost == def.cost && current->capacity == def.capacity &&
+                     current->capabilities == def.capabilities && current->access == def.access &&
+                     current->bidirectional == def.bidirectional)) {
             world_.replaceLink(record.navId, def);
         }
     }
@@ -655,10 +687,10 @@ std::uint64_t NavigationService::cacheKey(const nav::PathQuery &query) const {
     const auto mix = [&](std::uint64_t value) {
         h ^= value + 0x9e3779b97f4a7c15ULL + (h << 6) + (h >> 2);
     };
-    mix(static_cast<std::uint64_t>(query.startLevel) * 7919U + static_cast<std::uint64_t>(sx) * 104729U +
-        static_cast<std::uint64_t>(sy) * 1299709U);
-    mix(static_cast<std::uint64_t>(query.goalLevel) * 7919U + static_cast<std::uint64_t>(gx) * 104729U +
-        static_cast<std::uint64_t>(gy) * 1299709U);
+    mix(static_cast<std::uint64_t>(query.startLevel) * 7919U +
+        static_cast<std::uint64_t>(sx) * 104729U + static_cast<std::uint64_t>(sy) * 1299709U);
+    mix(static_cast<std::uint64_t>(query.goalLevel) * 7919U +
+        static_cast<std::uint64_t>(gx) * 104729U + static_cast<std::uint64_t>(gy) * 1299709U);
     mix(static_cast<std::uint64_t>(std::lround(query.tolerance * 100.0F)));
     return h;
 }
@@ -692,6 +724,8 @@ void NavigationService::cancel(RequestId id) {
 void NavigationService::onFixedUpdate(GameContext &context, float seconds) {
     clock_ += static_cast<double>(seconds);
     ensureBuilt(context);
+    if (zoneRevision_ != context.services().get<ZoneService>().revision())
+        rebuild(context); // Zones came or went since the grid was made.
     syncTilemaps(context);
     syncObstacles(context);
     syncDoors(context);
@@ -733,7 +767,8 @@ void NavigationService::onFixedUpdate(GameContext &context, float seconds) {
         counters_.expansionsLastTick += spent;
         if (done) {
             nav::NavPath path = world_.finishSearch();
-            if (path.status == nav::PathStatus::Found || path.status == nav::PathStatus::Unreachable)
+            if (path.status == nav::PathStatus::Found ||
+                path.status == nav::PathStatus::Unreachable)
                 cache_[activeRequest_.cacheKey] = path;
             if (cache_.size() > 2048)
                 cache_.clear();
@@ -749,16 +784,21 @@ void NavigationService::onFixedUpdate(GameContext &context, float seconds) {
 
 void NavigationService::describe(std::vector<std::pair<std::string, std::string>> &rows) const {
     const WorldGrid &grid = world_.grid();
-    rows.push_back({"Grid", std::to_string(grid.spec().width) + " x " + std::to_string(grid.spec().height) +
-                                " x " + std::to_string(grid.spec().levels) + " levels, " +
+    rows.push_back({"Grid", std::to_string(grid.spec().width) + " x " +
+                                std::to_string(grid.spec().height) + " x " +
+                                std::to_string(grid.spec().levels) + " levels, " +
                                 std::to_string(grid.spec().cellSize) + " m cells"});
-    rows.push_back({"Doors / links", std::to_string(doors_.size()) + " / " + std::to_string(links_.size())});
-    rows.push_back({"Requests", std::to_string(counters_.requests) + " (" + std::to_string(counters_.cacheHits) +
-                                    " from cache), queued " + std::to_string(queue_.size())});
-    rows.push_back({"Search", std::to_string(counters_.expansionsLastTick) + " expansions last tick"});
+    rows.push_back(
+        {"Doors / links", std::to_string(doors_.size()) + " / " + std::to_string(links_.size())});
+    rows.push_back({"Requests", std::to_string(counters_.requests) + " (" +
+                                    std::to_string(counters_.cacheHits) + " from cache), queued " +
+                                    std::to_string(queue_.size())});
+    rows.push_back(
+        {"Search", std::to_string(counters_.expansionsLastTick) + " expansions last tick"});
 }
 
-// ---- Agents' view of each other, doors and links -------------------------------------------------
+// ---- Agents' view of each other, doors and links
+// -------------------------------------------------
 void NavigationService::publishAgent(EntityId id, Vec2 position, Vec2 heading, int level) {
     agents_.update(id, position, 0.0F, level);
     agentState_[id] = {position, heading};
@@ -767,9 +807,8 @@ void NavigationService::forgetAgent(EntityId id) {
     agents_.remove(id);
     agentState_.erase(id);
 }
-std::vector<NavigationService::Neighbor> NavigationService::neighbors(Vec2 position, float radius,
-                                                                      int level,
-                                                                      EntityId except) const {
+std::vector<NavigationService::Neighbor>
+NavigationService::neighbors(Vec2 position, float radius, int level, EntityId except) const {
     std::vector<Neighbor> result;
     for (const auto &hit : agents_.queryCircle(position, radius, level)) {
         if (hit.id == except)
@@ -862,7 +901,8 @@ nav::AgentProfile NavigationAgent::profile(GameContext &context) const {
     nav::NavigationWorld &world = service.world();
     nav::AgentProfile result;
     const float cell = world.grid().spec().cellSize;
-    result.radiusCells = std::max(0, static_cast<int>(std::ceil((radius - cell * 0.5F) / cell - 1e-3F)));
+    result.radiusCells =
+        std::max(0, static_cast<int>(std::ceil((radius - cell * 0.5F) / cell - 1e-3F)));
     result.capabilities = world.capabilityMask(capabilities);
     result.access = service.accessMask(accessTokens);
     for (const std::string &name : forbiddenAreas)
@@ -974,11 +1014,14 @@ Vec2 NavigationAgent::avoidance(GameContext &context, Vec2 position, Vec2 headin
     auto &service = context.services().get<NavigationService>();
     Vec2 push{};
     const int level = std::max(levelOf(entity()), 0);
-    for (const auto &neighbor : service.neighbors(position, avoidanceRadius, level, entity().id())) {
+    for (const auto &neighbor :
+         service.neighbors(position, avoidanceRadius, level, entity().id())) {
         Vec2 away = position - neighbor.position;
         float gap = length(away);
-        if (gap < 1e-3F) { // On top of each other: split by id so they part in different directions.
-            const float angle = static_cast<float>((entity().id().value ^ neighbor.id.value) % 360U);
+        if (gap <
+            1e-3F) { // On top of each other: split by id so they part in different directions.
+            const float angle =
+                static_cast<float>((entity().id().value ^ neighbor.id.value) % 360U);
             away = {std::cos(degreesToRadians(angle)), std::sin(degreesToRadians(angle))};
             gap = 1e-3F;
         }
@@ -1033,13 +1076,14 @@ void NavigationAgent::onFixedUpdate(GameContext &context, float seconds) {
             index_ = 1;
             progressPoint_ = position;
             progressTimer_ = 0.0F;
-            if (path_.status == nav::PathStatus::Found || path_.status == nav::PathStatus::Partial) {
+            if (path_.status == nav::PathStatus::Found ||
+                path_.status == nav::PathStatus::Partial) {
                 status_ = NavStatus::Moving;
                 if (path_.points.size() <= 1 && path_.status == nav::PathStatus::Found)
                     finish(context);
             } else {
                 fail(context, path_.failure == nav::PathFailure::None ? nav::PathFailure::NoRoute
-                                                                       : path_.failure);
+                                                                      : path_.failure);
             }
         } else {
             waited_ += seconds;
@@ -1049,7 +1093,8 @@ void NavigationAgent::onFixedUpdate(GameContext &context, float seconds) {
     // Following something that moves: head for where it is now.
     if (followTarget_) {
         if (const Entity *target = context.scene().find(followTarget_)) {
-            if (distance(target->worldPosition(), goal_) > 1.0F && sinceRequest_ >= repathInterval) {
+            if (distance(target->worldPosition(), goal_) > 1.0F &&
+                sinceRequest_ >= repathInterval) {
                 goal_ = target->worldPosition();
                 goalLevel_ = std::max(levelOf(*target), 0);
                 requestPath(context);
@@ -1063,7 +1108,8 @@ void NavigationAgent::onFixedUpdate(GameContext &context, float seconds) {
     if (pathRevision_ != service.world().revision() && sinceRequest_ >= repathInterval) {
         const nav::AgentProfile mine = profile(context);
         bool open = true;
-        for (std::size_t i = index_, looked = 0; i < path_.points.size() && looked < 6 && open; ++i, ++looked) {
+        for (std::size_t i = index_, looked = 0; i < path_.points.size() && looked < 6 && open;
+             ++i, ++looked) {
             const nav::PathPoint &from = path_.points[i - 1 < path_.points.size() ? i - 1 : 0];
             const nav::PathPoint &to = path_.points[i];
             if (to.viaLink != 0) {
@@ -1103,7 +1149,8 @@ void NavigationAgent::onFixedUpdate(GameContext &context, float seconds) {
         const nav::DoorDef *def = service.world().door(waypoint.door);
         const Vec2 toDoor = waypoint.position - position;
         if (def && length(toDoor) < 1.4F) {
-            if (!service.claimDoor(waypoint.door, entity().id(), normalized(toDoor), context.time())) {
+            if (!service.claimDoor(waypoint.door, entity().id(), normalized(toDoor),
+                                   context.time())) {
                 stand(); // Somebody is coming the other way: wait.
                 waited_ += seconds;
                 waitingOnDoor_ += seconds;
@@ -1143,8 +1190,9 @@ void NavigationAgent::onFixedUpdate(GameContext &context, float seconds) {
     } else {
         waitingOnDoor_ = 0.0F;
     }
-    const float reach = (index_ + 1 == path_.points.size()) ? std::max(arriveDistance, tolerance_ * 0.8F)
-                                                            : arriveDistance;
+    const float reach = (index_ + 1 == path_.points.size())
+                            ? std::max(arriveDistance, tolerance_ * 0.8F)
+                            : arriveDistance;
     Vec2 toWaypoint = waypoint.position - position;
     // Release a door once past it.
     if (index_ > 0 && path_.points[index_ - 1].door != 0 && waypoint.door == 0)

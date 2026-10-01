@@ -105,13 +105,18 @@ struct ScheduleCatalog {
 // whether it got there in time. Raises (source: the character)
 //   schedule.block_started / schedule.block_ended   data: schedule, block, activity, behavior,
 //                                                   destination, from, to
-//   schedule.arrived      the character reached the block's destination (the AI, or a zone, says
-//   so) schedule.late         the block's tolerance ran out before it did
+//   schedule.arrived      the character reached the block's destination (found by itself when the
+//                         destination is a zone, room, purpose, entity or point; or reported)
+//   schedule.late         the block's tolerance ran out before it did
+//   schedule.requirement_met / schedule.requirement_missed   (when `enforce`: the player's routine)
+//                         the block's `requires` was done during the block, or was not by its end
 // Whatever drives the character (an AI brain) reads current() and goes where it says; rules react
 // to the events. While `excuse`d (in a fight, during an alarm) the character is not counted late.
 class ScheduleAgent final : public Component {
   public:
-    std::string schedule; // A schedule id; empty: the one that lists the character's role.
+    std::string schedule;     // A schedule id; empty: the one that lists the character's role.
+    bool detectArrival{true}; // Notice by itself when it is at the destination.
+    bool enforce{false};      // Track the blocks' `requires` (the player's routine).
     static void describe(TypeBuilder<ScheduleAgent> &type);
 
     void onStart(GameContext &context) override;
@@ -144,6 +149,11 @@ class ScheduleAgent final : public Component {
     bool late() const {
         return late_;
     }
+    // How the current block's requirement stands: done, and how far (0..1) the time to stay is.
+    bool requirementMet() const {
+        return requirementMet_;
+    }
+    double requirementProgress() const;
     void reportArrived(GameContext &context);
     void excuse(GameContext &context, const std::string &reason, bool on);
     bool excused() const {
@@ -154,7 +164,10 @@ class ScheduleAgent final : public Component {
 
   private:
     void evaluate(GameContext &context);
+    void track(GameContext &context, float seconds);
     void switchTo(GameContext &context, const ScheduleBlock *block);
+    void listenForAction(GameContext &context);
+    void stopListening(GameContext &context);
     void announce(GameContext &context, const char *event, const ScheduleBlock &block);
     void run(GameContext &context, const std::vector<Action> &actions, const ScheduleBlock &block);
 
@@ -165,6 +178,15 @@ class ScheduleAgent final : public Component {
     int minutesInto_{-1};
     bool arrived_{false};
     bool late_{false};
+    // Requirement progress in the current block.
+    std::optional<ScheduleDestination> requirementPlace_;
+    bool entered_{false};
+    double stayed_{0.0};
+    bool actionDone_{false};
+    bool requirementMet_{false};
+    bool excusedInBlock_{false};
+    EventBus::Subscription subscription_{0};
+    float sinceLook_{0.0F};
     std::vector<std::string> excuses_;
     std::uint64_t seenMinute_{~std::uint64_t{0}};
 };

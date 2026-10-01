@@ -7,6 +7,7 @@
 #include "yk/gameplay/Gameplay.hpp"
 #include "yk/gameplay/Navigation.hpp"
 #include "yk/runtime/GameRuntime.hpp"
+#include "yk/sim/Zones.hpp"
 #include <algorithm>
 #include <chrono>
 #include <cmath>
@@ -512,10 +513,82 @@ void settingsAndGrid() {
     service.describe(rows);
     CHECK(!rows.empty());
 }
+
+// A zone can put its ground in a navigation area: an agent that avoids the area goes around it, one
+// that does not walks straight through; a dearer zone is walked around when there is a way round.
+void zonesShapeTheGrid() {
+    const std::vector<std::string> floor = {"..............", "..............", "..............",
+                                            "..............", ".............."};
+    // How many samples along the agent's path lie inside the zone (a box x 5..9, y 0..4).
+    const auto samplesInside = [](const NavigationAgent &agent) {
+        const Rect fence{{5.0F, 0.0F}, {4.0F, 4.0F}};
+        int inside = 0;
+        const auto &points = agent.path().points;
+        for (std::size_t i = 1; i < points.size(); ++i)
+            for (int step = 0; step <= 20; ++step) {
+                const Vec2 point = lerp(points[i - 1].position, points[i].position,
+                                        static_cast<float>(step) / 20.0F);
+                inside += contains(fence, point) ? 1 : 0;
+            }
+        return inside;
+    };
+    const auto run = [&](const char *forbidden, float cost, bool withZone) {
+        Arena arena({floor});
+        Entity &walker = arena.agent("Walker", 1, 0);
+        if (std::string(forbidden) != "")
+            walker.get<NavigationAgent>()->forbiddenAreas = {forbidden};
+        if (withZone) {
+            Entity &fence = arena.scene->createEntity("Yard");
+            fence.setWorldPosition({7.0F, 2.0F});
+            auto &zone = fence.add<Zone>();
+            zone.size = {4.0F, 4.0F};
+            zone.navigationArea = cost > 1.0F ? "" : "restricted";
+            zone.navigationCost = cost;
+            zone.id = "yard";
+        }
+        arena.start();
+        arena.tick(3); // The zone starts, and the grid is made with it.
+        NavigationAgent &agent = arena.nav("Walker");
+        CHECK(agent.moveTo(*arena.runtime, Arena::feetAt(12, 0)));
+        arena.until("Walker", 2500);
+        return std::make_pair(agent.status(), samplesInside(agent));
+    };
+    // The zone is not there: a straight walk, through where it would be.
+    const auto straight = run("", 1.0F, false);
+    CHECK(straight.first == NavStatus::Arrived && straight.second > 3);
+    // The zone is a restricted area, and the agent avoids it: it goes round.
+    const auto around = run("restricted", 1.0F, true);
+    CHECK(around.first == NavStatus::Arrived && around.second == 0);
+    // An agent that does not mind walks through it.
+    const auto through = run("", 1.0F, true);
+    CHECK(through.first == NavStatus::Arrived && through.second > 3);
+    // Dearer ground is walked around when there is a way round.
+    const auto dear = run("", 20.0F, true);
+    CHECK(dear.first == NavStatus::Arrived && dear.second == 0);
+    // A zone that arrives after the grid was built changes it.
+    Arena late({floor});
+    Entity &walker = late.agent("Walker", 1, 0);
+    walker.get<NavigationAgent>()->forbiddenAreas = {"restricted"};
+    late.start();
+    late.tick(3);
+    CHECK(late.service().built());
+    Entity &fence = late.runtime->scene().createEntity("Yard");
+    fence.setWorldPosition({7.0F, 2.0F});
+    auto &zone = fence.add<Zone>();
+    zone.size = {4.0F, 4.0F};
+    zone.navigationArea = "restricted";
+    late.runtime->services().get<ZoneService>().add(*late.runtime, zone);
+    late.tick(3);
+    NavigationAgent &agent = late.nav("Walker");
+    CHECK(agent.moveTo(*late.runtime, Arena::feetAt(12, 0)));
+    late.until("Walker", 2500);
+    CHECK(agent.status() == NavStatus::Arrived && samplesInside(agent) == 0);
+}
 } // namespace
 
 int main() {
     aroundWalls();
+    zonesShapeTheGrid();
     unreachableGoals();
     doorsOpenForAgents();
     keysUnlockManualDoors();

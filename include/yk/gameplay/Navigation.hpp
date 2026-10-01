@@ -332,6 +332,7 @@ class NavigationService final : public Service {
 
     nav::NavigationWorld world_;
     bool built_{false};
+    std::uint64_t zoneRevision_{0};
     int expansionsPerTick_{6000};
     std::vector<ObstacleRecord> obstacles_;
     std::vector<DoorRecord> doors_;

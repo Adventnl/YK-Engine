@@ -80,7 +80,7 @@ struct Rig {
         auto &who = entity.add<Identity>();
         who.id = std::string("npc.") + name;
         who.role = role;
-        entity.add<ScheduleAgent>();
+        entity.add<ScheduleAgent>().detectArrival = false; // These tests say when it arrives.
         return entity;
     }
     void start() {

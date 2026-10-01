@@ -287,6 +287,15 @@ seconds, with named pauses, set and skip, callbacks, `clock.*` events and facts.
 definitions in `GameData`; a `ScheduleAgent` follows one on the clock and raises the block events
 that AI brains, rules and (for the player) enforced routines build on.
 
+### Zones and rooms (`sim/Zones.hpp`)
+
+A `Zone` is an area (box, circle or polygon on a world level) with an id, tags, purposes, priority and
+a say in who may be there; a room is a zone that is also a destination. `ZoneService` keeps zones in
+the spatial index (no scans), answers "what zones are here", "which room is that", "who is in this
+zone", resolves a schedule's destination (including a free place for a purpose) and, a few
+characters a tick, raises `zone.entered`, `zone.exited` and `zone.trespass`. Zones can paint the
+navigation grid with an area and a cost; the validator finds duplicate ids.
+
 ### Quests, conversations and cutscenes (`sim/`)
 
 Story is data on the same rule language ([ADR 0023](decisions/0023-quests-conversations-and-cutscenes-are-data-on-the-rule-language.md)).

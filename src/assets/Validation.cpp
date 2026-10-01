@@ -11,6 +11,7 @@
 #include "yk/sim/Dialogue.hpp"
 #include "yk/sim/Identity.hpp"
 #include "yk/sim/Sequence.hpp"
+#include "yk/sim/Zones.hpp"
 #include <algorithm>
 #include <filesystem>
 #include <map>
@@ -160,6 +161,22 @@ void checkScene(const Project &project, const GameData &data, const Scene &scene
             }
         }
     });
+    // A zone is found by its id (or its entity's name): two with one name make "the cafeteria"
+    // ambiguous for schedules and rules.
+    if (!prefab) {
+        std::map<std::string, const Entity *> zones;
+        scene.forEach([&](const Entity &entity) {
+            const auto *zone = entity.get<Zone>();
+            if (!zone)
+                return;
+            const auto [first, fresh] = zones.emplace(zone->zoneId(), &entity);
+            if (!fresh)
+                issues.push_back({Severity::Error, file,
+                                  "'" + entity.name() + "' Zone: the id '" + zone->zoneId() +
+                                      "' is also used by '" + first->second->name() + "'",
+                                  entity.id()});
+        });
+    }
     // A persistent id names one character for the rest of the game; two with one name are confused
     // with each other (a prefab says nothing: each instance gets its own).
     if (!prefab) {

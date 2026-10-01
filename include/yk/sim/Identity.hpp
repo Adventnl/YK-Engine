@@ -33,12 +33,17 @@ class Identity final : public Component {
     Status loadState(GameContext &context, const Json &state) override;
 
     std::string name() const; // The name to show.
+    // Where the character was when the game started: home, when no zone is named as home.
+    Vec2 homePosition() const {
+        return home_;
+    }
     // Changes who they are with the rest of the world (the registry's indexes follow).
     void setFaction(GameContext &context, const std::string &value);
     void setRole(GameContext &context, const std::string &value);
 
   private:
     bool registered_{false};
+    Vec2 home_{};
 };
 
 // The faction a character appears to belong to: their own, unless something they wear says

@@ -904,6 +904,36 @@ Updates in the PreUpdate phase of the tick.
 | Property | Type | Default | Notes |
 |---|---|---|---|
 | `schedule` | string | "" | A schedule id; empty: the schedule that lists this character's role. |
+| `detectArrival` | bool | true | Notice by itself when the character is at the block's destination. |
+| `enforce` | bool | false | Track what the blocks require (be in a place, stay, do something) and say when it was not done: the player's routine. |
+
+### Zone
+
+An area of the world with a name, tags, a purpose and a say in who may be there. A room is a zone that is also a destination, an owner's, searchable. Characters entering and leaving raise zone.entered / zone.exited.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `shape` | enum | "Box" | Options: Box Circle Polygon |
+| `size` | vec2 | [4,4] | Box: the extent; circle: the width is the diameter. |
+| `offset` | vec2 | [0,0] |  |
+| `polygon` | json | [] | Polygon corners as [[x, y], ...] in the entity's own space (at least three). |
+| `id` | string | "" | What schedules and rules call it ("cafeteria"); empty: the entity's name. |
+| `name` | string | "" | Shown on the map and in messages. |
+| `room` | bool | false | A logical space a character can be sent to. |
+| `tags` | string list | [] | restricted, private, cell... |
+| `purposes` | string list | [] | What it is for: dining, sleep, work. A schedule can send a character to "purpose:dining". |
+| `priority` | int | 0 | Where zones overlap the highest is the zone there. (range -100 to 100) |
+| `capacity` | int | 0 | How many may be sent here at once (seats, bunks); 0: any number. (range 0 to 1000) |
+| `allowedFactions` | string list | [] |  |
+| `allowedRoles` | string list | [] |  |
+| `access` | json | null | A condition that must hold for whoever is here ({"type": "HasItem", ...}); empty: none. |
+| `countDisguise` | bool | true | Faction checks go by what the character looks like (a uniform opens a staff area), not what they are. |
+| `owner` | string | "" | Persistent id of who it belongs to; always allowed. |
+| `enforce` | bool | false | Entering without access raises zone.trespass. |
+| `trespassViolation` | string | "" | The violation a trespass is (for the violation system). |
+| `environment` | json | {} | Flags other systems read: {"dark": true, "noisy": 0.5}. |
+| `navigationArea` | string | "" | The navigation area its ground belongs to ("restricted"): agents may avoid it. |
+| `navigationCost` | float | 1 | How much dearer it is to walk here (a multiplier on the path cost). (range 1 to 20) |
 
 ## UI
 
