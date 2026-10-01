@@ -228,14 +228,24 @@ void titleBar(EditorState &state, Rect rect) {
         // The mark of the application, then the menus.
         const float mark = dp(22.0F);
         const ImVec2 markLow{rect.position.x + dp(12.0F), rect.position.y + (bar - mark) * 0.5F};
-        list.AddRectFilled(markLow, {markLow.x + mark, markLow.y + mark}, packed(vs::focus),
-                           dp(6.0F));
-        ImGui::PushFont(fonts().semibold, 11.0F);
-        const ImVec2 markText = ImGui::CalcTextSize("YK");
-        list.AddText(
-            {markLow.x + (mark - markText.x) * 0.5F, markLow.y + (mark - markText.y) * 0.5F},
-            IM_COL32(255, 255, 255, 255), "YK");
-        ImGui::PopFont();
+        SDL_Texture *logo = state.renderer ? state.renderer->nativeTexture(state.logo) : nullptr;
+        if (logo) {
+            // The icon has the macOS grid's padding (100 px of 1024) around the tile; crop it.
+            constexpr float tileLow = 100.0F / 1024.0F, tileHigh = 924.0F / 1024.0F;
+            list.AddImageRounded(
+                ImTextureRef(static_cast<ImTextureID>(reinterpret_cast<std::uintptr_t>(logo))),
+                markLow, {markLow.x + mark, markLow.y + mark}, {tileLow, tileLow}, {tileHigh, tileHigh},
+                IM_COL32_WHITE, dp(5.0F));
+        } else { // The logo did not load: a plain mark rather than a hole.
+            list.AddRectFilled(markLow, {markLow.x + mark, markLow.y + mark}, packed(vs::focus),
+                               dp(6.0F));
+            ImGui::PushFont(fonts().semibold, 11.0F);
+            const ImVec2 markText = ImGui::CalcTextSize("YK");
+            list.AddText(
+                {markLow.x + (mark - markText.x) * 0.5F, markLow.y + (mark - markText.y) * 0.5F},
+                IM_COL32(255, 255, 255, 255), "YK");
+            ImGui::PopFont();
+        }
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {dp(9.0F), pad});
         ImGui::Dummy({dp(12.0F) + mark + dp(6.0F), 1.0F});
         ImGui::SameLine(0.0F, 0.0F);

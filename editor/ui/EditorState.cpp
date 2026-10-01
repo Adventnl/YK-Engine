@@ -8,6 +8,11 @@
 #include <cstdio>
 
 namespace yk::editor {
+namespace logodata { // The title bar logo, embedded by CMake (YKEngine-256.png).
+extern const unsigned char logo[];
+extern const std::size_t logoSize;
+} // namespace logodata
+
 std::filesystem::path defaultSettingsDirectory() {
     if (char *path = SDL_GetPrefPath("YKEngine", "Editor")) {
         std::filesystem::path result(path);
@@ -71,6 +76,11 @@ EditorState::~EditorState() {
 
 Status EditorState::initialize(Renderer &rendererRef) {
     renderer = &rendererRef;
+    if (auto loaded = renderer->loadPngMemory({logodata::logo, logodata::logoSize},
+                                              TextureFilter::Linear))
+        logo = loaded.value();
+    else
+        log(LogLevel::Warning, "editor", "Logo not loaded: " + loaded.error());
     auto created = SceneRenderer::create(*renderer, nullptr);
     if (!created)
         return Error{created.error()};

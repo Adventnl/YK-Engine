@@ -122,7 +122,10 @@ if(YK_RUNTIME)
         interSemiBold=${CMAKE_CURRENT_SOURCE_DIR}/editor/resources/fonts/Inter-SemiBold.ttf
         jetBrainsMono=${CMAKE_CURRENT_SOURCE_DIR}/editor/resources/fonts/JetBrainsMono-Regular.ttf
         codicon=${CMAKE_CURRENT_SOURCE_DIR}/editor/resources/fonts/codicon.ttf)
-    add_library(yk_editor_ui STATIC "${CMAKE_CURRENT_BINARY_DIR}/generated/EditorFonts.cpp" editor/ui/Theme.cpp
+    yk_embed_files("${CMAKE_CURRENT_BINARY_DIR}/generated/EditorLogo.cpp" NAMESPACE yk::editor::logodata
+        FILES logo=${CMAKE_CURRENT_SOURCE_DIR}/packaging/icons/YKEngine-256.png)
+    add_library(yk_editor_ui STATIC "${CMAKE_CURRENT_BINARY_DIR}/generated/EditorFonts.cpp"
+        "${CMAKE_CURRENT_BINARY_DIR}/generated/EditorLogo.cpp" editor/ui/Theme.cpp
         editor/ui/UiCommon.cpp editor/ui/EditorState.cpp editor/ui/Shell.cpp editor/ui/Workbench.cpp
         editor/ui/Menus.cpp editor/ui/Welcome.cpp editor/ui/ProblemsPanel.cpp editor/ui/ProfilerPanel.cpp
         editor/ui/SideViews.cpp editor/ui/ProjectSettings.cpp editor/ui/AssetInspector.cpp

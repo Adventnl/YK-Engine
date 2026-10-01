@@ -178,6 +178,7 @@ class EditorState {
     const ComponentRegistry &registry;
     EditorOptions options;
     Renderer *renderer{};
+    TextureHandle logo; // The YK logo shown in the title bar (invalid if it failed to load).
     std::unique_ptr<SceneRenderer> sceneRenderer;
     std::unique_ptr<SdlAudio> audio;
     ConsoleLog console;

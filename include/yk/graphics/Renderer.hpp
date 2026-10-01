@@ -78,6 +78,9 @@ class Renderer {
     // Decodes PNG as RGBA, preserves alpha and caches by canonical absolute path.
     Result<TextureHandle> loadPng(const std::filesystem::path &path,
                                   TextureFilter filter = TextureFilter::Nearest);
+    // Decodes PNG bytes already in memory (an embedded image). Not cached: the caller keeps the handle.
+    Result<TextureHandle> loadPngMemory(std::span<const unsigned char> bytes,
+                                        TextureFilter filter = TextureFilter::Nearest);
     Status release(TextureHandle texture);
     bool valid(TextureHandle texture) const;
     // Logical size in letterbox mode; the current output size in native-resolution mode.

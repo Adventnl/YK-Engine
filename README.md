@@ -1,3 +1,5 @@
+<p align="center"><img src="YK.png" alt="YK Engine logo" width="160"></p>
+
 # YK Engine
 
 A proprietary C++20 2D game engine with a VS Code-style editor. You build a level in the editor by

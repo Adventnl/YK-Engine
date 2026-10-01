@@ -203,7 +203,6 @@ class NavigationAgent final : public Component {
     float linkLeft_{0.0F};
     Vec2 linkExit_{};
     int linkExitLevel_{0};
-    std::uint32_t pendingLink_{0}; // The link the next waypoint is reached through.
     friend class NavigationService;
 };
 

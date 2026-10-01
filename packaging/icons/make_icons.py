@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Generates the YK Engine application icon: YKEngine-1024.png, the sizes an .icns needs, and
-YKEngine.icns itself. The design is original: a dark rounded tile in the macOS icon grid with a
-geometric "YK" mark in a blue accent gradient. Needs Pillow (pip install pillow); the generated files
-are checked in, so building the engine does not need Python.
+"""Generates the YK Engine application icon from the YK logo (YK-source.png): YKEngine-1024.png, the
+sizes an .icns needs, YKEngine.icns itself, the editor's window icon, and the clean repo logo
+../../YK.png. The ring is cleaned up (the source has a blotchy halo and is slightly oval) and placed
+on a black rounded tile in the macOS icon grid. Needs Pillow (pip install pillow); the generated
+files are checked in, so building the engine does not need Python.
 
     python3 packaging/icons/make_icons.py
 """
@@ -14,98 +15,63 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter
 HERE = Path(__file__).resolve().parent
 SCALE = 4  # Supersampling: everything is drawn at 4x and reduced for smooth edges.
 SIZE = 1024
+# The ring of YK-source.png (left, top, right, bottom): found by thresholding the bright pixels.
+SOURCE_RING = (205, 183, 1043, 1005)
 
 
 def s(value):
     return int(round(value * SCALE))
 
 
-def rounded_tile(canvas):
-    """The icon body: 824 px square with 185 px corners, inset 100 px (Apple's icon grid)."""
+def clean_logo(diameter):
+    """The ring-and-monogram from YK-source.png on pure black, square, with the generated halo and
+    blotches outside the ring removed. The source ring is a hair wider than tall, so it is stretched
+    into a true circle. Returns the RGB ring and its circular mask; outside the mask the tile shows through."""
+    source = Image.open(HERE / "YK-source.png").convert("RGBA")
+    flat = Image.alpha_composite(Image.new("RGBA", source.size, (0, 0, 0, 255)), source).convert("RGB")
+    ring = flat.crop(SOURCE_RING).resize((diameter, diameter), Image.LANCZOS)
+    mask = Image.new("L", (diameter * 4, diameter * 4), 0)
+    ImageDraw.Draw(mask).ellipse([0, 0, diameter * 4 - 1, diameter * 4 - 1], fill=255)
+    mask = mask.resize((diameter, diameter), Image.LANCZOS)
+    return ring, mask
+
+
+def tile_with_logo(canvas, box, radius, ring_diameter):
+    """A black rounded-square tile at box = (left, top, right, bottom) with the logo centred in it."""
     mask = Image.new("L", canvas, 0)
-    ImageDraw.Draw(mask).rounded_rectangle(
-        [s(100), s(100), s(924), s(924)], radius=s(185), fill=255)
-    return mask
-
-
-def vertical_gradient(canvas, top, bottom):
-    gradient = Image.new("RGB", canvas)
-    pixels = gradient.load()
-    for y in range(canvas[1]):
-        t = y / (canvas[1] - 1)
-        color = tuple(int(top[i] + (bottom[i] - top[i]) * t) for i in range(3))
-        for x in range(canvas[0]):
-            pixels[x, y] = color
-    return gradient
-
-
-def diagonal_gradient(canvas, start, end):
-    gradient = Image.new("RGB", canvas)
-    pixels = gradient.load()
-    width, height = canvas
-    for y in range(height):
-        for x in range(width):
-            t = (x / width * 0.55 + y / height * 0.45)
-            pixels[x, y] = tuple(int(start[i] + (end[i] - start[i]) * t) for i in range(3))
-    return gradient
-
-
-def stroke(draw, points, width):
-    """A thick polyline with round caps and joins."""
-    for a, b in zip(points, points[1:]):
-        draw.line([a, b], fill=255, width=width)
-    radius = width // 2
-    for x, y in points:
-        draw.ellipse([x - radius, y - radius, x + radius, y + radius], fill=255)
-
-
-def monogram(canvas):
-    """The Y and the K as one mask."""
-    mask = Image.new("L", canvas, 0)
-    draw = ImageDraw.Draw(mask)
-    w = s(70)
-    # Y: two arms meeting on a stem.
-    stroke(draw, [(s(262), s(300)), (s(385), s(500)), (s(508), s(300))], w)
-    stroke(draw, [(s(385), s(500)), (s(385), s(724))], w)
-    # K: a bar, an upper arm and a leg.
-    stroke(draw, [(s(590), s(300)), (s(590), s(724))], w)
-    stroke(draw, [(s(792), s(300)), (s(590), s(534))], w)
-    stroke(draw, [(s(668), s(484)), (s(800), s(724))], w)
-    return mask
+    ImageDraw.Draw(mask).rounded_rectangle(box, radius=radius, fill=255)
+    body = Image.new("RGBA", canvas, (0, 0, 0, 0))
+    body.paste(Image.new("RGBA", canvas, (3, 4, 5, 255)), (0, 0), mask)
+    logo, logo_mask = clean_logo(ring_diameter)
+    cx, cy = (box[0] + box[2]) // 2, (box[1] + box[3]) // 2
+    body.paste(logo.convert("RGBA"), (cx - ring_diameter // 2, cy - ring_diameter // 2), logo_mask)
+    # Re-apply the tile shape so nothing pokes out of the rounded corners.
+    out = Image.new("RGBA", canvas, (0, 0, 0, 0))
+    out.paste(body, (0, 0), mask)
+    return out, mask
 
 
 def build():
+    """The app icon: the logo tile on the macOS icon grid (824 px, inset 100) with a soft shadow."""
     canvas = (s(SIZE), s(SIZE))
-    tile = rounded_tile(canvas)
-
-    # Soft shadow under the tile, as system icons have.
+    tile, mask = tile_with_logo(canvas, (s(100), s(100), s(924), s(924)), s(185), s(650))
     shadow = Image.new("L", canvas, 0)
     ImageDraw.Draw(shadow).rounded_rectangle(
         [s(100), s(124), s(924), s(948)], radius=s(185), fill=150)
     shadow = shadow.filter(ImageFilter.GaussianBlur(s(18)))
     image = Image.new("RGBA", canvas, (0, 0, 0, 0))
     image.paste(Image.new("RGBA", canvas, (0, 0, 0, 255)), (0, 0), shadow)
-
-    # The body: a dark neutral gradient with a faint scene-grid, and a thin lighter rim.
-    body = vertical_gradient(canvas, (46, 50, 55), (20, 22, 25)).convert("RGBA")
-    grid = Image.new("RGBA", canvas, (0, 0, 0, 0))
-    grid_draw = ImageDraw.Draw(grid)
-    for step in range(100, 925, 103):
-        grid_draw.line([(s(step), s(100)), (s(step), s(924))], fill=(255, 255, 255, 10), width=s(2))
-        grid_draw.line([(s(100), s(step)), (s(924), s(step))], fill=(255, 255, 255, 10), width=s(2))
-    body = Image.alpha_composite(body, grid)
-    image.paste(body, (0, 0), tile)
-    rim = ImageChops.subtract(tile, tile.filter(ImageFilter.MinFilter(s(3) | 1)))
-    image.paste(Image.new("RGBA", canvas, (255, 255, 255, 46)), (0, 0), rim)
-
-    # The mark, with a soft glow behind it.
-    mark = monogram(canvas)
-    glow = mark.filter(ImageFilter.GaussianBlur(s(26)))
-    image.paste(Image.new("RGBA", canvas, (40, 140, 255, 90)), (0, 0), glow)
-    accent = diagonal_gradient(canvas, (120, 200, 255), (0, 120, 212)).convert("RGBA")
-    image.paste(accent, (0, 0), mark)
-
+    image.alpha_composite(tile)
+    rim = ImageChops.subtract(mask, mask.filter(ImageFilter.MinFilter(s(3) | 1)))
+    image.paste(Image.new("RGBA", canvas, (255, 255, 255, 40)), (0, 0), rim)
     return image.resize((SIZE, SIZE), Image.LANCZOS)
+
+
+def build_logo():
+    """YK.png: the same logo as a full-bleed rounded tile (no shadow, no padding) for the README etc."""
+    canvas = (s(SIZE), s(SIZE))
+    tile, _ = tile_with_logo(canvas, (0, 0, s(SIZE), s(SIZE)), s(230), s(780))
+    return tile.resize((SIZE, SIZE), Image.LANCZOS)
 
 
 def icns(entries):
@@ -132,6 +98,7 @@ def main():
                ("ic08", sizes[256]), ("ic09", sizes[512]), ("ic10", sizes[1024]),
                ("ic11", sizes[32]), ("ic12", sizes[64]), ("ic13", sizes[256]), ("ic14", sizes[512])]
     (HERE / "YKEngine.icns").write_bytes(icns(entries))
+    build_logo().save(HERE.parents[1] / "YK.png", optimize=True)
     # The window icon of the editor on Windows and Linux (embedded in the program).
     master.resize((256, 256), Image.LANCZOS).save(HERE / "YKEngine-256.png", optimize=True)
     print("wrote", HERE / "YKEngine-1024.png", HERE / "YKEngine-256.png", HERE / "YKEngine.icns")

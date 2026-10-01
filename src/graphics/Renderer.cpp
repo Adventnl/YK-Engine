@@ -290,6 +290,19 @@ Result<TextureHandle> Renderer::loadPng(const std::filesystem::path &path, Textu
     impl_->fileTextures.insert_or_assign(canonical, texture.value());
     return texture;
 }
+Result<TextureHandle> Renderer::loadPngMemory(std::span<const unsigned char> bytes,
+                                              TextureFilter filter) {
+    int width = 0, height = 0, channels = 0;
+    std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> pixels(
+        stbi_load_from_memory(bytes.data(), static_cast<int>(bytes.size()), &width, &height,
+                              &channels, STBI_rgb_alpha),
+        stbi_image_free);
+    if (!pixels)
+        return Error{std::string("Decode embedded PNG: ") + stbi_failure_reason()};
+    const auto count = static_cast<std::size_t>(width) * static_cast<std::size_t>(height);
+    return createTexture(width, height, {reinterpret_cast<const Color *>(pixels.get()), count},
+                         filter);
+}
 bool Renderer::valid(TextureHandle texture) const {
     assertThread();
     return texture.owner_.lock() == impl_->identity && texture.index_ < impl_->textures.size() &&
