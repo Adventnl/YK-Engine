@@ -480,6 +480,18 @@ rule actions, and AI brains and access conditions read the state as facts (`secu
   condition (a keycard, a quest, the time of day, the security level) and `lockedDuringLockdown`.
   Rules ask with `AccessAllowed {target, entity}`.
 
+### Perception: the `Perceiver` and `Perceivable` components
+
+Perception is authored on entities, not in a definition file. A `Perceiver` sees (`sightRange`,
+`fieldOfView`, `peripheralRange`) and hears (`hearingRange`, `hearingSensitivity`); `noticeSeconds`,
+`loseSeconds` and `memorySeconds` set how fast awareness builds, fades and is forgotten, and
+`interest` (`any`, `unfriendly`, `hostile`) says whom it keeps watch on by faction relationship, going
+by what they wear unless `seeThroughDisguise`. A `Perceivable` makes a character harder or easier to
+notice (`visibility`, `walkNoise`, `runNoise`, `hidden`). Events: `perception.suspicious`,
+`perception.noticed`, `perception.lost`, `perception.heard`. Zones can set `environment.dark`
+(shorter sight) and `environment.noisy` (shorter hearing); status effects can carry the flags
+`invisible` and the factors `visibility` and `noise`.
+
 ### Quests: `*.ykquest`, or `"quests"` in a `.ykdata`
 
 ```json

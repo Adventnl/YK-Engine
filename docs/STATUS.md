@@ -58,6 +58,7 @@ Inspector edits their components, and definition files show a summary there.
 | Lua scripting | NOT STARTED | |
 | AI brains, perception, noise, debugger | NOT STARTED | |
 | Security levels with enter/exit actions and decay, lockdowns with countdown and failure, `AccessPolicy` (faction, role, condition, lockdown) and `AccessAllowed` | VERIFIED | `security`; no editor overlay yet, keycards are a condition on `HasToken` |
+| Perception: sight (range, cone, all-round range, light by zone, visibility, hidden, invisible, line of sight over the navigation grid), hearing (noise with loudness, damping walls, `noisy` zones, footsteps from `Perceivable`), awareness meter with suspicious/aware thresholds and hysteresis, memory of last seen place, `perception.*` events, `CanSee`/`AwareOf` predicates, `MakeNoise`/`ForgetSubject` actions, saved by persistent id | VERIFIED | `perception` (68 checks incl. 100x100 looks); no scene-view cone overlay yet, no per-level sound (other levels hear nothing) |
 | Jobs, economy | NOT STARTED | |
 | Crime, witnesses, heat, security levels, access policy, scanners, lockdown | NOT STARTED | access tokens exist as item `grants` (`holdsToken`) |
 | Combat, target lock, carrying | NOT STARTED | KO exists in `Health` |
@@ -78,7 +79,7 @@ Inspector edits their components, and definition files show a summary there.
   `exploration` and the editor scripts, which show the platformer and exploration projects did not
   regress. New suites: `foundation` 416, `world` 90, `tilemap` 106, `navigation` 299,
   `navigation_agent` 76, `rules` 44,445, `stats` 283, `items` 329, `loot_crafting` 1,881,
-  `quests` 155, `dialogue` 134, `sequence` 310, `docs` 14, `character` 101, `identity` 124, `clock` 225, `zones` 805, `security` checks (`navigation_agent` 92).
+  `quests` 155, `dialogue` 134, `sequence` 310, `docs` 14, `character` 101, `identity` 124, `clock` 225, `zones` 805, `security`, `perception` 68 checks (`navigation_agent` 92).
 - Not yet re-run for this program: `release`, `asan`, `headless` presets (new code is plain C++ with no
   platform dependence; the sanitizer run is listed in [NEXT.md](NEXT.md)).
 

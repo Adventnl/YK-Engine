@@ -2,6 +2,7 @@
 #include "yk/gameplay/Exploration.hpp"
 #include "yk/gameplay/Gameplay.hpp"
 #include "yk/gameplay/Navigation.hpp"
+#include "yk/gameplay/Perception.hpp"
 #include "yk/scene/SceneSerializer.hpp"
 #include <filesystem>
 
@@ -90,6 +91,7 @@ void registerGameplayComponents(ComponentRegistry &registry) {
     registerExplorationComponents(registry);
     registerCharacterComponents(registry);
     registerNavigationComponents(registry);
+    registerPerceptionComponents(registry);
 
     registry.addTemplate(
         {"Platform", "Level", [](Scene &scene, Vec2 at) {

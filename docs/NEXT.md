@@ -39,7 +39,7 @@ which commands to run. Written at the end of every pass; the newest pass is firs
    keeping the component. A sequence cue that pathfinds a character comes with the navigation
    actions of phase F.
 2. Phase K: vendored Lua 5.4, sandbox, `ScriptComponent`, API, hot reload.
-3. Phases F-H: perception and noise, violations and evidence, AI brains and the AI debugger,
+3. Phases F-H: violations and evidence, AI brains and the AI debugger,
    jobs and economy (clock, schedules, zones, factions, security and access are done).
 4. Phase I and L: combat, carrying, tool actions on the world, destructibles, vents, hiding, search.
 5. Phase M: `SaveGame` assembled from the component and service contract, slots, migration.

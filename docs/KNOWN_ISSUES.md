@@ -20,3 +20,7 @@ engine is in [STATUS.md](STATUS.md#known-limitations).
 | Where | What |
 |---|---|
 | `yk info` | Crashed (segmentation fault) on any project that holds a file the engine does not classify, because a name table with eight entries was indexed by the nine-value `AssetKind` enum after `Dialogue` was added. Found by the baseline run of the `external_project` test; `assetKindName()` now has a switch over every kind. |
+
+- Perception has no editor overlay yet (vision cones, hearing radius, awareness bars); the data is
+  in `Perceiver::awareness()` and the service rows. Sound does not cross levels, and the navigation
+  grid must cover both ends of a line or sight and sound count as blocked there.

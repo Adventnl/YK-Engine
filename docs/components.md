@@ -948,6 +948,41 @@ Who may use this: factions, roles and a condition (keycard, quest, time of day, 
 | `lockedDuringLockdown` | bool | false | Nobody may use it while a lockdown runs. |
 | `deniedMessage` | string | "" |  |
 
+### Perceivable
+
+How a character shows up to the others: how far it can be seen from, how loud its footsteps are, whether it is hidden. Without it a character is seen and heard at normal strength.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `visibility` | float | 1 | Multiplies the distance it can be seen from (a dark outfit, a crouch). (range 0 to 4) |
+| `walkNoise` | float | 3 | Meters its footsteps carry when it walks; 0 is silent. (range 0 to 50) |
+| `runNoise` | float | 9 | (range 0 to 50) |
+| `hidden` | bool | false | Hidden (in a locker, under a bed): seen only from very close. |
+| `hiddenRange` | float | 0.8 | (range 0 to 10) |
+
+### Perceiver
+
+Lets a character see and hear. Seeing needs a clear line over the navigation grid; sound is damped by what it crosses. Awareness builds while a subject is in view and fades after it leaves; events report suspicious, aware and lost.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `sightRange` | float | 10 | (range 0 to 100) |
+| `fieldOfView` | float | 110 | The whole cone in front, in degrees. (range 10 to 360) |
+| `peripheralRange` | float | 1.5 | Meters it notices in every direction, behind it too. (range 0 to 20) |
+| `hearingRange` | float | 14 | (range 0 to 100) |
+| `hearingSensitivity` | float | 1 | (range 0 to 4) |
+| `noticeSeconds` | float | 1 | Seconds to become aware of something at the edge of its range. (range 0.05 to 30) |
+| `loseSeconds` | float | 5 | Seconds for awareness to fall from full to nothing once the subject is gone. (range 0.1 to 120) |
+| `memorySeconds` | float | 30 | (range 0 to 600) |
+| `suspiciousAt` | float | 0.35 | (range 0.01 to 1) |
+| `awareAt` | float | 1 | (range 0.01 to 1) |
+| `lookInterval` | float | 0.1 | (range 0.02 to 2) |
+| `interest` | string | "unfriendly" | Who it keeps watch on: anyone, anyone who is not a friend, or only enemies. |
+| `seeThroughDisguise` | bool | false |  |
+| `blind` | bool | false |  |
+| `deaf` | bool | false |  |
+| `lookDirection` | vec2 | [0,1] | Where it faces when it has no CharacterMotor (a camera). |
+
 ## UI
 
 ### UiText
