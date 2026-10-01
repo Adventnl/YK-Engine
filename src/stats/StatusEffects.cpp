@@ -80,6 +80,20 @@ bool StatusEffects::hasFlag(std::string_view flag) const {
                 return true;
     return false;
 }
+std::vector<std::string> StatusEffects::flagsWithPrefix(std::string_view prefix) const {
+    std::vector<std::string> found;
+    if (!catalog_)
+        return found;
+    for (const Active &effect : active_)
+        if (const EffectDefinition *def = catalog_->effects.find(effect.id))
+            for (const std::string &flag : def->flags)
+                if (flag.size() > prefix.size() && flag.compare(0, prefix.size(), prefix) == 0) {
+                    const std::string rest = flag.substr(prefix.size());
+                    if (!data::has(found, rest))
+                        found.push_back(rest);
+                }
+    return found;
+}
 bool StatusEffects::grants(std::string_view token) const {
     if (!catalog_)
         return false;

@@ -272,6 +272,14 @@ reads the character's status effects (`no_move`, `no_sprint`, `move.speed`) and 
 run ([ADR 0024](decisions/0024-one-character-motor-effects-as-flags-and-equipment-as-layers.md)).
 `AppearanceLayers` draws what a character wears as child sprites that copy the body's frame.
 
+### Identity and factions (`sim/Identity.hpp`, `sim/Factions.hpp`)
+
+`Identity` gives a character a persistent id, a name, a faction and a role; `ActorService` finds
+characters by them without scanning. Factions are definitions in `GameData` (how each regards the
+others); `Relationships` keeps personal feelings by persistent id, and `relationBetween` combines both
+(optionally as the observer *perceives* the subject, which disguises change). Perception, witnesses,
+access control, schedules, jobs and the AI all ask these two questions instead of knowing faction names.
+
 ### Quests, conversations and cutscenes (`sim/`)
 
 Story is data on the same rule language ([ADR 0023](decisions/0023-quests-conversations-and-cutscenes-are-data-on-the-rule-language.md)).

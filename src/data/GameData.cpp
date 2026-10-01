@@ -148,7 +148,7 @@ void GameData::add(const Json &original, const std::string &file,
     std::vector<std::string> warnings;
     data::warnUnknown(document,
                       {"format", "version", "name", "description", "stats", "effects", "items",
-                       "lootTables", "lootPools", "recipes", "quests", "tables"},
+                       "lootTables", "lootPools", "recipes", "quests", "factions", "tables"},
                       warnings);
     for (const std::string &warning : warnings)
         problems.push_back({file, warning, false});
@@ -157,6 +157,7 @@ void GameData::add(const Json &original, const std::string &file,
     loot.load(document, file, problems);
     recipes.load(document, file, problems);
     quests.load(document, file, problems);
+    factions.load(document, file, problems);
     if (document.contains("tables")) {
         if (!document.get("tables").isObject()) {
             problems.push_back({file, "'tables' must be an object of named tables", true});
@@ -180,6 +181,7 @@ void GameData::check(const RuleCatalog *rules, std::vector<DataProblem> &problem
     loot.check(items, problems);
     recipes.check(items, stats, problems);
     quests.check(problems);
+    factions.check(problems);
     if (!rules)
         return;
     visitRules([&](const RuleSource &source) { checkRules(*rules, source, problems); });
@@ -210,6 +212,8 @@ bool GameData::known(std::string_view kind, std::string_view id) const {
         return recipes.recipes.contains(id);
     if (kind == "quest")
         return quests.quests.contains(id);
+    if (kind == "faction")
+        return factions.factions.contains(id);
     return true;
 }
 
@@ -234,6 +238,7 @@ std::vector<std::pair<std::string, std::string>> GameData::summary() const {
     count("Items", items.items.size());
     count("Recipes", recipes.recipes.size());
     count("Quests", quests.quests.size());
+    count("Factions", factions.factions.size());
     count("Loot tables", loot.tables.size());
     count("Loot pools", loot.pools.size());
     count("Tables", tables.size());

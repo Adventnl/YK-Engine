@@ -9,9 +9,11 @@
 #include "yk/data/GameData.hpp"
 #include "yk/scene/SceneSerializer.hpp"
 #include "yk/sim/Dialogue.hpp"
+#include "yk/sim/Identity.hpp"
 #include "yk/sim/Sequence.hpp"
 #include <algorithm>
 #include <filesystem>
+#include <map>
 
 namespace yk {
 namespace {
@@ -158,6 +160,22 @@ void checkScene(const Project &project, const GameData &data, const Scene &scene
             }
         }
     });
+    // A persistent id names one character for the rest of the game; two with one name are confused
+    // with each other (a prefab says nothing: each instance gets its own).
+    if (!prefab) {
+        std::map<std::string, const Entity *> named;
+        scene.forEach([&](const Entity &entity) {
+            const auto *who = entity.get<Identity>();
+            if (!who || who->id.empty())
+                return;
+            const auto [first, fresh] = named.emplace(who->id, &entity);
+            if (!fresh)
+                issues.push_back({Severity::Error, file,
+                                  "'" + entity.name() + "' Identity: the persistent id '" +
+                                      who->id + "' is also used by '" + first->second->name() + "'",
+                                  entity.id()});
+        });
+    }
 }
 } // namespace
 

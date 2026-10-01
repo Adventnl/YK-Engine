@@ -228,6 +228,9 @@ class StatusEffects final : public Component {
     int stacks(std::string_view id) const;
     // True while any active effect carries the flag ("no_move").
     bool hasFlag(std::string_view flag) const;
+    // The flags of the active effects that start with `prefix`, without it ("disguise.guard" ->
+    // "guard"), each once, in the order the effects came on.
+    std::vector<std::string> flagsWithPrefix(std::string_view prefix) const;
     // The product of the named factor of every active effect (1 when none sets it).
     double factor(std::string_view key) const;
     // True while an effect grants the permission token.

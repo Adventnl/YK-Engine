@@ -854,6 +854,34 @@ Requires: `SpriteRenderer`
 | `flipParameter` | string | "facing" | Mirror the sprite when this controller parameter is negative (facing). |
 | `artFacesLeft` | bool | false | The art is drawn facing left, so the mirroring is inverted. |
 
+## Simulation
+
+### Identity
+
+Who this character is for the rest of the game: a persistent id that survives saves and scene changes, a name to show, a faction and a role.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `id` | string | "" | Persistent id, unique in the world ("npc.warden", "player.1"). Leave empty on a prefab: one is made up for each instance. |
+| `displayName` | string | "" | The name shown to the player; empty: the entity's name. |
+| `faction` | string | "" |  |
+| `role` | string | "" | The project's own word for what they are: guard, inmate, medic... |
+| `data` | json | {} | Anything else rules and scripts want to read, as an object ({"home": "cell_12"}). |
+
+### Relationships
+
+What this character personally feels about others (opinion, trust, hostility), by their persistent id. Together with the factions' regard it decides who they treat as friend, stranger, suspect or enemy.
+
+Updates in the PostSimulation phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `friendlyAt` | float | 50 | Opinion at which they treat the other as a friend. (range -100 to 100) |
+| `suspiciousAt` | float | -30 | Opinion at or below which they are at least suspicious of the other. (range -100 to 100) |
+| `hostileAt` | float | 60 | Hostility at or above which they treat the other as an enemy, whatever the factions say. (range 0 to 100) |
+| `forgetPerSecond` | float | 0 | Feelings fade toward neutral by this fraction per second; 0: they last. (range 0 to 1) |
+| `start` | json | {} | Starting feelings: {"npc.warden": {"opinion": 20, "trust": 5, "hostility": 0}}. |
+
 ## UI
 
 ### UiText

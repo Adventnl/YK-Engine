@@ -5,6 +5,7 @@
 #include "yk/rules/RuleSet.hpp"
 #include "yk/runtime/GameContext.hpp"
 #include "yk/sim/Dialogue.hpp"
+#include "yk/sim/Identity.hpp"
 #include "yk/sim/Quests.hpp"
 #include "yk/sim/Sequence.hpp"
 #include "yk/stats/Stats.hpp"
@@ -474,6 +475,7 @@ void registerEngineComponents(ComponentRegistry &registry) {
     registerQuestComponents(registry);
     registerDialogueRules(registry.extend<RuleCatalog>());
     registerSequenceComponents(registry);
+    registerIdentityComponents(registry);
     const auto place = [](Scene &scene, Vec2 at, const char *name) -> Entity & {
         Entity &entity = scene.createEntity(name);
         entity.setWorldPosition(at);

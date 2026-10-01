@@ -316,7 +316,7 @@ editor's Problems panel all read them the same way, with the same messages
 
 | Extension | Holds | Read by |
 |---|---|---|
-| `.ykdata` | any of the sections `stats`, `effects`, `items`, `lootTables`, `lootPools`, `recipes`, `quests`, `tables` | `GameData` |
+| `.ykdata` | any of the sections `stats`, `effects`, `items`, `lootTables`, `lootPools`, `recipes`, `quests`, `factions`, `tables` | `GameData` |
 | `.ykitem`, `.ykrecipe`, `.ykquest` | the same sections, or just one definition (an object with an `id`) | `GameData` |
 | `.ykloot` | `tables` and `pools` | `GameData` |
 | `.ykdialogue` | a list of pages, or a graph of nodes | the `Dialogue` component |
@@ -366,6 +366,29 @@ multipliers other systems read (`move.speed`, `damage.taken`); `flags` are names
 about. Wearing an item that has `equip` applies the effect `equip:<item id>`, which the engine
 builds for it. The full shapes are documented where they are read: `include/yk/stats/Stats.hpp`,
 `include/yk/items/Items.hpp`, `include/yk/items/Loot.hpp` and `include/yk/items/Crafting.hpp`.
+
+### Factions: `"factions"` in a `.ykdata`
+
+```json
+{ "factions": [
+    { "id": "guards", "name": "Guards", "default": "neutral",
+      "relations": { "inmates": "suspicious", "dogs": "hostile" } },
+    { "id": "inmates", "name": "Inmates", "relations": { "guards": "neutral", "medics": "friendly" } },
+    { "id": "medics", "name": "Medics", "default": "friendly" },
+    { "id": "dogs", "default": "hostile", "relations": { "guards": "friendly" } } ] }
+```
+
+A faction says how it regards the others: `friendly`, `neutral`, `suspicious` or `hostile`, with
+`default` for the ones it does not mention (neutral unless said; members of one faction are friendly
+to each other). The regard is not mutual unless both say so. The engine knows none of these names:
+a game's own factions are just data. In a scene, an `Identity` component gives a character its
+persistent id (`"npc.warden"`, unique in the world, leave it empty on a prefab), its `faction` and
+its `role`; a `Relationships` component adds personal feelings (opinion, trust, hostility, by
+persistent id) that can make someone a friend or an enemy despite their factions. The rule
+predicates `Relation`, `InFaction` and `HasRole`, the facts `identity.*` and `relationship.*`, and
+the actions `ChangeRelationship`, `SetFaction` and `SetRole` work with them. A status effect with the
+flag `disguise.<faction>` makes its wearer look like a member of that faction to anything that asks
+for the `perceived` relation.
 
 ### Quests: `*.ykquest`, or `"quests"` in a `.ykdata`
 
