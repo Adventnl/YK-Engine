@@ -1,7 +1,9 @@
 #pragma once
 #include "yk/components/Components.hpp"
 #include "yk/runtime/GameRuntime.hpp"
+#include "yk/runtime/Services.hpp"
 #include "yk/scene/SceneSerializer.hpp"
+#include "yk/world/Tilemap.hpp"
 #include <array>
 #include <map>
 #include <set>
@@ -27,7 +29,7 @@ class InputTracker {
 };
 
 struct GameRuntime::Impl {
-    explicit Impl(GameRuntime &owner) : self(owner) {}
+    explicit Impl(GameRuntime &owner) : self(owner), services(owner) {}
 
     GameRuntime &self;
     RuntimeOptions options;
@@ -36,6 +38,8 @@ struct GameRuntime::Impl {
     std::unique_ptr<physics::World> world;
     Blackboard blackboard;
     EventBus events;
+    // Declared after everything a service may use in its shutdown, so it is destroyed first.
+    Services services;
     NullAudio nullAudio;
     InputFrame tickInput;
     ActionInput actions;
@@ -52,10 +56,20 @@ struct GameRuntime::Impl {
     Phase phase{Phase::Idle};
     float phaseTime{};
     float fade{};
+    float cinematic{}; // The cutscene's own darkening, on top of the transition's.
     bool restartAfterFade{};
     std::string sceneAfterFade;
     std::set<std::string> inputLocks; // Reasons the game is locked (see GameContext::lockInput).
     bool announced{};                 // "scene_started" has been raised.
+    // The order components run in: every component of the scene, and the same split by update
+    // phase, rebuilt when the scene's structure changes. Pointers stay valid because entities are
+    // only destroyed between passes (destroyLater).
+    struct ComponentSchedule {
+        std::uint64_t revision{~std::uint64_t{0}};
+        std::vector<Component *> all;
+        std::array<std::vector<Component *>, updatePhaseCount> byPhase;
+    } schedule;
+    float alpha{1.0F}; // How far between the last two ticks the picture is (render interpolation).
     Vec2 viewport{1280, 720};
     std::vector<EntityId> destroyQueue;
     std::unordered_set<const Component *> started;
@@ -93,6 +107,20 @@ struct GameRuntime::Impl {
     // destroyed with the hinge's entity).
     std::unordered_map<EntityId, physics::BodyHandle> hingeAnchors;
 
+    // ---- Tile maps (TilemapBinding.cpp): solid tiles become static bodies, one per chunk ----
+    struct TilemapBinding {
+        std::shared_ptr<const Tileset> tileset;
+        std::uint64_t sequence{}; // Edits of the map already applied.
+        std::map<std::pair<int, ChunkKey>, physics::BodyHandle> bodies; // (layer, chunk).
+    };
+    std::unordered_map<EntityId, TilemapBinding> tilemaps;
+    std::map<std::string, std::shared_ptr<const Tileset>> tilesets;
+    void bindTilemap(Entity &entity, Tilemap &map);
+    void rebuildTileChunk(Entity &entity, const Tilemap &map, TilemapBinding &binding,
+                          int layerIndex, ChunkKey key);
+    void unbindTilemap(EntityId id);
+    void syncTilemaps();
+
     Status buildWorld();
     void bindEntities(const std::vector<EntityId> &ids);
     void unbindEntities(const std::vector<EntityId> &ids);
@@ -108,6 +136,9 @@ struct GameRuntime::Impl {
     void shutdown();
     void startPending();
     void fixedTick();
+    void runPhase(UpdatePhase which, float step);
+    const ComponentSchedule &componentSchedule();
+    void captureInterpolation();
     void advanceTransition(float seconds);
     void beginTransition(bool restart, std::string nextScene);
     void variableUpdate(float seconds);
@@ -116,18 +147,12 @@ struct GameRuntime::Impl {
     void notifyTrigger(bool enter, Entity &owner, Entity &visitor);
 
     // Calls `visit` for every enabled component of every entity that is active in the hierarchy, in
-    // hierarchy order. The list is a snapshot: hooks may create entities but must not remove any.
+    // hierarchy order. Hooks may create entities (their components join the next pass) but must not
+    // remove any.
     template <class Visit> void forEachComponent(Visit &&visit) {
-        for (const EntityId id : scene->hierarchyOrder()) {
-            Entity *entity = scene->find(id);
-            if (!entity || !entity->activeInHierarchy())
-                continue;
-            std::vector<Component *> components;
-            for (const auto &component : entity->components())
-                components.push_back(component.get());
-            for (Component *component : components)
-                if (component->enabled)
-                    visit(*component);
+        for (Component *component : std::vector<Component *>(componentSchedule().all)) {
+            if (component->enabled && component->entity().activeInHierarchy())
+                visit(*component);
         }
     }
 };

@@ -1,5 +1,7 @@
 #include "RuntimeImpl.hpp"
 #include "yk/core/Log.hpp"
+#include "yk/data/GameData.hpp"
+#include "yk/runtime/Random.hpp"
 #include <algorithm>
 #include <cmath>
 
@@ -76,13 +78,14 @@ Result<std::unique_ptr<GameRuntime>> GameRuntime::create(std::unique_ptr<Scene> 
 }
 
 Status GameRuntime::Impl::rebuild(std::unique_ptr<Scene> fresh) {
+    services.shutdown(); // Services belong to one run of a scene; the new scene starts its own.
     scene = std::move(fresh);
+    schedule = ComponentSchedule{};
+    alpha = 1.0F;
+    cinematic = 0.0F;
     blackboard.clear();
     for (const auto &[key, value] : options.variables) { // What the previous scene carried over.
-        if (const auto *number = std::get_if<double>(&value))
-            blackboard.set(key, *number);
-        else
-            blackboard.set(key, std::get<std::string>(value));
+        blackboard.setValue(key, value);
         blackboard.keep(key);
     }
     inputLocks.clear();
@@ -96,7 +99,14 @@ Status GameRuntime::Impl::rebuild(std::unique_ptr<Scene> fresh) {
     restartWanted = false;
     tickInput = InputFrame{};
     actions = ActionInput(options.inputMap);
-    return buildWorld();
+    if (options.data)
+        services.get<DataService>().use(options.data);
+    auto built = buildWorld();
+    if (options.randomSeed != 0)
+        services.get<RandomService>().rng.reseed(options.randomSeed);
+    if (built)
+        captureInterpolation(); // The first picture is the scene as it stands, not a blend.
+    return built;
 }
 
 void GameRuntime::Impl::shutdown() {
@@ -107,6 +117,7 @@ void GameRuntime::Impl::shutdown() {
             component.onDestroy(self);
     });
     started.clear();
+    services.shutdown();
 }
 
 Status GameRuntime::restart() {
@@ -174,6 +185,38 @@ void GameRuntime::Impl::advanceTransition(float seconds) {
     }
 }
 
+const GameRuntime::Impl::ComponentSchedule &GameRuntime::Impl::componentSchedule() {
+    if (schedule.revision == scene->revision())
+        return schedule;
+    schedule.all.clear();
+    for (auto &list : schedule.byPhase)
+        list.clear();
+    for (Entity *entity : scene->orderedEntities())
+        for (const auto &component : entity->components()) {
+            schedule.all.push_back(component.get());
+            schedule.byPhase[static_cast<std::size_t>(component.get()->type().phase)].push_back(
+                component.get());
+        }
+    schedule.revision = scene->revision();
+    return schedule;
+}
+
+// The services of one phase, then the components of that phase, in hierarchy order. A hook may
+// spawn entities (they join the next pass) but never removes any, so the pointers stay valid.
+void GameRuntime::Impl::runPhase(UpdatePhase which, float step) {
+    services.tick(which, step);
+    const std::vector<Component *> list =
+        componentSchedule().byPhase[static_cast<std::size_t>(which)];
+    for (Component *component : list)
+        if (component->enabled && component->entity().activeInHierarchy())
+            component->onFixedUpdate(self, step);
+}
+
+void GameRuntime::Impl::captureInterpolation() {
+    for (Entity *entity : scene->orderedEntities())
+        entity->captureRenderState(options.interpolationSnapDistance);
+}
+
 void GameRuntime::Impl::fixedTick() {
     input.fill(tickInput);
     actions.update(tickInput);
@@ -184,16 +227,28 @@ void GameRuntime::Impl::fixedTick() {
         self.emit("scene_started");
     }
     const float step = static_cast<float>(options.fixedSeconds);
-    forEachComponent([&](Component &component) { component.onFixedUpdate(self, step); });
+    events.setClock(ticks, time);
+    events.advance(options.fixedSeconds);
+    // Before the physics step: time, scripts, decisions, movement intent, steering.
+    for (std::size_t index = 0; index < updatePhaseCount; ++index)
+        if (runsBeforePhysics(static_cast<UpdatePhase>(index)))
+            runPhase(static_cast<UpdatePhase>(index), step);
+    syncTilemaps(); // Tiles changed this tick (a wall broken) are solid or open before the step.
     if (auto advanced = world->advance(options.fixedSeconds); !advanced)
         log(LogLevel::Error, "physics", advanced.error());
     syncTransforms();
     updateTriggers();
     dispatchCollisions();
+    // After it: what perceives and accounts for where everything ended up.
+    for (std::size_t index = 0; index < updatePhaseCount; ++index)
+        if (!runsBeforePhysics(static_cast<UpdatePhase>(index)))
+            runPhase(static_cast<UpdatePhase>(index), step);
     flushDestroys();
     events.dispatch();
     ++ticks;
     time = static_cast<double>(ticks) * options.fixedSeconds;
+    events.setClock(ticks, time);
+    captureInterpolation();
     advanceTransition(step);
 }
 
@@ -268,6 +323,8 @@ void GameRuntime::update(double frameSeconds, const InputFrame &frameInput) {
     }
     if (state.accumulator + 1e-9 >= step) // Too far behind: drop the backlog instead of spiraling.
         state.accumulator = std::fmod(state.accumulator, step);
+    // The picture is `accumulator` past the last tick: render interpolation blends that far.
+    state.alpha = static_cast<float>(std::clamp(state.accumulator / step, 0.0, 1.0));
     state.variableUpdate(static_cast<float>(frameSeconds));
     state.finishFrame();
 }
@@ -284,6 +341,7 @@ void GameRuntime::stepOnce(const InputFrame &frameInput) {
         return;
     state.input.feed(frameInput);
     state.fixedTick();
+    state.alpha = 1.0F; // A single step shows the tick exactly.
     state.variableUpdate(static_cast<float>(state.options.fixedSeconds));
     state.finishFrame();
 }
@@ -372,11 +430,32 @@ GameRuntime::animationController(const std::string &path) {
     impl_->animationControllers.emplace(path, loaded);
     return loaded;
 }
+std::shared_ptr<const Tileset> GameRuntime::tileset(const std::string &path) {
+    const auto cached = impl_->tilesets.find(path);
+    if (cached != impl_->tilesets.end())
+        return cached->second;
+    std::shared_ptr<const Tileset> loaded;
+    auto document = readJsonAsset(impl_->options.assets, path);
+    auto set =
+        document ? Tileset::fromJson(document.value()) : Result<Tileset>(Error{document.error()});
+    if (set)
+        loaded = std::make_shared<const Tileset>(std::move(set.value()));
+    else
+        log(LogLevel::Warning, "world", "Cannot load tileset " + path + ": " + set.error());
+    impl_->tilesets.emplace(path, loaded);
+    return loaded;
+}
 Blackboard &GameRuntime::blackboard() {
     return impl_->blackboard;
 }
 EventBus &GameRuntime::events() {
     return impl_->events;
+}
+Services &GameRuntime::services() {
+    return impl_->services;
+}
+float GameRuntime::interpolationAlpha() const {
+    return impl_->alpha;
 }
 const LayerConfig &GameRuntime::layers() const {
     return impl_->options.layers;
@@ -422,6 +501,9 @@ const std::vector<EntityId> &GameRuntime::overlapping(EntityId trigger) const {
 }
 void GameRuntime::teleport(Entity &entity, Vec2 worldPosition) {
     entity.setWorldPosition(worldPosition);
+    for (const EntityId id : impl_->scene->subtree(entity.id())) // No smear across the jump.
+        if (Entity *part = impl_->scene->find(id))
+            part->snapRenderState();
     const auto found = impl_->bodies.find(entity.id());
     if (found == impl_->bodies.end())
         return;
@@ -463,6 +545,17 @@ Result<EntityId> GameRuntime::spawnPrefab(const std::string &path, Vec2 worldPos
         log(LogLevel::Warning, "runtime", "Cannot spawn prefab " + path + ": " + spawned.error());
     return spawned;
 }
+void GameRuntime::notifyLevelChanged(Entity &entity, int from, int to) {
+    for (const EntityId id : impl_->scene->subtree(entity.id())) {
+        const auto record = impl_->bodies.find(id);
+        if (record != impl_->bodies.end())
+            impl_->world->setLevel(record->second.body, levelOf(*impl_->scene->find(id)));
+    }
+    Json data = Json::object();
+    data.set("from", from);
+    data.set("to", to);
+    events().emit(GameEvent("level_changed", entity.id(), {}, std::move(data)));
+}
 void GameRuntime::requestRestart() {
     impl_->beginTransition(true, {});
 }
@@ -480,7 +573,13 @@ bool GameRuntime::inputLocked() const {
            impl_->phase == Impl::Phase::Covered;
 }
 float GameRuntime::screenFade() const {
-    return impl_->fade;
+    return std::max(impl_->fade, impl_->cinematic);
+}
+void GameRuntime::setCinematicFade(float amount) {
+    impl_->cinematic = std::isfinite(amount) ? std::clamp(amount, 0.0F, 1.0F) : 0.0F;
+}
+float GameRuntime::cinematicFade() const {
+    return impl_->cinematic;
 }
 bool GameRuntime::transitioning() const {
     return impl_->phase != Impl::Phase::Idle;

@@ -5,6 +5,7 @@
 #include <string>
 
 namespace yk {
+class GameData;
 struct RuntimeOptions {
     double fixedSeconds{1.0 / 60.0};
     unsigned maxStepsPerFrame{8}; // Beyond this, simulated time is dropped rather than spiraling.
@@ -26,6 +27,14 @@ struct RuntimeOptions {
     // the game cannot be paused by its player.
     std::string pauseSet{"Global"};
     std::string pauseAction{"Pause"};
+    // Render interpolation treats a jump of more than this many meters in one tick as a teleport
+    // and does not blend across it (GameContext::teleport is always one).
+    float interpolationSnapDistance{5.0F};
+    // Seed of the game's dice (RandomService). 0 keeps the default seed.
+    std::uint64_t randomSeed{0};
+    // The project's definitions when the host already has them loaded (a player keeps one across
+    // scenes); null: the game loads them from `assets` when it starts.
+    std::shared_ptr<const GameData> data;
 };
 
 // Executes a scene: builds the physics world from RigidBody/Collider components, then runs fixed
@@ -59,9 +68,11 @@ class GameRuntime final : public GameContext {
     const std::string &sceneChangeRequested() const;
     void clearSceneChangeRequest();
 
-    // How far the screen has faded for a restart or a change of scene: 0 clear, 1 covered. The host
-    // draws it over the game view (GameViewOptions::fade).
+    // How far the screen has faded for a restart or a change of scene, or by a cutscene: 0 clear, 1
+    // covered. The host draws it over the game view (GameViewOptions::fade).
     float screenFade() const;
+    void setCinematicFade(float amount) override;
+    float cinematicFade() const override;
     // A restart or scene change is fading the screen out or back in.
     bool transitioning() const;
 
@@ -79,8 +90,14 @@ class GameRuntime final : public GameContext {
     std::shared_ptr<const AnimationSet> animationSet(const std::string &path) override;
     std::shared_ptr<const AnimationController>
     animationController(const std::string &path) override;
+    std::shared_ptr<const Tileset> tileset(const std::string &path) override;
     Blackboard &blackboard() override;
     EventBus &events() override;
+    Services &services() override;
+    // How far, 0..1, the moment being drawn lies between the previous fixed tick and the current
+    // one. Entities and the camera blend that far (Entity::renderTransform, Camera::viewAt), so a
+    // display faster than the 60 Hz simulation shows smooth motion. After stepOnce it is 1.
+    float interpolationAlpha() const;
     const LayerConfig &layers() const override;
     float fixedDelta() const override;
     double time() const override;
@@ -96,6 +113,7 @@ class GameRuntime final : public GameContext {
     Result<EntityId> spawn(const Json &prefab, Vec2 worldPosition, EntityId parent = {}) override;
     Result<EntityId> spawnPrefab(const std::string &path, Vec2 worldPosition,
                                  EntityId parent = {}) override;
+    void notifyLevelChanged(Entity &entity, int from, int to) override;
     void requestRestart() override;
     void requestSceneChange(std::string projectRelativePath) override;
     void lockInput(const std::string &reason, bool locked) override;

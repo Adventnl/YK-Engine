@@ -6,6 +6,8 @@
 #include "yk/graphics/Renderer.hpp"
 #include "yk/runtime/Blackboard.hpp"
 #include "yk/scene/Scene.hpp"
+#include "yk/world/Tilemap.hpp"
+#include "yk/world/WorldLevels.hpp"
 #include <map>
 #include <memory>
 #include <optional>
@@ -21,6 +23,16 @@ struct WorldView {
     bool parallax{false};
     // The editor's scene view: entities the designer hid (Entity::editorHidden) are not drawn.
     bool editorView{false};
+    // Draw entities where the running game's interpolation puts them `alpha` (0..1) of the way from
+    // the previous fixed tick to the current one (GameRuntime::interpolationAlpha), instead of
+    // where they are at the current tick. Entities with no interpolation state are drawn as they
+    // are, so this is safe for scenes that are not running.
+    bool interpolate{false};
+    float alpha{1.0F};
+    // How strongly each world level is drawn (see levelVisibility); null draws every level fully.
+    const std::vector<float> *levelAlpha{nullptr};
+    // Simulated seconds, for animated tiles.
+    double time{0.0};
 };
 
 // What the last drawWorld did, for profilers and tests.
@@ -29,6 +41,8 @@ struct SceneRenderStats {
     std::size_t culled{};    // Skipped because they were entirely outside the view.
     std::size_t quads{};     // Textured quads submitted (every tile of a tiled sprite counts).
     std::size_t particles{}; // Live particles drawn.
+    std::size_t tiles{};     // Tile quads submitted.
+    std::size_t tileChunksCulled{};
 };
 
 // Turns scene data into renderer submissions. It reads components and never changes the scene, so
@@ -86,17 +100,24 @@ class SceneRenderer {
     };
     // Missing or unreadable textures are reported once and drawn as a magenta square.
     const TextureInfo &textureFor(Renderer &renderer, const std::string &path);
-    Status drawSprite(Renderer &renderer, const Entity &entity, const SpriteRenderer &sprite,
-                      const WorldView &view, const Rect &visible, bool culling);
-    Status drawParticles(Renderer &renderer, const Entity &entity, const ParticleEmitter &emitter,
-                         const Rect &visible, bool culling);
-    Status drawLight(Renderer &renderer, const Entity &entity, const Light2D &light,
+    // `world` is where the entity is drawn (its current or its interpolated transform).
+    Status drawSprite(Renderer &renderer, const Entity &entity, const Transform2D &world,
+                      const SpriteRenderer &sprite, const WorldView &view, const Rect &visible,
+                      bool culling, float strength = 1.0F);
+    Status drawTilemap(Renderer &renderer, const Entity &entity, const Tilemap &map,
+                       const WorldView &view, const Rect &visible, bool culling);
+    // A tileset asset, read once per path (null when it cannot be loaded; reported once).
+    std::shared_ptr<const Tileset> tilesetFor(const std::string &path);
+    Status drawParticles(Renderer &renderer, const Transform2D &world,
+                         const ParticleEmitter &emitter, const Rect &visible, bool culling);
+    Status drawLight(Renderer &renderer, const Transform2D &world, const Light2D &light,
                      const Rect &visible, bool culling);
 
     const AssetSource *assets_{};
     TextureDefaults defaults_;
     std::unique_ptr<BitmapFont> font_;
     std::map<std::string, TextureInfo> textures_;
+    std::map<std::string, std::shared_ptr<const Tileset>> tilesets_;
     SceneRenderStats stats_;
 };
 } // namespace yk

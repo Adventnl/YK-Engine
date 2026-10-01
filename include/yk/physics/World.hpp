@@ -36,6 +36,10 @@ class World {
     Status setEnabled(BodyHandle body, bool enabled);
     Status setAwake(BodyHandle body, bool awake);
     Status setFilter(ShapeHandle shape, CollisionFilter filter);
+    // Moves every shape of the body to another world level (see allLevels): shapes of different
+    // levels stop touching at once, and the body's current contacts end.
+    Status setLevel(BodyHandle body, int level);
+    Result<int> level(ShapeHandle shape) const;
     Status setGravity(Vec2 gravity);
     Status setGravityScale(BodyHandle body, float scale);
     // Continuous collision against moving platforms and other bodies as well as static ones. A

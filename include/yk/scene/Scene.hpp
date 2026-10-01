@@ -2,6 +2,7 @@
 #include "yk/core/Color.hpp"
 #include "yk/core/Result.hpp"
 #include "yk/scene/Entity.hpp"
+#include "yk/world/WorldLevels.hpp"
 #include <cstdint>
 #include <functional>
 #include <optional>
@@ -14,6 +15,8 @@ struct SceneSettings {
     std::string name{"Untitled"};
     Vec2 gravity{0.0F, 9.81F}; // +Y down, meters per second squared.
     Color background{28, 32, 44, 255};
+    // The floors of this world (ground, upstairs, roof, vents, underground). Empty: one level.
+    WorldLevelSet levels;
 };
 
 // Owns a hierarchy of entities. A scene is plain data: it can be edited, saved and cloned without a
@@ -61,6 +64,8 @@ class Scene {
     // valid until the next structural change, so use it for read-only passes (rendering, queries),
     // never across code that may create, destroy or reparent entities.
     const std::vector<EntityId> &orderedIds() const;
+    // The entities in that order, without a lookup per entity. Same validity rule as orderedIds().
+    const std::vector<Entity *> &orderedEntities();
     void forEach(const std::function<void(Entity &)> &visit);
     void forEach(const std::function<void(const Entity &)> &visit) const;
     // The entity and all descendants, depth-first.
@@ -86,5 +91,7 @@ class Scene {
     std::uint64_t revision_{};
     mutable std::vector<EntityId> order_;
     mutable std::uint64_t orderRevision_{~std::uint64_t{0}};
+    std::vector<Entity *> orderedEntities_;
+    std::uint64_t orderedEntitiesRevision_{~std::uint64_t{0}};
 };
 } // namespace yk

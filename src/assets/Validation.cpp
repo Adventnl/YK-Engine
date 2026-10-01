@@ -5,9 +5,16 @@
 #include "yk/components/Components.hpp"
 #include "yk/core/FileIO.hpp"
 #include "yk/core/Log.hpp"
+#include "yk/data/Definitions.hpp"
+#include "yk/data/GameData.hpp"
 #include "yk/scene/SceneSerializer.hpp"
+#include "yk/sim/Dialogue.hpp"
+#include "yk/sim/Identity.hpp"
+#include "yk/sim/Sequence.hpp"
+#include "yk/sim/Zones.hpp"
 #include <algorithm>
 #include <filesystem>
+#include <map>
 
 namespace yk {
 namespace {
@@ -65,8 +72,8 @@ void checkAnimatedSprite(const Project &project, const AnimatedSprite &animated,
                               "' (the animation's sheet wins when the game runs)"});
 }
 
-void checkScene(const Project &project, const Scene &scene, const std::string &file,
-                std::vector<ProjectIssue> &issues, bool prefab) {
+void checkScene(const Project &project, const GameData &data, const Scene &scene,
+                const std::string &file, std::vector<ProjectIssue> &issues, bool prefab) {
     scene.forEach([&](const Entity &entity) {
         const std::string owner = "'" + entity.name() + "'";
         // Every finding remembers the entity it is about, so the editor can select it.
@@ -88,7 +95,14 @@ void checkScene(const Project &project, const Scene &scene, const std::string &f
             const std::string where = owner + " " + component->type().name;
             if (component->type().check) {
                 std::vector<std::string> problems;
-                component->type().check(entity, *component, CheckContext{prefab}, problems);
+                CheckContext checking{prefab,
+                                      [&](const std::string &message) {
+                                          report(Severity::Error, where + ": " + message);
+                                      },
+                                      [&](std::string_view kind, std::string_view id) {
+                                          return data.known(kind, id);
+                                      }};
+                component->type().check(entity, *component, checking, problems);
                 for (const std::string &problem : problems)
                     report(Severity::Warning, where + ": " + problem);
             }
@@ -147,6 +161,38 @@ void checkScene(const Project &project, const Scene &scene, const std::string &f
             }
         }
     });
+    // A zone is found by its id (or its entity's name): two with one name make "the cafeteria"
+    // ambiguous for schedules and rules.
+    if (!prefab) {
+        std::map<std::string, const Entity *> zones;
+        scene.forEach([&](const Entity &entity) {
+            const auto *zone = entity.get<Zone>();
+            if (!zone)
+                return;
+            const auto [first, fresh] = zones.emplace(zone->zoneId(), &entity);
+            if (!fresh)
+                issues.push_back({Severity::Error, file,
+                                  "'" + entity.name() + "' Zone: the id '" + zone->zoneId() +
+                                      "' is also used by '" + first->second->name() + "'",
+                                  entity.id()});
+        });
+    }
+    // A persistent id names one character for the rest of the game; two with one name are confused
+    // with each other (a prefab says nothing: each instance gets its own).
+    if (!prefab) {
+        std::map<std::string, const Entity *> named;
+        scene.forEach([&](const Entity &entity) {
+            const auto *who = entity.get<Identity>();
+            if (!who || who->id.empty())
+                return;
+            const auto [first, fresh] = named.emplace(who->id, &entity);
+            if (!fresh)
+                issues.push_back({Severity::Error, file,
+                                  "'" + entity.name() + "' Identity: the persistent id '" +
+                                      who->id + "' is also used by '" + first->second->name() + "'",
+                                  entity.id()});
+        });
+    }
 }
 } // namespace
 
@@ -194,6 +240,15 @@ std::vector<ProjectIssue> validateProject(const Project &project,
                                   " pixels wide; 512 or 1024 looks sharper on a Retina display"});
         }
     }
+    // The project's definitions load together (they refer to each other), and what scenes name is
+    // checked against them.
+    std::vector<DataProblem> dataProblems;
+    const ProjectAssets projectAssets(project);
+    const GameData data = GameData::load(projectAssets, dataProblems);
+    data.check(registry.extension<RuleCatalog>(), dataProblems);
+    for (const DataProblem &problem : dataProblems)
+        issues.push_back(
+            {problem.error ? Severity::Error : Severity::Warning, problem.file, problem.message});
     // Standalone asset documents: they must parse, and what they point at must exist.
     for (const AssetEntry &entry : assets) {
         if (entry.kind == AssetKind::Animation) {
@@ -218,25 +273,49 @@ std::vector<ProjectIssue> validateProject(const Project &project,
                 issues.push_back({Severity::Error, entry.path, document.error()});
                 continue;
             }
-            const Json &pages = document.value().get("pages");
-            if (!pages.isArray() || pages.size() == 0) {
-                issues.push_back(
-                    {Severity::Error, entry.path, "dialogue needs a nonempty pages array"});
+            // Pages and graphs are one thing to the validator: a page list is a chain of nodes.
+            std::vector<std::string> warnings;
+            auto graph = DialogueGraph::fromJson(document.value(), warnings);
+            if (!graph) {
+                issues.push_back({Severity::Error, entry.path, graph.error()});
                 continue;
             }
-            for (std::size_t i = 0; i < pages.size(); ++i) {
-                const Json &page = pages.at(i);
-                const Json &body = page.isObject() ? page.get("text") : page;
-                if (!body.isString() || body.asString().empty())
-                    issues.push_back({Severity::Error, entry.path,
-                                      "page " + std::to_string(i + 1) + " needs text"});
-                if (page.isObject() && page.contains("portrait")) {
-                    const std::string &portrait = page.get("portrait").asString();
-                    if (!portrait.empty() && !fileExists(project, portrait))
-                        issues.push_back({Severity::Error, entry.path,
-                                          "page " + std::to_string(i + 1) +
-                                              " has missing portrait '" + portrait + "'"});
-                }
+            graph.value().check(warnings);
+            for (const std::string &warning : warnings)
+                issues.push_back({Severity::Warning, entry.path, warning});
+            for (const std::string &image : graph.value().images())
+                if (!image.empty() && !fileExists(project, image))
+                    issues.push_back(
+                        {Severity::Error, entry.path, "has missing portrait '" + image + "'"});
+            if (const RuleCatalog *catalog = registry.extension<RuleCatalog>()) {
+                std::vector<DataProblem> found;
+                graph.value().visitRules(entry.path, [&](const RuleSource &source) {
+                    data.checkRules(*catalog, source, found);
+                });
+                for (const DataProblem &problem : found)
+                    issues.push_back({problem.error ? Severity::Error : Severity::Warning,
+                                      problem.file, problem.message});
+            }
+        } else if (entry.kind == AssetKind::Sequence) {
+            auto document = readJson(project, entry.path);
+            if (!document)
+                continue; // validateDefinitionFile reports a file that cannot be read.
+            std::vector<std::string> warnings;
+            auto sequence = SequenceDefinition::fromJson(document.value(), warnings);
+            if (!sequence) {
+                issues.push_back({Severity::Error, entry.path, sequence.error()});
+                continue;
+            }
+            for (const std::string &warning : warnings)
+                issues.push_back({Severity::Warning, entry.path, warning});
+            if (const RuleCatalog *catalog = registry.extension<RuleCatalog>()) {
+                std::vector<DataProblem> found;
+                sequence.value().visitRules(entry.path, [&](const RuleSource &source) {
+                    data.checkRules(*catalog, source, found);
+                });
+                for (const DataProblem &problem : found)
+                    issues.push_back({problem.error ? Severity::Error : Severity::Warning,
+                                      problem.file, problem.message});
             }
         } else if (entry.kind == AssetKind::TextureMeta) {
             auto document = readJson(project, entry.path);
@@ -251,6 +330,9 @@ std::vector<ProjectIssue> validateProject(const Project &project,
                                   "import settings for '" + texture + "', which does not exist"});
         }
     }
+    for (const AssetEntry &entry : assets)
+        if (isDefinitionKind(entry.kind))
+            validateDefinitionFile(project, entry, issues);
     for (const AssetEntry &entry : assets) {
         if (entry.kind != AssetKind::Scene && entry.kind != AssetKind::Prefab)
             continue;
@@ -261,7 +343,7 @@ std::vector<ProjectIssue> validateProject(const Project &project,
             if (!scene)
                 issues.push_back({Severity::Error, entry.path, scene.error()});
             else
-                checkScene(project, *scene.value(), entry.path, issues, false);
+                checkScene(project, data, *scene.value(), entry.path, issues, false);
         } else {
             auto prefab = loadPrefabDocument(absolute);
             if (!prefab) {
@@ -275,7 +357,7 @@ std::vector<ProjectIssue> validateProject(const Project &project,
             else {
                 // The entities of a prefab exist only in this scratch scene: nothing to select.
                 const std::size_t before = issues.size();
-                checkScene(project, scratch, entry.path, issues, true);
+                checkScene(project, data, scratch, entry.path, issues, true);
                 for (std::size_t i = before; i < issues.size(); ++i)
                     issues[i].entity = {};
             }

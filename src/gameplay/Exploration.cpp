@@ -1,45 +1,10 @@
 #include "yk/gameplay/Exploration.hpp"
+#include "yk/gameplay/Character.hpp"
 #include <algorithm>
 #include <cmath>
 #include <limits>
 
 namespace yk {
-namespace {
-void animateDirection(Entity &entity, Vec2 motion, std::string &facing, std::string &last) {
-    if (lengthSquared(motion) > 0.001F) {
-        if (std::fabs(motion.x) > std::fabs(motion.y))
-            facing = motion.x < 0 ? "left" : "right";
-        else
-            facing = motion.y < 0 ? "up" : "down";
-    }
-    if (auto *animation = entity.get<AnimatedSprite>()) {
-        animation->setFloat("moveX", motion.x);
-        animation->setFloat("moveY", motion.y);
-        animation->setBool("moving", lengthSquared(motion) > 0.001F);
-        const std::string clip = (lengthSquared(motion) > 0.001F ? "walk_" : "idle_") + facing;
-        if (animation->controller.path.empty() && clip != last)
-            animation->play(clip);
-        last = clip;
-    }
-}
-void ensureWalker(Entity &entity, const char *defaultLayer) {
-    if (auto *body = entity.get<RigidBody>()) {
-        body->type = RigidBodyType::Dynamic;
-        body->gravityScale = 0.0F;
-        body->fixedRotation = true;
-        body->linearDamping = 8.0F;
-        body->allowSleep = false;
-    }
-    if (auto *collider = entity.get<Collider>()) {
-        if (collider->size == Vec2{1.0F, 1.0F} && collider->offset == Vec2{}) {
-            collider->size = {0.55F, 0.45F};
-            collider->offset = {0.0F, 0.28F};
-        }
-        if (collider->layer == "Default")
-            collider->layer = defaultLayer;
-    }
-}
-} // namespace
 
 void TopDownController::describe(TypeBuilder<TopDownController> &type) {
     type.category("Exploration")
@@ -47,7 +12,9 @@ void TopDownController::describe(TypeBuilder<TopDownController> &type) {
         .dependsOn("PlayerInput")
         .dependsOn("RigidBody")
         .dependsOn("Collider")
-        .onAdd([](Entity &entity, TopDownController &) { ensureWalker(entity, layers::player); });
+        .onAdd([](Entity &entity, TopDownController &) {
+            detail::configureWalker(entity, layers::player);
+        });
     type.field("leftAction", &TopDownController::leftAction).inputAction();
     type.field("rightAction", &TopDownController::rightAction).inputAction();
     type.field("upAction", &TopDownController::upAction).inputAction();
@@ -73,7 +40,7 @@ void TopDownController::onFixedUpdate(GameContext &context, float seconds) {
     if (length(delta) > limit)
         delta = normalized(delta) * limit;
     context.physics().setVelocity(*body, state.value().linearVelocity + delta);
-    animateDirection(entity(), direction, facing_, animation_);
+    detail::animateDirection(entity(), direction, facing_, animation_);
 }
 
 void NpcPath::describe(TypeBuilder<NpcPath> &type) {
@@ -81,7 +48,7 @@ void NpcPath::describe(TypeBuilder<NpcPath> &type) {
         .description("Moves an NPC between waypoint entities, or stands still.")
         .dependsOn("RigidBody")
         .dependsOn("Collider")
-        .onAdd([](Entity &entity, NpcPath &) { ensureWalker(entity, layers::prop); });
+        .onAdd([](Entity &entity, NpcPath &) { detail::configureWalker(entity, layers::prop); });
     type.field("waypoints", &NpcPath::waypoints);
     type.field("speed", &NpcPath::speed).range(0, 30, 0.1);
     type.field("waitSeconds", &NpcPath::waitSeconds).range(0, 30, 0.1);
@@ -110,7 +77,7 @@ void NpcPath::onFixedUpdate(GameContext &context, float seconds) {
             ++next_;
     }
     context.physics().setVelocity(*body, motion * std::max(0.0F, speed));
-    animateDirection(entity(), motion, facing_, animation_);
+    detail::animateDirection(entity(), motion, facing_, animation_);
 }
 
 void Interactable::describe(TypeBuilder<Interactable> &type) {
@@ -145,7 +112,7 @@ void Interactable::activate(GameContext &context, Entity &actor) {
         gate->toggle(context);
     }
     if (auto *dialogue = entity().get<Dialogue>())
-        dialogue->begin(context);
+        dialogue->begin(context, actor.id());
     if (!setFlag.empty()) {
         context.blackboard().set(setFlag, 1.0);
         context.blackboard().keep(setFlag);

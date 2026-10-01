@@ -8,6 +8,7 @@
 #include <string_view>
 #include <type_traits>
 #include <typeindex>
+#include <unordered_map>
 #include <vector>
 
 namespace yk {
@@ -19,6 +20,13 @@ struct CheckContext {
     // A prefab is checked on its own, before it is wired to anything: a plate or a door in a prefab
     // has no targets yet, and that is not a mistake.
     bool prefab{};
+    // Reports something that is wrong rather than merely doubtful (a rule that names an action that
+    // does not exist). Checks that only know warnings ignore it; when it is empty (a check run
+    // outside the validator) the sentence is added to the plain list like any other.
+    std::function<void(const std::string &)> error;
+    // Whether the project defines an id of a kind ("stat", "item", "quest"...), when the validator
+    // knows; empty outside it (then nothing can be said against an id).
+    std::function<bool(std::string_view kind, std::string_view id)> known;
 };
 
 // Everything the engine knows about one component class.
@@ -43,8 +51,9 @@ struct ComponentType {
                        std::vector<std::string> &)>
         check;
     bool allowMultiple{};
-    bool hiddenInMenus{}; // Not offered by the editor's Add Component menu.
-    bool screenSpace{};   // Positioned in screen pixels, not the world (UI); no world gizmo.
+    UpdatePhase phase{UpdatePhase::Gameplay}; // When onFixedUpdate runs within a tick.
+    bool hiddenInMenus{};                     // Not offered by the editor's Add Component menu.
+    bool screenSpace{}; // Positioned in screen pixels, not the world (UI); no world gizmo.
 
     const PropertyInfo *find(std::string_view propertyName) const {
         for (const PropertyInfo &property : properties)
@@ -78,6 +87,8 @@ template <class M> constexpr PropertyType propertyTypeOf() {
         return PropertyType::StringList;
     else if constexpr (std::is_same_v<M, AssetRef>)
         return PropertyType::Asset;
+    else if constexpr (std::is_same_v<M, Json>)
+        return PropertyType::Json;
     else
         static_assert(sizeof(M) == 0, "unsupported component field type");
 }
@@ -199,6 +210,12 @@ class FieldBuilder {
         info_->isInputAction = true;
         return *this;
     }
+    // The string (or each string of the list) names a definition of this kind ("item", "quest",
+    // "level", "faction", ...): picker in the editor, existence checked by validation.
+    FieldBuilder &ref(std::string kind) {
+        info_->refKind = std::move(kind);
+        return *this;
+    }
     FieldBuilder &multiline() {
         info_->multiline = true;
         return *this;
@@ -227,6 +244,11 @@ template <class T> class TypeBuilder {
         type_->allowMultiple = true;
         return *this;
     }
+    // The phase of the fixed tick in which this component's onFixedUpdate runs (see UpdatePhase).
+    TypeBuilder &updatePhase(UpdatePhase phase) {
+        type_->phase = phase;
+        return *this;
+    }
     TypeBuilder &onAdd(std::function<void(Entity &, T &)> hook) {
         type_->onAdded = [hook = std::move(hook)](Entity &entity, Component &component) {
             hook(entity, static_cast<T &>(component));
@@ -251,6 +273,31 @@ template <class T> class TypeBuilder {
     TypeBuilder &screenSpace() {
         type_->screenSpace = true;
         return *this;
+    }
+    // Declares a field that is not a plain member: its value is produced by `read` and taken by
+    // `write` (which returns false for a value it cannot accept). For data a component keeps in a
+    // richer form than one of the reflected types and exposes as JSON (a tile map, a rule list).
+    template <class M>
+    FieldBuilder computed(std::string name, std::function<M(const T &)> read,
+                          std::function<bool(T &, const M &)> write) {
+        if (type_->find(name))
+            throw std::logic_error("component '" + type_->name + "' declares field '" + name +
+                                   "' twice");
+        PropertyInfo info;
+        info.name = std::move(name);
+        info.type = detail::propertyTypeOf<M>();
+        info.get = [read](const Component &component) {
+            return detail::toPropertyValue(read(static_cast<const T &>(component)));
+        };
+        info.set = [write](Component &component, const PropertyValue &value) {
+            M converted{};
+            return detail::fromPropertyValue(converted, value) &&
+                   write(static_cast<T &>(component), converted);
+        };
+        const T reference{};
+        info.defaultValue = detail::toPropertyValue(read(reference));
+        type_->properties.push_back(std::move(info));
+        return FieldBuilder(type_->properties.back());
     }
     // Declares an editable field. Members of base classes are accepted.
     template <class C, class M> FieldBuilder field(std::string name, M C::*member) {
@@ -319,6 +366,20 @@ class ComponentRegistry {
         return types_;
     }
 
+    // Catalogues other modules hang on the registry (the rule catalog, ...): one instance per type,
+    // created by the first extend<T>() and only read afterwards. Registration code extends; running
+    // code looks up with extension<T>(), which is null when nothing registered one.
+    template <class T> T &extend() {
+        auto &slot = extensions_[std::type_index(typeid(T))];
+        if (!slot)
+            slot = std::make_shared<T>();
+        return *static_cast<T *>(slot.get());
+    }
+    template <class T> const T *extension() const {
+        const auto found = extensions_.find(std::type_index(typeid(T)));
+        return found == extensions_.end() ? nullptr : static_cast<const T *>(found->second.get());
+    }
+
     void addTemplate(EntityTemplate value);
     const std::vector<EntityTemplate> &templates() const {
         return templates_;
@@ -329,5 +390,6 @@ class ComponentRegistry {
   private:
     std::vector<std::unique_ptr<ComponentType>> types_;
     std::vector<EntityTemplate> templates_;
+    std::unordered_map<std::type_index, std::shared_ptr<void>> extensions_;
 };
 } // namespace yk

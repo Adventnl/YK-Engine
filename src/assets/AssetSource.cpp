@@ -13,6 +13,22 @@ std::filesystem::path ProjectAssets::filePath(const std::string &path) const {
     auto resolved = project_->resolve(path);
     return resolved ? resolved.value() : std::filesystem::path{};
 }
+std::vector<std::string> ProjectAssets::list(std::string_view extension) const {
+    std::vector<std::string> paths;
+    for (const AssetEntry &entry : scanAssets(*project_))
+        if (std::string_view(entry.path).ends_with(extension))
+            paths.push_back(entry.path);
+    return paths; // scanAssets sorts.
+}
+std::vector<std::string> MemoryAssets::list(std::string_view extension) const {
+    std::vector<std::string> paths;
+    for (const auto &[path, text] : files) {
+        (void)text;
+        if (std::string_view(path).ends_with(extension))
+            paths.push_back(path);
+    }
+    return paths; // A map: already sorted.
+}
 Result<std::string> MemoryAssets::readText(const std::string &path) const {
     const auto found = files.find(path);
     if (found == files.end())
@@ -38,7 +54,66 @@ AssetKind classifyAsset(const std::string &path) {
         return AssetKind::Dialogue;
     if (extension == ".ykmeta")
         return AssetKind::TextureMeta;
+    if (extension == ".yktileset")
+        return AssetKind::Tileset;
+    if (extension == ".ykdata")
+        return AssetKind::Data;
+    if (extension == ".ykitem")
+        return AssetKind::Item;
+    if (extension == ".ykrecipe")
+        return AssetKind::Recipe;
+    if (extension == ".ykloot")
+        return AssetKind::Loot;
+    if (extension == ".ykquest")
+        return AssetKind::Quest;
+    if (extension == ".ykschedule")
+        return AssetKind::Schedule;
+    if (extension == ".ykscript")
+        return AssetKind::Script;
+    if (extension == ".ykseq")
+        return AssetKind::Sequence;
     return AssetKind::Other;
+}
+const char *assetKindName(AssetKind kind) {
+    switch (kind) {
+    case AssetKind::Scene:
+        return "scene";
+    case AssetKind::Prefab:
+        return "prefab";
+    case AssetKind::Texture:
+        return "texture";
+    case AssetKind::Sound:
+        return "sound";
+    case AssetKind::Animation:
+        return "animation";
+    case AssetKind::Controller:
+        return "controller";
+    case AssetKind::Dialogue:
+        return "dialogue";
+    case AssetKind::TextureMeta:
+        return "texture meta";
+    case AssetKind::Tileset:
+        return "tileset";
+    case AssetKind::Data:
+        return "data";
+    case AssetKind::Item:
+        return "item";
+    case AssetKind::Recipe:
+        return "recipe";
+    case AssetKind::Loot:
+        return "loot";
+    case AssetKind::Quest:
+        return "quest";
+    case AssetKind::Schedule:
+        return "schedule";
+    case AssetKind::Script:
+        return "script";
+    case AssetKind::Sequence:
+        return "sequence";
+    case AssetKind::Other:
+        return "other";
+    }
+    return "other";
 }
 std::vector<AssetEntry> scanAssets(const Project &project) {
     std::vector<AssetEntry> entries;

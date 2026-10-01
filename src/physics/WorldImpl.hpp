@@ -78,6 +78,24 @@ struct World::Impl {
     // One-way shapes: native shape id -> body-local direction of the solid side (unit length).
     std::unordered_map<std::uint64_t, Vec2> oneWayShapes;
     std::vector<std::uint64_t> retiredShapes;
+    // Native shape id -> world level, for shapes that are not on every level. The collision filter
+    // callback is installed with the first such shape, so worlds with one level pay nothing.
+    std::unordered_map<std::uint64_t, int> shapeLevels;
+    bool levelFilterInstalled{false};
+    int levelOf(b2ShapeId id) const {
+        const auto found = shapeLevels.find(b2StoreShapeId(id));
+        return found == shapeLevels.end() ? allLevels : found->second;
+    }
+    static bool levelsMeet(int a, int b) {
+        return a == allLevels || b == allLevels || a == b;
+    }
+    void setShapeLevel(b2ShapeId id, int level) {
+        if (level == allLevels)
+            shapeLevels.erase(b2StoreShapeId(id));
+        else
+            shapeLevels[b2StoreShapeId(id)] = level;
+    }
+    void installLevelFilter(b2WorldId worldId);
     std::vector<Event> events;
 
     ~Impl() {

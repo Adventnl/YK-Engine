@@ -621,7 +621,8 @@ void blackboardAndEvents() {
     bus.subscribe("loop", [&](const GameEvent &) { bus.emit({"loop", {}, {}}); });
     bus.emit({"loop", {}, {}});
     setLogStderrEnabled(false);
-    CHECK(bus.dispatch() == 1024); // Runaway handlers are cut off, not looped forever.
+    CHECK(bus.dispatch() ==
+          EventBus::dispatchLimit); // Runaway handlers are cut off, not looped forever.
     setLogStderrEnabled(true);
     CHECK(bus.pending() == 0);
 }

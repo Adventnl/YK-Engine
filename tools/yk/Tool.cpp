@@ -288,9 +288,7 @@ int info(const Args &args, const ComponentRegistry &registry) {
     std::map<std::string, std::size_t> counts;
     std::vector<std::string> scenes;
     for (const AssetEntry &entry : scanAssets(*project)) {
-        static const char *names[] = {"scene",     "prefab",     "texture",      "sound",
-                                      "animation", "controller", "texture meta", "other"};
-        ++counts[names[static_cast<int>(entry.kind)]];
+        ++counts[assetKindName(entry.kind)];
         if (entry.kind == AssetKind::Scene)
             scenes.push_back(entry.path);
     }

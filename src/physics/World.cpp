@@ -61,6 +61,18 @@ bool World::Impl::preSolve(b2ShapeId shapeA, b2ShapeId shapeB, const b2Manifold 
                                   b2Body_GetLinearVelocity(platformBody));
     return b2Dot(relative, solid) <= 0.25F;
 }
+void World::Impl::installLevelFilter(b2WorldId worldId) {
+    if (levelFilterInstalled)
+        return;
+    levelFilterInstalled = true;
+    b2World_SetCustomFilterCallback(
+        worldId,
+        [](b2ShapeId first, b2ShapeId second, void *context) {
+            const auto *self = static_cast<const World::Impl *>(context);
+            return levelsMeet(self->levelOf(first), self->levelOf(second));
+        },
+        this);
+}
 World::~World() = default;
 Result<std::unique_ptr<World>> World::create(const WorldConfig &config) {
     if (!bounded(config.gravity) || !std::isfinite(config.fixedSeconds) ||
@@ -240,6 +252,10 @@ Result<ShapeHandle> World::createShape(BodyHandle body, const Geometry &geometry
     const auto handle = impl_->handle<ShapeTag>();
     if (definition.oneWay)
         impl_->oneWayShapes[b2StoreShapeId(id)] = solidSide;
+    if (definition.filter.level != allLevels) {
+        impl_->setShapeLevel(id, definition.filter.level);
+        impl_->installLevelFilter(impl_->world);
+    }
     impl_->shapes.emplace(handle.serial_, Impl::Shape{id, body, impl_->ticks});
     impl_->nativeShapes.insert_or_assign(b2StoreShapeId(id), handle);
     record.shapes.push_back(handle);
@@ -251,6 +267,7 @@ Status World::destroy(ShapeHandle shape) {
     const auto record = impl_->shapes.at(shape.serial_);
     impl_->retireShape(record);
     impl_->oneWayShapes.erase(b2StoreShapeId(record.nativeId));
+    impl_->shapeLevels.erase(b2StoreShapeId(record.nativeId));
     b2DestroyShape(record.nativeId, true);
     std::erase(impl_->bodies.at(record.body.serial_).shapes, shape);
     impl_->shapes.erase(shape.serial_);
@@ -277,6 +294,7 @@ Status World::destroy(BodyHandle body) {
     }
     for (const auto &shape : record.shapes) {
         impl_->oneWayShapes.erase(b2StoreShapeId(impl_->shapes.at(shape.serial_).nativeId));
+        impl_->shapeLevels.erase(b2StoreShapeId(impl_->shapes.at(shape.serial_).nativeId));
         impl_->retireShape(impl_->shapes.at(shape.serial_));
         impl_->shapes.erase(shape.serial_);
     }
@@ -356,8 +374,51 @@ Status World::setFilter(ShapeHandle shape, CollisionFilter filter) {
         return invalidHandle();
     if (!validFilter(filter))
         return Error{"Collision group must fit a signed 16-bit integer"};
-    b2Shape_SetFilter(impl_->shapes.at(shape.serial_).nativeId, physics::native(filter));
+    const auto nativeId = impl_->shapes.at(shape.serial_).nativeId;
+    const bool levelChanged = impl_->levelOf(nativeId) != filter.level;
+    b2Shape_SetFilter(nativeId, physics::native(filter));
+    if (levelChanged) {
+        impl_->setShapeLevel(nativeId, filter.level);
+        if (filter.level != allLevels)
+            impl_->installLevelFilter(impl_->world);
+        // Box2D only revisits the shape's contacts when its own filter bits change.
+        const auto owner = b2Shape_GetBody(nativeId);
+        if (b2Body_IsEnabled(owner)) {
+            b2Body_Disable(owner);
+            b2Body_Enable(owner);
+        }
+    }
     return success();
+}
+Status World::setLevel(BodyHandle body, int level) {
+    if (!valid(body))
+        return invalidHandle();
+    if (level < allLevels || level > 1000)
+        return Error{"Invalid world level"};
+    auto &record = impl_->bodies.at(body.serial_);
+    bool changed = false;
+    for (const auto &shape : record.shapes) {
+        const auto nativeId = impl_->shapes.at(shape.serial_).nativeId;
+        if (impl_->levelOf(nativeId) != level) {
+            impl_->setShapeLevel(nativeId, level);
+            changed = true;
+        }
+    }
+    if (!changed)
+        return success();
+    if (level != allLevels)
+        impl_->installLevelFilter(impl_->world);
+    // Contacts made on the old level end with the body leaving and re-entering the broad phase.
+    if (b2Body_IsEnabled(record.nativeId)) {
+        b2Body_Disable(record.nativeId);
+        b2Body_Enable(record.nativeId);
+    }
+    return success();
+}
+Result<int> World::level(ShapeHandle shape) const {
+    if (!valid(shape))
+        return invalidHandle();
+    return impl_->levelOf(impl_->shapes.at(shape.serial_).nativeId);
 }
 Status World::setGravity(Vec2 gravity) {
     impl_->assertThread();

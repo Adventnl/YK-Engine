@@ -1266,6 +1266,8 @@ std::optional<PropertyValue> otherValue(const PropertyInfo &property, const Prop
         return std::vector<std::string>{"alpha", "beta"};
     case PropertyType::Asset:
         return AssetRef{"assets/sample/" + property.name + ".png"};
+    case PropertyType::Json:
+        return std::nullopt; // Free-form data has no sample; the component's own tests cover it.
     }
     return std::nullopt;
 }
@@ -1291,7 +1293,7 @@ void everyComponentRoundTrips() {
             continue;
         Expectation expectation{host.name(), type->name, {}};
         for (const PropertyInfo &property : type->properties) {
-            if (property.readOnly)
+            if (property.readOnly || property.type == PropertyType::Json)
                 continue;
             const auto value = otherValue(property, property.get(*component), target);
             const bool assigned = value && property.assign(*component, *value);

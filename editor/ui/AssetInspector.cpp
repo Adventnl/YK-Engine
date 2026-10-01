@@ -3,6 +3,7 @@
 #include "yk/animation/AnimationSet.hpp"
 #include "yk/core/FileIO.hpp"
 #include "yk/core/Log.hpp"
+#include "yk/data/Definitions.hpp"
 #include "yk/scene/SceneSerializer.hpp"
 #include <SDL3/SDL.h>
 #include <algorithm>
@@ -31,6 +32,8 @@ std::string humanSize(std::uintmax_t bytes) {
 }
 
 Icon iconOf(AssetKind kind) {
+    if (isDefinitionKind(kind))
+        return Icon::Code;
     switch (kind) {
     case AssetKind::Scene:
         return Icon::Scene;
@@ -48,13 +51,13 @@ Icon iconOf(AssetKind kind) {
         return Icon::Code;
     case AssetKind::TextureMeta:
         return Icon::Settings;
-    case AssetKind::Other:
+    default:
         break;
     }
     return Icon::File;
 }
 
-const char *kindName(AssetKind kind) {
+std::string kindName(AssetKind kind) {
     switch (kind) {
     case AssetKind::Scene:
         return "Scene";
@@ -74,6 +77,12 @@ const char *kindName(AssetKind kind) {
         return "Texture import settings";
     case AssetKind::Other:
         break;
+    default: { // A project definition: its plain name, capitalized.
+        std::string name = assetKindName(kind);
+        if (!name.empty())
+            name[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(name[0])));
+        return name;
+    }
     }
     return "File";
 }
@@ -795,6 +804,22 @@ void prefabAssetInspector(EditorState &state, const std::string &path) {
 }
 } // namespace
 
+namespace {
+// A project definition (tileset, items, quests, ...): what loads from the file, or why it does not.
+void definitionInspector(EditorState &state, const std::string &path) {
+    info("Path", path);
+    const auto summary = describeDefinition(state.project->project(), path);
+    if (!summary.error.empty()) {
+        ImGui::TextColored(imColor(vs::error), "%s", summary.error.c_str());
+        return;
+    }
+    for (const auto &[label, value] : summary.rows) {
+        info(label.c_str(), value);
+        ImGui::TextUnformatted(value.c_str());
+    }
+}
+} // namespace
+
 void assetInspector(EditorState &state) {
     if (!state.project)
         return;
@@ -823,7 +848,7 @@ void assetInspector(EditorState &state) {
                  std::filesystem::path(path).filename().string().c_str());
     ImGui::PushFont(fonts().mono, 11.5F);
     list.AddText({at.x + 30.0F, at.y + 20.0F}, packed(vs::textDim),
-                 (std::string(kindName(kind)) + "  " + humanSize(size)).c_str());
+                 (kindName(kind) + "  " + humanSize(size)).c_str());
     ImGui::PopFont();
     ImGui::SetCursorScreenPos({at.x + width - 24.0F, at.y});
     if (iconButton("asset/inspector/close", Icon::Cross, false, "Close (back to the selection)", 0,
@@ -856,7 +881,18 @@ void assetInspector(EditorState &state) {
     case AssetKind::Dialogue:
         info("Path", path);
         break;
+    case AssetKind::Tileset:
+    case AssetKind::Data:
+    case AssetKind::Item:
+    case AssetKind::Recipe:
+    case AssetKind::Loot:
+    case AssetKind::Quest:
+    case AssetKind::Schedule:
+    case AssetKind::Sequence:
+        definitionInspector(state, path);
+        break;
     case AssetKind::TextureMeta:
+    case AssetKind::Script:
     case AssetKind::Other:
         info("Path", path);
         break;

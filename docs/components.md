@@ -16,6 +16,115 @@ Plays a sound on start or on request.
 | `loop` | bool | false |  |
 | `playOnStart` | bool | false |  |
 
+## Character
+
+### AppearanceLayers
+
+Draws the character's look as layers over its body sprite (outfit, hair, hat...): each layer follows the body's frame and shows what the equipment worn in the Inventory says, else the default.
+
+Requires: `SpriteRenderer`
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `layers` | string list | [] | Layer names, bottom to top. Items name them in equip.appearance. |
+| `defaults` | json | {} | Layer name -> texture shown when nothing worn names one. |
+| `orderStep` | float | 0.001 | (range 0.0001 to 0.1) |
+
+### CharacterMotor
+
+Moves a top-down character on a zero-gravity body. Players, navigation agents, scripts and status effects all steer it through the same intent, so every character accelerates, turns and animates by the same rules.
+
+Requires: `RigidBody` `Collider`
+
+Updates in the Motor phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `walkSpeed` | float | 2.6 | (range 0 to 50) |
+| `runSpeed` | float | 4.6 | (range 0 to 50) |
+| `acceleration` | float | 30 | (range 0 to 500) |
+| `deceleration` | float | 40 | (range 0 to 500) |
+| `faceMovement` | bool | true |  |
+| `runStaminaPerSecond` | float | 0 | Stamina spent per second of running; 0 makes running free. (range 0 to 100) |
+| `runResumeStamina` | float | 10 | After running out of stamina, how much it must recover before running again. (range 0 to 100) |
+| `staminaStat` | string | "stamina" | The stat running spends (a StatSet on the same entity). |
+
+### PlayerCharacterController
+
+Lets a person walk and run a CharacterMotor with the named actions of an input set. The motor decides what the character may do (stunned, out of breath, slowed).
+
+Requires: `PlayerInput` `CharacterMotor`
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `leftAction` | string | "MoveLeft" |  |
+| `rightAction` | string | "MoveRight" |  |
+| `upAction` | string | "MoveUp" |  |
+| `downAction` | string | "MoveDown" |  |
+| `runAction` | string | "Run" | Held to run; empty: the character never runs. |
+| `toggleRun` | bool | false | A press switches running on and off instead of holding it. |
+
+## Characters
+
+### StatSet
+
+The numbers a character has (health, stamina, strength, money...), as the project's stats file defines them. 'start' gives this character's own starting values.
+
+Updates in the PreUpdate phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `start` | json | {} | This character's starting values, like {"strength": 40, "money": 25}. Stats not named here begin as their definition says. |
+
+### StatusEffects
+
+The status effects on a character: stunned, poisoned, hidden, exhausted... Effects are defined in the project's data files; they change stats, carry flags and factors other systems ask about, and may run actions.
+
+Requires: `StatSet`
+
+Updates in the PreUpdate phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `initial` | string list | [] | Effects it starts with. |
+| `immunities` | string list | [] | Effect ids or effect tags it can never receive ("poison", "stun"). |
+
+### Health
+
+A health model on top of a stat: damage with resistances by type, healing, an invulnerability window, and knocked out / dead when it runs out. Raises damaged, healed, knocked_out, recovering, recovered and died. Use Killable instead where one touch should end it.
+
+Requires: `StatSet`
+
+Updates in the PreUpdate phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `stat` | string | "health" | The stat that is its health. |
+| `atZero` | enum | "Die" | What happens when the health reaches its lowest level. Options: KnockOut Die Nothing |
+| `downAt` | float | 0 | The health at or below which the character goes down. (range -100000 to 100000) |
+| `invulnerableSeconds` | float | 0 | Seconds after a hit during which it takes no damage. (range 0 to 60) |
+| `resistances` | json | {} | Fraction of each damage type removed: {"fire": 0.5}. Negative takes extra. |
+| `knockedOutSeconds` | float | 20 | (range 0 to 3600) |
+| `recoveringSeconds` | float | 1.5 | (range 0 to 600) |
+| `recoverFraction` | float | 0.3 | (range 0 to 1) |
+| `koEffect` | string | "knocked_out" | The status effect applied while knocked out (empty: none). |
+| `destroyOnDeath` | bool | false |  |
+
+## Cutscenes
+
+### SequencePlayer
+
+Plays a .ykseq sequence: a timeline of cues (fades, camera moves, walks, conversations, any rule action). Start it with a rule (PlaySequence) or on start.
+
+Updates in the PreUpdate phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `sequence` | asset | "" | The .ykseq file to play. |
+| `playOnStart` | bool | false | Play it when the scene starts (an intro). |
+| `skipSet` | string | "Player1" |  |
+| `skipAction` | string | "" | A named action that skips the sequence; empty: the player cannot skip it. |
+
 ## Effects
 
 ### ParticleEmitter
@@ -447,6 +556,169 @@ Lets a person control this entity through one action set of the project's input 
 |---|---|---|---|
 | `actionSet` | string | "Player1" | Set of the project's input map, for example Player1. |
 
+## Items
+
+### Inventory
+
+Slots that hold stacks of items, and named equipment slots (Outfit, Weapon...) for what is worn or wielded. Characters, desks, lockers and shops all use it. Items are defined in the project's item files.
+
+Updates in the PostSimulation phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `slots` | int | 20 | How many stacks it holds. (range 0 to 500) |
+| `equipmentSlots` | string list | [] | Names of the places an item can be worn or wielded: Outfit, Weapon, Tool... |
+| `owner` | string | "" | Whose it is (a character's persistent id). |
+| `startItems` | json | [] | What it holds at the start: [{"item": "screwdriver", "count": 1, "equipped": false}]. |
+| `collectRadius` | float | 0 | Above 0: picks up items lying within this distance by itself. (range 0 to 20) |
+
+### Container
+
+A locker, desk, chest or body: it holds an Inventory (on the same entity) and says who may open it, how long searching takes and which slots stay hidden until it is searched.
+
+Requires: `Inventory`
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `owner` | string | "" | Whose it is: a character's persistent id or a faction id. Taking from it is theft for the rules that care. |
+| `group` | string | "" | The kind of container it is, for loot pools that deal items among a group ("desks", "lockers"). |
+| `lootTable` | string | "" | A loot table rolled into it when the game starts. |
+| `lootSeed` | int | 0 | Not 0: the same table gives this container the same loot in every game. (range 0 to 1e+09) |
+| `locked` | bool | false |  |
+| `unlockToken` | string | "" | The permission token that opens it while locked: a key item's "grants". |
+| `openRequires` | json | null | A condition that must hold for whoever opens it, e.g. {"type": "HasItem", "item": "warden_pass"}. Empty: anyone. |
+| `searchSeconds` | float | 3 | (range 0 to 120) |
+| `hiddenSlots` | int | 0 | The last this-many slots are not shown until the container has been searched. (range 0 to 100) |
+| `searched` | bool | false | (runtime state, not saved) |
+
+### Pickup
+
+An item lying in the world. Characters with an Inventory that has a collect radius pick it up by walking close; others by an interaction that collects it. It must be on the same level. Dropped items merge with matching ones.
+
+Updates in the PostSimulation phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `item` | string | "" | What it is. |
+| `count` | int | 1 | (range 1 to 9999) |
+| `autoCollect` | bool | true | Picked up by anyone who walks close. Off: only by an interaction. |
+| `lifetime` | float | 0 | Seconds it stays on the ground; 0 forever. (range 0 to 86400) |
+| `bob` | bool | false | Hovers up and down to catch the eye. |
+
+### CraftingStation
+
+A place recipes can require: a workbench, a forge, a desk. A character crafts it when it stands within range.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `station` | string | "workbench" | The kind of station, as recipes name it. |
+| `range` | float | 2 | How close the maker must stand. (range 0.1 to 20) |
+
+### Crafter
+
+Lets a character craft: it knows the project's default recipes and what it has learned, and crafts from its Inventory with its stats.
+
+Requires: `Inventory`
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `known` | string list | [] | Recipes it has learned besides the default ones. |
+
+## Logic
+
+### RuleSet
+
+WHEN an event happens, IF conditions hold, THEN actions run: game logic as data. Edited with the rule editor; `self` in its rules is this entity.
+
+Updates in the PreUpdate phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `rules` | json | [] |  |
+
+## Navigation
+
+### NavigationSettings
+
+Scene-wide navigation settings. Optional: without it the grid covers every tile map at a third of its tile size.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `cellSize` | float | 0 | Meters per navigation cell; 0 derives it (a third of the tile size). Corridors and doors must be at least 2r+1 cells wide for an agent of r cells of radius. (range 0 to 4) |
+| `boundsMin` | vec2 | [0,0] | (range -100000 to 100000) |
+| `boundsMax` | vec2 | [0,0] | (range -100000 to 100000) |
+| `padding` | float | 2 | (range 0 to 100) |
+| `expansionsPerTick` | int | 6000 | Path search budget for all agents together, per fixed tick. (range 100 to 1e+06) |
+| `areas` | string list | [] | Navigation areas to register first, in order (area 1 is the first name). |
+
+### NavigationObstacle
+
+A footprint on the navigation grid that walkers cannot cross and/or sight cannot pass: a crate, a counter, a closed shutter.
+
+Several instances may be added to one entity.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `size` | vec2 | [1,1] | (range 0 to 1000) |
+| `offset` | vec2 | [0,0] |  |
+| `blocksMovement` | bool | true |  |
+| `blocksSight` | bool | false |  |
+| `dynamic` | bool | false | Moves around (a pushed crate): its footprint follows the entity every tick. |
+
+### NavigationDoor
+
+A door as agents see it: whether it is open, closed, locked or sealed, which access classes pass it, and what waiting for it costs a path. Agents that may use it open it on the way through.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `size` | vec2 | [1,1] | (range 0 to 1000) |
+| `offset` | vec2 | [0,0] |  |
+| `source` | enum | "StateGate" | Where the door's state comes from: its StateGate, its Door mechanism, or this component (set by scripts, rules and security). Options: StateGate Mechanism Manual |
+| `manualState` | enum | "Closed" | The state when the source is Manual. Options: Open Closed Locked Sealed |
+| `access` | string list | [] | Access classes (all of them) an agent must hold to pass; none: anyone. |
+| `openPenalty` | float | 1.5 | (range 0 to 100) |
+| `blocksSightWhenClosed` | bool | true |  |
+| `autoCloseSeconds` | float | 2 | A door an agent opened closes again after this long (0: stays open). (range 0 to 60) |
+
+### NavigationLink
+
+One end of a way between two places, usually on different levels: stairs, a ladder, a vent, a hole, a drop, a lift. `target` names the other end.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `kind` | enum | "Stairs" | Options: Stairs Ladder Vent Hole Elevator Drop Climb Teleport |
+| `target` | entity | none |  |
+| `bidirectional` | bool | true |  |
+| `cost` | float | 1 | (range 0 to 1000) |
+| `traverseSeconds` | float | 0 | How long the trip takes; 0 uses a time that fits the kind. (range 0 to 60) |
+| `capabilities` | string list | [] | What an agent must be able to do: climb, crawl, ... |
+| `access` | string list | [] |  |
+| `open` | bool | true | A closed link (a lift that is off, a hatch that is shut) cannot be used. |
+| `capacity` | int | 1 | (range 1 to 32) |
+
+### NavigationAgent
+
+Walks an entity to a destination: asks the navigation service for a path, follows it, opens doors, takes stairs and vents, steers around other agents and reports arrival or why it could not. Steers through CharacterMotor.
+
+Requires: `CharacterMotor` `WorldLayer`
+
+Updates in the Steering phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `radius` | float | 0.28 | Body radius: decides which gaps it fits through. (range 0.05 to 3) |
+| `footOffset` | vec2 | [0,0.28] | Where its feet are, from the entity's position. |
+| `arriveDistance` | float | 0.22 | (range 0.02 to 5) |
+| `stopDistance` | float | 0.35 | (range 0.02 to 10) |
+| `repathInterval` | float | 0.7 | (range 0.05 to 10) |
+| `avoidanceRadius` | float | 0.9 | (range 0 to 10) |
+| `avoidanceStrength` | float | 1 | (range 0 to 5) |
+| `run` | bool | false |  |
+| `capabilities` | string list | ["walk","doors","climb","drop"] | What it can do: walk, doors, climb, drop, crawl, ... |
+| `forbiddenAreas` | string list | [] | Navigation areas it will not enter. |
+| `areaCosts` | string list | [] | name=multiplier entries (mud=2): ground it finds slower or avoids. |
+| `accessTokens` | string list | [] | Access classes it holds, so it can use the doors and links that need them. |
+
 ## Physics
 
 ### RigidBody
@@ -506,6 +778,18 @@ Requires: `RigidBody`
 | `motorTorque` | float | 20 | The most torque the motor may apply (N m). (range 0 to 100000) |
 | `collideConnected` | bool | false | Let the two connected bodies collide with each other. |
 
+## Quests
+
+### QuestLog
+
+The quests of a character (or of the world: put one on a scenario entity): which are active, complete or failed, and how far each objective is. Conditions see this entity as the actor.
+
+Updates in the PreUpdate phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `begin` | string list | [] | Quests started when the scene starts. |
+
 ## Rendering
 
 ### SpriteRenderer
@@ -538,6 +822,8 @@ Draws a texture or a colored placeholder shape.
 
 Defines what the game shows. The first primary camera is used.
 
+Updates in the PostSimulation phase of the tick.
+
 | Property | Type | Default | Notes |
 |---|---|---|---|
 | `primary` | bool | true |  |
@@ -567,6 +853,135 @@ Requires: `SpriteRenderer`
 | `playOnStart` | bool | true |  |
 | `flipParameter` | string | "facing" | Mirror the sprite when this controller parameter is negative (facing). |
 | `artFacesLeft` | bool | false | The art is drawn facing left, so the mirroring is inverted. |
+
+## Simulation
+
+### Identity
+
+Who this character is for the rest of the game: a persistent id that survives saves and scene changes, a name to show, a faction and a role.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `id` | string | "" | Persistent id, unique in the world ("npc.warden", "player.1"). Leave empty on a prefab: one is made up for each instance. |
+| `displayName` | string | "" | The name shown to the player; empty: the entity's name. |
+| `faction` | string | "" |  |
+| `role` | string | "" | The project's own word for what they are: guard, inmate, medic... |
+| `data` | json | {} | Anything else rules and scripts want to read, as an object ({"home": "cell_12"}). |
+
+### Relationships
+
+What this character personally feels about others (opinion, trust, hostility), by their persistent id. Together with the factions' regard it decides who they treat as friend, stranger, suspect or enemy.
+
+Updates in the PostSimulation phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `friendlyAt` | float | 50 | Opinion at which they treat the other as a friend. (range -100 to 100) |
+| `suspiciousAt` | float | -30 | Opinion at or below which they are at least suspicious of the other. (range -100 to 100) |
+| `hostileAt` | float | 60 | Hostility at or above which they treat the other as an enemy, whatever the factions say. (range 0 to 100) |
+| `forgetPerSecond` | float | 0 | Feelings fade toward neutral by this fraction per second; 0: they last. (range 0 to 1) |
+| `start` | json | {} | Starting feelings: {"npc.warden": {"opinion": 20, "trust": 5, "hostility": 0}}. |
+
+### ClockSettings
+
+Where the world clock starts and how fast it runs. Optional: without one it starts on day 1 at 06:00 and runs a minute of the world per second.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `minutesPerSecond` | float | 1 | Minutes of the world per real second (1: a day lasts 24 real minutes). (range 0 to 3600) |
+| `startDay` | int | 1 | (range 1 to 100000) |
+| `startTime` | string | "06:00" | HH:MM |
+| `startPaused` | bool | false |  |
+| `dayStarts` | string | "06:00" | HH:MM: when daylight begins. |
+| `nightStarts` | string | "20:00" | HH:MM: when it ends. |
+
+### ScheduleAgent
+
+Follows a daily schedule on the world clock: which block this character is in, which is next, whether it arrived in time. An AI brain goes where the block says; rules react to its events.
+
+Updates in the PreUpdate phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `schedule` | string | "" | A schedule id; empty: the schedule that lists this character's role. |
+| `detectArrival` | bool | true | Notice by itself when the character is at the block's destination. |
+| `enforce` | bool | false | Track what the blocks require (be in a place, stay, do something) and say when it was not done: the player's routine. |
+
+### Zone
+
+An area of the world with a name, tags, a purpose and a say in who may be there. A room is a zone that is also a destination, an owner's, searchable. Characters entering and leaving raise zone.entered / zone.exited.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `shape` | enum | "Box" | Options: Box Circle Polygon |
+| `size` | vec2 | [4,4] | Box: the extent; circle: the width is the diameter. |
+| `offset` | vec2 | [0,0] |  |
+| `polygon` | json | [] | Polygon corners as [[x, y], ...] in the entity's own space (at least three). |
+| `id` | string | "" | What schedules and rules call it ("cafeteria"); empty: the entity's name. |
+| `name` | string | "" | Shown on the map and in messages. |
+| `room` | bool | false | A logical space a character can be sent to. |
+| `tags` | string list | [] | restricted, private, cell... |
+| `purposes` | string list | [] | What it is for: dining, sleep, work. A schedule can send a character to "purpose:dining". |
+| `priority` | int | 0 | Where zones overlap the highest is the zone there. (range -100 to 100) |
+| `capacity` | int | 0 | How many may be sent here at once (seats, bunks); 0: any number. (range 0 to 1000) |
+| `allowedFactions` | string list | [] |  |
+| `allowedRoles` | string list | [] |  |
+| `access` | json | null | A condition that must hold for whoever is here ({"type": "HasItem", ...}); empty: none. |
+| `countDisguise` | bool | true | Faction checks go by what the character looks like (a uniform opens a staff area), not what they are. |
+| `owner` | string | "" | Persistent id of who it belongs to; always allowed. |
+| `enforce` | bool | false | Entering without access raises zone.trespass. |
+| `trespassViolation` | string | "" | The violation a trespass is (for the violation system). |
+| `environment` | json | {} | Flags other systems read: {"dark": true, "noisy": 0.5}. |
+| `navigationArea` | string | "" | The navigation area its ground belongs to ("restricted"): agents may avoid it. |
+| `navigationCost` | float | 1 | How much dearer it is to walk here (a multiplier on the path cost). (range 1 to 20) |
+
+### AccessPolicy
+
+Who may use this: factions, roles and a condition (keycard, quest, time of day, security level). Doors, terminals and interactions ask it.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `allowedFactions` | string list | [] |  |
+| `allowedRoles` | string list | [] |  |
+| `access` | json | null | A condition that must hold for the user ({"type": "HasToken", ...}); empty: none. |
+| `countDisguise` | bool | true | Faction checks go by what the user looks like. |
+| `lockedDuringLockdown` | bool | false | Nobody may use it while a lockdown runs. |
+| `deniedMessage` | string | "" |  |
+
+### Perceivable
+
+How a character shows up to the others: how far it can be seen from, how loud its footsteps are, whether it is hidden. Without it a character is seen and heard at normal strength.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `visibility` | float | 1 | Multiplies the distance it can be seen from (a dark outfit, a crouch). (range 0 to 4) |
+| `walkNoise` | float | 3 | Meters its footsteps carry when it walks; 0 is silent. (range 0 to 50) |
+| `runNoise` | float | 9 | (range 0 to 50) |
+| `hidden` | bool | false | Hidden (in a locker, under a bed): seen only from very close. |
+| `hiddenRange` | float | 0.8 | (range 0 to 10) |
+
+### Perceiver
+
+Lets a character see and hear. Seeing needs a clear line over the navigation grid; sound is damped by what it crosses. Awareness builds while a subject is in view and fades after it leaves; events report suspicious, aware and lost.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `sightRange` | float | 10 | (range 0 to 100) |
+| `fieldOfView` | float | 110 | The whole cone in front, in degrees. (range 10 to 360) |
+| `peripheralRange` | float | 1.5 | Meters it notices in every direction, behind it too. (range 0 to 20) |
+| `hearingRange` | float | 14 | (range 0 to 100) |
+| `hearingSensitivity` | float | 1 | (range 0 to 4) |
+| `noticeSeconds` | float | 1 | Seconds to become aware of something at the edge of its range. (range 0.05 to 30) |
+| `loseSeconds` | float | 5 | Seconds for awareness to fall from full to nothing once the subject is gone. (range 0.1 to 120) |
+| `memorySeconds` | float | 30 | (range 0 to 600) |
+| `suspiciousAt` | float | 0.35 | (range 0.01 to 1) |
+| `awareAt` | float | 1 | (range 0.01 to 1) |
+| `lookInterval` | float | 0.1 | (range 0.02 to 2) |
+| `interest` | string | "unfriendly" | Who it keeps watch on: anyone, anyone who is not a friend, or only enemies. |
+| `seeThroughDisguise` | bool | false |  |
+| `blind` | bool | false |  |
+| `deaf` | bool | false |  |
+| `lookDirection` | vec2 | [0,1] | Where it faces when it has no CharacterMotor (a camera). |
 
 ## UI
 
@@ -621,17 +1036,42 @@ Screen space: placed in pixels on the screen, not in the world.
 
 ### Dialogue
 
-Screen-space conversation with optional portrait and JSON pages.
+Screen-space conversation with optional portrait: pages of text, or a graph with choices, conditions and actions.
 
 | Property | Type | Default | Notes |
 |---|---|---|---|
-| `sequence` | asset | "" | Optional .ykdialogue JSON asset with pages of {speaker, text, portrait} objects. |
+| `sequence` | asset | "" | Optional .ykdialogue JSON asset: pages of {speaker, text, portrait} objects, or a graph of nodes with choices, branches and actions. |
 | `speaker` | string | "" |  |
 | `pages` | string list | [] | Inline pages used when sequence is empty. |
 | `portrait` | asset | "" | Default high-resolution portrait for every page. |
 | `advanceSet` | string | "Player1" |  |
 | `advanceAction` | string | "Interact" |  |
+| `upAction` | string | "MoveUp" |  |
+| `downAction` | string | "MoveDown" |  |
 | `charactersPerSecond` | float | 45 | (range 0 to 300) |
+| `lockInput` | bool | true | Movement and actions stop while the conversation is open. |
+
+## World
+
+### WorldLayer
+
+Puts this entity (and everything below it) on a world level: a floor, a roof, the vents, underground. Entities on different levels never collide, see each other or share navigation. Without it an entity is on its parent's level, or the first level.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `level` | string | "" | A level id from the scene's World Levels. Empty: the parent's level or the first. |
+
+### Tilemap
+
+A grid of tiles from a tileset on any number of layers and world levels: floors, walls, terrain, roofs, vents, tunnels. The tileset says which tiles are solid, opaque, slow or breakable. Paint it with the tile tool; entities and prefabs sit alongside it.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `tileset` | asset | "" |  |
+| `cellSize` | vec2 | [1,1] | World units per tile. The entity's position is the top-left corner of cell (0, 0). (range 0.05 to 100) |
+| `collisionLayer` | string | "Solid" | Project collision layer of the solid tiles. |
+| `drawLayer` | int | -10 | Draw layer of the map's layers whose own sort layer is 0. (range -1000 to 1000) |
+| `layers` | json | [] | The tile layers: edited with the tile tool. |
 
 ## Entity templates
 

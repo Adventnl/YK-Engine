@@ -89,6 +89,7 @@ inline Vec2 clamped(Vec2 value, Vec2 low, Vec2 high) {
 struct Rect {
     Vec2 position;
     Vec2 size;
+    friend bool operator==(const Rect &, const Rect &) = default;
 };
 inline Vec2 center(Rect r) {
     return r.position + r.size * 0.5F;

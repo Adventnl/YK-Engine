@@ -219,6 +219,95 @@ by default), which a paused runtime could not hear itself; the player dims the p
 PAUSED (`GameViewOptions::paused`). The standalone player and the editor's Play mode both drive a session, so they cannot
 disagree ([ADR 0015](decisions/0015-level-flow-and-transitions-belong-to-the-runtime.md)).
 
+### Update order and services
+
+Each fixed tick runs in this order ([ADR 0017](decisions/0017-services-and-update-phases.md)):
+
+1. input actions are evaluated; components that were added are started (`onStart`); `scene_started`
+   is raised once;
+2. the event bus is told the time and delayed events whose time has come are queued;
+3. **before the physics step**, for each phase in order, the *services* of the phase tick and then
+   the components of that phase run their `onFixedUpdate`: `Clock` (world time, calendars),
+   `PreUpdate` (scripts, rules, stat regeneration, status effects, health recovery),
+   `Decision` (AI and schedule agents choose goals), `Gameplay` (the default phase: every
+   component written before phases existed, so their behaviour is unchanged), `Steering`
+   (navigation agents, avoidance), `Motor` (character motors turn intents into velocities);
+4. tilemaps that changed rebuild their static colliders; the physics world steps; transforms are
+   written back; trigger overlaps and collision callbacks fire;
+5. **after it**: `Perception` (sight, hearing, awareness) and `PostSimulation` (the spatial index,
+   inventories collecting what lies near, pickups, loot, crafting stations);
+6. entities queued with `destroyLater` are removed, the event queue is dispatched, the tick count
+   advances and the interpolation snapshot is taken.
+
+A frame then runs one variable update and late update. Services are created on first use
+(`context.services().get<T>()`) and belong to one run of one scene (`RuleService`,
+`RandomService`, `DataService`, `SpatialIndexService`, `LootService`, `NavigationService`).
+
+### The world model (`world/`, `navigation/`)
+
+One scene is one continuous simulation with several **levels** (floors, roof, vents, underground):
+`SceneSettings::levels`, `WorldLayer`, `levelOf(entity)`, per-level physics filtering and
+per-level queries ([ADR 0016](decisions/0016-one-world-many-floors.md)). `SpatialHash` and the
+`SpatialIndexService` answer "what is near here" without scanning; `Tileset`/`Tilemap` hold large
+maps as chunked sparse layers with merged static colliders ([ADR 0022](decisions/0022-tilemaps-are-a-component-with-chunked-layers.md));
+`WorldGrid` gives navigation, line of sight and sound transmission one view of the same tiles; and
+`NavigationWorld` plans paths over it with budgets ([ADR 0020](decisions/0020-navigation-on-a-multi-level-grid.md)).
+
+### Rules, stats, items and definitions (`rules/`, `stats/`, `items/`, `data/`)
+
+`RuleCatalog` (an extension slot of the registry) holds the conditions, actions and fact namespaces
+every module contributes; `RuleSet` runs WHEN/IF/THEN rules, and the same language is used inside item
+uses, effects, recipes and container permissions ([ADR 0018](decisions/0018-one-condition-and-action-language.md)).
+`GameData` loads a project's definition files (stats, status effects, items, loot tables and pools,
+recipes, free tables) with per-file problem reporting ([ADR 0021](decisions/0021-definitions-are-versioned-data-in-gamedata.md));
+`StatSet`, `StatusEffects` and `Health` give characters numbers, conditions and damage;
+`Inventory`, `Container`, `Pickup`, `Crafter` and `CraftingStation` give them things. Components with
+run-time state of their own implement `Component::saveState/loadState` (the save game contract).
+
+### Characters (`gameplay/Character.hpp`, `items/Appearance.hpp`)
+
+One `CharacterMotor` per character turns an intent into movement; the player's
+`PlayerCharacterController`, a navigation agent, a cutscene or a script only set the intent. The motor
+reads the character's status effects (`no_move`, `no_sprint`, `move.speed`) and spends stamina to
+run ([ADR 0024](decisions/0024-one-character-motor-effects-as-flags-and-equipment-as-layers.md)).
+`AppearanceLayers` draws what a character wears as child sprites that copy the body's frame.
+
+### Identity and factions (`sim/Identity.hpp`, `sim/Factions.hpp`)
+
+`Identity` gives a character a persistent id, a name, a faction and a role; `ActorService` finds
+characters by them without scanning. Factions are definitions in `GameData` (how each regards the
+others); `Relationships` keeps personal feelings by persistent id, and `relationBetween` combines both
+(optionally as the observer *perceives* the subject, which disguises change). Perception, witnesses,
+access control, schedules, jobs and the AI all ask these two questions instead of knowing faction names.
+
+### The world clock and schedules (`sim/Clock.hpp`, `sim/Schedule.hpp`)
+
+`WorldClock` is a service in the `Clock` phase: simulation time (day, hour, minute) apart from real
+seconds, with named pauses, set and skip, callbacks, `clock.*` events and facts. Schedules are
+definitions in `GameData`; a `ScheduleAgent` follows one on the clock and raises the block events
+that AI brains, rules and (for the player) enforced routines build on.
+
+### Zones and rooms (`sim/Zones.hpp`)
+
+A `Zone` is an area (box, circle or polygon on a world level) with an id, tags, purposes, priority and
+a say in who may be there; a room is a zone that is also a destination. `ZoneService` keeps zones in
+the spatial index (no scans), answers "what zones are here", "which room is that", "who is in this
+zone", resolves a schedule's destination (including a free place for a purpose) and, a few
+characters a tick, raises `zone.entered`, `zone.exited` and `zone.trespass`. Zones can paint the
+navigation grid with an area and a cost; the validator finds duplicate ids.
+
+### Quests, conversations and cutscenes (`sim/`)
+
+Story is data on the same rule language ([ADR 0023](decisions/0023-quests-conversations-and-cutscenes-are-data-on-the-rule-language.md)).
+`QuestDefinition`s live in `GameData`; a `QuestLog` component keeps one character's (or the world's)
+quests, completes objectives from conditions, counted events and rules, and raises `quest.*` events.
+`DialogueGraph` parses `.ykdialogue` (pages or nodes with choices, branches and actions) and
+`DialogueSession` walks it for the `Dialogue` component, which `SceneRenderer` draws. `SequenceDefinition`
+parses `.ykseq` timelines and `SequencePlayer` plays them: cues at times, `wait` to hold the clock,
+rule actions as cues, `Camera::hold/release`, the cinematic fade (`GameContext::setCinematicFade`),
+an input lock, skip and stop. All three hand their conditions and actions to the validator through
+`RuleSourceVisitor`.
+
 ## Gameplay library (`gameplay/`)
 
 Sources (`PressurePlate`, `Lever`, `Goal`, `TriggerZone`, `EventAction`) list `targets`; receivers

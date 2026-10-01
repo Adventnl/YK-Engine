@@ -322,6 +322,8 @@ Json sceneToJson(const Scene &scene) {
     settings.set("name", scene.settings.name);
     settings.set("gravity", vec2Json(scene.settings.gravity));
     settings.set("background", formatColor(scene.settings.background));
+    if (!scene.settings.levels.empty()) // Scenes without levels stay as they always were.
+        settings.set("levels", scene.settings.levels.toJson());
     document.set("settings", settings);
     Json entities = Json::array();
     scene.forEach([&](const Entity &entity) { entities.push(entityRecord(entity)); });
@@ -351,6 +353,12 @@ sceneFromJson(const Json &document, const ComponentRegistry &registry, std::uint
             if (!color)
                 return Error{"scene: settings.background must be a color like \"#rrggbb\""};
             scene->settings.background = *color;
+        }
+        if (const Json *levels = settings->find("levels")) {
+            auto parsed = WorldLevelSet::fromJson(*levels);
+            if (!parsed)
+                return Error{"scene: settings." + parsed.error()};
+            scene->settings.levels = std::move(parsed.value());
         }
     }
     std::unordered_map<EntityId, EntityId> remap;

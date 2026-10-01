@@ -57,10 +57,15 @@ struct BodyState {
     bool awake{};
     bool enabled{};
 };
+// A world level is a floor of one continuous simulation (ground, upstairs, a vent layer, below
+// ground). Shapes on different levels never touch each other and queries can be limited to one.
+// `allLevels` is for shapes that exist on every level (an outer wall, a stair that spans floors).
+inline constexpr int allLevels = -1;
 struct CollisionFilter {
     std::uint64_t categoryBits{1};
     std::uint64_t maskBits{UINT64_MAX};
     int groupIndex{}; // Equal positive groups always collide; negative groups never collide.
+    int level{allLevels};
 };
 struct ShapeDef {
     float density{1.0F}; // kg/m^2; sensors also contribute mass unless set to zero.
@@ -131,6 +136,7 @@ struct Event {
 struct QueryFilter {
     std::uint64_t categoryBits{1};
     std::uint64_t maskBits{UINT64_MAX};
+    int level{allLevels}; // Only shapes on this level (and on every level); allLevels: all shapes.
 };
 struct RayHit {
     ShapeHandle shape;

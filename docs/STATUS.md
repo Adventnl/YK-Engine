@@ -6,6 +6,83 @@ real runners (macOS 14 on Apple silicon, Windows Server 2022 with MSVC, Ubuntu 2
 could not be run anywhere is under "Not verified". The starting point of the first pass is recorded
 in [AUDIT.md](AUDIT.md).
 
+## The simulation program (towards an *Escapists 2*-class game)
+
+The long program described in [ESCAPISTS2_BUILD_PLAN.md](ESCAPISTS2_BUILD_PLAN.md). This section
+is the truth about it; the next steps are in [NEXT.md](NEXT.md). States are used literally:
+
+- **NOT STARTED** nothing exists;
+- **FOUNDATION** data structures or an API exist, little or nothing runs on them yet;
+- **PARTIAL** it works for part of the cases or part of the pipeline (runtime without editor, say);
+- **FUNCTIONAL** it works end to end for the intended use, tests cover the main paths;
+- **VERIFIED** FUNCTIONAL, plus an automated test exercises its edge cases and its failure modes
+  (the suite is named). Nothing is called VERIFIED on the strength of having been written.
+
+"Authoring" below is the path a designer takes without C++: files, the Inspector (from
+reflection), and tools. The editor has no dedicated tool for any of the new systems yet; the
+Inspector edits their components, and definition files show a summary there.
+
+| Capability | State | Evidence and what is missing |
+|---|---|---|
+| Render interpolation (entities, children, camera, teleport snap) | VERIFIED | `foundation` |
+| Typed values and `Blackboard`; event payloads, wildcards, delays; services; update phases | VERIFIED | `foundation`, `game_runtime` |
+| `Json` property type (Inspector shows a summary, edits as text) | PARTIAL | no structured JSON editor widget |
+| UI reference-resolution scaling | NOT STARTED | |
+| Prefab overrides by explicit lists; nested prefabs | NOT STARTED | prefabs are still copies with a source link ([ADR 0010](decisions/0010-prefab-instances-are-copies-with-a-source-link.md)) |
+| Editor crash recovery / autosave | NOT STARTED | |
+| World levels, per-level physics, level-aware spatial hash | VERIFIED | `world` (90 checks) |
+| `SpatialIndexService` (what is near, per kind) | VERIFIED | `items` |
+| Tilesets and tilemaps: data, files, collision, rendering, edits, validation | FUNCTIONAL | `tilemap`, `tilemap_render`; **no painting tool in the editor** |
+| World grid: sight, sound transmission, blockers | VERIFIED | `navigation` |
+| Navigation: multi-level A*, links, doors, clearance, budgets, partial paths, dynamic changes | VERIFIED | `navigation` (299 checks) |
+| `NavigationAgent`, `CharacterMotor`, door use, avoidance | FUNCTIONAL | `navigation_agent` (76 checks); no 100-agent timing test yet; no editor overlay |
+| Rules: conditions, actions, `RuleSet`, timers, delays, cooldowns, validation, saved state | VERIFIED | `rules` (44,445 checks); **no rule editor UI**; `EventAction` is untouched (no converter yet) |
+| Deterministic dice (`Rng`, `RandomService`) | VERIFIED | `rules` |
+| Definition files and `GameData` (stats, effects, items, loot, recipes, tables) | VERIFIED | `stats`, `items`, `loot_crafting`; Inspector shows a summary only |
+| Stats: ranges, regeneration with delay, thresholds, modifiers on value/max/min/regen | VERIFIED | `stats` (283 checks) |
+| Status effects: stacking, ticks, flags, factors, grants, actions | VERIFIED | `stats` |
+| Health: resistances, invulnerability, knocked out / recovering / dead, damage over time | VERIFIED | `stats`; stamina is a stat (sprint and attack costs wait for movement and combat) |
+| Items, inventories, equipment (as effects), tools, durability, use, containers, pickups, tokens | VERIFIED | `items` (329 checks); **no inventory screen yet** |
+| Loot tables and pools (must-exist items dealt among a group), seeded per container | VERIFIED | `loot_crafting` (1,881 checks) |
+| Crafting: recipes, stations, learned recipes, stat requirements, tools worn | VERIFIED | `loot_crafting`; no crafting screen yet |
+| Component save contract (`saveState`/`loadState`) | FOUNDATION | implemented on stats, effects, health, inventory, container, pickup, crafter, rules; **no `SaveGame` assembling them yet** |
+| Character appearance layers (`AppearanceLayers`: equipment drawn as layered child sprites that follow the body's frame) | FUNCTIONAL | `character`; logic and validation tested, **no pixel-level render test and no art**; layer sheets must match the body's grid |
+| `CharacterMotor` honours effects (`no_move`, `no_sprint`, `move.speed`) and spends stamina to run; `PlayerCharacterController` (named actions, held or toggled run) | VERIFIED | `character` (101 checks), `navigation_agent`; `TopDownController` (exploration) is unchanged |
+| Quests and objectives: conditions, counted events, manual objectives, `after`, time limits, failure, rewards, repeatable and gated, saved state | VERIFIED | `quests` (155 checks); **no quest log screen or editor** |
+| Dialogue graphs: speakers, expression portraits, choices with conditions/`once`/actions, branches, logic nodes; linear pages still work | VERIFIED | `dialogue` (134 checks), validation of the graph and its rules; the renderer draws portrait sides and choices; **no graph editor** |
+| Identity (persistent ids, `ActorService`), factions (friendly/neutral/suspicious/hostile, asymmetric, data), personal relationships (opinion/trust/hostility, fading), disguises as perceived faction, rule predicates/facts/actions | VERIFIED | `identity` (124 checks); duplicate ids reported by the validator; **no faction editor** |
+| World clock (day/hour/minute, scale, named pauses, set/skip, callbacks, events, facts) and schedules (`.ykschedule`: blocks, wrapping, weekdays, priority, destinations, requirements), `ScheduleAgent` (blocks, arrival, lateness, excuses) | VERIFIED | `clock` (225 checks); the agent does not itself move anyone (the AI will take a block's destination, resolved by `ZoneService`); **no schedule editor** |
+| Zones and rooms (box/circle/polygon, levels, priority, purposes, capacity, access by faction/role/condition/owner/disguise, environment flags, enter/exit/trespass events, schedule destinations by zone/room/purpose, arrival and enforced requirements, navigation areas and costs) | VERIFIED | `zones` (805 checks), `navigation_agent`; the scene view does not draw zones yet (the outline is available for it) |
+| Cutscene sequences (`.ykseq`, `SequencePlayer`): fades, camera moves, walks, waits, events, conversations, any rule action; skip and stop | VERIFIED | `sequence` (310 checks); **no timeline editor**; a cue that pathfinds a character needs the AI phase; not saved mid-play |
+| Documentation examples are loaded by the real parsers | VERIFIED | `docs` (the definition-file examples of PROJECT_FORMAT.md) |
+| Lua scripting | NOT STARTED | |
+| AI brains, perception, noise, debugger | NOT STARTED | |
+| Security levels with enter/exit actions and decay, lockdowns with countdown and failure, `AccessPolicy` (faction, role, condition, lockdown) and `AccessAllowed` | VERIFIED | `security`; no editor overlay yet, keycards are a condition on `HasToken` |
+| Perception: sight (range, cone, all-round range, light by zone, visibility, hidden, invisible, line of sight over the navigation grid), hearing (noise with loudness, damping walls, `noisy` zones, footsteps from `Perceivable`), awareness meter with suspicious/aware thresholds and hysteresis, memory of last seen place, `perception.*` events, `CanSee`/`AwareOf` predicates, `MakeNoise`/`ForgetSubject` actions, saved by persistent id | VERIFIED | `perception` (68 checks incl. 100x100 looks); no scene-view cone overlay yet, no per-level sound (other levels hear nothing) |
+| Jobs, economy | NOT STARTED | |
+| Crime, witnesses, heat, security levels, access policy, scanners, lockdown | NOT STARTED | access tokens exist as item `grants` (`holdsToken`) |
+| Combat, target lock, carrying | NOT STARTED | KO exists in `Health` |
+| Destructible world, vents, hiding, search | NOT STARTED | tile `modify` data and tile edits exist |
+| Save games (`SaveGame`, slots, migration) | NOT STARTED | |
+| Runtime UI framework, minimap, full screens | NOT STARTED | `UiText` and the dialogue overlay exist |
+| Reference project `YK-SimulationDemo/` | NOT STARTED | |
+| Local multiplayer; networking | NOT STARTED | |
+| Specialised editors, asset browser upgrades, CLI additions, `.ykpak`, installer | NOT STARTED | |
+
+### Baseline and regression record of this program
+
+- Start: the audit ([AUDIT.md](AUDIT.md)) found one real defect, `yk info` crashing on a project
+  with a tileset-era asset kind (a name table indexed by an enum with one more value); fixed with an
+  exhaustive switch. See [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
+- After the items/loot/crafting work: `ctest --preset dev` 52 of 52 at the last full run (the full
+  run takes about 15 minutes; the unit suites about 12 seconds), including `demo`,
+  `exploration` and the editor scripts, which show the platformer and exploration projects did not
+  regress. New suites: `foundation` 416, `world` 90, `tilemap` 106, `navigation` 299,
+  `navigation_agent` 76, `rules` 44,445, `stats` 283, `items` 329, `loot_crafting` 1,881,
+  `quests` 155, `dialogue` 134, `sequence` 310, `docs` 14, `character` 101, `identity` 124, `clock` 225, `zones` 805, `security`, `perception` 68 checks (`navigation_agent` 92).
+- Not yet re-run for this program: `release`, `asan`, `headless` presets (new code is plain C++ with no
+  platform dependence; the sanitizer run is listed in [NEXT.md](NEXT.md)).
+
 ## What exists
 
 | Area | State |

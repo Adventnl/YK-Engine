@@ -99,6 +99,7 @@ Status GameRuntime::Impl::buildWorld() {
     triggerShapes.clear();
     overlaps.clear();
     hingeAnchors.clear();
+    tilemaps.clear();
     bindEntities(scene->hierarchyOrder());
     return success();
 }
@@ -166,6 +167,10 @@ void GameRuntime::Impl::bindEntities(const std::vector<EntityId> &ids) {
             }
             definition.filter.categoryBits = options.layers.categoryBits(collider->layer);
             definition.filter.maskBits = options.layers.maskBits(collider->layer);
+            // Scenes with no levels keep the world's one filter; otherwise shapes only meet shapes
+            // on their own level.
+            if (!scene->settings.levels.empty())
+                definition.filter.level = levelOf(*entity);
             if (options.layers.indexOf(collider->layer) < 0)
                 log(LogLevel::Warning, "physics",
                     "'" + entity->name() + "': unknown collision layer '" + collider->layer +
@@ -192,6 +197,10 @@ void GameRuntime::Impl::bindEntities(const std::vector<EntityId> &ids) {
         if (Entity *entity = scene->find(id))
             for (const HingeJoint *hinge : entity->getAll<HingeJoint>())
                 bindHinge(*entity, *hinge);
+    for (const EntityId id : ids)
+        if (Entity *entity = scene->find(id))
+            if (auto *map = entity->get<Tilemap>())
+                bindTilemap(*entity, *map);
 }
 
 void GameRuntime::Impl::bindHinge(Entity &entity, const HingeJoint &hinge) {
@@ -274,6 +283,7 @@ void GameRuntime::Impl::unbindEntities(const std::vector<EntityId> &ids) {
             shapesByEntity.erase(found);
         }
         overlaps.erase(id);
+        unbindTilemap(id);
         if (const auto anchor = hingeAnchors.find(id); anchor != hingeAnchors.end()) {
             if (world->valid(anchor->second))
                 world->destroy(anchor->second);

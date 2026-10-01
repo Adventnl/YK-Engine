@@ -1,6 +1,7 @@
 #include "ui/Panels.hpp"
 #include "yk/core/FileIO.hpp"
 #include "yk/core/Log.hpp"
+#include "yk/data/Definitions.hpp"
 #include <SDL3/SDL.h>
 #include <algorithm>
 #include <cctype>
@@ -13,6 +14,8 @@
 namespace yk::editor::ui {
 namespace {
 Icon iconFor(AssetKind kind) {
+    if (isDefinitionKind(kind)) // Items, tilesets, quests...: data definitions share one look.
+        return Icon::Code;
     switch (kind) {
     case AssetKind::Scene:
         return Icon::Scene;
@@ -30,13 +33,15 @@ Icon iconFor(AssetKind kind) {
         return Icon::Code;
     case AssetKind::TextureMeta:
         return Icon::Settings;
-    case AssetKind::Other:
+    default:
         break;
     }
     return Icon::File;
 }
 
 Color colorFor(AssetKind kind) {
+    if (isDefinitionKind(kind))
+        return {120, 205, 190, 255};
     switch (kind) {
     case AssetKind::Scene:
         return {110, 180, 240, 255};
@@ -52,8 +57,7 @@ Color colorFor(AssetKind kind) {
         return {240, 165, 90, 255};
     case AssetKind::Dialogue:
         return {198, 170, 235, 255};
-    case AssetKind::TextureMeta:
-    case AssetKind::Other:
+    default:
         break;
     }
     return vs::textDim;

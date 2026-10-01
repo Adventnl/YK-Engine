@@ -7,15 +7,30 @@ namespace yk {
 namespace {
 Status drawAsPlayed(Renderer &renderer, SceneRenderer &sceneRenderer, const Scene &scene,
                     const physics::World *physics, const Blackboard *variables, Rect viewport,
-                    const GameViewOptions &options) {
+                    const GameViewOptions &options, bool interpolate, float alpha, double time) {
     CameraView view{{0.0F, 0.0F}, 18.0F};
     if (const Camera *camera = SceneRenderer::primaryCamera(scene))
-        view = camera->view();
+        view = interpolate ? camera->viewAt(alpha) : camera->view();
     RenderPass world{SceneRenderer::cameraFor(view, viewport.size), viewport,
                      scene.settings.background, options.target};
     if (auto status = renderer.beginPass(world); !status)
         return status;
-    Status drawn = sceneRenderer.drawWorld(renderer, scene, {world.camera, viewport.size, true});
+    // Which levels the game view shows: the one the camera looks at, and perhaps those below it.
+    std::vector<float> levelAlpha;
+    int focusLevel = 0;
+    if (const Camera *camera = SceneRenderer::primaryCamera(scene))
+        focusLevel = camera->focusLevel();
+    if (!scene.settings.levels.empty())
+        levelAlpha = levelVisibility(scene.settings.levels, focusLevel);
+    WorldView worldView;
+    worldView.levelAlpha = levelAlpha.empty() ? nullptr : &levelAlpha;
+    worldView.time = time;
+    worldView.camera = world.camera;
+    worldView.viewport = viewport.size;
+    worldView.parallax = true;
+    worldView.interpolate = interpolate;
+    worldView.alpha = alpha;
+    Status drawn = sceneRenderer.drawWorld(renderer, scene, worldView);
     if (drawn && options.colliders)
         drawn = sceneRenderer.drawColliders(renderer, scene);
     if (drawn && options.physicsDebug && physics)
@@ -89,12 +104,14 @@ Status drawGameView(Renderer &renderer, SceneRenderer &sceneRenderer, GameRuntim
     GameViewOptions shown = options;
     shown.fade = std::max(options.fade, runtime.screenFade());
     return drawAsPlayed(renderer, sceneRenderer, runtime.scene(), &runtime.physics(),
-                        &runtime.blackboard(), viewport, shown);
+                        &runtime.blackboard(), viewport, shown, true, runtime.interpolationAlpha(),
+                        runtime.time());
 }
 
 Status drawScenePreview(Renderer &renderer, SceneRenderer &sceneRenderer, const Scene &scene,
                         Rect viewport, const GameViewOptions &options,
                         const Blackboard *variables) {
-    return drawAsPlayed(renderer, sceneRenderer, scene, nullptr, variables, viewport, options);
+    return drawAsPlayed(renderer, sceneRenderer, scene, nullptr, variables, viewport, options,
+                        false, 1.0F, 0.0);
 }
 } // namespace yk

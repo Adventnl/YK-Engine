@@ -1,7 +1,19 @@
 #include "yk/components/Components.hpp"
 #include "yk/components/Effects.hpp"
 #include "yk/core/Log.hpp"
+#include "yk/items/Inventory.hpp"
+#include "yk/rules/RuleSet.hpp"
 #include "yk/runtime/GameContext.hpp"
+#include "yk/sim/Dialogue.hpp"
+#include "yk/sim/Identity.hpp"
+#include "yk/sim/Quests.hpp"
+#include "yk/sim/Schedule.hpp"
+#include "yk/sim/Security.hpp"
+#include "yk/sim/Sequence.hpp"
+#include "yk/sim/Zones.hpp"
+#include "yk/stats/Stats.hpp"
+#include "yk/world/Tilemap.hpp"
+#include "yk/world/WorldLevels.hpp"
 #include <algorithm>
 #include <cmath>
 
@@ -257,6 +269,7 @@ void HingeJoint::describe(TypeBuilder<HingeJoint> &type) {
 
 void Camera::describe(TypeBuilder<Camera> &type) {
     type.category("Rendering")
+        .updatePhase(UpdatePhase::PostSimulation)
         .description("Defines what the game shows. The first primary camera is used.");
     type.field("primary", &Camera::primary);
     type.field("mode", &Camera::mode)
@@ -281,20 +294,36 @@ CameraView Camera::view() const {
         return {position_, height_};
     return {entity().worldPosition(), orthographicHeight};
 }
-void Camera::onLateUpdate(GameContext &context, float) {
+int Camera::focusLevel() const {
+    for (const EntityRef reference : targets)
+        if (const Entity *target = entity().scene().find(reference))
+            return std::max(levelOf(*target), 0);
+    return std::max(levelOf(entity()), 0);
+}
+CameraView Camera::viewAt(float alpha) const {
+    if (!initialized_)
+        return view();
+    const float t = std::clamp(alpha, 0.0F, 1.0F);
+    return {lerp(previousPosition_, position_, t), lerp(previousHeight_, height_, t)};
+}
+void Camera::onFixedUpdate(GameContext &context, float seconds) {
     // What the camera follows moves in ticks, so the camera follows in ticks too: one that glided
     // at the display's rate (a 120 or 144 Hz screen) would slip against the characters, which makes
-    // them shimmer against the background. On a 60 Hz screen this is every frame, as before.
-    const double now = context.time();
-    if (initialized_ && !(now > lastTime_))
-        return;
-    const float seconds = initialized_ ? static_cast<float>(now - lastTime_) : 0.0F;
-    lastTime_ = now;
+    // them shimmer against the background. The drawn view blends the last two ticks (viewAt), the
+    // same way the entities are drawn, so the two stay locked together.
+    if (!initialized_)
+        seconds = 0.0F;
+    previousPosition_ = position_;
+    previousHeight_ = height_;
     const Vec2 viewport = context.viewportSize();
     const float aspect = viewport.y > 0 ? viewport.x / viewport.y : 16.0F / 9.0F;
     Vec2 goal = entity().worldPosition();
     float height = orthographicHeight;
-    if (mode != CameraMode::Fixed) {
+    if (held_) {
+        goal = heldCenter_;
+        if (heldHeight_ > 0.0F)
+            height = heldHeight_;
+    } else if (mode != CameraMode::Fixed) {
         bool any = false;
         Vec2 low{}, high{};
         for (const EntityRef reference : targets) {
@@ -316,10 +345,13 @@ void Camera::onLateUpdate(GameContext &context, float) {
             }
         }
     }
-    if (!initialized_) {
+    if (!initialized_ || cut_) {
         position_ = goal;
         height_ = height;
+        previousPosition_ = goal;
+        previousHeight_ = height;
         initialized_ = true;
+        cut_ = false;
     } else {
         const float blend = smoothTime > 0.0F ? 1.0F - std::exp(-seconds / smoothTime) : 1.0F;
         position_ = lerp(position_, goal, blend);
@@ -335,6 +367,8 @@ void Camera::onLateUpdate(GameContext &context, float) {
         position_.x = clampAxis(position_.x, boundsMin.x, boundsMax.x, half.x);
         position_.y = clampAxis(position_.y, boundsMin.y, boundsMax.y, half.y);
     }
+    if (seconds == 0.0F && previousPosition_ == goal) // First step: nothing to blend from.
+        previousPosition_ = position_;
 }
 
 void AudioSource::describe(TypeBuilder<AudioSource> &type) {
@@ -435,7 +469,19 @@ void registerEngineComponents(ComponentRegistry &registry) {
     registry.add<Camera>("Camera");
     registry.add<AudioSource>("AudioSource");
     registry.add<AnimatedSprite>("AnimatedSprite");
+    registry.add<WorldLayer>("WorldLayer");
+    registry.add<Tilemap>("Tilemap");
     registerEffectComponents(registry);
+    registerRuleComponents(registry);
+    registerStatComponents(registry);
+    registerItemComponents(registry);
+    registerQuestComponents(registry);
+    registerDialogueRules(registry.extend<RuleCatalog>());
+    registerSequenceComponents(registry);
+    registerIdentityComponents(registry);
+    registerScheduleComponents(registry);
+    registerZoneComponents(registry);
+    registerSecurityComponents(registry);
     const auto place = [](Scene &scene, Vec2 at, const char *name) -> Entity & {
         Entity &entity = scene.createEntity(name);
         entity.setWorldPosition(at);

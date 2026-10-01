@@ -1,11 +1,36 @@
 #pragma once
+#include "yk/core/Json.hpp"
 #include "yk/core/Math.hpp"
+#include "yk/core/Result.hpp"
+#include <cstddef>
+#include <cstdint>
 
 namespace yk {
 class Entity;
 class Scene;
 class GameContext;
 struct ComponentType;
+
+// When, within one fixed tick, a component type's onFixedUpdate runs (and, for services, when they
+// do). The order is fixed and documented in ARCHITECTURE.md ("Update order"): the phases up to
+// Steering run before the physics step, Perception and PostSimulation after it (positions, contacts
+// and triggers are up to date). Within a phase components run in hierarchy order. Every component
+// that existed before phases did is Gameplay, so its behaviour is unchanged.
+enum class UpdatePhase : std::uint8_t {
+    Clock,          // world time and calendars: before anything reads the time of day
+    PreUpdate,      // scripts and rules that react to what happened last tick
+    Decision,       // AI and schedule agents choose goals and targets
+    Gameplay,       // the default: controllers, mechanisms, movement intent
+    Steering,       // navigation agents and avoidance turn goals into movement intents
+    Motor,          // character motors turn intents into velocities, just before the step
+    Perception,     // after physics: sight, hearing and awareness see where everything ended up
+    PostSimulation, // stat regeneration, status expiry, security timers
+};
+inline constexpr std::size_t updatePhaseCount = 8;
+inline constexpr bool runsBeforePhysics(UpdatePhase phase) {
+    return phase <= UpdatePhase::Motor;
+}
+const char *updatePhaseName(UpdatePhase phase);
 
 struct CollisionInfo {
     Vec2 point{};
@@ -48,6 +73,18 @@ class Component {
     virtual void onCollisionExit(GameContext &, Entity & /*other*/, const CollisionInfo &) {}
     // Immediately before the runtime removes the entity or shuts down.
     virtual void onDestroy(GameContext &) {}
+
+    // Save games: what the component holds while the game runs that its authored fields do not say
+    // (the health left, the items carried, the effects on). A component that has such state
+    // returns it from saveState() as plain JSON (null: nothing to save) and gets it back from
+    // loadState() on the entity the loaded scene has re-created, after onStart. The state must be
+    // readable by later versions of the same component: add keys, never reuse one.
+    virtual Json saveState() const {
+        return Json();
+    }
+    virtual Status loadState(GameContext &, const Json &) {
+        return success();
+    }
 
   private:
     friend class Entity;
