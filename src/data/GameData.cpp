@@ -6,6 +6,57 @@ namespace yk {
 namespace {
 constexpr int dataFormatVersion = 1;
 
+// The kinds of definition file: the extension, the format name inside, and the sections a file of
+// that kind may use in a shorter way than the general ".ykdata" form.
+struct FileKind {
+    const char *extension;
+    const char *format;
+};
+constexpr FileKind fileKinds[] = {{".ykdata", "yk.data"},
+                                  {".ykitem", "yk.item"},
+                                  {".ykrecipe", "yk.recipe"},
+                                  {".ykloot", "yk.loot"}};
+
+const FileKind &kindOf(const std::string &file) {
+    for (const FileKind &kind : fileKinds)
+        if (file.ends_with(kind.extension))
+            return kind;
+    return fileKinds[0];
+}
+
+// A file with a single item or recipe may be that definition itself ({"id": "screwdriver", ...});
+// a loot file lists "tables" and "pools". Both are rewritten to the sections of the general form.
+Json normalize(const Json &original, const std::string &file) {
+    if (!original.isObject())
+        return original;
+    const auto wrapSingle = [&](const char *extension, const char *section) -> std::optional<Json> {
+        if (!file.ends_with(extension) || !original.contains("id") || original.contains(section))
+            return std::nullopt;
+        Json wrapped = Json::object();
+        Json list = Json::array();
+        list.push(original);
+        wrapped.set(section, list);
+        return wrapped;
+    };
+    if (auto item = wrapSingle(".ykitem", "items"))
+        return *item;
+    if (auto recipe = wrapSingle(".ykrecipe", "recipes"))
+        return *recipe;
+    if (file.ends_with(".ykloot") && !original.contains("lootTables") &&
+        !original.contains("lootPools")) {
+        Json wrapped = Json::object();
+        for (std::size_t i = 0; i < original.size(); ++i) {
+            const std::string &key = original.keyAt(i);
+            wrapped.set(key == "tables"  ? "lootTables"
+                        : key == "pools" ? "lootPools"
+                                         : key,
+                        original.valueAt(i));
+        }
+        return wrapped;
+    }
+    return original;
+}
+
 // Collects what the rule validator finds in definition files as problems of those files.
 class FileReport final : public RuleReport {
   public:
@@ -33,7 +84,12 @@ class FileReport final : public RuleReport {
 } // namespace
 
 const std::vector<std::string> &GameData::extensions() {
-    static const std::vector<std::string> list{".ykdata", ".ykitem"};
+    static const std::vector<std::string> list = [] {
+        std::vector<std::string> names;
+        for (const FileKind &kind : fileKinds)
+            names.push_back(kind.extension);
+        return names;
+    }();
     return list;
 }
 
@@ -63,28 +119,19 @@ void GameData::finalize(std::vector<DataProblem> &problems) {
 
 void GameData::add(const Json &original, const std::string &file,
                    std::vector<DataProblem> &problems) {
-    // A file with a single definition may be that definition itself ({"id": "screwdriver", ...}).
-    Json wrapped;
-    if (original.isObject() && file.ends_with(".ykitem") && original.contains("id") &&
-        !original.contains("items")) {
-        wrapped = Json::object();
-        Json list = Json::array();
-        list.push(original);
-        wrapped.set("items", list);
-    }
-    const Json &document = wrapped.isObject() ? wrapped : original;
+    const Json document = normalize(original, file);
     if (!document.isObject()) {
         problems.push_back(
             {file, "a definition file is a JSON object with sections ('stats', 'effects', ...)",
              true});
         return;
     }
-    const std::string expected = file.ends_with(".ykitem") ? "yk.item" : "yk.data";
+    const std::string expected = kindOf(file).format;
     if (document.contains("format") && document.get("format").asString() != expected) {
-        problems.push_back({file,
-                            "the format is '" + document.get("format").asString() + "', not '" +
-                                expected + "'",
-                            true});
+        problems.push_back(
+            {file,
+             "the format is '" + document.get("format").asString() + "', not '" + expected + "'",
+             true});
         return;
     }
     if (document.get("version").asInt(dataFormatVersion) > dataFormatVersion) {
@@ -96,14 +143,16 @@ void GameData::add(const Json &original, const std::string &file,
         return;
     }
     std::vector<std::string> warnings;
-    data::warnUnknown(
-        document,
-        {"format", "version", "name", "description", "stats", "effects", "items", "tables"},
-        warnings);
+    data::warnUnknown(document,
+                      {"format", "version", "name", "description", "stats", "effects", "items",
+                       "lootTables", "lootPools", "recipes", "tables"},
+                      warnings);
     for (const std::string &warning : warnings)
         problems.push_back({file, warning, false});
     stats.load(document, file, problems);
     items.load(document, file, problems);
+    loot.load(document, file, problems);
+    recipes.load(document, file, problems);
     if (document.contains("tables")) {
         if (!document.get("tables").isObject()) {
             problems.push_back({file, "'tables' must be an object of named tables", true});
@@ -124,6 +173,8 @@ void GameData::add(const Json &original, const std::string &file,
 void GameData::check(const RuleCatalog *rules, std::vector<DataProblem> &problems) const {
     stats.check(problems);
     items.check(stats, problems);
+    loot.check(items, problems);
+    recipes.check(items, stats, problems);
     if (!rules)
         return;
     FileReport report(*this, problems);
@@ -143,12 +194,19 @@ bool GameData::known(std::string_view kind, std::string_view id) const {
         return stats.effects.contains(id);
     if (kind == "item")
         return items.items.contains(id);
+    if (kind == "loot")
+        return loot.tables.contains(id);
+    if (kind == "loot pool")
+        return loot.pools.contains(id);
+    if (kind == "recipe")
+        return recipes.recipes.contains(id);
     return true;
 }
 
 void GameData::visitRules(const RuleSourceVisitor &visit) const {
     stats.visitRules(visit);
     items.visitRules(visit);
+    recipes.visitRules(visit);
 }
 void GameData::visitAssets(const AssetRefVisitor &visit) const {
     items.visitAssets(visit);
@@ -163,6 +221,9 @@ std::vector<std::pair<std::string, std::string>> GameData::summary() const {
     count("Stats", stats.stats.size());
     count("Status effects", stats.effects.size());
     count("Items", items.items.size());
+    count("Recipes", recipes.recipes.size());
+    count("Loot tables", loot.tables.size());
+    count("Loot pools", loot.pools.size());
     count("Tables", tables.size());
     return rows;
 }

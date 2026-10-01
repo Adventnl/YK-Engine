@@ -381,6 +381,62 @@ int Inventory::remove(GameContext &context, const ItemId &item, int count) {
     return removed;
 }
 
+int Inventory::removeWithTag(GameContext &context, std::string_view tag, int count) {
+    int removed = 0;
+    const auto tagged = [&](const ItemStack &stack) {
+        const ItemDefinition *def = stack.empty() ? nullptr : definitionOf(context, stack.item);
+        return def && def->hasTag(tag);
+    };
+    std::map<std::string, int> byItem;
+    for (ItemStack &held : slots_) {
+        if (removed >= count)
+            break;
+        if (tagged(held)) {
+            const int taken = std::min(count - removed, held.count);
+            byItem[held.item.str()] += taken;
+            held.count -= taken;
+            removed += taken;
+            if (held.count == 0)
+                held = {};
+        }
+    }
+    for (auto &[name, held] : worn_) {
+        if (removed >= count)
+            break;
+        if (tagged(held)) {
+            applyEquipment(context, held, false);
+            announce(context, "item.unequipped", held, name);
+            byItem[held.item.str()] += held.count;
+            removed += held.count;
+            held = {};
+        }
+    }
+    for (const auto &[item, taken] : byItem) {
+        ItemStack report;
+        report.item = ItemId(item);
+        report.count = taken;
+        announce(context, "item.removed", report);
+    }
+    if (removed > 0)
+        changed(context);
+    return removed;
+}
+
+Inventory::Location Inventory::find(const ItemId &item) const {
+    Location where;
+    for (std::size_t i = 0; i < slots_.size(); ++i)
+        if (slots_[i].item == item && !slots_[i].empty()) {
+            where.slot = static_cast<int>(i);
+            return where;
+        }
+    for (const auto &[name, held] : worn_)
+        if (held.item == item && !held.empty()) {
+            where.equipSlot = name;
+            return where;
+        }
+    return where;
+}
+
 ItemStack Inventory::take(GameContext &context, int slotIndex, int count) {
     if (slotIndex < 0 || slotIndex >= size() || count <= 0)
         return {};

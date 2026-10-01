@@ -1,6 +1,7 @@
 #include "yk/core/Log.hpp"
 #include "yk/data/GameData.hpp"
 #include "yk/items/Inventory.hpp"
+#include "yk/items/Loot.hpp"
 #include "yk/rules/RuleSet.hpp"
 #include "yk/runtime/GameContext.hpp"
 #include <algorithm>
@@ -16,6 +17,15 @@ void Container::describe(TypeBuilder<Container> &type) {
         .tooltip(
             "Whose it is: a character's persistent id or a faction id. Taking from it is theft "
             "for the rules that care.");
+    type.field("group", &Container::group)
+        .tooltip("The kind of container it is, for loot pools that deal items among a group "
+                 "(\"desks\", \"lockers\").");
+    type.field("lootTable", &Container::lootTable)
+        .ref("loot")
+        .tooltip("A loot table rolled into it when the game starts.");
+    type.field("lootSeed", &Container::lootSeed)
+        .range(0, 1000000000, 1)
+        .tooltip("Not 0: the same table gives this container the same loot in every game.");
     type.field("locked", &Container::locked);
     type.field("unlockToken", &Container::unlockToken)
         .tooltip("The permission token that opens it while locked: a key item's \"grants\".");
@@ -35,6 +45,9 @@ void Container::describe(TypeBuilder<Container> &type) {
         if (container.locked && container.unlockToken.empty() && container.openRequires.isNull())
             problems.push_back(
                 "is locked but names no token or condition that opens it, so only a rule can");
+        if (!container.lootTable.empty() && context.known &&
+            !context.known("loot", container.lootTable))
+            problems.push_back("its loot table '" + container.lootTable + "' is not defined");
         if (container.openRequires.isNull())
             return;
         auto condition = Condition::fromJson(container.openRequires);
@@ -48,8 +61,18 @@ void Container::describe(TypeBuilder<Container> &type) {
     });
 }
 
-void Container::onStart(GameContext &) {
+void Container::onStart(GameContext &context) {
     openBy_.clear();
+    context.services().get<LootService>(); // Also deals the pools when the scene starts.
+    generateLoot(context);
+}
+
+bool Container::generateLoot(GameContext &context) {
+    if (generated_ || lootTable.empty())
+        return false;
+    generated_ = true;
+    context.services().get<LootService>().fill(context, entity());
+    return true;
 }
 void Container::onDestroy(GameContext &) {
     openBy_.clear();
@@ -176,11 +199,13 @@ Json Container::saveState() const {
     Json state = Json::object();
     state.set("locked", locked);
     state.set("searched", searched_);
+    state.set("generated", generated_);
     return state;
 }
 Status Container::loadState(GameContext &, const Json &state) {
     locked = state.get("locked").asBool(locked);
     searched_ = state.get("searched").asBool(false);
+    generated_ = state.get("generated").asBool(generated_);
     return success();
 }
 } // namespace yk

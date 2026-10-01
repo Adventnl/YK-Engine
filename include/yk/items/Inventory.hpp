@@ -67,6 +67,8 @@ class Inventory final : public Component {
     // Takes up to `count` of an item out (from the slots first, then what is worn); the count
     // taken.
     int remove(GameContext &context, const ItemId &item, int count = 1);
+    // Takes up to `count` items that have the tag (carried first, then worn); the count taken.
+    int removeWithTag(GameContext &context, std::string_view tag, int count = 1);
     // Takes up to `count` from a slot and hands them over (an empty stack when there is nothing).
     ItemStack take(GameContext &context, int slotIndex, int count = 1 << 20);
     // Moves a stack onto another slot: merges when they match, swaps otherwise.
@@ -105,6 +107,8 @@ class Inventory final : public Component {
     // Wears an item down (a tool used, a weapon swung); true when it broke and is gone.
     bool wear(GameContext &context, const Location &where, int amount);
     ItemStack *stackAt(const Location &where);
+    // Where the first stack of an item is (carried first, then worn); not valid when there is none.
+    Location find(const ItemId &item) const;
 
     // Puts the stack on the ground at `at` (merging into a stack already there): see Pickup.
     bool drop(GameContext &context, int slotIndex, int count, Vec2 at);
@@ -138,6 +142,9 @@ class Container final : public Component {
   public:
     std::string
         owner; // Whose it is (persistent id, or a faction id); informational for rules and AI.
+    std::string group;     // The kind of container it is, for loot pools ("desks", "lockers").
+    std::string lootTable; // Rolled into it when the game starts, once.
+    int lootSeed{0};       // Not 0: the same table gives the same loot in every game.
     bool locked{false};
     std::string unlockToken; // The permission token that opens it while locked (a key's grant).
     Json openRequires; // A rule condition ({"type": "HasItem", ...}) that must hold; actor is who
@@ -162,6 +169,9 @@ class Container final : public Component {
     void close(GameContext &context, Entity &who);
     bool openBy(EntityId who) const;
     void setLocked(GameContext &context, bool value);
+    // Rolls the loot table into the inventory, once (it happens by itself when the game starts).
+    // False when there is no table or it has been done.
+    bool generateLoot(GameContext &context);
     // Reveals the hidden slots (the search happened).
     void search(GameContext &context, Entity &who);
     // How many of the container's slots `who` can see: all once it is searched, else the visible
@@ -176,6 +186,7 @@ class Container final : public Component {
   private:
     std::vector<EntityId> openBy_;
     bool searched_{false};
+    bool generated_{false};
 };
 
 // An item lying in the world. Characters with an Inventory that has a collect radius pick it up by

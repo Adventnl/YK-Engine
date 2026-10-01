@@ -1,6 +1,8 @@
 #include "yk/core/Log.hpp"
 #include "yk/data/GameData.hpp"
+#include "yk/items/Crafting.hpp"
 #include "yk/items/Inventory.hpp"
+#include "yk/items/Loot.hpp"
 #include "yk/rules/RuleSet.hpp"
 #include "yk/runtime/GameContext.hpp"
 #include <algorithm>
@@ -320,8 +322,12 @@ void registerItemRules(RuleCatalog &catalog) {
 
 void registerItemComponents(ComponentRegistry &registry) {
     registerItemRules(registry.extend<RuleCatalog>());
+    registerLootRules(registry.extend<RuleCatalog>());
+    registerCraftingRules(registry.extend<RuleCatalog>());
     registry.add<Inventory>("Inventory");
     registry.add<Container>("Container");
     registry.add<Pickup>("Pickup");
+    registry.add<CraftingStation>("CraftingStation");
+    registry.add<Crafter>("Crafter");
 }
 } // namespace yk

@@ -1,6 +1,8 @@
 #pragma once
 #include "yk/assets/AssetSource.hpp"
+#include "yk/items/Crafting.hpp"
 #include "yk/items/Items.hpp"
+#include "yk/items/Loot.hpp"
 #include "yk/runtime/Services.hpp"
 #include "yk/stats/Stats.hpp"
 #include <functional>
@@ -19,6 +21,8 @@ class GameData {
   public:
     StatCatalog stats;
     ItemCatalog items;
+    LootCatalog loot;
+    RecipeCatalog recipes;
     // Named tables for what only the game knows (a prison's names, a shop's price list); scripts
     // and rules read them by name.
     std::map<std::string, Json> tables;

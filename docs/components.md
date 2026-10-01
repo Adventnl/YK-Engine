@@ -536,6 +536,9 @@ Requires: `Inventory`
 | Property | Type | Default | Notes |
 |---|---|---|---|
 | `owner` | string | "" | Whose it is: a character's persistent id or a faction id. Taking from it is theft for the rules that care. |
+| `group` | string | "" | The kind of container it is, for loot pools that deal items among a group ("desks", "lockers"). |
+| `lootTable` | string | "" | A loot table rolled into it when the game starts. |
+| `lootSeed` | int | 0 | Not 0: the same table gives this container the same loot in every game. (range 0 to 1e+09) |
 | `locked` | bool | false |  |
 | `unlockToken` | string | "" | The permission token that opens it while locked: a key item's "grants". |
 | `openRequires` | json | null | A condition that must hold for whoever opens it, e.g. {"type": "HasItem", "item": "warden_pass"}. Empty: anyone. |
@@ -556,6 +559,25 @@ Updates in the PostSimulation phase of the tick.
 | `autoCollect` | bool | true | Picked up by anyone who walks close. Off: only by an interaction. |
 | `lifetime` | float | 0 | Seconds it stays on the ground; 0 forever. (range 0 to 86400) |
 | `bob` | bool | false | Hovers up and down to catch the eye. |
+
+### CraftingStation
+
+A place recipes can require: a workbench, a forge, a desk. A character crafts it when it stands within range.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `station` | string | "workbench" | The kind of station, as recipes name it. |
+| `range` | float | 2 | How close the maker must stand. (range 0.1 to 20) |
+
+### Crafter
+
+Lets a character craft: it knows the project's default recipes and what it has learned, and crafts from its Inventory with its stats.
+
+Requires: `Inventory`
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `known` | string list | [] | Recipes it has learned besides the default ones. |
 
 ## Logic
 
