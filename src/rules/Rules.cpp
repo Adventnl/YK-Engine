@@ -51,6 +51,10 @@ Entity *RuleContext::resolveOne(std::string_view spec) const {
     const auto found = resolve(spec);
     return found.empty() ? nullptr : found.front();
 }
+std::vector<Entity *> RuleContext::entitiesFrom(const Json &args, const char *key,
+                                                const char *fallback) const {
+    return resolve(args.contains(key) ? args.get(key).asString() : std::string(fallback));
+}
 const RuleCatalog *RuleContext::catalog() const {
     return game.scene().registry().extension<RuleCatalog>();
 }

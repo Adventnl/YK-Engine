@@ -24,6 +24,9 @@ struct CheckContext {
     // does not exist). Checks that only know warnings ignore it; when it is empty (a check run
     // outside the validator) the sentence is added to the plain list like any other.
     std::function<void(const std::string &)> error;
+    // Whether the project defines an id of a kind ("stat", "item", "quest"...), when the validator
+    // knows; empty outside it (then nothing can be said against an id).
+    std::function<bool(std::string_view kind, std::string_view id)> known;
 };
 
 // Everything the engine knows about one component class.

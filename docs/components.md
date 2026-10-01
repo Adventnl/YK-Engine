@@ -34,6 +34,52 @@ Updates in the Motor phase of the tick.
 | `deceleration` | float | 40 | (range 0 to 500) |
 | `faceMovement` | bool | true |  |
 
+## Characters
+
+### StatSet
+
+The numbers a character has (health, stamina, strength, money...), as the project's stats file defines them. 'start' gives this character's own starting values.
+
+Updates in the PreUpdate phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `start` | json | {} | This character's starting values, like {"strength": 40, "money": 25}. Stats not named here begin as their definition says. |
+
+### StatusEffects
+
+The status effects on a character: stunned, poisoned, hidden, exhausted... Effects are defined in the project's data files; they change stats, carry flags and factors other systems ask about, and may run actions.
+
+Requires: `StatSet`
+
+Updates in the PreUpdate phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `initial` | string list | [] | Effects it starts with. |
+| `immunities` | string list | [] | Effect ids or effect tags it can never receive ("poison", "stun"). |
+
+### Health
+
+A health model on top of a stat: damage with resistances by type, healing, an invulnerability window, and knocked out / dead when it runs out. Raises damaged, healed, knocked_out, recovering, recovered and died. Use Killable instead where one touch should end it.
+
+Requires: `StatSet`
+
+Updates in the PreUpdate phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `stat` | string | "health" | The stat that is its health. |
+| `atZero` | enum | "Die" | What happens when the health reaches its lowest level. Options: KnockOut Die Nothing |
+| `downAt` | float | 0 | The health at or below which the character goes down. (range -100000 to 100000) |
+| `invulnerableSeconds` | float | 0 | Seconds after a hit during which it takes no damage. (range 0 to 60) |
+| `resistances` | json | {} | Fraction of each damage type removed: {"fire": 0.5}. Negative takes extra. |
+| `knockedOutSeconds` | float | 20 | (range 0 to 3600) |
+| `recoveringSeconds` | float | 1.5 | (range 0 to 600) |
+| `recoverFraction` | float | 0.3 | (range 0 to 1) |
+| `koEffect` | string | "knocked_out" | The status effect applied while knocked out (empty: none). |
+| `destroyOnDeath` | bool | false |  |
+
 ## Effects
 
 ### ParticleEmitter

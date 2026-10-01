@@ -1,5 +1,6 @@
 #include "yk/data/Definitions.hpp"
 #include "yk/core/FileIO.hpp"
+#include "yk/data/GameData.hpp"
 #include "yk/world/Tileset.hpp"
 #include <filesystem>
 
@@ -27,7 +28,19 @@ bool fileExists(const Project &project, const std::string &path) {
 } // namespace
 
 bool isDefinitionKind(AssetKind kind) {
-    return kind == AssetKind::Tileset;
+    switch (kind) {
+    case AssetKind::Tileset:
+    case AssetKind::Data:
+    case AssetKind::Item:
+    case AssetKind::Recipe:
+    case AssetKind::Loot:
+    case AssetKind::Quest:
+    case AssetKind::Schedule:
+    case AssetKind::Sequence:
+        return true;
+    default:
+        return false;
+    }
 }
 
 void validateDefinitionFile(const Project &project, const AssetEntry &entry,
@@ -87,9 +100,31 @@ DefinitionSummary describeDefinition(const Project &project, const std::string &
             modifiable += props.modify.action.empty() ? 0U : 1U;
         }
         summary.rows.push_back({"With properties", std::to_string(tiles.tiles.size())});
-        summary.rows.push_back({"Solid / opaque", std::to_string(solid) + " / " + std::to_string(opaque)});
+        summary.rows.push_back(
+            {"Solid / opaque", std::to_string(solid) + " / " + std::to_string(opaque)});
         summary.rows.push_back({"Animated / breakable",
                                 std::to_string(animated) + " / " + std::to_string(modifiable)});
+        break;
+    }
+    case AssetKind::Data:
+    case AssetKind::Item:
+    case AssetKind::Recipe:
+    case AssetKind::Loot:
+    case AssetKind::Quest:
+    case AssetKind::Schedule:
+    case AssetKind::Sequence: {
+        GameData scratch;
+        std::vector<DataProblem> problems;
+        scratch.add(document.value(), path, problems);
+        summary.rows = scratch.summary();
+        std::size_t errors = 0, warnings = 0;
+        for (const DataProblem &problem : problems)
+            (problem.error ? errors : warnings)++;
+        if (errors + warnings > 0)
+            summary.rows.push_back({"Problems", std::to_string(errors) + " errors, " +
+                                                    std::to_string(warnings) + " warnings"});
+        if (!problems.empty())
+            summary.rows.push_back({"First", problems.front().message});
         break;
     }
     default:

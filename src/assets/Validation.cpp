@@ -6,6 +6,7 @@
 #include "yk/core/FileIO.hpp"
 #include "yk/core/Log.hpp"
 #include "yk/data/Definitions.hpp"
+#include "yk/data/GameData.hpp"
 #include "yk/scene/SceneSerializer.hpp"
 #include <algorithm>
 #include <filesystem>
@@ -66,8 +67,8 @@ void checkAnimatedSprite(const Project &project, const AnimatedSprite &animated,
                               "' (the animation's sheet wins when the game runs)"});
 }
 
-void checkScene(const Project &project, const Scene &scene, const std::string &file,
-                std::vector<ProjectIssue> &issues, bool prefab) {
+void checkScene(const Project &project, const GameData &data, const Scene &scene,
+                const std::string &file, std::vector<ProjectIssue> &issues, bool prefab) {
     scene.forEach([&](const Entity &entity) {
         const std::string owner = "'" + entity.name() + "'";
         // Every finding remembers the entity it is about, so the editor can select it.
@@ -89,8 +90,12 @@ void checkScene(const Project &project, const Scene &scene, const std::string &f
             const std::string where = owner + " " + component->type().name;
             if (component->type().check) {
                 std::vector<std::string> problems;
-                CheckContext checking{prefab, [&](const std::string &message) {
+                CheckContext checking{prefab,
+                                      [&](const std::string &message) {
                                           report(Severity::Error, where + ": " + message);
+                                      },
+                                      [&](std::string_view kind, std::string_view id) {
+                                          return data.known(kind, id);
                                       }};
                 component->type().check(entity, *component, checking, problems);
                 for (const std::string &problem : problems)
@@ -258,6 +263,15 @@ std::vector<ProjectIssue> validateProject(const Project &project,
     for (const AssetEntry &entry : assets)
         if (isDefinitionKind(entry.kind))
             validateDefinitionFile(project, entry, issues);
+    // The project's definitions load together (they refer to each other), and what scenes name is
+    // checked against them.
+    std::vector<DataProblem> dataProblems;
+    const ProjectAssets projectAssets(project);
+    const GameData data = GameData::load(projectAssets, dataProblems);
+    data.check(registry.extension<RuleCatalog>(), dataProblems);
+    for (const DataProblem &problem : dataProblems)
+        issues.push_back(
+            {problem.error ? Severity::Error : Severity::Warning, problem.file, problem.message});
     for (const AssetEntry &entry : assets) {
         if (entry.kind != AssetKind::Scene && entry.kind != AssetKind::Prefab)
             continue;
@@ -268,7 +282,7 @@ std::vector<ProjectIssue> validateProject(const Project &project,
             if (!scene)
                 issues.push_back({Severity::Error, entry.path, scene.error()});
             else
-                checkScene(project, *scene.value(), entry.path, issues, false);
+                checkScene(project, data, *scene.value(), entry.path, issues, false);
         } else {
             auto prefab = loadPrefabDocument(absolute);
             if (!prefab) {
@@ -282,7 +296,7 @@ std::vector<ProjectIssue> validateProject(const Project &project,
             else {
                 // The entities of a prefab exist only in this scratch scene: nothing to select.
                 const std::size_t before = issues.size();
-                checkScene(project, scratch, entry.path, issues, true);
+                checkScene(project, data, scratch, entry.path, issues, true);
                 for (std::size_t i = before; i < issues.size(); ++i)
                     issues[i].entity = {};
             }

@@ -48,6 +48,10 @@ struct RuleContext {
     // entity name. Empty when nothing matches.
     std::vector<Entity *> resolve(std::string_view spec) const;
     Entity *resolveOne(std::string_view spec) const;
+    // The entities an action's argument names ("entity": "tag:guard"); those of `fallback` when the
+    // argument is absent.
+    std::vector<Entity *> entitiesFrom(const Json &args, const char *key,
+                                       const char *fallback = "self") const;
     // The catalog of the running game's registry, if it has one.
     const RuleCatalog *catalog() const;
     // Reads a fact: "var.name", "actor.stat.health", "world.time.hour", ... none when unknown.
@@ -107,6 +111,17 @@ struct ParamSpec {
     std::string description;
     std::string refKind;              // Kind::Ref: "item", "quest", "stat", ...
     std::vector<std::string> options; // Kind::Enum
+
+    static ParamSpec make(const char *name, Kind kind, bool required = false,
+                          const char *description = "", const char *refKind = "") {
+        ParamSpec spec;
+        spec.name = name;
+        spec.kind = kind;
+        spec.required = required;
+        spec.description = description;
+        spec.refKind = refKind;
+        return spec;
+    }
 };
 
 // What a validator is told while it walks a condition or action.
@@ -211,6 +226,16 @@ struct Rule {
 Result<std::vector<Rule>> rulesFromJson(const Json &json);
 Json rulesToJson(const std::vector<Rule> &rules);
 void check(const RuleCatalog &catalog, const Rule &rule, RuleReport &report);
+
+// A place in a definition file that holds rules (an effect's "onApply", a quest's "complete when"),
+// handed to the validator so it can check them against the catalog and the project's data.
+struct RuleSource {
+    std::string file;
+    std::string label; // For messages: "effect 'poisoned' onApply".
+    const Condition *condition{nullptr};
+    const std::vector<Action> *actions{nullptr};
+};
+using RuleSourceVisitor = std::function<void(const RuleSource &)>;
 
 // Runs a delayed continuation: Delay and Repeat actions ask the scheduler (the RuleService) to run
 // the rest later with the same context.

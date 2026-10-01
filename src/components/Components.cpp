@@ -3,6 +3,7 @@
 #include "yk/core/Log.hpp"
 #include "yk/rules/RuleSet.hpp"
 #include "yk/runtime/GameContext.hpp"
+#include "yk/stats/Stats.hpp"
 #include "yk/world/Tilemap.hpp"
 #include "yk/world/WorldLevels.hpp"
 #include <algorithm>
@@ -459,6 +460,7 @@ void registerEngineComponents(ComponentRegistry &registry) {
     registry.add<Tilemap>("Tilemap");
     registerEffectComponents(registry);
     registerRuleComponents(registry);
+    registerStatComponents(registry);
     const auto place = [](Scene &scene, Vec2 at, const char *name) -> Entity & {
         Entity &entity = scene.createEntity(name);
         entity.setWorldPosition(at);

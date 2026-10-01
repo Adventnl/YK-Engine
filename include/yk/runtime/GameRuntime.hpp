@@ -5,6 +5,7 @@
 #include <string>
 
 namespace yk {
+class GameData;
 struct RuntimeOptions {
     double fixedSeconds{1.0 / 60.0};
     unsigned maxStepsPerFrame{8}; // Beyond this, simulated time is dropped rather than spiraling.
@@ -31,6 +32,9 @@ struct RuntimeOptions {
     float interpolationSnapDistance{5.0F};
     // Seed of the game's dice (RandomService). 0 keeps the default seed.
     std::uint64_t randomSeed{0};
+    // The project's definitions when the host already has them loaded (a player keeps one across
+    // scenes); null: the game loads them from `assets` when it starts.
+    std::shared_ptr<const GameData> data;
 };
 
 // Executes a scene: builds the physics world from RigidBody/Collider components, then runs fixed

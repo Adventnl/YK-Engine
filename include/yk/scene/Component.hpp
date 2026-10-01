@@ -1,5 +1,7 @@
 #pragma once
+#include "yk/core/Json.hpp"
 #include "yk/core/Math.hpp"
+#include "yk/core/Result.hpp"
 #include <cstddef>
 #include <cstdint>
 
@@ -71,6 +73,18 @@ class Component {
     virtual void onCollisionExit(GameContext &, Entity & /*other*/, const CollisionInfo &) {}
     // Immediately before the runtime removes the entity or shuts down.
     virtual void onDestroy(GameContext &) {}
+
+    // Save games: what the component holds while the game runs that its authored fields do not say
+    // (the health left, the items carried, the effects on). A component that has such state
+    // returns it from saveState() as plain JSON (null: nothing to save) and gets it back from
+    // loadState() on the entity the loaded scene has re-created, after onStart. The state must be
+    // readable by later versions of the same component: add keys, never reuse one.
+    virtual Json saveState() const {
+        return Json();
+    }
+    virtual Status loadState(GameContext &, const Json &) {
+        return success();
+    }
 
   private:
     friend class Entity;

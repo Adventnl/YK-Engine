@@ -882,9 +882,17 @@ void assetInspector(EditorState &state) {
         info("Path", path);
         break;
     case AssetKind::Tileset:
+    case AssetKind::Data:
+    case AssetKind::Item:
+    case AssetKind::Recipe:
+    case AssetKind::Loot:
+    case AssetKind::Quest:
+    case AssetKind::Schedule:
+    case AssetKind::Sequence:
         definitionInspector(state, path);
         break;
     case AssetKind::TextureMeta:
+    case AssetKind::Script:
     case AssetKind::Other:
         info("Path", path);
         break;

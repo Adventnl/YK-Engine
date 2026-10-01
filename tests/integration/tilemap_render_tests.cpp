@@ -25,6 +25,9 @@ class FolderAssets final : public AssetSource {
     std::filesystem::path filePath(const std::string &path) const override {
         return root_ / path;
     }
+    std::vector<std::string> list(std::string_view) const override {
+        return {};
+    }
 
   private:
     std::filesystem::path root_;

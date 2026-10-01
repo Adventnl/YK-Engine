@@ -11,13 +11,7 @@ using Kind = ParamSpec::Kind;
 
 ParamSpec param(const char *name, Kind kind, bool required = false, const char *description = "",
                 const char *refKind = "") {
-    ParamSpec spec;
-    spec.name = name;
-    spec.kind = kind;
-    spec.required = required;
-    spec.description = description;
-    spec.refKind = refKind;
-    return spec;
+    return ParamSpec::make(name, kind, required, description, refKind);
 }
 
 // Entity arguments name entities with a spec ("self", "actor", "name:Gate", "tag:guard").

@@ -1,5 +1,6 @@
 #include "RuntimeImpl.hpp"
 #include "yk/core/Log.hpp"
+#include "yk/data/GameData.hpp"
 #include "yk/runtime/Random.hpp"
 #include <algorithm>
 #include <cmath>
@@ -97,6 +98,8 @@ Status GameRuntime::Impl::rebuild(std::unique_ptr<Scene> fresh) {
     restartWanted = false;
     tickInput = InputFrame{};
     actions = ActionInput(options.inputMap);
+    if (options.data)
+        services.get<DataService>().use(options.data);
     auto built = buildWorld();
     if (options.randomSeed != 0)
         services.get<RandomService>().rng.reseed(options.randomSeed);
