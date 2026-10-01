@@ -1,6 +1,7 @@
 #include "yk/components/Components.hpp"
 #include "yk/components/Effects.hpp"
 #include "yk/core/Log.hpp"
+#include "yk/items/Inventory.hpp"
 #include "yk/rules/RuleSet.hpp"
 #include "yk/runtime/GameContext.hpp"
 #include "yk/stats/Stats.hpp"
@@ -461,6 +462,7 @@ void registerEngineComponents(ComponentRegistry &registry) {
     registerEffectComponents(registry);
     registerRuleComponents(registry);
     registerStatComponents(registry);
+    registerItemComponents(registry);
     const auto place = [](Scene &scene, Vec2 at, const char *name) -> Entity & {
         Entity &entity = scene.createEntity(name);
         entity.setWorldPosition(at);

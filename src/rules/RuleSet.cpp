@@ -4,27 +4,6 @@
 #include <algorithm>
 
 namespace yk {
-namespace {
-// Collects what validation says about a rule list as plain sentences.
-class ProblemReport final : public RuleReport {
-  public:
-    ProblemReport(std::vector<std::string> &problems, const CheckContext &context)
-        : problems_(problems), context_(context) {}
-    void error(const std::string &message) override {
-        if (context_.error)
-            context_.error(message);
-        else
-            problems_.push_back(message);
-    }
-    void warning(const std::string &message) override {
-        problems_.push_back(message);
-    }
-
-  private:
-    std::vector<std::string> &problems_;
-    const CheckContext &context_;
-};
-} // namespace
 
 bool RuleSet::setRulesJson(const Json &json) {
     auto parsed = rulesFromJson(json);
@@ -48,7 +27,7 @@ void RuleSet::describe(TypeBuilder<RuleSet> &type) {
         [](RuleSet &set, const Json &json) { return set.setRulesJson(json); });
     type.check([](const Entity &entity, const RuleSet &set, const CheckContext &context,
                   std::vector<std::string> &problems) {
-        ProblemReport report(problems, context);
+        ComponentRuleReport report(problems, context);
         if (!set.lastError().empty())
             report.error("its rules are not valid: " + set.lastError());
         const RuleCatalog *catalog = entity.scene().registry().extension<RuleCatalog>();

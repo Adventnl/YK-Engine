@@ -1,7 +1,9 @@
 #pragma once
 #include "yk/assets/AssetSource.hpp"
+#include "yk/items/Items.hpp"
 #include "yk/runtime/Services.hpp"
 #include "yk/stats/Stats.hpp"
+#include <functional>
 #include <map>
 #include <memory>
 #include <string>
@@ -16,6 +18,7 @@ namespace yk {
 class GameData {
   public:
     StatCatalog stats;
+    ItemCatalog items;
     // Named tables for what only the game knows (a prison's names, a shop's price list); scripts
     // and rules read them by name.
     std::map<std::string, Json> tables;
@@ -26,6 +29,9 @@ class GameData {
     static GameData load(const AssetSource &assets, std::vector<DataProblem> &problems);
     // Adds the contents of one definition file.
     void add(const Json &document, const std::string &file, std::vector<DataProblem> &problems);
+    // Once every file is added: the definitions that others derive from them (an item's equip
+    // effect). `load` does it; call it after adding files by hand.
+    void finalize(std::vector<DataProblem> &problems);
     // Checks the definitions against each other, and every rule they hold against the catalog (null
     // skips that part).
     void check(const RuleCatalog *rules, std::vector<DataProblem> &problems) const;
@@ -34,6 +40,10 @@ class GameData {
     bool known(std::string_view kind, std::string_view id) const;
     // Hands the validator every place that holds rules.
     void visitRules(const RuleSourceVisitor &visit) const;
+    // And every place that names a file of the project: file, label, path, kind ("texture", ...).
+    using AssetRefVisitor = std::function<void(const std::string &file, const std::string &label,
+                                               const std::string &path, const std::string &kind)>;
+    void visitAssets(const AssetRefVisitor &visit) const;
     // How much of each kind there is, for the Inspector and `yk info` (label, count text).
     std::vector<std::pair<std::string, std::string>> summary() const;
 };

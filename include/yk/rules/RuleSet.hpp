@@ -40,5 +40,30 @@ class RuleSet final : public Component {
     RuleService::Handle handle_{0};
 };
 
+// A RuleReport for a component's check(): errors go to the validator's error channel (or into the
+// plain list outside it) and ids are looked up through the check's `known`. Components that hold
+// rules or conditions of their own (an item's use, a container's open permission) use it.
+class ComponentRuleReport final : public RuleReport {
+  public:
+    ComponentRuleReport(std::vector<std::string> &problems, const CheckContext &context)
+        : problems_(problems), context_(context) {}
+    void error(const std::string &message) override {
+        if (context_.error)
+            context_.error(message);
+        else
+            problems_.push_back(message);
+    }
+    void warning(const std::string &message) override {
+        problems_.push_back(message);
+    }
+    bool known(std::string_view kind, std::string_view id) const override {
+        return !context_.known || context_.known(kind, id);
+    }
+
+  private:
+    std::vector<std::string> &problems_;
+    const CheckContext &context_;
+};
+
 void registerRuleComponents(ComponentRegistry &registry);
 } // namespace yk

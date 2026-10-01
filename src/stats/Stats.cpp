@@ -326,6 +326,8 @@ void StatCatalog::load(const Json &document, const std::string &file,
 
 void StatCatalog::check(std::vector<DataProblem> &problems) const {
     for (const EffectDefinition &effect : effects.all()) {
+        if (effect.id.starts_with("equip:"))
+            continue; // An item's own effect: the item's check reports what is wrong with it.
         const std::string where = "effect '" + effect.id + "': ";
         for (const StatModifierSpec &modifier : effect.modifiers)
             if (!stats.contains(modifier.stat))

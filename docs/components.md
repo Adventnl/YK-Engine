@@ -511,6 +511,52 @@ Lets a person control this entity through one action set of the project's input 
 |---|---|---|---|
 | `actionSet` | string | "Player1" | Set of the project's input map, for example Player1. |
 
+## Items
+
+### Inventory
+
+Slots that hold stacks of items, and named equipment slots (Outfit, Weapon...) for what is worn or wielded. Characters, desks, lockers and shops all use it. Items are defined in the project's item files.
+
+Updates in the PostSimulation phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `slots` | int | 20 | How many stacks it holds. (range 0 to 500) |
+| `equipmentSlots` | string list | [] | Names of the places an item can be worn or wielded: Outfit, Weapon, Tool... |
+| `owner` | string | "" | Whose it is (a character's persistent id). |
+| `startItems` | json | [] | What it holds at the start: [{"item": "screwdriver", "count": 1, "equipped": false}]. |
+| `collectRadius` | float | 0 | Above 0: picks up items lying within this distance by itself. (range 0 to 20) |
+
+### Container
+
+A locker, desk, chest or body: it holds an Inventory (on the same entity) and says who may open it, how long searching takes and which slots stay hidden until it is searched.
+
+Requires: `Inventory`
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `owner` | string | "" | Whose it is: a character's persistent id or a faction id. Taking from it is theft for the rules that care. |
+| `locked` | bool | false |  |
+| `unlockToken` | string | "" | The permission token that opens it while locked: a key item's "grants". |
+| `openRequires` | json | null | A condition that must hold for whoever opens it, e.g. {"type": "HasItem", "item": "warden_pass"}. Empty: anyone. |
+| `searchSeconds` | float | 3 | (range 0 to 120) |
+| `hiddenSlots` | int | 0 | The last this-many slots are not shown until the container has been searched. (range 0 to 100) |
+| `searched` | bool | false | (runtime state, not saved) |
+
+### Pickup
+
+An item lying in the world. Characters with an Inventory that has a collect radius pick it up by walking close; others by an interaction that collects it. It must be on the same level. Dropped items merge with matching ones.
+
+Updates in the PostSimulation phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `item` | string | "" | What it is. |
+| `count` | int | 1 | (range 1 to 9999) |
+| `autoCollect` | bool | true | Picked up by anyone who walks close. Off: only by an interaction. |
+| `lifetime` | float | 0 | Seconds it stays on the ground; 0 forever. (range 0 to 86400) |
+| `bob` | bool | false | Hovers up and down to catch the eye. |
+
 ## Logic
 
 ### RuleSet

@@ -33,7 +33,7 @@ class FileReport final : public RuleReport {
 } // namespace
 
 const std::vector<std::string> &GameData::extensions() {
-    static const std::vector<std::string> list{".ykdata"};
+    static const std::vector<std::string> list{".ykdata", ".ykitem"};
     return list;
 }
 
@@ -53,21 +53,38 @@ GameData GameData::load(const AssetSource &assets, std::vector<DataProblem> &pro
             }
             data.add(document.value(), path, problems);
         }
+    data.finalize(problems);
     return data;
 }
 
-void GameData::add(const Json &document, const std::string &file,
+void GameData::finalize(std::vector<DataProblem> &problems) {
+    items.synthesizeEffects(stats.effects, problems);
+}
+
+void GameData::add(const Json &original, const std::string &file,
                    std::vector<DataProblem> &problems) {
+    // A file with a single definition may be that definition itself ({"id": "screwdriver", ...}).
+    Json wrapped;
+    if (original.isObject() && file.ends_with(".ykitem") && original.contains("id") &&
+        !original.contains("items")) {
+        wrapped = Json::object();
+        Json list = Json::array();
+        list.push(original);
+        wrapped.set("items", list);
+    }
+    const Json &document = wrapped.isObject() ? wrapped : original;
     if (!document.isObject()) {
         problems.push_back(
             {file, "a definition file is a JSON object with sections ('stats', 'effects', ...)",
              true});
         return;
     }
-    if (document.contains("format") && document.get("format").asString() != "yk.data") {
-        problems.push_back(
-            {file, "the format is '" + document.get("format").asString() + "', not 'yk.data'",
-             true});
+    const std::string expected = file.ends_with(".ykitem") ? "yk.item" : "yk.data";
+    if (document.contains("format") && document.get("format").asString() != expected) {
+        problems.push_back({file,
+                            "the format is '" + document.get("format").asString() + "', not '" +
+                                expected + "'",
+                            true});
         return;
     }
     if (document.get("version").asInt(dataFormatVersion) > dataFormatVersion) {
@@ -79,12 +96,14 @@ void GameData::add(const Json &document, const std::string &file,
         return;
     }
     std::vector<std::string> warnings;
-    data::warnUnknown(document,
-                      {"format", "version", "name", "description", "stats", "effects", "tables"},
-                      warnings);
+    data::warnUnknown(
+        document,
+        {"format", "version", "name", "description", "stats", "effects", "items", "tables"},
+        warnings);
     for (const std::string &warning : warnings)
         problems.push_back({file, warning, false});
     stats.load(document, file, problems);
+    items.load(document, file, problems);
     if (document.contains("tables")) {
         if (!document.get("tables").isObject()) {
             problems.push_back({file, "'tables' must be an object of named tables", true});
@@ -104,6 +123,7 @@ void GameData::add(const Json &document, const std::string &file,
 
 void GameData::check(const RuleCatalog *rules, std::vector<DataProblem> &problems) const {
     stats.check(problems);
+    items.check(stats, problems);
     if (!rules)
         return;
     FileReport report(*this, problems);
@@ -121,11 +141,17 @@ bool GameData::known(std::string_view kind, std::string_view id) const {
         return stats.stats.contains(id);
     if (kind == "effect")
         return stats.effects.contains(id);
+    if (kind == "item")
+        return items.items.contains(id);
     return true;
 }
 
 void GameData::visitRules(const RuleSourceVisitor &visit) const {
     stats.visitRules(visit);
+    items.visitRules(visit);
+}
+void GameData::visitAssets(const AssetRefVisitor &visit) const {
+    items.visitAssets(visit);
 }
 
 std::vector<std::pair<std::string, std::string>> GameData::summary() const {
@@ -136,6 +162,7 @@ std::vector<std::pair<std::string, std::string>> GameData::summary() const {
     };
     count("Stats", stats.stats.size());
     count("Status effects", stats.effects.size());
+    count("Items", items.items.size());
     count("Tables", tables.size());
     return rows;
 }
