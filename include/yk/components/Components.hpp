@@ -3,6 +3,7 @@
 #include "yk/input/Input.hpp"
 #include "yk/scene/Entity.hpp"
 #include <array>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -129,7 +130,10 @@ struct DialoguePage {
     std::string speaker;
     std::string text;
     AssetRef portrait;
+    std::string side{"left"}; // Which side the portrait is on: "left" or "right".
+    std::string expression;
 };
+class DialogueSession;
 class Dialogue final : public Component {
   public:
     AssetRef sequence;
@@ -138,21 +142,43 @@ class Dialogue final : public Component {
     AssetRef portrait;
     std::string advanceSet{"Player1"};
     std::string advanceAction{"Interact"};
-    float charactersPerSecond{45.0F}; // Zero shows the whole page immediately.
+    std::string upAction{"MoveUp"};     // Moves the choice up (graph conversations).
+    std::string downAction{"MoveDown"}; // And down; the advance action picks.
+    float charactersPerSecond{45.0F};   // Zero shows the whole page immediately.
+    bool lockInput{true};               // Movement and actions stop while the conversation is open.
     static void describe(TypeBuilder<Dialogue> &type);
-    void begin(GameContext &context);
+    // Starts the conversation. `actor` is who is talking to it (what rules in the dialogue call the
+    // actor); a graph file (.ykdialogue with "nodes") is walked, a list of pages is shown in turn.
+    void begin(GameContext &context, EntityId actor = {});
+    void close(GameContext &context);
     bool active() const {
         return active_;
     }
     const DialoguePage &currentPage() const {
-        return loaded_[page_];
+        return session_ ? graphPage_ : loaded_[page_];
     }
     std::string visibleText() const;
+    // The choices on offer once the text has been shown (empty for pages and for nodes without
+    // choices), and which one is selected.
+    const std::vector<std::string> &choices() const {
+        return choices_;
+    }
+    int selectedChoice() const {
+        return selected_;
+    }
+    bool choosing() const;
     void onFixedUpdate(GameContext &context, float seconds) override;
     void onDestroy(GameContext &context) override;
 
   private:
     void end(GameContext &context);
+    void showNode(GameContext &context);
+    std::shared_ptr<DialogueSession> session_;
+    DialoguePage graphPage_;
+    std::vector<std::string> choices_;
+    int selected_{0};
+    EntityId actor_{};
+    std::string source_; // The asset the conversation was read from.
     std::vector<DialoguePage> loaded_;
     std::size_t page_{};
     float visibleCharacters_{};

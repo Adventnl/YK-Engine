@@ -44,6 +44,11 @@ class GameData {
     // True when the project defines an id of this kind: "stat", "effect", "item", "recipe", ...
     // Kinds this data does not know answer true (nothing to say against them).
     bool known(std::string_view kind, std::string_view id) const;
+    // Checks one place that holds rules (a dialogue's choices, a quest objective) against the
+    // catalog and this data; what is wrong is added to `problems` under the source's file and
+    // label.
+    void checkRules(const RuleCatalog &rules, const RuleSource &source,
+                    std::vector<DataProblem> &problems) const;
     // Hands the validator every place that holds rules.
     void visitRules(const RuleSourceVisitor &visit) const;
     // And every place that names a file of the project: file, label, path, kind ("texture", ...).

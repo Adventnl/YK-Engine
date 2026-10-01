@@ -112,7 +112,7 @@ void Interactable::activate(GameContext &context, Entity &actor) {
         gate->toggle(context);
     }
     if (auto *dialogue = entity().get<Dialogue>())
-        dialogue->begin(context);
+        dialogue->begin(context, actor.id());
     if (!setFlag.empty()) {
         context.blackboard().set(setFlag, 1.0);
         context.blackboard().keep(setFlag);

@@ -8,6 +8,7 @@
 #include "yk/data/Definitions.hpp"
 #include "yk/data/GameData.hpp"
 #include "yk/scene/SceneSerializer.hpp"
+#include "yk/sim/Dialogue.hpp"
 #include <algorithm>
 #include <filesystem>
 
@@ -203,6 +204,15 @@ std::vector<ProjectIssue> validateProject(const Project &project,
                                   " pixels wide; 512 or 1024 looks sharper on a Retina display"});
         }
     }
+    // The project's definitions load together (they refer to each other), and what scenes name is
+    // checked against them.
+    std::vector<DataProblem> dataProblems;
+    const ProjectAssets projectAssets(project);
+    const GameData data = GameData::load(projectAssets, dataProblems);
+    data.check(registry.extension<RuleCatalog>(), dataProblems);
+    for (const DataProblem &problem : dataProblems)
+        issues.push_back(
+            {problem.error ? Severity::Error : Severity::Warning, problem.file, problem.message});
     // Standalone asset documents: they must parse, and what they point at must exist.
     for (const AssetEntry &entry : assets) {
         if (entry.kind == AssetKind::Animation) {
@@ -227,25 +237,28 @@ std::vector<ProjectIssue> validateProject(const Project &project,
                 issues.push_back({Severity::Error, entry.path, document.error()});
                 continue;
             }
-            const Json &pages = document.value().get("pages");
-            if (!pages.isArray() || pages.size() == 0) {
-                issues.push_back(
-                    {Severity::Error, entry.path, "dialogue needs a nonempty pages array"});
+            // Pages and graphs are one thing to the validator: a page list is a chain of nodes.
+            std::vector<std::string> warnings;
+            auto graph = DialogueGraph::fromJson(document.value(), warnings);
+            if (!graph) {
+                issues.push_back({Severity::Error, entry.path, graph.error()});
                 continue;
             }
-            for (std::size_t i = 0; i < pages.size(); ++i) {
-                const Json &page = pages.at(i);
-                const Json &body = page.isObject() ? page.get("text") : page;
-                if (!body.isString() || body.asString().empty())
-                    issues.push_back({Severity::Error, entry.path,
-                                      "page " + std::to_string(i + 1) + " needs text"});
-                if (page.isObject() && page.contains("portrait")) {
-                    const std::string &portrait = page.get("portrait").asString();
-                    if (!portrait.empty() && !fileExists(project, portrait))
-                        issues.push_back({Severity::Error, entry.path,
-                                          "page " + std::to_string(i + 1) +
-                                              " has missing portrait '" + portrait + "'"});
-                }
+            graph.value().check(warnings);
+            for (const std::string &warning : warnings)
+                issues.push_back({Severity::Warning, entry.path, warning});
+            for (const std::string &image : graph.value().images())
+                if (!image.empty() && !fileExists(project, image))
+                    issues.push_back(
+                        {Severity::Error, entry.path, "has missing portrait '" + image + "'"});
+            if (const RuleCatalog *catalog = registry.extension<RuleCatalog>()) {
+                std::vector<DataProblem> found;
+                graph.value().visitRules(entry.path, [&](const RuleSource &source) {
+                    data.checkRules(*catalog, source, found);
+                });
+                for (const DataProblem &problem : found)
+                    issues.push_back({problem.error ? Severity::Error : Severity::Warning,
+                                      problem.file, problem.message});
             }
         } else if (entry.kind == AssetKind::TextureMeta) {
             auto document = readJson(project, entry.path);
@@ -263,15 +276,6 @@ std::vector<ProjectIssue> validateProject(const Project &project,
     for (const AssetEntry &entry : assets)
         if (isDefinitionKind(entry.kind))
             validateDefinitionFile(project, entry, issues);
-    // The project's definitions load together (they refer to each other), and what scenes name is
-    // checked against them.
-    std::vector<DataProblem> dataProblems;
-    const ProjectAssets projectAssets(project);
-    const GameData data = GameData::load(projectAssets, dataProblems);
-    data.check(registry.extension<RuleCatalog>(), dataProblems);
-    for (const DataProblem &problem : dataProblems)
-        issues.push_back(
-            {problem.error ? Severity::Error : Severity::Warning, problem.file, problem.message});
     for (const AssetEntry &entry : assets) {
         if (entry.kind != AssetKind::Scene && entry.kind != AssetKind::Prefab)
             continue;

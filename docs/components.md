@@ -862,17 +862,20 @@ Screen space: placed in pixels on the screen, not in the world.
 
 ### Dialogue
 
-Screen-space conversation with optional portrait and JSON pages.
+Screen-space conversation with optional portrait: pages of text, or a graph with choices, conditions and actions.
 
 | Property | Type | Default | Notes |
 |---|---|---|---|
-| `sequence` | asset | "" | Optional .ykdialogue JSON asset with pages of {speaker, text, portrait} objects. |
+| `sequence` | asset | "" | Optional .ykdialogue JSON asset: pages of {speaker, text, portrait} objects, or a graph of nodes with choices, branches and actions. |
 | `speaker` | string | "" |  |
 | `pages` | string list | [] | Inline pages used when sequence is empty. |
 | `portrait` | asset | "" | Default high-resolution portrait for every page. |
 | `advanceSet` | string | "Player1" |  |
 | `advanceAction` | string | "Interact" |  |
+| `upAction` | string | "MoveUp" |  |
+| `downAction` | string | "MoveDown" |  |
 | `charactersPerSecond` | float | 45 | (range 0 to 300) |
+| `lockInput` | bool | true | Movement and actions stop while the conversation is open. |
 
 ## World
 

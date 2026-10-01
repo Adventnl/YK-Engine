@@ -182,14 +182,17 @@ void GameData::check(const RuleCatalog *rules, std::vector<DataProblem> &problem
     quests.check(problems);
     if (!rules)
         return;
+    visitRules([&](const RuleSource &source) { checkRules(*rules, source, problems); });
+}
+
+void GameData::checkRules(const RuleCatalog &rules, const RuleSource &source,
+                          std::vector<DataProblem> &problems) const {
     FileReport report(*this, problems);
-    visitRules([&](const RuleSource &source) {
-        report.at(source);
-        if (source.condition)
-            rules->check(*source.condition, report);
-        if (source.actions)
-            rules->check(*source.actions, report);
-    });
+    report.at(source);
+    if (source.condition)
+        rules.check(*source.condition, report);
+    if (source.actions)
+        rules.check(*source.actions, report);
 }
 
 bool GameData::known(std::string_view kind, std::string_view id) const {

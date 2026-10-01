@@ -901,7 +901,9 @@ Status SceneRenderer::drawUi(Renderer &renderer, const Scene &scene, Vec2 viewpo
         if (auto submitted = renderer.submit(panel); !submitted)
             return submitted;
         const DialoguePage &page = dialogue->currentPage();
+        const bool portraitRight = page.side == "right";
         float textX = boxPos.x + 24.0F;
+        float rightReserved = 0.0F;
         if (!page.portrait.path.empty()) {
             const TextureInfo &portrait = textureFor(renderer, page.portrait.path);
             if (portrait.handle && portrait.pixels.x > 0 && portrait.pixels.y > 0) {
@@ -910,23 +912,32 @@ Status SceneRenderer::drawUi(Renderer &renderer, const Scene &scene, Vec2 viewpo
                 Sprite artwork;
                 artwork.texture = *portrait.handle;
                 artwork.anchor = {0, 0};
-                artwork.transform.position = {boxPos.x + 10.0F, boxPos.y + height - portraitHeight};
+                artwork.transform.position = {
+                    portraitRight ? boxPos.x + boxSize.x - 10.0F - portraitWidth : boxPos.x + 10.0F,
+                    boxPos.y + height - portraitHeight};
                 artwork.size = {portraitWidth, portraitHeight};
                 artwork.layer = 8001;
                 if (auto submitted = renderer.submit(artwork); !submitted)
                     return submitted;
-                textX += std::min(portraitWidth + 18.0F, boxSize.x * 0.42F);
+                const float taken = std::min(portraitWidth + 18.0F, boxSize.x * 0.42F);
+                if (portraitRight)
+                    rightReserved = taken;
+                else
+                    textX += taken;
             }
         }
         const float scale = viewport.y < 500.0F ? 2.0F : 3.0F;
-        const float maxWidth = std::max(60.0F, boxPos.x + boxSize.x - textX - 24.0F);
+        const float maxWidth =
+            std::max(60.0F, boxPos.x + boxSize.x - textX - 24.0F - rightReserved);
         const std::size_t columns = std::max<std::size_t>(
             1, static_cast<std::size_t>(maxWidth / (BitmapFont::advance * scale)));
         std::string wrapped;
         std::size_t column = 0;
+        std::size_t lines = 1;
         for (char ch : dialogue->visibleText()) {
             if (ch == '\n' || column >= columns) {
                 wrapped.push_back('\n');
+                ++lines;
                 column = 0;
                 if (ch == ' ' || ch == '\n')
                     continue;
@@ -942,6 +953,21 @@ Status SceneRenderer::drawUi(Renderer &renderer, const Scene &scene, Vec2 viewpo
                                      {245, 246, 252, 255}, 8002);
             !drawn)
             return drawn;
+        // The choices on offer, once the text is all there: the selected one marked and brighter.
+        if (dialogue->choosing()) {
+            const float lineHeight = BitmapFont::lineAdvance * scale;
+            float y = boxPos.y + 52.0F + static_cast<float>(lines) * lineHeight + 10.0F;
+            for (std::size_t i = 0; i < dialogue->choices().size(); ++i) {
+                const bool selected = static_cast<int>(i) == dialogue->selectedChoice();
+                const std::string line = (selected ? "> " : "  ") + dialogue->choices()[i];
+                if (auto drawn = font_->draw(
+                        renderer, line, {textX, y}, scale,
+                        selected ? Color{255, 220, 116, 255} : Color{190, 196, 214, 255}, 8002);
+                    !drawn)
+                    return drawn;
+                y += lineHeight;
+            }
+        }
         break;
     }
     return success();
