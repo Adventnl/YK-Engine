@@ -21,6 +21,12 @@ struct WorldView {
     bool parallax{false};
     // The editor's scene view: entities the designer hid (Entity::editorHidden) are not drawn.
     bool editorView{false};
+    // Draw entities where the running game's interpolation puts them `alpha` (0..1) of the way from
+    // the previous fixed tick to the current one (GameRuntime::interpolationAlpha), instead of
+    // where they are at the current tick. Entities with no interpolation state are drawn as they
+    // are, so this is safe for scenes that are not running.
+    bool interpolate{false};
+    float alpha{1.0F};
 };
 
 // What the last drawWorld did, for profilers and tests.
@@ -86,11 +92,13 @@ class SceneRenderer {
     };
     // Missing or unreadable textures are reported once and drawn as a magenta square.
     const TextureInfo &textureFor(Renderer &renderer, const std::string &path);
-    Status drawSprite(Renderer &renderer, const Entity &entity, const SpriteRenderer &sprite,
-                      const WorldView &view, const Rect &visible, bool culling);
-    Status drawParticles(Renderer &renderer, const Entity &entity, const ParticleEmitter &emitter,
-                         const Rect &visible, bool culling);
-    Status drawLight(Renderer &renderer, const Entity &entity, const Light2D &light,
+    // `world` is where the entity is drawn (its current or its interpolated transform).
+    Status drawSprite(Renderer &renderer, const Entity &entity, const Transform2D &world,
+                      const SpriteRenderer &sprite, const WorldView &view, const Rect &visible,
+                      bool culling);
+    Status drawParticles(Renderer &renderer, const Transform2D &world,
+                         const ParticleEmitter &emitter, const Rect &visible, bool culling);
+    Status drawLight(Renderer &renderer, const Transform2D &world, const Light2D &light,
                      const Rect &visible, bool culling);
 
     const AssetSource *assets_{};

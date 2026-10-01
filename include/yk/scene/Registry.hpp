@@ -43,8 +43,9 @@ struct ComponentType {
                        std::vector<std::string> &)>
         check;
     bool allowMultiple{};
-    bool hiddenInMenus{}; // Not offered by the editor's Add Component menu.
-    bool screenSpace{};   // Positioned in screen pixels, not the world (UI); no world gizmo.
+    UpdatePhase phase{UpdatePhase::Gameplay}; // When onFixedUpdate runs within a tick.
+    bool hiddenInMenus{};                     // Not offered by the editor's Add Component menu.
+    bool screenSpace{}; // Positioned in screen pixels, not the world (UI); no world gizmo.
 
     const PropertyInfo *find(std::string_view propertyName) const {
         for (const PropertyInfo &property : properties)
@@ -225,6 +226,11 @@ template <class T> class TypeBuilder {
     }
     TypeBuilder &allowMultiple() {
         type_->allowMultiple = true;
+        return *this;
+    }
+    // The phase of the fixed tick in which this component's onFixedUpdate runs (see UpdatePhase).
+    TypeBuilder &updatePhase(UpdatePhase phase) {
+        type_->phase = phase;
         return *this;
     }
     TypeBuilder &onAdd(std::function<void(Entity &, T &)> hook) {

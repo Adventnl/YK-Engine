@@ -118,4 +118,44 @@ bool Entity::removeComponent(Component *component) {
     scene_->touch();
     return true;
 }
+
+void Entity::captureRenderState(float snapDistance) {
+    const Entity *owner = parent();
+    const Transform2D world =
+        owner && owner->renderValid_ ? compose(owner->renderCurrent_, local_) : worldTransform();
+    capturedLocal_ = local_;
+    if (!renderValid_ || renderSnap_) {
+        renderPrevious_ = renderCurrent_ = world;
+        renderValid_ = true;
+        renderSnap_ = false;
+        return;
+    }
+    renderPrevious_ = renderCurrent_;
+    renderCurrent_ = world;
+    // A jump too long for one tick of motion is a teleport the caller did not announce.
+    if (distance(renderPrevious_.position, world.position) > snapDistance)
+        renderPrevious_ = world;
+}
+bool Entity::renderFresh() const {
+    for (const Entity *node = this; node; node = node->parent())
+        if (!node->renderValid_ || !(node->local_ == node->capturedLocal_))
+            return false;
+    return true;
+}
+Transform2D Entity::renderTransform(float alpha) const {
+    if (!renderFresh())
+        return worldTransform();
+    const float t = std::clamp(alpha, 0.0F, 1.0F);
+    Transform2D result;
+    result.position = lerp(renderPrevious_.position, renderCurrent_.position, t);
+    result.scale = lerp(renderPrevious_.scale, renderCurrent_.scale, t);
+    float turn =
+        std::fmod(renderCurrent_.rotationDegrees - renderPrevious_.rotationDegrees, 360.0F);
+    if (turn > 180.0F)
+        turn -= 360.0F;
+    else if (turn < -180.0F)
+        turn += 360.0F;
+    result.rotationDegrees = renderPrevious_.rotationDegrees + turn * t;
+    return result;
+}
 } // namespace yk

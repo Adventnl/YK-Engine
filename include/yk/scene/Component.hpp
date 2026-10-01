@@ -1,11 +1,33 @@
 #pragma once
 #include "yk/core/Math.hpp"
+#include <cstddef>
+#include <cstdint>
 
 namespace yk {
 class Entity;
 class Scene;
 class GameContext;
 struct ComponentType;
+
+// When, within one fixed tick, a component type's onFixedUpdate runs (and, for services, when they
+// do). The order is fixed and documented in ARCHITECTURE.md ("Update order"): the phases up to
+// Steering run before the physics step, Perception and PostSimulation after it (positions, contacts
+// and triggers are up to date). Within a phase components run in hierarchy order. Every component
+// that existed before phases did is Gameplay, so its behaviour is unchanged.
+enum class UpdatePhase : std::uint8_t {
+    Clock,          // world time and calendars: before anything reads the time of day
+    PreUpdate,      // scripts and rules that react to what happened last tick
+    Decision,       // AI and schedule agents choose goals and targets
+    Gameplay,       // the default: controllers, mechanisms, movement intent
+    Steering,       // navigation agents and avoidance turn goals into velocities
+    Perception,     // after physics: sight, hearing and awareness see where everything ended up
+    PostSimulation, // stat regeneration, status expiry, security timers
+};
+inline constexpr std::size_t updatePhaseCount = 7;
+inline constexpr bool runsBeforePhysics(UpdatePhase phase) {
+    return phase <= UpdatePhase::Steering;
+}
+const char *updatePhaseName(UpdatePhase phase);
 
 struct CollisionInfo {
     Vec2 point{};

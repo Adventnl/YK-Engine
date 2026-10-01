@@ -263,14 +263,19 @@ class Camera final : public Component {
     // Where this camera looks: the smoothed runtime state once the game is running, the authored
     // position and height before that.
     CameraView view() const;
-    // Follows once per fixed tick (after the tick's physics), not once per drawn frame.
-    void onLateUpdate(GameContext &context, float seconds) override;
+    // The same, `alpha` (0..1) of the way from the previous tick's view to the current one, for
+    // drawing at a display rate above the simulation's.
+    CameraView viewAt(float alpha) const;
+    // Follows once per fixed tick, after the tick's physics and after everything it follows has
+    // moved (the PostSimulation phase), not once per drawn frame.
+    void onFixedUpdate(GameContext &context, float seconds) override;
 
   private:
     Vec2 position_{};
     float height_{};
+    Vec2 previousPosition_{};
+    float previousHeight_{};
     bool initialized_{};
-    double lastTime_{-1.0}; // Simulated time of the last step.
 };
 
 // ----- Audio -------------------------------------------------------------------------------

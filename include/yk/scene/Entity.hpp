@@ -101,6 +101,29 @@ class Entity {
         return children_;
     }
 
+    // ---- Render interpolation (set by the running game only; never saved or edited) -----------
+    // GameRuntime snapshots every entity's world transform at the end of each fixed tick, so a
+    // display that refreshes faster than the simulation can blend between the last two ticks. An
+    // entity that has no snapshot, or whose transform (or an ancestor's) was changed after it
+    // because something moved it between ticks, is drawn where it really is.
+    void captureRenderState(float snapDistance);
+    // The next capture puts the entity where it is now without blending: a teleport.
+    void snapRenderState() {
+        renderSnap_ = true;
+    }
+    void clearRenderState() {
+        renderValid_ = false;
+        renderSnap_ = false;
+    }
+    bool hasRenderState() const {
+        return renderValid_;
+    }
+    // World transform `alpha` (0..1) of the way from the previous tick to the current one.
+    Transform2D renderTransform(float alpha) const;
+    Vec2 renderPosition(float alpha) const {
+        return renderTransform(alpha).position;
+    }
+
     const std::vector<std::unique_ptr<Component>> &components() const {
         return components_;
     }
@@ -153,5 +176,9 @@ class Entity {
     EntityId parent_{};
     std::vector<EntityId> children_;
     std::vector<std::unique_ptr<Component>> components_;
+    bool renderFresh() const;
+    Transform2D renderPrevious_, renderCurrent_, capturedLocal_;
+    bool renderValid_{false};
+    bool renderSnap_{false};
 };
 } // namespace yk

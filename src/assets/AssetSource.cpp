@@ -40,6 +40,29 @@ AssetKind classifyAsset(const std::string &path) {
         return AssetKind::TextureMeta;
     return AssetKind::Other;
 }
+const char *assetKindName(AssetKind kind) {
+    switch (kind) {
+    case AssetKind::Scene:
+        return "scene";
+    case AssetKind::Prefab:
+        return "prefab";
+    case AssetKind::Texture:
+        return "texture";
+    case AssetKind::Sound:
+        return "sound";
+    case AssetKind::Animation:
+        return "animation";
+    case AssetKind::Controller:
+        return "controller";
+    case AssetKind::Dialogue:
+        return "dialogue";
+    case AssetKind::TextureMeta:
+        return "texture meta";
+    case AssetKind::Other:
+        return "other";
+    }
+    return "other";
+}
 std::vector<AssetEntry> scanAssets(const Project &project) {
     std::vector<AssetEntry> entries;
     std::error_code error;

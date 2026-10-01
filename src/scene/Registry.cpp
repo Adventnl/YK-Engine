@@ -2,6 +2,25 @@
 #include <algorithm>
 
 namespace yk {
+const char *updatePhaseName(UpdatePhase phase) {
+    switch (phase) {
+    case UpdatePhase::Clock:
+        return "Clock";
+    case UpdatePhase::PreUpdate:
+        return "PreUpdate";
+    case UpdatePhase::Decision:
+        return "Decision";
+    case UpdatePhase::Gameplay:
+        return "Gameplay";
+    case UpdatePhase::Steering:
+        return "Steering";
+    case UpdatePhase::Perception:
+        return "Perception";
+    case UpdatePhase::PostSimulation:
+        return "PostSimulation";
+    }
+    return "Gameplay";
+}
 const ComponentType *ComponentRegistry::find(std::string_view name) const {
     for (const auto &type : types_)
         if (type->name == name)

@@ -51,6 +51,9 @@ struct AssetEntry {
     AssetKind kind{AssetKind::Other};
 };
 AssetKind classifyAsset(const std::string &path);
+// Plain-language singular name of a kind ("scene", "texture meta"); every kind has one, so tools
+// never index a table by the enum.
+const char *assetKindName(AssetKind kind);
 // Every file below the project root (skipping hidden entries and the build/ directory), sorted by
 // path.
 std::vector<AssetEntry> scanAssets(const Project &project);

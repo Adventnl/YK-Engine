@@ -135,6 +135,17 @@ const std::vector<EntityId> &Scene::orderedIds() const {
     orderRevision_ = revision_;
     return order_;
 }
+const std::vector<Entity *> &Scene::orderedEntities() {
+    if (orderedEntitiesRevision_ == revision_)
+        return orderedEntities_;
+    orderedEntities_.clear();
+    const auto &ids = orderedIds();
+    orderedEntities_.reserve(ids.size());
+    for (const EntityId id : ids)
+        orderedEntities_.push_back(find(id));
+    orderedEntitiesRevision_ = revision_;
+    return orderedEntities_;
+}
 std::vector<EntityId> Scene::hierarchyOrder() const {
     return orderedIds();
 }

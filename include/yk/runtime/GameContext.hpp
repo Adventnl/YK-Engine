@@ -7,6 +7,7 @@
 #include "yk/physics/World.hpp"
 #include "yk/runtime/Blackboard.hpp"
 #include "yk/runtime/EventBus.hpp"
+#include "yk/runtime/Services.hpp"
 #include "yk/scene/Scene.hpp"
 #include <memory>
 #include <optional>
@@ -38,6 +39,8 @@ class GameContext {
     animationController(const std::string &path) = 0;
     virtual Blackboard &blackboard() = 0;
     virtual EventBus &events() = 0;
+    // The running game's services (clock, navigation, spatial index, ...): see Services.hpp.
+    virtual Services &services() = 0;
     virtual const LayerConfig &layers() const = 0;
     virtual float fixedDelta() const = 0;
     virtual double time() const = 0;        // Simulated seconds since start.

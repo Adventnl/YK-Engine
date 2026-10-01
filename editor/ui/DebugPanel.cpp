@@ -95,10 +95,12 @@ void debugPanel(EditorState &state) {
             ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthFixed, dp(120.0F));
             ImGui::TableSetupColumn("value");
             for (const auto &[name, value] : board.values()) {
-                if (const double *number = std::get_if<double>(&value))
-                    row(name.c_str(), decimal(*number));
-                else
+                if (isNumeric(value) && !std::holds_alternative<bool>(value))
+                    row(name.c_str(), decimal(toNumber(value)));
+                else if (std::holds_alternative<std::string>(value))
                     row(name.c_str(), "\"" + std::get<std::string>(value) + "\"");
+                else
+                    row(name.c_str(), toText(value));
             }
             ImGui::EndTable();
         }

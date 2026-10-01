@@ -257,6 +257,7 @@ void HingeJoint::describe(TypeBuilder<HingeJoint> &type) {
 
 void Camera::describe(TypeBuilder<Camera> &type) {
     type.category("Rendering")
+        .updatePhase(UpdatePhase::PostSimulation)
         .description("Defines what the game shows. The first primary camera is used.");
     type.field("primary", &Camera::primary);
     type.field("mode", &Camera::mode)
@@ -281,15 +282,21 @@ CameraView Camera::view() const {
         return {position_, height_};
     return {entity().worldPosition(), orthographicHeight};
 }
-void Camera::onLateUpdate(GameContext &context, float) {
+CameraView Camera::viewAt(float alpha) const {
+    if (!initialized_)
+        return view();
+    const float t = std::clamp(alpha, 0.0F, 1.0F);
+    return {lerp(previousPosition_, position_, t), lerp(previousHeight_, height_, t)};
+}
+void Camera::onFixedUpdate(GameContext &context, float seconds) {
     // What the camera follows moves in ticks, so the camera follows in ticks too: one that glided
     // at the display's rate (a 120 or 144 Hz screen) would slip against the characters, which makes
-    // them shimmer against the background. On a 60 Hz screen this is every frame, as before.
-    const double now = context.time();
-    if (initialized_ && !(now > lastTime_))
-        return;
-    const float seconds = initialized_ ? static_cast<float>(now - lastTime_) : 0.0F;
-    lastTime_ = now;
+    // them shimmer against the background. The drawn view blends the last two ticks (viewAt), the
+    // same way the entities are drawn, so the two stay locked together.
+    if (!initialized_)
+        seconds = 0.0F;
+    previousPosition_ = position_;
+    previousHeight_ = height_;
     const Vec2 viewport = context.viewportSize();
     const float aspect = viewport.y > 0 ? viewport.x / viewport.y : 16.0F / 9.0F;
     Vec2 goal = entity().worldPosition();
@@ -319,6 +326,8 @@ void Camera::onLateUpdate(GameContext &context, float) {
     if (!initialized_) {
         position_ = goal;
         height_ = height;
+        previousPosition_ = goal;
+        previousHeight_ = height;
         initialized_ = true;
     } else {
         const float blend = smoothTime > 0.0F ? 1.0F - std::exp(-seconds / smoothTime) : 1.0F;
@@ -335,6 +344,8 @@ void Camera::onLateUpdate(GameContext &context, float) {
         position_.x = clampAxis(position_.x, boundsMin.x, boundsMax.x, half.x);
         position_.y = clampAxis(position_.y, boundsMin.y, boundsMax.y, half.y);
     }
+    if (seconds == 0.0F && previousPosition_ == goal) // First step: nothing to blend from.
+        previousPosition_ = position_;
 }
 
 void AudioSource::describe(TypeBuilder<AudioSource> &type) {

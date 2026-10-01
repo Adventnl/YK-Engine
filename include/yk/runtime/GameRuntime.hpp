@@ -26,6 +26,9 @@ struct RuntimeOptions {
     // the game cannot be paused by its player.
     std::string pauseSet{"Global"};
     std::string pauseAction{"Pause"};
+    // Render interpolation treats a jump of more than this many meters in one tick as a teleport
+    // and does not blend across it (GameContext::teleport is always one).
+    float interpolationSnapDistance{5.0F};
 };
 
 // Executes a scene: builds the physics world from RigidBody/Collider components, then runs fixed
@@ -81,6 +84,11 @@ class GameRuntime final : public GameContext {
     animationController(const std::string &path) override;
     Blackboard &blackboard() override;
     EventBus &events() override;
+    Services &services() override;
+    // How far, 0..1, the moment being drawn lies between the previous fixed tick and the current
+    // one. Entities and the camera blend that far (Entity::renderTransform, Camera::viewAt), so a
+    // display faster than the 60 Hz simulation shows smooth motion. After stepOnce it is 1.
+    float interpolationAlpha() const;
     const LayerConfig &layers() const override;
     float fixedDelta() const override;
     double time() const override;

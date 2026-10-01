@@ -240,11 +240,11 @@ void SceneRenderer::reload(Renderer &renderer, const std::string &path) {
     textures_.erase(found);
 }
 
-Status SceneRenderer::drawSprite(Renderer &renderer, const Entity &entity,
+Status SceneRenderer::drawSprite(Renderer &renderer, const Entity &entity, const Transform2D &world,
                                  const SpriteRenderer &sprite, const WorldView &view,
                                  const Rect &visible, bool culling) {
+    (void)entity;
     ++stats_.sprites;
-    const Transform2D world = entity.worldTransform();
     const Vec2 scale{std::fabs(world.scale.x), std::fabs(world.scale.y)};
     const Vec2 size = hadamard(sprite.size, scale);
     if (!(size.x > 0.0F) || !(size.y > 0.0F))
@@ -274,7 +274,7 @@ Status SceneRenderer::drawSprite(Renderer &renderer, const Entity &entity,
     sink.proto.tint = sprite.color;
     sink.proto.layer = sprite.layer;
     sink.proto.depth =
-        sprite.ySort ? entity.worldPosition().y + sprite.sortOffset + sprite.order : sprite.order;
+        sprite.ySort ? world.position.y + sprite.sortOffset + sprite.order : sprite.order;
     sink.proto.transform.rotationDegrees = world.rotationDegrees;
     sink.proto.flipHorizontal = sink.flip;
     sink.proto.blend =
@@ -400,7 +400,7 @@ Status SceneRenderer::drawSprite(Renderer &renderer, const Entity &entity,
     return done;
 }
 
-Status SceneRenderer::drawParticles(Renderer &renderer, const Entity &entity,
+Status SceneRenderer::drawParticles(Renderer &renderer, const Transform2D &placed,
                                     const ParticleEmitter &emitter, const Rect &visible,
                                     bool culling) {
     if (emitter.particles().empty())
@@ -428,7 +428,7 @@ Status SceneRenderer::drawParticles(Renderer &renderer, const Entity &entity,
     proto.layer = emitter.layer;
     proto.depth = emitter.order;
     proto.blend = emitter.blend == SpriteBlend::Additive ? BlendMode::Additive : BlendMode::Alpha;
-    const Transform2D world = emitter.localSpace ? entity.worldTransform() : Transform2D{};
+    const Transform2D world = emitter.localSpace ? placed : Transform2D{};
     for (const ParticleEmitter::Particle &particle : emitter.particles()) {
         const float t = std::clamp(particle.age / particle.lifetime, 0.0F, 1.0F);
         const float size = particle.size * lerp(1.0F, emitter.endScale, t);
@@ -454,12 +454,11 @@ Status SceneRenderer::drawParticles(Renderer &renderer, const Entity &entity,
     return success();
 }
 
-Status SceneRenderer::drawLight(Renderer &renderer, const Entity &entity, const Light2D &light,
+Status SceneRenderer::drawLight(Renderer &renderer, const Transform2D &world, const Light2D &light,
                                 const Rect &visible, bool culling) {
     const float strength = std::min(std::max(light.currentIntensity(), 0.0F), 1.0F);
     if (strength <= 0.0F || !(light.radius > 0.0F))
         return success();
-    const Transform2D world = entity.worldTransform();
     const Vec2 center = transformPoint(world, light.offset);
     const float radius =
         light.radius * std::max(std::fabs(world.scale.x), std::fabs(world.scale.y));
@@ -495,12 +494,20 @@ Status SceneRenderer::drawWorld(Renderer &renderer, const Scene &scene, const Wo
         if (!entity || !entity->activeInHierarchy() ||
             (view.editorView && entity->hiddenInHierarchy()))
             continue;
+        // Where the entity is drawn, worked out once and only if it has something to draw.
+        std::optional<Transform2D> placed;
+        const auto placement = [&]() -> const Transform2D & {
+            if (!placed)
+                placed = view.interpolate ? entity->renderTransform(view.alpha)
+                                          : entity->worldTransform();
+            return *placed;
+        };
         for (const auto &component : entity->components()) {
             if (!component->enabled)
                 continue;
             const std::type_index type = component->type().type;
             if (type == emitterType) {
-                if (auto drawn = drawParticles(renderer, *entity,
+                if (auto drawn = drawParticles(renderer, placement(),
                                                static_cast<const ParticleEmitter &>(*component),
                                                visible, culling);
                     !drawn)
@@ -509,7 +516,7 @@ Status SceneRenderer::drawWorld(Renderer &renderer, const Scene &scene, const Wo
             }
             if (type == lightType) {
                 if (auto drawn =
-                        drawLight(renderer, *entity, static_cast<const Light2D &>(*component),
+                        drawLight(renderer, placement(), static_cast<const Light2D &>(*component),
                                   visible, culling);
                     !drawn)
                     return drawn;
@@ -520,7 +527,9 @@ Status SceneRenderer::drawWorld(Renderer &renderer, const Scene &scene, const Wo
             const auto &sprite = static_cast<const SpriteRenderer &>(*component);
             if (!sprite.enabled || !sprite.visible || sprite.color.a == 0)
                 continue;
-            if (auto drawn = drawSprite(renderer, *entity, sprite, view, visible, culling); !drawn)
+            if (auto drawn =
+                    drawSprite(renderer, *entity, placement(), sprite, view, visible, culling);
+                !drawn)
                 return drawn;
         }
     }
