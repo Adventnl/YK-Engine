@@ -16,6 +16,24 @@ Plays a sound on start or on request.
 | `loop` | bool | false |  |
 | `playOnStart` | bool | false |  |
 
+## Character
+
+### CharacterMotor
+
+Moves a top-down character on a zero-gravity body. Players, navigation agents, scripts and status effects all steer it through the same intent, so every character accelerates, turns and animates by the same rules.
+
+Requires: `RigidBody` `Collider`
+
+Updates in the Motor phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `walkSpeed` | float | 2.6 | (range 0 to 50) |
+| `runSpeed` | float | 4.6 | (range 0 to 50) |
+| `acceleration` | float | 30 | (range 0 to 500) |
+| `deceleration` | float | 40 | (range 0 to 500) |
+| `faceMovement` | bool | true |  |
+
 ## Effects
 
 ### ParticleEmitter
@@ -446,6 +464,89 @@ Lets a person control this entity through one action set of the project's input 
 | Property | Type | Default | Notes |
 |---|---|---|---|
 | `actionSet` | string | "Player1" | Set of the project's input map, for example Player1. |
+
+## Navigation
+
+### NavigationSettings
+
+Scene-wide navigation settings. Optional: without it the grid covers every tile map at a third of its tile size.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `cellSize` | float | 0 | Meters per navigation cell; 0 derives it (a third of the tile size). Corridors and doors must be at least 2r+1 cells wide for an agent of r cells of radius. (range 0 to 4) |
+| `boundsMin` | vec2 | [0,0] | (range -100000 to 100000) |
+| `boundsMax` | vec2 | [0,0] | (range -100000 to 100000) |
+| `padding` | float | 2 | (range 0 to 100) |
+| `expansionsPerTick` | int | 6000 | Path search budget for all agents together, per fixed tick. (range 100 to 1e+06) |
+| `areas` | string list | [] | Navigation areas to register first, in order (area 1 is the first name). |
+
+### NavigationObstacle
+
+A footprint on the navigation grid that walkers cannot cross and/or sight cannot pass: a crate, a counter, a closed shutter.
+
+Several instances may be added to one entity.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `size` | vec2 | [1,1] | (range 0 to 1000) |
+| `offset` | vec2 | [0,0] |  |
+| `blocksMovement` | bool | true |  |
+| `blocksSight` | bool | false |  |
+| `dynamic` | bool | false | Moves around (a pushed crate): its footprint follows the entity every tick. |
+
+### NavigationDoor
+
+A door as agents see it: whether it is open, closed, locked or sealed, which access classes pass it, and what waiting for it costs a path. Agents that may use it open it on the way through.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `size` | vec2 | [1,1] | (range 0 to 1000) |
+| `offset` | vec2 | [0,0] |  |
+| `source` | enum | "StateGate" | Where the door's state comes from: its StateGate, its Door mechanism, or this component (set by scripts, rules and security). Options: StateGate Mechanism Manual |
+| `manualState` | enum | "Closed" | The state when the source is Manual. Options: Open Closed Locked Sealed |
+| `access` | string list | [] | Access classes (all of them) an agent must hold to pass; none: anyone. |
+| `openPenalty` | float | 1.5 | (range 0 to 100) |
+| `blocksSightWhenClosed` | bool | true |  |
+| `autoCloseSeconds` | float | 2 | A door an agent opened closes again after this long (0: stays open). (range 0 to 60) |
+
+### NavigationLink
+
+One end of a way between two places, usually on different levels: stairs, a ladder, a vent, a hole, a drop, a lift. `target` names the other end.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `kind` | enum | "Stairs" | Options: Stairs Ladder Vent Hole Elevator Drop Climb Teleport |
+| `target` | entity | none |  |
+| `bidirectional` | bool | true |  |
+| `cost` | float | 1 | (range 0 to 1000) |
+| `traverseSeconds` | float | 0 | How long the trip takes; 0 uses a time that fits the kind. (range 0 to 60) |
+| `capabilities` | string list | [] | What an agent must be able to do: climb, crawl, ... |
+| `access` | string list | [] |  |
+| `open` | bool | true | A closed link (a lift that is off, a hatch that is shut) cannot be used. |
+| `capacity` | int | 1 | (range 1 to 32) |
+
+### NavigationAgent
+
+Walks an entity to a destination: asks the navigation service for a path, follows it, opens doors, takes stairs and vents, steers around other agents and reports arrival or why it could not. Steers through CharacterMotor.
+
+Requires: `CharacterMotor` `WorldLayer`
+
+Updates in the Steering phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `radius` | float | 0.28 | Body radius: decides which gaps it fits through. (range 0.05 to 3) |
+| `footOffset` | vec2 | [0,0.28] | Where its feet are, from the entity's position. |
+| `arriveDistance` | float | 0.22 | (range 0.02 to 5) |
+| `stopDistance` | float | 0.35 | (range 0.02 to 10) |
+| `repathInterval` | float | 0.7 | (range 0.05 to 10) |
+| `avoidanceRadius` | float | 0.9 | (range 0 to 10) |
+| `avoidanceStrength` | float | 1 | (range 0 to 5) |
+| `run` | bool | false |  |
+| `capabilities` | string list | ["walk","doors","climb","drop"] | What it can do: walk, doors, climb, drop, crawl, ... |
+| `forbiddenAreas` | string list | [] | Navigation areas it will not enter. |
+| `areaCosts` | string list | [] | name=multiplier entries (mud=2): ground it finds slower or avoids. |
+| `accessTokens` | string list | [] | Access classes it holds, so it can use the doors and links that need them. |
 
 ## Physics
 
