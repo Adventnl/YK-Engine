@@ -6,6 +6,7 @@
 #include "yk/runtime/GameContext.hpp"
 #include "yk/sim/Dialogue.hpp"
 #include "yk/sim/Quests.hpp"
+#include "yk/sim/Sequence.hpp"
 #include "yk/stats/Stats.hpp"
 #include "yk/world/Tilemap.hpp"
 #include "yk/world/WorldLevels.hpp"
@@ -314,7 +315,11 @@ void Camera::onFixedUpdate(GameContext &context, float seconds) {
     const float aspect = viewport.y > 0 ? viewport.x / viewport.y : 16.0F / 9.0F;
     Vec2 goal = entity().worldPosition();
     float height = orthographicHeight;
-    if (mode != CameraMode::Fixed) {
+    if (held_) {
+        goal = heldCenter_;
+        if (heldHeight_ > 0.0F)
+            height = heldHeight_;
+    } else if (mode != CameraMode::Fixed) {
         bool any = false;
         Vec2 low{}, high{};
         for (const EntityRef reference : targets) {
@@ -336,12 +341,13 @@ void Camera::onFixedUpdate(GameContext &context, float seconds) {
             }
         }
     }
-    if (!initialized_) {
+    if (!initialized_ || cut_) {
         position_ = goal;
         height_ = height;
         previousPosition_ = goal;
         previousHeight_ = height;
         initialized_ = true;
+        cut_ = false;
     } else {
         const float blend = smoothTime > 0.0F ? 1.0F - std::exp(-seconds / smoothTime) : 1.0F;
         position_ = lerp(position_, goal, blend);
@@ -467,6 +473,7 @@ void registerEngineComponents(ComponentRegistry &registry) {
     registerItemComponents(registry);
     registerQuestComponents(registry);
     registerDialogueRules(registry.extend<RuleCatalog>());
+    registerSequenceComponents(registry);
     const auto place = [](Scene &scene, Vec2 at, const char *name) -> Entity & {
         Entity &entity = scene.createEntity(name);
         entity.setWorldPosition(at);

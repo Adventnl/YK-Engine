@@ -68,9 +68,11 @@ class GameRuntime final : public GameContext {
     const std::string &sceneChangeRequested() const;
     void clearSceneChangeRequest();
 
-    // How far the screen has faded for a restart or a change of scene: 0 clear, 1 covered. The host
-    // draws it over the game view (GameViewOptions::fade).
+    // How far the screen has faded for a restart or a change of scene, or by a cutscene: 0 clear, 1
+    // covered. The host draws it over the game view (GameViewOptions::fade).
     float screenFade() const;
+    void setCinematicFade(float amount) override;
+    float cinematicFade() const override;
     // A restart or scene change is fading the screen out or back in.
     bool transitioning() const;
 

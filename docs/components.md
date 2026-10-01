@@ -80,6 +80,21 @@ Updates in the PreUpdate phase of the tick.
 | `koEffect` | string | "knocked_out" | The status effect applied while knocked out (empty: none). |
 | `destroyOnDeath` | bool | false |  |
 
+## Cutscenes
+
+### SequencePlayer
+
+Plays a .ykseq sequence: a timeline of cues (fades, camera moves, walks, conversations, any rule action). Start it with a rule (PlaySequence) or on start.
+
+Updates in the PreUpdate phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `sequence` | asset | "" | The .ykseq file to play. |
+| `playOnStart` | bool | false | Play it when the scene starts (an intro). |
+| `skipSet` | string | "Player1" |  |
+| `skipAction` | string | "" | A named action that skips the sequence; empty: the player cannot skip it. |
+
 ## Effects
 
 ### ParticleEmitter

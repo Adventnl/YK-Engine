@@ -12,6 +12,8 @@ engine is in [STATUS.md](STATUS.md#known-limitations).
 | 1 | Verification | Online play, notarization, Windows-native runs of the new systems, Retina rendering, real GPUs and controllers could not be exercised in the build environment (Linux, software renderer, dummy audio). | Release claims only |
 | 2 | Environment | `cmake --preset dev` cannot download the pinned archives here (release hosts are filtered); use `scripts/fetch-deps.sh <dir>` and `-DYK_DEPS_DIR=<dir>`. CI has normal network access. | Local setup |
 | 3 | Editor tests | The editor UI scripts take 1-3 minutes each in a Debug build under the software renderer; the whole suite is about 8 minutes with three jobs in parallel. Use `ctest -R <name>` while developing. | Iteration speed |
+| 4 | Cutscenes | `SequencePlayer` state is not saved: a game that saves during a sequence restarts it on load (the sequence's input lock normally prevents saving). `MoveEntity` places an entity each tick; it ignores collisions and does not pathfind. `WaitForEvent` does not see events raised before the wait began. | Cutscene authors |
+| 5 | Story editors | Quests, dialogue graphs and sequences are edited as JSON (the Inspector shows a summary, `yk validate` checks them); there is no graph or timeline editor yet. | Authoring comfort |
 
 ## Fixed
 

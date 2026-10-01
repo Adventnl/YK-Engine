@@ -75,6 +75,10 @@ class GameContext {
     // covered.
     virtual void requestRestart() = 0;
     virtual void requestSceneChange(std::string projectRelativePath) = 0;
+    // Darkens the game view on top of scene transitions (cutscenes fade out and in): 0 clear, 1
+    // black. The host draws the larger of this and the transition's fade.
+    virtual void setCinematicFade(float amount) = 0;
+    virtual float cinematicFade() const = 0;
     // While locked, no input reaches the game's actions (a level-complete sequence, a cutscene).
     // Locks nest by name: the game is locked while any lock is held.
     virtual void lockInput(const std::string &reason, bool locked) = 0;

@@ -147,9 +147,12 @@ endif()
 target_compile_definitions(yk_engine PUBLIC YK_HAS_RUNTIME=$<BOOL:${YK_RUNTIME}>)
 
 if(BUILD_TESTING)
-    foreach(suite core diagnostics physics json animation scene game_runtime audio input assets effects foundation world tilemap navigation rules stats items loot_crafting quests dialogue)
+    foreach(suite core diagnostics physics json animation scene game_runtime audio input assets effects foundation world tilemap navigation rules stats items loot_crafting quests dialogue sequence)
         yk_add_test(${suite} tests/unit/${suite}_tests.cpp LIBS yk::engine TIMEOUT 30)
     endforeach()
+    # The examples in docs/PROJECT_FORMAT.md load without a problem.
+    yk_add_test(docs tests/unit/docs_tests.cpp LIBS yk::engine TIMEOUT 30
+        DEFINITIONS YK_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
     yk_add_test(gameplay tests/unit/gameplay_tests.cpp LIBS yk::gameplay TIMEOUT 120)
     yk_add_test(navigation_agent tests/unit/navigation_agent_tests.cpp LIBS yk::gameplay TIMEOUT 300)
     yk_add_test(mechanisms tests/unit/mechanisms_tests.cpp LIBS yk::gameplay TIMEOUT 120)

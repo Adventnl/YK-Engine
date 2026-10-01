@@ -15,7 +15,9 @@ which commands to run. Written at the end of every pass; the newest pass is firs
   `CharacterMotor`.
 - Phase D (partial) and E: stats, status effects, health with knockout, items, inventories,
   equipment, containers, pickups, loot tables and pools, crafting.
-- Phase J (partial): the rule language, `RuleSet`, `RuleService`.
+- Phase J: the rule language, `RuleSet`, `RuleService`, quests and objectives (`QuestLog`), dialogue
+  graphs, cutscene sequences (`SequencePlayer`); `Camera::hold/release` and the cinematic screen fade.
+  Still open from J: converting `EventAction` to rules.
 
 ### Partial
 
@@ -32,9 +34,9 @@ which commands to run. Written at the end of every pass; the newest pass is firs
 
 ### Next, in order
 
-1. Phase J remainder: quests and objectives on the rule language, the dialogue graph (extending
-   `.ykdialogue`), cutscene sequences; convert `EventAction` to rules (`yk` command and an editor
-   action) while keeping the component.
+1. Phase J remainder: convert `EventAction` to rules (`yk` command and an editor action) while
+   keeping the component. A sequence cue that pathfinds a character comes with the navigation
+   actions of phase F.
 2. Phase D remainder: `PlayerCharacterController` on `CharacterMotor`, appearance layers.
 3. Phase K: vendored Lua 5.4, sandbox, `ScriptComponent`, API, hot reload.
 4. Phases F-H: world clock, schedules, zones, factions, perception and noise, AI brains and the AI
@@ -50,14 +52,16 @@ which commands to run. Written at the end of every pass; the newest pass is firs
 
 `include/yk/rules/`, `include/yk/stats/`, `include/yk/items/`, `include/yk/data/`,
 `include/yk/world/`, `include/yk/navigation/`, `include/yk/runtime/Services.hpp`,
-`include/yk/scene/Component.hpp` (update phases, save contract), `src/data/GameData.cpp`
-(file kinds and sections), `src/assets/Validation.cpp` (project validation), `tests/unit/*_tests.cpp`.
+`include/yk/scene/Component.hpp` (update phases, save contract), `include/yk/sim/` (quests,
+dialogue graphs, sequences), `src/data/GameData.cpp` (file kinds and sections),
+`src/assets/Validation.cpp` (project validation), `docs/PROJECT_FORMAT.md` (the definition-file
+formats, whose examples `tests/unit/docs_tests.cpp` loads), `tests/unit/*_tests.cpp`.
 
 ### Commands
 
 ```sh
 cmake --preset dev && cmake --build --preset dev
-ctest --preset dev -R "^(foundation|world|tilemap|navigation|navigation_agent|rules|stats|items|loot_crafting)$"
+ctest --preset dev -R "^(foundation|world|tilemap|navigation|navigation_agent|rules|stats|items|loot_crafting|quests|dialogue|sequence|docs)$"
 ctest --preset dev            # everything (~15 minutes; the editor scripts dominate)
 ./build/dev/yk components > docs/components.md   # after any component or field change
 clang-format -i <changed files>

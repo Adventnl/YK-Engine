@@ -82,6 +82,7 @@ Status GameRuntime::Impl::rebuild(std::unique_ptr<Scene> fresh) {
     scene = std::move(fresh);
     schedule = ComponentSchedule{};
     alpha = 1.0F;
+    cinematic = 0.0F;
     blackboard.clear();
     for (const auto &[key, value] : options.variables) { // What the previous scene carried over.
         blackboard.setValue(key, value);
@@ -572,7 +573,13 @@ bool GameRuntime::inputLocked() const {
            impl_->phase == Impl::Phase::Covered;
 }
 float GameRuntime::screenFade() const {
-    return impl_->fade;
+    return std::max(impl_->fade, impl_->cinematic);
+}
+void GameRuntime::setCinematicFade(float amount) {
+    impl_->cinematic = std::isfinite(amount) ? std::clamp(amount, 0.0F, 1.0F) : 0.0F;
+}
+float GameRuntime::cinematicFade() const {
+    return impl_->cinematic;
 }
 bool GameRuntime::transitioning() const {
     return impl_->phase != Impl::Phase::Idle;

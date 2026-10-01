@@ -264,6 +264,18 @@ recipes, free tables) with per-file problem reporting ([ADR 0021](decisions/0021
 `Inventory`, `Container`, `Pickup`, `Crafter` and `CraftingStation` give them things. Components with
 run-time state of their own implement `Component::saveState/loadState` (the save game contract).
 
+### Quests, conversations and cutscenes (`sim/`)
+
+Story is data on the same rule language ([ADR 0023](decisions/0023-quests-conversations-and-cutscenes-are-data-on-the-rule-language.md)).
+`QuestDefinition`s live in `GameData`; a `QuestLog` component keeps one character's (or the world's)
+quests, completes objectives from conditions, counted events and rules, and raises `quest.*` events.
+`DialogueGraph` parses `.ykdialogue` (pages or nodes with choices, branches and actions) and
+`DialogueSession` walks it for the `Dialogue` component, which `SceneRenderer` draws. `SequenceDefinition`
+parses `.ykseq` timelines and `SequencePlayer` plays them: cues at times, `wait` to hold the clock,
+rule actions as cues, `Camera::hold/release`, the cinematic fade (`GameContext::setCinematicFade`),
+an input lock, skip and stop. All three hand their conditions and actions to the validator through
+`RuleSourceVisitor`.
+
 ## Gameplay library (`gameplay/`)
 
 Sources (`PressurePlate`, `Lever`, `Goal`, `TriggerZone`, `EventAction`) list `targets`; receivers

@@ -9,6 +9,7 @@
 #include "yk/data/GameData.hpp"
 #include "yk/scene/SceneSerializer.hpp"
 #include "yk/sim/Dialogue.hpp"
+#include "yk/sim/Sequence.hpp"
 #include <algorithm>
 #include <filesystem>
 
@@ -254,6 +255,27 @@ std::vector<ProjectIssue> validateProject(const Project &project,
             if (const RuleCatalog *catalog = registry.extension<RuleCatalog>()) {
                 std::vector<DataProblem> found;
                 graph.value().visitRules(entry.path, [&](const RuleSource &source) {
+                    data.checkRules(*catalog, source, found);
+                });
+                for (const DataProblem &problem : found)
+                    issues.push_back({problem.error ? Severity::Error : Severity::Warning,
+                                      problem.file, problem.message});
+            }
+        } else if (entry.kind == AssetKind::Sequence) {
+            auto document = readJson(project, entry.path);
+            if (!document)
+                continue; // validateDefinitionFile reports a file that cannot be read.
+            std::vector<std::string> warnings;
+            auto sequence = SequenceDefinition::fromJson(document.value(), warnings);
+            if (!sequence) {
+                issues.push_back({Severity::Error, entry.path, sequence.error()});
+                continue;
+            }
+            for (const std::string &warning : warnings)
+                issues.push_back({Severity::Warning, entry.path, warning});
+            if (const RuleCatalog *catalog = registry.extension<RuleCatalog>()) {
+                std::vector<DataProblem> found;
+                sequence.value().visitRules(entry.path, [&](const RuleSource &source) {
                     data.checkRules(*catalog, source, found);
                 });
                 for (const DataProblem &problem : found)

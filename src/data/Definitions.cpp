@@ -1,6 +1,7 @@
 #include "yk/data/Definitions.hpp"
 #include "yk/core/FileIO.hpp"
 #include "yk/data/GameData.hpp"
+#include "yk/sim/Sequence.hpp"
 #include "yk/world/Tileset.hpp"
 #include <filesystem>
 
@@ -111,8 +112,7 @@ DefinitionSummary describeDefinition(const Project &project, const std::string &
     case AssetKind::Recipe:
     case AssetKind::Loot:
     case AssetKind::Quest:
-    case AssetKind::Schedule:
-    case AssetKind::Sequence: {
+    case AssetKind::Schedule: {
         GameData scratch;
         std::vector<DataProblem> problems;
         scratch.add(document.value(), path, problems);
@@ -125,6 +125,28 @@ DefinitionSummary describeDefinition(const Project &project, const std::string &
                                                     std::to_string(warnings) + " warnings"});
         if (!problems.empty())
             summary.rows.push_back({"First", problems.front().message});
+        break;
+    }
+    case AssetKind::Sequence: {
+        std::vector<std::string> warnings;
+        auto sequence = SequenceDefinition::fromJson(document.value(), warnings);
+        if (!sequence) {
+            summary.error = sequence.error();
+            return summary;
+        }
+        const SequenceDefinition &cues = sequence.value();
+        std::size_t actions = 0;
+        for (const SequenceCue &cue : cues.cues)
+            actions += cue.kind == SequenceCue::Kind::Action ? 1U : 0U;
+        summary.rows.push_back({"Cues", std::to_string(cues.cues.size()) + " (" +
+                                            std::to_string(actions) + " rule actions)"});
+        summary.rows.push_back({"Length", std::to_string(cues.length()) + " s to the last cue"});
+        summary.rows.push_back({"Locks input", cues.lockInput ? "yes" : "no"});
+        summary.rows.push_back({"Skippable", cues.skippable ? "yes" : "no"});
+        if (!warnings.empty()) {
+            summary.rows.push_back({"Warnings", std::to_string(warnings.size())});
+            summary.rows.push_back({"First", warnings.front()});
+        }
         break;
     }
     default:

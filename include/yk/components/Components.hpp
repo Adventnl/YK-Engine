@@ -299,7 +299,27 @@ class Camera final : public Component {
     // moved (the PostSimulation phase), not once per drawn frame.
     void onFixedUpdate(GameContext &context, float seconds) override;
 
+    // A cutscene or a script can take the camera: while it is held it looks at `center` (with the
+    // given visible height, 0 for its own) instead of its targets, smoothed as usual. `cut` jumps
+    // there on the next tick instead of gliding.
+    void hold(Vec2 center, float visibleHeight = 0.0F, bool cut = false) {
+        held_ = true;
+        heldCenter_ = center;
+        heldHeight_ = visibleHeight;
+        cut_ = cut_ || cut;
+    }
+    void release() {
+        held_ = false;
+    }
+    bool held() const {
+        return held_;
+    }
+
   private:
+    bool held_{};
+    bool cut_{};
+    Vec2 heldCenter_{};
+    float heldHeight_{};
     Vec2 position_{};
     float height_{};
     Vec2 previousPosition_{};

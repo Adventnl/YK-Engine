@@ -48,7 +48,10 @@ Inspector edits their components, and definition files show a summary there.
 | Component save contract (`saveState`/`loadState`) | FOUNDATION | implemented on stats, effects, health, inventory, container, pickup, crafter, rules; **no `SaveGame` assembling them yet** |
 | Character appearance layers | NOT STARTED | |
 | Player character controller on `CharacterMotor` | NOT STARTED | `TopDownController` (exploration) is unchanged |
-| Quests and objectives; dialogue graph; cutscene sequences | NOT STARTED | `Dialogue` plays linear `.ykdialogue` pages as before |
+| Quests and objectives: conditions, counted events, manual objectives, `after`, time limits, failure, rewards, repeatable and gated, saved state | VERIFIED | `quests` (155 checks); **no quest log screen or editor** |
+| Dialogue graphs: speakers, expression portraits, choices with conditions/`once`/actions, branches, logic nodes; linear pages still work | VERIFIED | `dialogue` (134 checks), validation of the graph and its rules; the renderer draws portrait sides and choices; **no graph editor** |
+| Cutscene sequences (`.ykseq`, `SequencePlayer`): fades, camera moves, walks, waits, events, conversations, any rule action; skip and stop | VERIFIED | `sequence` (310 checks); **no timeline editor**; a cue that pathfinds a character needs the AI phase; not saved mid-play |
+| Documentation examples are loaded by the real parsers | VERIFIED | `docs` (the definition-file examples of PROJECT_FORMAT.md) |
 | Lua scripting | NOT STARTED | |
 | AI brains, perception, noise, debugger | NOT STARTED | |
 | World clock, schedules, zones, rooms, factions, opinion, jobs, economy | NOT STARTED | |
@@ -70,7 +73,8 @@ Inspector edits their components, and definition files show a summary there.
   run takes about 15 minutes; the unit suites about 12 seconds), including `demo`,
   `exploration` and the editor scripts, which show the platformer and exploration projects did not
   regress. New suites: `foundation` 416, `world` 90, `tilemap` 106, `navigation` 299,
-  `navigation_agent` 76, `rules` 44,445, `stats` 283, `items` 329, `loot_crafting` 1,881 checks.
+  `navigation_agent` 76, `rules` 44,445, `stats` 283, `items` 329, `loot_crafting` 1,881,
+  `quests` 155, `dialogue` 134, `sequence` 310 checks.
 - Not yet re-run for this program: `release`, `asan`, `headless` presets (new code is plain C++ with no
   platform dependence; the sanitizer run is listed in [NEXT.md](NEXT.md)).
 

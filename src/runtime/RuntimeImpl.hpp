@@ -56,6 +56,7 @@ struct GameRuntime::Impl {
     Phase phase{Phase::Idle};
     float phaseTime{};
     float fade{};
+    float cinematic{}; // The cutscene's own darkening, on top of the transition's.
     bool restartAfterFade{};
     std::string sceneAfterFade;
     std::set<std::string> inputLocks; // Reasons the game is locked (see GameContext::lockInput).
