@@ -466,7 +466,7 @@ rule actions, and AI brains and access conditions read the state as facts (`secu
       { "id": "riot", "name": "Riot", "countdown": 90, "level": "lockdown",
         "onStart": [ { "type": "SetVariable", "name": "doors_sealed", "value": true } ],
         "onEnd":   [ { "type": "SetVariable", "name": "doors_sealed", "value": false } ],
-        "onFail":  [ { "type": "EmitEvent", "event": "riot.lost" } ] } ] } }
+        "onFail":  [ { "type": "EmitEvent", "name": "riot.lost" } ] } ] } }
 ```
 
 - Levels are ordered; `SetSecurityLevel` takes an id or a number, `RaiseSecurity {by}` moves up or
