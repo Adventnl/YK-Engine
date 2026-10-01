@@ -465,6 +465,18 @@ Lets a person control this entity through one action set of the project's input 
 |---|---|---|---|
 | `actionSet` | string | "Player1" | Set of the project's input map, for example Player1. |
 
+## Logic
+
+### RuleSet
+
+WHEN an event happens, IF conditions hold, THEN actions run: game logic as data. Edited with the rule editor; `self` in its rules is this entity.
+
+Updates in the PreUpdate phase of the tick.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `rules` | json | [] |  |
+
 ## Navigation
 
 ### NavigationSettings

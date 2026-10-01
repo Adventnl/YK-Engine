@@ -29,6 +29,8 @@ struct RuntimeOptions {
     // Render interpolation treats a jump of more than this many meters in one tick as a teleport
     // and does not blend across it (GameContext::teleport is always one).
     float interpolationSnapDistance{5.0F};
+    // Seed of the game's dice (RandomService). 0 keeps the default seed.
+    std::uint64_t randomSeed{0};
 };
 
 // Executes a scene: builds the physics world from RigidBody/Collider components, then runs fixed

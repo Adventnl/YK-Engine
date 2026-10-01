@@ -1,5 +1,6 @@
 #include "RuntimeImpl.hpp"
 #include "yk/core/Log.hpp"
+#include "yk/runtime/Random.hpp"
 #include <algorithm>
 #include <cmath>
 
@@ -97,6 +98,8 @@ Status GameRuntime::Impl::rebuild(std::unique_ptr<Scene> fresh) {
     tickInput = InputFrame{};
     actions = ActionInput(options.inputMap);
     auto built = buildWorld();
+    if (options.randomSeed != 0)
+        services.get<RandomService>().rng.reseed(options.randomSeed);
     if (built)
         captureInterpolation(); // The first picture is the scene as it stands, not a blend.
     return built;

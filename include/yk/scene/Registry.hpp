@@ -8,6 +8,7 @@
 #include <string_view>
 #include <type_traits>
 #include <typeindex>
+#include <unordered_map>
 #include <vector>
 
 namespace yk {
@@ -19,6 +20,10 @@ struct CheckContext {
     // A prefab is checked on its own, before it is wired to anything: a plate or a door in a prefab
     // has no targets yet, and that is not a mistake.
     bool prefab{};
+    // Reports something that is wrong rather than merely doubtful (a rule that names an action that
+    // does not exist). Checks that only know warnings ignore it; when it is empty (a check run
+    // outside the validator) the sentence is added to the plain list like any other.
+    std::function<void(const std::string &)> error;
 };
 
 // Everything the engine knows about one component class.
@@ -358,6 +363,20 @@ class ComponentRegistry {
         return types_;
     }
 
+    // Catalogues other modules hang on the registry (the rule catalog, ...): one instance per type,
+    // created by the first extend<T>() and only read afterwards. Registration code extends; running
+    // code looks up with extension<T>(), which is null when nothing registered one.
+    template <class T> T &extend() {
+        auto &slot = extensions_[std::type_index(typeid(T))];
+        if (!slot)
+            slot = std::make_shared<T>();
+        return *static_cast<T *>(slot.get());
+    }
+    template <class T> const T *extension() const {
+        const auto found = extensions_.find(std::type_index(typeid(T)));
+        return found == extensions_.end() ? nullptr : static_cast<const T *>(found->second.get());
+    }
+
     void addTemplate(EntityTemplate value);
     const std::vector<EntityTemplate> &templates() const {
         return templates_;
@@ -368,5 +387,6 @@ class ComponentRegistry {
   private:
     std::vector<std::unique_ptr<ComponentType>> types_;
     std::vector<EntityTemplate> templates_;
+    std::unordered_map<std::type_index, std::shared_ptr<void>> extensions_;
 };
 } // namespace yk

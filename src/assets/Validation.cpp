@@ -89,7 +89,10 @@ void checkScene(const Project &project, const Scene &scene, const std::string &f
             const std::string where = owner + " " + component->type().name;
             if (component->type().check) {
                 std::vector<std::string> problems;
-                component->type().check(entity, *component, CheckContext{prefab}, problems);
+                CheckContext checking{prefab, [&](const std::string &message) {
+                                          report(Severity::Error, where + ": " + message);
+                                      }};
+                component->type().check(entity, *component, checking, problems);
                 for (const std::string &problem : problems)
                     report(Severity::Warning, where + ": " + problem);
             }

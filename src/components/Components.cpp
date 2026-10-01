@@ -1,6 +1,7 @@
 #include "yk/components/Components.hpp"
 #include "yk/components/Effects.hpp"
 #include "yk/core/Log.hpp"
+#include "yk/rules/RuleSet.hpp"
 #include "yk/runtime/GameContext.hpp"
 #include "yk/world/Tilemap.hpp"
 #include "yk/world/WorldLevels.hpp"
@@ -457,6 +458,7 @@ void registerEngineComponents(ComponentRegistry &registry) {
     registry.add<WorldLayer>("WorldLayer");
     registry.add<Tilemap>("Tilemap");
     registerEffectComponents(registry);
+    registerRuleComponents(registry);
     const auto place = [](Scene &scene, Vec2 at, const char *name) -> Entity & {
         Entity &entity = scene.createEntity(name);
         entity.setWorldPosition(at);
