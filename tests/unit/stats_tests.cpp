@@ -236,7 +236,7 @@ void gameDataFiles() {
           rows[1].second == "8");
     CHECK(data.known("stat", "luck") && !data.known("stat", "charm") &&
           data.known("effect", "boost") && !data.known("effect", "nothing") &&
-          data.known("quest", "anything") /* not defined here: no opinion */);
+          data.known("faction", "anything") /* not defined here: no opinion */);
 
     // A rule inside an effect that names something that does not exist.
     GameData bad;
