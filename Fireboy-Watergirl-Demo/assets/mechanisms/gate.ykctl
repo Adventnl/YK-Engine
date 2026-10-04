@@ -1,0 +1,42 @@
+{
+  "format": "yk.animator",
+  "version": 1,
+  "parameters": [
+    {
+      "name": "open",
+      "type": "bool"
+    }
+  ],
+  "entry": "Shut",
+  "states": [
+    {
+      "name": "Shut",
+      "clip": "shut"
+    },
+    {
+      "name": "Open",
+      "clip": "open"
+    }
+  ],
+  "transitions": [
+    {
+      "from": "Shut",
+      "to": "Open",
+      "when": [
+        {
+          "parameter": "open"
+        }
+      ]
+    },
+    {
+      "from": "Open",
+      "to": "Shut",
+      "when": [
+        {
+          "parameter": "open",
+          "value": false
+        }
+      ]
+    }
+  ]
+}

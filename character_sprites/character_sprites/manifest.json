@@ -1,0 +1,282 @@
+{
+  "source": "ChatGPT 图像 2026年9月30日 15_31_32.png",
+  "source_canvas_px": [
+    1448,
+    1086
+  ],
+  "note": "One pose per file, not a timed animation. Original artwork pixels are preserved inside the silhouettes. Use nearest-neighbour scaling in the game engine.",
+  "assets": [
+    {
+      "character": "blue",
+      "pose": "front",
+      "file": "blue_front.png",
+      "source_position_px": [
+        64,
+        229
+      ],
+      "size_px": [
+        120,
+        220
+      ],
+      "pivot_foot_px": [
+        60,
+        219
+      ]
+    },
+    {
+      "character": "blue",
+      "pose": "three_quarter",
+      "file": "blue_three_quarter.png",
+      "source_position_px": [
+        223,
+        229
+      ],
+      "size_px": [
+        113,
+        220
+      ],
+      "pivot_foot_px": [
+        56,
+        219
+      ]
+    },
+    {
+      "character": "blue",
+      "pose": "side",
+      "file": "blue_side.png",
+      "source_position_px": [
+        374,
+        231
+      ],
+      "size_px": [
+        106,
+        219
+      ],
+      "pivot_foot_px": [
+        53,
+        218
+      ]
+    },
+    {
+      "character": "blue",
+      "pose": "back",
+      "file": "blue_back.png",
+      "source_position_px": [
+        521,
+        229
+      ],
+      "size_px": [
+        110,
+        220
+      ],
+      "pivot_foot_px": [
+        55,
+        219
+      ]
+    },
+    {
+      "character": "blue",
+      "pose": "three_quarter_back",
+      "file": "blue_three_quarter_back.png",
+      "source_position_px": [
+        679,
+        229
+      ],
+      "size_px": [
+        109,
+        220
+      ],
+      "pivot_foot_px": [
+        54,
+        219
+      ]
+    },
+    {
+      "character": "blue",
+      "pose": "walk",
+      "file": "blue_walk.png",
+      "source_position_px": [
+        885,
+        241
+      ],
+      "size_px": [
+        117,
+        210
+      ],
+      "pivot_foot_px": [
+        58,
+        209
+      ]
+    },
+    {
+      "character": "blue",
+      "pose": "run",
+      "file": "blue_run.png",
+      "source_position_px": [
+        1081,
+        244
+      ],
+      "size_px": [
+        132,
+        205
+      ],
+      "pivot_foot_px": [
+        66,
+        204
+      ]
+    },
+    {
+      "character": "blue",
+      "pose": "jump",
+      "file": "blue_jump.png",
+      "source_position_px": [
+        1271,
+        215
+      ],
+      "size_px": [
+        123,
+        189
+      ],
+      "pivot_foot_px": [
+        61,
+        188
+      ]
+    },
+    {
+      "character": "orange",
+      "pose": "front",
+      "file": "orange_front.png",
+      "source_position_px": [
+        64,
+        677
+      ],
+      "size_px": [
+        120,
+        220
+      ],
+      "pivot_foot_px": [
+        60,
+        219
+      ]
+    },
+    {
+      "character": "orange",
+      "pose": "three_quarter",
+      "file": "orange_three_quarter.png",
+      "source_position_px": [
+        222,
+        677
+      ],
+      "size_px": [
+        114,
+        220
+      ],
+      "pivot_foot_px": [
+        57,
+        219
+      ]
+    },
+    {
+      "character": "orange",
+      "pose": "side",
+      "file": "orange_side.png",
+      "source_position_px": [
+        373,
+        677
+      ],
+      "size_px": [
+        109,
+        221
+      ],
+      "pivot_foot_px": [
+        54,
+        220
+      ]
+    },
+    {
+      "character": "orange",
+      "pose": "back",
+      "file": "orange_back.png",
+      "source_position_px": [
+        521,
+        677
+      ],
+      "size_px": [
+        110,
+        220
+      ],
+      "pivot_foot_px": [
+        55,
+        219
+      ]
+    },
+    {
+      "character": "orange",
+      "pose": "three_quarter_back",
+      "file": "orange_three_quarter_back.png",
+      "source_position_px": [
+        676,
+        677
+      ],
+      "size_px": [
+        112,
+        220
+      ],
+      "pivot_foot_px": [
+        56,
+        219
+      ]
+    },
+    {
+      "character": "orange",
+      "pose": "walk",
+      "file": "orange_walk.png",
+      "source_position_px": [
+        885,
+        688
+      ],
+      "size_px": [
+        117,
+        211
+      ],
+      "pivot_foot_px": [
+        58,
+        210
+      ]
+    },
+    {
+      "character": "orange",
+      "pose": "run",
+      "file": "orange_run.png",
+      "source_position_px": [
+        1082,
+        690
+      ],
+      "size_px": [
+        129,
+        206
+      ],
+      "pivot_foot_px": [
+        64,
+        205
+      ]
+    },
+    {
+      "character": "orange",
+      "pose": "jump",
+      "file": "orange_jump.png",
+      "source_position_px": [
+        1268,
+        658
+      ],
+      "size_px": [
+        124,
+        193
+      ],
+      "pivot_foot_px": [
+        62,
+        192
+      ]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "format": "yk.animation",
+  "version": 2,
+  "texture": "assets/mechanisms/plate.png",
+  "columns": 3,
+  "rows": 1,
+  "clips": [
+    {
+      "name": "up",
+      "frames": [0],
+      "fps": 1
+    },
+    {
+      "name": "mid",
+      "frames": [1],
+      "fps": 1
+    },
+    {
+      "name": "down",
+      "frames": [2],
+      "fps": 1
+    }
+  ]
+}

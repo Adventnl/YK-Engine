@@ -1,0 +1,148 @@
+{
+  "format": "yk.prefab",
+  "version": 1,
+  "root": "49594a6a1b3954ed",
+  "entities": [
+    {
+      "id": "49594a6a1b3954ed",
+      "name": "Ember Exit",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/mechanisms/exit_ember.png",
+            "shape": "Rectangle",
+            "size": [2, 2.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": 20,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 4,
+            "rows": 2,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/mechanisms/exit_ember.ykanim",
+            "controller": "assets/mechanisms/exit_ember.ykctl",
+            "clip": "",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.1, 1.9],
+            "offset": [0, 0.3],
+            "oneWay": false,
+            "isTrigger": true,
+            "detectTriggers": false,
+            "layer": "Sensor",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        },
+        {
+          "type": "Goal",
+          "properties": {
+            "requiredTag": "Ember",
+            "targets": [],
+            "satisfiedColor": "#5adc6eff",
+            "sound": "assets/audio/exit.wav",
+            "enterOnComplete": true,
+            "exitDuration": 0.6
+          }
+        }
+      ]
+    },
+    {
+      "id": "7a80bdaf16d92daf",
+      "name": "Glow",
+      "parent": "49594a6a1b3954ed",
+      "transform": {
+        "position": [0, 0.1],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ff963cff",
+            "intensity": 0.55,
+            "radius": 2.6,
+            "offset": [0, 0],
+            "flicker": 0.15,
+            "flickerSpeed": 3,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "c42abdc260a00e51",
+      "name": "Motes",
+      "parent": "49594a6a1b3954ed",
+      "transform": {
+        "position": [0, 0.8],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 6,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.8, 1.5],
+            "area": "Box",
+            "areaSize": [0.9, 0.2],
+            "direction": 0,
+            "spread": 20,
+            "speed": [0.4, 0.9],
+            "gravity": [0, -0.3],
+            "drag": 0,
+            "startSize": [0.05, 0.12],
+            "endScale": 0,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#ffdc78e6",
+            "endColor": "#ff781e00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    }
+  ]
+}

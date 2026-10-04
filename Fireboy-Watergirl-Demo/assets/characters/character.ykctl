@@ -1,0 +1,214 @@
+{
+  "format": "yk.animator",
+  "version": 1,
+  "parameters": [
+    {
+      "name": "speed",
+      "type": "float"
+    },
+    {
+      "name": "speedRatio",
+      "type": "float"
+    },
+    {
+      "name": "velocityY",
+      "type": "float"
+    },
+    {
+      "name": "grounded",
+      "type": "bool",
+      "default": true
+    },
+    {
+      "name": "jumped",
+      "type": "trigger"
+    },
+    {
+      "name": "landed",
+      "type": "trigger"
+    },
+    {
+      "name": "interact",
+      "type": "trigger"
+    },
+    {
+      "name": "dead",
+      "type": "bool"
+    }
+  ],
+  "entry": "Idle",
+  "states": [
+    {
+      "name": "Idle",
+      "clip": "idle"
+    },
+    {
+      "name": "Run",
+      "clip": "run",
+      "speedParameter": "speedRatio"
+    },
+    {
+      "name": "Jump",
+      "clip": "jump"
+    },
+    {
+      "name": "Fall",
+      "clip": "fall"
+    },
+    {
+      "name": "Land",
+      "clip": "land"
+    },
+    {
+      "name": "Interact",
+      "clip": "interact"
+    },
+    {
+      "name": "Death",
+      "clip": "death"
+    }
+  ],
+  "transitions": [
+    {
+      "from": "*",
+      "to": "Death",
+      "when": [
+        {
+          "parameter": "dead"
+        }
+      ]
+    },
+    {
+      "from": "*",
+      "to": "Jump",
+      "when": [
+        {
+          "parameter": "jumped"
+        },
+        {
+          "parameter": "dead",
+          "value": false
+        }
+      ]
+    },
+    {
+      "from": "Death",
+      "to": "Idle",
+      "when": [
+        {
+          "parameter": "dead",
+          "value": false
+        }
+      ]
+    },
+    {
+      "from": "Jump",
+      "to": "Fall",
+      "when": [
+        {
+          "parameter": "velocityY",
+          "op": ">",
+          "value": 0.5
+        }
+      ]
+    },
+    {
+      "from": "Idle",
+      "to": "Fall",
+      "when": [
+        {
+          "parameter": "grounded",
+          "value": false
+        }
+      ]
+    },
+    {
+      "from": "Run",
+      "to": "Fall",
+      "when": [
+        {
+          "parameter": "grounded",
+          "value": false
+        }
+      ]
+    },
+    {
+      "from": "Interact",
+      "to": "Fall",
+      "when": [
+        {
+          "parameter": "grounded",
+          "value": false
+        }
+      ]
+    },
+    {
+      "from": "Fall",
+      "to": "Land",
+      "when": [
+        {
+          "parameter": "landed"
+        }
+      ]
+    },
+    {
+      "from": "Fall",
+      "to": "Idle",
+      "when": [
+        {
+          "parameter": "grounded"
+        }
+      ]
+    },
+    {
+      "from": "Land",
+      "to": "Idle",
+      "exitTime": 1
+    },
+    {
+      "from": "Idle",
+      "to": "Interact",
+      "when": [
+        {
+          "parameter": "interact"
+        }
+      ]
+    },
+    {
+      "from": "Run",
+      "to": "Interact",
+      "when": [
+        {
+          "parameter": "interact"
+        }
+      ]
+    },
+    {
+      "from": "Interact",
+      "to": "Idle",
+      "exitTime": 1
+    },
+    {
+      "from": "Idle",
+      "to": "Run",
+      "when": [
+        {
+          "parameter": "speed",
+          "op": ">",
+          "value": 0.4
+        }
+      ]
+    },
+    {
+      "from": "Run",
+      "to": "Idle",
+      "when": [
+        {
+          "parameter": "speed",
+          "op": "<=",
+          "value": 0.4
+        }
+      ]
+    }
+  ]
+}

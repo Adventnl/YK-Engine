@@ -1,0 +1,86 @@
+{
+  "format": "yk.prefab",
+  "version": 1,
+  "root": "23b1c293a407416f",
+  "entities": [
+    {
+      "id": "23b1c293a407416f",
+      "name": "Backdrop",
+      "locked": true,
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": []
+    },
+    {
+      "id": "94c50e832205aff8",
+      "name": "Far Wall",
+      "parent": "23b1c293a407416f",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/backgrounds/bg_far.png",
+            "shape": "Rectangle",
+            "size": [72, 40.5],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": -100,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [0.15, 0.15]
+          }
+        }
+      ]
+    },
+    {
+      "id": "7344c31421150687",
+      "name": "Columns",
+      "parent": "23b1c293a407416f",
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/backgrounds/bg_mid.png",
+            "shape": "Rectangle",
+            "size": [96, 22],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": -90,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [16, 22],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [0.45, 0.45]
+          }
+        }
+      ]
+    }
+  ]
+}

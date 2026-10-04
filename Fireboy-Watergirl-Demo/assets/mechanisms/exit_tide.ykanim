@@ -1,0 +1,21 @@
+{
+  "format": "yk.animation",
+  "version": 2,
+  "texture": "assets/mechanisms/exit_tide.png",
+  "columns": 4,
+  "rows": 2,
+  "clips": [
+    {
+      "name": "waiting",
+      "first": 0,
+      "count": 4,
+      "fps": 4
+    },
+    {
+      "name": "active",
+      "first": 4,
+      "count": 4,
+      "fps": 8
+    }
+  ]
+}

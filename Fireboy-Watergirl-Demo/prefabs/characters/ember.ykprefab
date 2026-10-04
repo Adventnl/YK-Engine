@@ -1,0 +1,197 @@
+{
+  "format": "yk.prefab",
+  "version": 1,
+  "root": "f03687c54d7c70c4",
+  "entities": [
+    {
+      "id": "f03687c54d7c70c4",
+      "name": "Ember",
+      "tags": ["Ember"],
+      "transform": {
+        "position": [0, 0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/characters/ember.png",
+            "shape": "Rectangle",
+            "size": [1.5, 1.5],
+            "offset": [0, -0.09],
+            "color": "#ffffffff",
+            "layer": 40,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 8,
+            "rows": 4,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/characters/ember.ykanim",
+            "controller": "assets/characters/character.ykctl",
+            "clip": "",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "facing",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Dynamic",
+            "gravityScale": 1,
+            "linearDamping": 0,
+            "angularDamping": 0.05,
+            "fixedRotation": true,
+            "bullet": false,
+            "allowSleep": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Capsule",
+            "size": [0.6, 1.15],
+            "offset": [0, 0],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Player",
+            "friction": 0,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        },
+        {
+          "type": "PlayerInput",
+          "properties": {
+            "actionSet": "Player1"
+          }
+        },
+        {
+          "type": "PlatformerController",
+          "properties": {
+            "moveLeftAction": "MoveLeft",
+            "moveRightAction": "MoveRight",
+            "jumpAction": "Jump",
+            "moveSpeed": 5.5,
+            "groundAcceleration": 70,
+            "groundDeceleration": 80,
+            "airAcceleration": 40,
+            "airDeceleration": 6,
+            "jumpHeight": 2.3,
+            "fallGravityMultiplier": 1.35,
+            "jumpCutMultiplier": 0.45,
+            "coyoteTime": 0.1,
+            "jumpBufferTime": 0.12,
+            "maxFallSpeed": 20,
+            "maxSlopeDegrees": 55,
+            "gripFriction": 1.2,
+            "slideFriction": 0,
+            "groundSnap": 0.3,
+            "landingSpeed": 4,
+            "jumpSound": "assets/audio/jump.wav",
+            "landSound": "assets/audio/land.wav",
+            "jumpEffect": "prefabs/fx/dust.ykprefab",
+            "landEffect": "prefabs/fx/dust.ykprefab"
+          }
+        },
+        {
+          "type": "Killable",
+          "properties": {
+            "respawn": true,
+            "respawnDelay": 1.4,
+            "deathDuration": 0.9,
+            "spawnPoint": null,
+            "deathSound": "assets/audio/death.wav",
+            "respawnSound": "assets/audio/respawn.wav",
+            "deathEffect": "prefabs/fx/death_ember.ykprefab",
+            "respawnEffect": "prefabs/fx/respawn.ykprefab"
+          }
+        }
+      ]
+    },
+    {
+      "id": "14464aa484258d43",
+      "name": "Aura",
+      "parent": "f03687c54d7c70c4",
+      "transform": {
+        "position": [0, -0.1],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ff8c3cff",
+            "intensity": 0.35,
+            "radius": 2.2,
+            "offset": [0, 0],
+            "flicker": 0.15,
+            "flickerSpeed": 4,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "8330d8496d484b8a",
+      "name": "Trail",
+      "parent": "f03687c54d7c70c4",
+      "transform": {
+        "position": [0, 0.1],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 14,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [0.4, 0.8],
+            "area": "Box",
+            "areaSize": [0.4, 0.5],
+            "direction": 0,
+            "spread": 40,
+            "speed": [0.4, 1],
+            "gravity": [0, -1.5],
+            "drag": 0,
+            "startSize": [0.08, 0.18],
+            "endScale": 0.1,
+            "startRotation": [0, 0],
+            "rotationSpeed": [0, 0],
+            "startColor": "#ffaf46dc",
+            "endColor": "#ff3c1400",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    }
+  ]
+}

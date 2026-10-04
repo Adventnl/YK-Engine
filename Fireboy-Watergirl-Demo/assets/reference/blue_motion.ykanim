@@ -1,0 +1,58 @@
+{
+  "format": "yk.animation",
+  "version": 2,
+  "texture": "assets/reference/blue_motion.png",
+  "columns": 8,
+  "rows": 4,
+  "clips": [
+    {
+      "name": "idle",
+      "first": 0,
+      "count": 4,
+      "fps": 4,
+      "loop": true
+    },
+    {
+      "name": "run",
+      "first": 4,
+      "count": 8,
+      "fps": 12,
+      "loop": true
+    },
+    {
+      "name": "jump",
+      "first": 12,
+      "count": 2,
+      "fps": 8,
+      "loop": false
+    },
+    {
+      "name": "fall",
+      "first": 14,
+      "count": 2,
+      "fps": 8,
+      "loop": true
+    },
+    {
+      "name": "land",
+      "first": 16,
+      "count": 2,
+      "fps": 14,
+      "loop": false
+    },
+    {
+      "name": "interact",
+      "first": 18,
+      "count": 3,
+      "fps": 9,
+      "loop": false
+    },
+    {
+      "name": "death",
+      "first": 21,
+      "count": 6,
+      "fps": 10,
+      "loop": false
+    }
+  ]
+}

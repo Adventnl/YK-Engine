@@ -10,7 +10,7 @@
 # Layout (the bundle's Contents):
 #   MacOS/yk_editor yk_player yk     the programs (the player is what the editor exports games with)
 #   Resources/AppIcon.icns
-#   Resources/YK-DemoGame and YK-ExplorationDemo (welcome samples), licenses, docs
+#   Resources/YK-DemoGame, YK-ExplorationDemo and Fireboy-Watergirl-Demo (samples), licenses, docs
 #   Info.plist
 foreach(variable OUT EDITOR PLAYER TOOL SOURCE_DIR VERSION)
     if(NOT ${variable})
@@ -45,6 +45,12 @@ endif()
 if(EXISTS "${SOURCE_DIR}/YK-ExplorationDemo/project.ykproj")
     file(COPY "${SOURCE_DIR}/YK-ExplorationDemo/" DESTINATION
         "${OUT}/Contents/Resources/YK-ExplorationDemo"
+        PATTERN ".DS_Store" EXCLUDE)
+endif()
+if(EXISTS "${SOURCE_DIR}/Fireboy-Watergirl-Demo/project.ykproj")
+    file(COPY "${SOURCE_DIR}/Fireboy-Watergirl-Demo/" DESTINATION
+        "${OUT}/Contents/Resources/Fireboy-Watergirl-Demo"
+        PATTERN "tools" EXCLUDE PATTERN "__pycache__" EXCLUDE
         PATTERN ".DS_Store" EXCLUDE)
 endif()
 file(COPY "${SOURCE_DIR}/LICENSES/" DESTINATION "${OUT}/Contents/Resources/licenses")

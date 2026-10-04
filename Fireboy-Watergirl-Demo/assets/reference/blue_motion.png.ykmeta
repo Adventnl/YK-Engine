@@ -1,0 +1,8 @@
+{
+  "format": "yk.texture",
+  "version": 1,
+  "pixelsPerUnit": 50.0,
+  "filter": "nearest",
+  "columns": 8,
+  "rows": 4
+}

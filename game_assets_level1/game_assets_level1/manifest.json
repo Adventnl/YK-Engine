@@ -1,0 +1,433 @@
+{
+  "source": "download copy.png",
+  "source_canvas_px": [
+    1672,
+    941
+  ],
+  "geometry_reference": "image(20261001-204852).png",
+  "coordinate_system": "Pixel coordinates are top-left positions in the supplied source image.",
+  "usage": "Import individual PNGs as visual sprites. Build collision masks against the separate geometry master; alpha contours are not collision geometry.",
+  "limitations": "Visible-pixel extraction from a flattened concept image. Covered/hidden sides of doors, crate, dinosaur and platforms cannot be recovered. A few terrain prefabs intentionally retain attached detail.",
+  "assets": [
+    {
+      "name": "ground_left",
+      "category": "terrain",
+      "file": "png/terrain/ground_left.png",
+      "position_px": [
+        3,
+        669
+      ],
+      "size_px": [
+        246,
+        143
+      ],
+      "note": "Left floor including the block ramp; place as a static prefab."
+    },
+    {
+      "name": "red_pit",
+      "category": "terrain",
+      "file": "png/terrain/red_pit.png",
+      "position_px": [
+        245,
+        719
+      ],
+      "size_px": [
+        302,
+        93
+      ],
+      "note": "Red hazard basin, including its block rim."
+    },
+    {
+      "name": "ground_center",
+      "category": "terrain",
+      "file": "png/terrain/ground_center.png",
+      "position_px": [
+        495,
+        706
+      ],
+      "size_px": [
+        409,
+        109
+      ],
+      "note": "Central floor, including the pillar footing and switch bases."
+    },
+    {
+      "name": "blue_pit",
+      "category": "terrain",
+      "file": "png/terrain/blue_pit.png",
+      "position_px": [
+        899,
+        722
+      ],
+      "size_px": [
+        348,
+        93
+      ],
+      "note": "Blue hazard basin, including its block rim."
+    },
+    {
+      "name": "ground_right",
+      "category": "terrain",
+      "file": "png/terrain/ground_right.png",
+      "position_px": [
+        1191,
+        695
+      ],
+      "size_px": [
+        477,
+        120
+      ],
+      "note": "Right floor with block steps; chest is also provided separately."
+    },
+    {
+      "name": "tall_pillar_with_red_diamond",
+      "category": "terrain",
+      "file": "png/terrain/tall_pillar_with_red_diamond.png",
+      "position_px": [
+        615,
+        63
+      ],
+      "size_px": [
+        65,
+        652
+      ],
+      "note": "Tall fixed pillar; red diamond is baked into its visible face."
+    },
+    {
+      "name": "upper_left_block_bridge",
+      "category": "terrain",
+      "file": "png/terrain/upper_left_block_bridge.png",
+      "position_px": [
+        678,
+        392
+      ],
+      "size_px": [
+        276,
+        62
+      ],
+      "note": "Upper left block bridge under the doors."
+    },
+    {
+      "name": "upper_green_pit",
+      "category": "terrain",
+      "file": "png/terrain/upper_green_pit.png",
+      "position_px": [
+        901,
+        415
+      ],
+      "size_px": [
+        347,
+        85
+      ],
+      "note": "Upper green hazard channel and block base."
+    },
+    {
+      "name": "upper_right_block_bridge",
+      "category": "terrain",
+      "file": "png/terrain/upper_right_block_bridge.png",
+      "position_px": [
+        1190,
+        389
+      ],
+      "size_px": [
+        229,
+        66
+      ],
+      "note": "Upper right block bridge."
+    },
+    {
+      "name": "left_moving_platform",
+      "category": "platforms",
+      "file": "png/platforms/left_moving_platform.png",
+      "position_px": [
+        306,
+        543
+      ],
+      "size_px": [
+        147,
+        50
+      ],
+      "note": "Striped suspended platform; orb exported separately."
+    },
+    {
+      "name": "middle_button_platform",
+      "category": "platforms",
+      "file": "png/platforms/middle_button_platform.png",
+      "position_px": [
+        930,
+        584
+      ],
+      "size_px": [
+        114,
+        68
+      ],
+      "note": "Small block platform with built-in top button."
+    },
+    {
+      "name": "middle_dino_platform",
+      "category": "platforms",
+      "file": "png/platforms/middle_dino_platform.png",
+      "position_px": [
+        1080,
+        600
+      ],
+      "size_px": [
+        168,
+        52
+      ],
+      "note": "Small block platform; dino and pink orb exported separately."
+    },
+    {
+      "name": "upper_right_small_platform",
+      "category": "platforms",
+      "file": "png/platforms/upper_right_small_platform.png",
+      "position_px": [
+        1407,
+        435
+      ],
+      "size_px": [
+        108,
+        62
+      ],
+      "note": "Small upper right floating platform with top button."
+    },
+    {
+      "name": "crystal_platform",
+      "category": "platforms",
+      "file": "png/platforms/crystal_platform.png",
+      "position_px": [
+        1476,
+        567
+      ],
+      "size_px": [
+        114,
+        47
+      ],
+      "note": "Small floating platform below crystal; crystal separately exported."
+    },
+    {
+      "name": "far_right_high_platform",
+      "category": "platforms",
+      "file": "png/platforms/far_right_high_platform.png",
+      "position_px": [
+        1582,
+        533
+      ],
+      "size_px": [
+        74,
+        50
+      ],
+      "note": "Far right high floating blocks."
+    },
+    {
+      "name": "far_right_low_platform",
+      "category": "platforms",
+      "file": "png/platforms/far_right_low_platform.png",
+      "position_px": [
+        1551,
+        623
+      ],
+      "size_px": [
+        117,
+        70
+      ],
+      "note": "Far right low floating blocks and fixed stack."
+    },
+    {
+      "name": "red_door",
+      "category": "props",
+      "file": "png/props/red_door.png",
+      "position_px": [
+        710,
+        306
+      ],
+      "size_px": [
+        83,
+        95
+      ],
+      "note": "Red star door, visible upper portion."
+    },
+    {
+      "name": "blue_door",
+      "category": "props",
+      "file": "png/props/blue_door.png",
+      "position_px": [
+        792,
+        309
+      ],
+      "size_px": [
+        66,
+        92
+      ],
+      "note": "Blue diamond door, visible upper portion."
+    },
+    {
+      "name": "left_red_button",
+      "category": "props",
+      "file": "png/props/left_red_button.png",
+      "position_px": [
+        190,
+        644
+      ],
+      "size_px": [
+        59,
+        30
+      ],
+      "note": "Red switch on the left floor."
+    },
+    {
+      "name": "center_lever",
+      "category": "props",
+      "file": "png/props/center_lever.png",
+      "position_px": [
+        527,
+        668
+      ],
+      "size_px": [
+        84,
+        56
+      ],
+      "note": "Central lever; foot overlaps floor in source."
+    },
+    {
+      "name": "center_pedestal",
+      "category": "props",
+      "file": "png/props/center_pedestal.png",
+      "position_px": [
+        847,
+        665
+      ],
+      "size_px": [
+        54,
+        65
+      ],
+      "note": "Dark upright mechanism beside blue pit."
+    },
+    {
+      "name": "wooden_crate",
+      "category": "props",
+      "file": "png/props/wooden_crate.png",
+      "position_px": [
+        1280,
+        668
+      ],
+      "size_px": [
+        105,
+        54
+      ],
+      "note": "Wooden crate; lower edge overlaps floor."
+    },
+    {
+      "name": "green_dinosaur",
+      "category": "props",
+      "file": "png/props/green_dinosaur.png",
+      "position_px": [
+        1185,
+        572
+      ],
+      "size_px": [
+        54,
+        44
+      ],
+      "note": "Green toy dinosaur on floating platform."
+    },
+    {
+      "name": "red_orb_left",
+      "category": "collectibles",
+      "file": "png/collectibles/red_orb_left.png",
+      "position_px": [
+        267,
+        605
+      ],
+      "size_px": [
+        39,
+        42
+      ],
+      "note": "Floating red orb on the left."
+    },
+    {
+      "name": "blue_orb_left",
+      "category": "collectibles",
+      "file": "png/collectibles/blue_orb_left.png",
+      "position_px": [
+        363,
+        506
+      ],
+      "size_px": [
+        39,
+        43
+      ],
+      "note": "Blue orb on striped platform."
+    },
+    {
+      "name": "red_orb_upper",
+      "category": "collectibles",
+      "file": "png/collectibles/red_orb_upper.png",
+      "position_px": [
+        1116,
+        342
+      ],
+      "size_px": [
+        36,
+        42
+      ],
+      "note": "Floating red orb above upper bridge."
+    },
+    {
+      "name": "blue_orb_upper",
+      "category": "collectibles",
+      "file": "png/collectibles/blue_orb_upper.png",
+      "position_px": [
+        1167,
+        342
+      ],
+      "size_px": [
+        39,
+        42
+      ],
+      "note": "Floating blue orb above upper bridge."
+    },
+    {
+      "name": "cyan_orb_upper",
+      "category": "collectibles",
+      "file": "png/collectibles/cyan_orb_upper.png",
+      "position_px": [
+        1301,
+        348
+      ],
+      "size_px": [
+        37,
+        38
+      ],
+      "note": "Floating cyan orb above upper bridge."
+    },
+    {
+      "name": "pink_orb_middle",
+      "category": "collectibles",
+      "file": "png/collectibles/pink_orb_middle.png",
+      "position_px": [
+        1113,
+        557
+      ],
+      "size_px": [
+        39,
+        42
+      ],
+      "note": "Floating pink orb above middle platform."
+    },
+    {
+      "name": "blue_crystal_right",
+      "category": "collectibles",
+      "file": "png/collectibles/blue_crystal_right.png",
+      "position_px": [
+        1500,
+        536
+      ],
+      "size_px": [
+        60,
+        46
+      ],
+      "note": "Blue crystal on right floating platform."
+    }
+  ]
+}

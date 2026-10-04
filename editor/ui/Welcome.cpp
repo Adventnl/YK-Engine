@@ -80,6 +80,10 @@ void welcomePage(EditorState &state) {
         if (startAction("welcome/Open Exploration Sample", Icon::Play, "Open the Exploration Demo",
                         "Castle Paths: NPCs, dialogue, gates and connected top-down maps"))
             state.openProject(*exploration);
+    if (const auto fireboy = findBundledProject("Fireboy-Watergirl-Demo"))
+        if (startAction("welcome/Open Fireboy Sample", Icon::Play, "Open Fireboy and Watergirl",
+                        "Pixel-art co-op platformer with switches, hazards and two exits"))
+            state.openProject(*fireboy);
 
     if (!state.recent.paths().empty()) {
         ImGui::Dummy({1.0F, 18.0F});

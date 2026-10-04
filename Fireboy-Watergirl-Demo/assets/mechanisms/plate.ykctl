@@ -1,0 +1,71 @@
+{
+  "format": "yk.animator",
+  "version": 1,
+  "parameters": [
+    {
+      "name": "pressAmount",
+      "type": "float"
+    }
+  ],
+  "entry": "Up",
+  "states": [
+    {
+      "name": "Up",
+      "clip": "up"
+    },
+    {
+      "name": "Mid",
+      "clip": "mid"
+    },
+    {
+      "name": "Down",
+      "clip": "down"
+    }
+  ],
+  "transitions": [
+    {
+      "from": "Up",
+      "to": "Mid",
+      "when": [
+        {
+          "parameter": "pressAmount",
+          "op": ">",
+          "value": 0.25
+        }
+      ]
+    },
+    {
+      "from": "Mid",
+      "to": "Down",
+      "when": [
+        {
+          "parameter": "pressAmount",
+          "op": ">",
+          "value": 0.8
+        }
+      ]
+    },
+    {
+      "from": "Down",
+      "to": "Mid",
+      "when": [
+        {
+          "parameter": "pressAmount",
+          "op": "<",
+          "value": 0.75
+        }
+      ]
+    },
+    {
+      "from": "Mid",
+      "to": "Up",
+      "when": [
+        {
+          "parameter": "pressAmount",
+          "op": "<",
+          "value": 0.2
+        }
+      ]
+    }
+  ]
+}

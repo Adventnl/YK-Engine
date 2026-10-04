@@ -339,6 +339,11 @@ if(YK_RUNTIME AND PROJECT_IS_TOP_LEVEL)
         install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/YK-ExplorationDemo/"
             DESTINATION ${CMAKE_INSTALL_DATADIR}/yk-engine/YK-ExplorationDemo)
     endif()
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Fireboy-Watergirl-Demo/project.ykproj")
+        install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/Fireboy-Watergirl-Demo/"
+            DESTINATION ${CMAKE_INSTALL_DATADIR}/yk-engine/Fireboy-Watergirl-Demo
+            PATTERN "tools" EXCLUDE PATTERN "__pycache__" EXCLUDE)
+    endif()
     install(DIRECTORY docs/ DESTINATION ${CMAKE_INSTALL_DOCDIR})
     install(DIRECTORY LICENSES/ DESTINATION ${CMAKE_INSTALL_DOCDIR}/licenses)
     install(FILES README.md THIRD_PARTY.md DESTINATION ${CMAKE_INSTALL_DOCDIR})
