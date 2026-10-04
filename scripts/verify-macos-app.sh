@@ -57,6 +57,9 @@ pass "the editor links only system libraries"
 echo "== The editor, launched with a window (real video driver, real renderer)"
 demo="$app/Contents/Resources/YK-DemoGame"
 [[ -f "$demo/project.ykproj" ]] || fail "the demo game is not in Resources"
+fireboy="$app/Contents/Resources/Fireboy-Watergirl-Demo"
+[[ -f "$fireboy/project.ykproj" ]] || fail "Fireboy and Watergirl is not in Resources"
+"$app/Contents/MacOS/yk" validate "$fireboy" || fail "Fireboy and Watergirl failed validation"
 "$app/Contents/MacOS/yk_editor" "$demo" --no-audio --size 1600x900 --frames 90 \
     --capture "$work/shots/editor.bmp" --settings-dir "$work/editor-settings" \
     > "$work/logs/editor-run.txt" 2>&1 || { cat "$work/logs/editor-run.txt"; fail "the editor did not run"; }

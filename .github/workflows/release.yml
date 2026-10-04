@@ -6,7 +6,7 @@ on:
       version:
         description: Version in CMakeLists.txt, without the v prefix
         required: true
-        default: 0.3.0
+        default: 0.3.1
 
 permissions:
   contents: read
@@ -62,6 +62,10 @@ jobs:
           }
           & (Join-Path $actualRoot 'bin/yk.exe') validate (Join-Path $actualRoot 'share/yk-engine/YK-DemoGame')
           if ($LASTEXITCODE -ne 0) { throw 'The installed engine cannot validate its sample' }
+          $newGame = Join-Path $actualRoot 'share/yk-engine/Fireboy-Watergirl-Demo'
+          if (!(Test-Path (Join-Path $newGame 'project.ykproj'))) { throw 'Installer omitted Fireboy and Watergirl' }
+          & (Join-Path $actualRoot 'bin/yk.exe') validate $newGame
+          if ($LASTEXITCODE -ne 0) { throw 'The installed engine cannot validate Fireboy and Watergirl' }
           Get-FileHash $installer.FullName -Algorithm SHA256 | Format-List
       - uses: actions/upload-artifact@v4
         with:
