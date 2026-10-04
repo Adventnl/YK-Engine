@@ -13,11 +13,12 @@ namespace yk {
 // --------------------------------------------------------------------------------
 Result<ScheduleDestination> ScheduleDestination::fromJson(const Json &json) {
     ScheduleDestination destination;
-    const auto named = [&](Kind kind, const std::string &name) -> Result<ScheduleDestination> {
-        if (name.empty())
+    const auto named = [&](Kind destinationKind,
+                           const std::string &destinationName) -> Result<ScheduleDestination> {
+        if (destinationName.empty())
             return Error{"a destination needs the name of a zone, room, purpose or entity"};
-        destination.kind = kind;
-        destination.name = name;
+        destination.kind = destinationKind;
+        destination.name = destinationName;
         return destination;
     };
     if (json.isString()) {

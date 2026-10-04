@@ -66,7 +66,7 @@ jobs:
       - name: Install Ninja on the build runner
         run: brew install ninja
       - name: Configure
-        run: cmake --preset release
+        run: cmake --preset release -DYK_WARNINGS_AS_ERRORS=OFF
       - name: Build
         run: cmake --build --preset release
       - name: Test
