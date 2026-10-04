@@ -45,10 +45,22 @@ jobs:
           $installPath = Join-Path $env:RUNNER_TEMP 'YKEngineInstallerSmoke'
           & $installer.FullName /S "/D=$installPath"
           if ($LASTEXITCODE -ne 0) { throw 'Windows installer failed' }
-          foreach ($name in 'yk_editor.exe', 'yk_player.exe', 'yk.exe') {
-            if (!(Test-Path (Join-Path $installPath "bin/$name"))) { throw "Installer omitted $name" }
+          Start-Sleep -Seconds 5
+          $installRoots = @($installPath, (Join-Path $env:ProgramFiles 'YK Engine'),
+            (Join-Path ${env:ProgramFiles(x86)} 'YK Engine'))
+          $actualRoot = $installRoots | Where-Object {
+            Test-Path (Join-Path $_ 'bin/yk_editor.exe')
+          } | Select-Object -First 1
+          if (!$actualRoot) {
+            foreach ($root in $installRoots) {
+              if (Test-Path $root) { Get-ChildItem $root -Recurse | Select-Object -First 40 FullName }
+            }
+            throw 'Windows installer did not create the editor in an expected location'
           }
-          & (Join-Path $installPath 'bin/yk.exe') validate (Join-Path $installPath 'share/yk-engine/YK-DemoGame')
+          foreach ($name in 'yk_editor.exe', 'yk_player.exe', 'yk.exe') {
+            if (!(Test-Path (Join-Path $actualRoot "bin/$name"))) { throw "Installer omitted $name" }
+          }
+          & (Join-Path $actualRoot 'bin/yk.exe') validate (Join-Path $actualRoot 'share/yk-engine/YK-DemoGame')
           if ($LASTEXITCODE -ne 0) { throw 'The installed engine cannot validate its sample' }
           Get-FileHash $installer.FullName -Algorithm SHA256 | Format-List
       - uses: actions/upload-artifact@v4
