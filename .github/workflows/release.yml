@@ -116,7 +116,7 @@ jobs:
           test "$(find installers -maxdepth 1 -name '*.exe' | wc -l)" -eq 1
           test "$(find installers -maxdepth 1 -name '*.dmg' | wc -l)" -eq 1
           test "$(find installers -maxdepth 1 -name '*.pkg' | wc -l)" -eq 1
-          sha256sum installers/* > installers/SHA256SUMS.txt
+          (cd installers && sha256sum *.exe *.dmg *.pkg > SHA256SUMS.txt)
           tag="v$RELEASE_VERSION"
           if gh release view "$tag" >/dev/null 2>&1; then
             gh release upload "$tag" installers/* --clobber
