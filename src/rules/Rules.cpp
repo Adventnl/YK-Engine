@@ -143,11 +143,11 @@ Result<Condition> Condition::fromJson(const Json &json) {
     }
     if (!json.isObject())
         return Error{"a condition must be an object, a list or true/false"};
-    const auto list = [&](const char *key, Kind kind) -> Result<Condition> {
+    const auto list = [&](const char *key, Kind listKind) -> Result<Condition> {
         const Json &items = json.get(key);
         if (!items.isArray())
             return Error{std::string("'") + key + "' must be a list of conditions"};
-        condition.kind = kind;
+        condition.kind = listKind;
         for (std::size_t i = 0; i < items.size(); ++i) {
             auto child = fromJson(items.at(i));
             if (!child)
