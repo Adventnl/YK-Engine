@@ -3,7 +3,7 @@
 # Installer wizard package. End users do not need CMake, SDL or a compiler.
 # Run it on a Mac with Xcode's command line tools, CMake 3.25+ and Ninja.
 #
-#   scripts/package-macos.sh                 build, assemble, sign ad hoc, write the .dmg
+#   scripts/package-macos.sh                 build, assemble, sign ad hoc, write the .dmg and .pkg
 #   scripts/package-macos.sh --no-build      reuse build/release (only assemble, sign, package)
 #
 # Output: build/macos-dist/YK Engine.app and YKEngine-<version>-macos-<arch>.{dmg,pkg}

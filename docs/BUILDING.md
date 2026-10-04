@@ -213,7 +213,7 @@ executable under Wine, including the whole demo playthrough (it reaches the same
 as on Linux), exports the demo for Windows with the Windows `yk.exe` and starts the exported game
 for a few seconds, saving a frame. The editor's UI scripts are not run under Wine.
 
-Not done on Windows: an application icon and version resource for the executables, code signing.
+Not done on Windows: a version resource for the executables, an icon for exported games, and code signing.
 
 ## macOS
 
@@ -224,17 +224,18 @@ contain the app and samples; no build tools or extra libraries are required. The
 published macOS builds currently target Apple silicon.
 
 The build is the same CMake project; use `release` on a Mac with Xcode's command line tools and
-Ninja. The engine is shipped as an ordinary application and disk image:
+Ninja. The engine is shipped as an application, disk image and Installer package:
 
 ```sh
-scripts/package-macos.sh                     # configure + build + assemble + sign + .dmg
+scripts/package-macos.sh                     # configure + build + assemble + .dmg + .pkg
 scripts/package-macos.sh --no-build          # reuse build/release
 scripts/verify-macos-app.sh                  # check the result the way a user meets it
 ```
 
-Output, in `build/macos-dist/`: **`YK Engine.app`** and **`YKEngine-<version>-macos-<arch>.dmg`**
-(the app and an Applications link). CI builds both on a real Mac and keeps them as the artifact
-`macos-engine`, together with the verification's screenshots and logs.
+Output, in `build/macos-dist/`: **`YK Engine.app`**,
+**`YKEngine-<version>-macos-<arch>.dmg`** (the app and an Applications link), and
+**`YKEngine-<version>-macos-<arch>.pkg`** (the macOS Installer wizard). The release workflow
+builds and verifies both installers on a real Mac, then attaches them to GitHub Releases.
 
 What the application is, so nothing is missing when it is copied to Applications:
 
@@ -256,6 +257,7 @@ on its first start. For a release, put the credentials in the environment:
 
 ```sh
 export YK_CODESIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)"   # in your keychain
+export YK_INSTALLER_IDENTITY="Developer ID Installer: Your Name (TEAMID)"  # for the .pkg
 xcrun notarytool store-credentials yk-notary --apple-id you@example.com --team-id TEAMID   # once
 export YK_NOTARY_PROFILE=yk-notary
 scripts/package-macos.sh
@@ -263,7 +265,7 @@ scripts/package-macos.sh
 
 With an identity every program and then the bundle are signed with the hardened runtime, the
 entitlements in `packaging/macos/entitlements.plist` and a secure timestamp; with a profile the
-`.dmg` is submitted to Apple, waited for and stapled. **That path has not been run**: it needs an
+`.dmg` and `.pkg` are submitted to Apple, waited for and stapled. **That path has not been run**: it needs an
 Apple Developer account, which was not available. Only the ad hoc path is verified (below and in
 [STATUS.md](STATUS.md)).
 
