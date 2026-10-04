@@ -78,12 +78,13 @@ echo "== Installer package"
 pkgstage=$(mktemp -d)
 trap 'rm -rf "$stage" "$pkgstage"' EXIT
 ditto "$app" "$pkgstage/YK Engine.app"
-pkg_args=()
 if [[ -n "$installer_identity" ]]; then
-    pkg_args=(--sign "$installer_identity")
+    pkgbuild --root "$pkgstage" --install-location /Applications \
+        --identifier com.yk.engine --version "$version" --sign "$installer_identity" "$pkg"
+else
+    pkgbuild --root "$pkgstage" --install-location /Applications \
+        --identifier com.yk.engine --version "$version" "$pkg"
 fi
-pkgbuild --root "$pkgstage" --install-location /Applications \
-    --identifier com.yk.engine --version "$version" "${pkg_args[@]}" "$pkg"
 
 if [[ -n "$profile" ]]; then
     echo "== Notarizing (this waits for Apple)"
