@@ -2,6 +2,15 @@
 
 # YK Engine
 
+## Download and install
+
+Get the installers from [GitHub Releases](https://github.com/Adventnl/YK-Engine/releases).
+On Windows x64, run the `windows-x64.exe` setup wizard. On an Apple silicon Mac, open
+the `.pkg` Installer wizard or the `.dmg` and drag **YK Engine** to Applications.
+The downloads include the editor, player, sample projects, and runtime libraries;
+you do not need to install SDL, CMake, or a compiler. These releases are currently
+unsigned, so Windows or macOS may ask you to confirm the first launch.
+
 A proprietary C++20 2D game engine with a VS Code-style editor. You build a level in the editor by
 placing prefabs and components, wiring them together and pressing **Play**; the same data runs in
 a standalone player and can be exported as a desktop game.

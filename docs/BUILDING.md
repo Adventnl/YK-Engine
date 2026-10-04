@@ -187,6 +187,13 @@ Or use **Build > Export Game** in the editor. Either way:
 
 ## Windows
 
+**For users.** Download the `windows-x64.exe` installer from
+[GitHub Releases](https://github.com/Adventnl/YK-Engine/releases) and follow the setup wizard.
+The editor appears in the Start menu, and Apps & features can uninstall it. The installer
+contains the engine and samples; SDL, CMake, Ninja and Visual Studio are build-time tools
+and are not needed to run it. The release workflow builds with the MSVC runtime linked
+statically and verifies the installed sample on a Windows runner.
+
 **Native.** Configure with the `dev` or `release` preset from a Visual Studio x64 Developer
 prompt (or with MinGW-w64), or use CMake's Visual Studio generator; the project builds with
 `/W4`. The CI workflow builds and tests it with MSVC on a real Windows runner
@@ -209,6 +216,12 @@ for a few seconds, saving a frame. The editor's UI scripts are not run under Win
 Not done on Windows: an application icon and version resource for the executables, code signing.
 
 ## macOS
+
+**For users.** Download the `.pkg` from
+[GitHub Releases](https://github.com/Adventnl/YK-Engine/releases) and follow the macOS
+Installer wizard, or download the `.dmg` and drag the app into Applications. Both
+contain the app and samples; no build tools or extra libraries are required. The
+published macOS builds currently target Apple silicon.
 
 The build is the same CMake project; use `release` on a Mac with Xcode's command line tools and
 Ninja. The engine is shipped as an ordinary application and disk image:

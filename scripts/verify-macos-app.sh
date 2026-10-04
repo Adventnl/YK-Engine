@@ -12,6 +12,11 @@ root=$(cd "$(dirname "$0")/.." && pwd)
 cd "$root"
 [[ "$(uname -s)" == "Darwin" ]] || { echo "verify-macos-app.sh must run on macOS" >&2; exit 1; }
 dmg="${1:-$(ls -t build/macos-dist/*.dmg | head -1)}"
+pkg="${dmg%.dmg}.pkg"
+[[ -f "$pkg" ]] || { echo "FAILED: missing Installer package $pkg" >&2; exit 1; }
+pkgutil --payload-files "$pkg" | grep 'YK Engine.app/Contents/MacOS/yk_editor' > /dev/null || {
+    echo "FAILED: Installer package has no editor" >&2; exit 1;
+}
 work="$root/build/macos-verify"
 rm -rf "$work"
 mkdir -p "$work/mount" "$work/installed" "$work/games" "$work/shots" "$work/logs"

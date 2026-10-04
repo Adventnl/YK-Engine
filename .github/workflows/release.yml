@@ -1,0 +1,115 @@
+name: Release installers
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version in CMakeLists.txt, without the v prefix
+        required: true
+        default: 0.3.0
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check version
+        shell: pwsh
+        run: |
+          $project = Get-Content CMakeLists.txt -Raw
+          if ($project -notmatch 'project\(YKEngine VERSION ([0-9.]+)') { throw 'Project version missing' }
+          if ($Matches[1] -ne '${{ inputs.version }}') { throw 'Release version differs from CMakeLists.txt' }
+      - name: Install NSIS on the build runner
+        shell: pwsh
+        run: |
+          choco install nsis --yes --no-progress
+          $nsis = Join-Path ${env:ProgramFiles(x86)} 'NSIS'
+          if (!(Test-Path (Join-Path $nsis 'makensis.exe'))) { throw 'NSIS was not installed' }
+          $nsis | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+      - name: Configure with a static C++ runtime
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DBUILD_TESTING=ON -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
+      - name: Build
+        run: cmake --build build --config Release --parallel
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure
+      - name: Build Windows setup wizard
+        shell: pwsh
+        run: |
+          cpack --config build/CPackConfig.cmake -C Release -G NSIS -B build/windows-dist
+          if ($LASTEXITCODE -ne 0) { throw 'CPack NSIS failed' }
+          $installer = Get-ChildItem build/windows-dist/YKEngine-*-windows-x64.exe
+          if (@($installer).Count -ne 1) { throw 'Expected one Windows installer' }
+          $installPath = Join-Path $env:RUNNER_TEMP 'YKEngineInstallerSmoke'
+          & $installer.FullName /S "/D=$installPath"
+          if ($LASTEXITCODE -ne 0) { throw 'Windows installer failed' }
+          foreach ($name in 'yk_editor.exe', 'yk_player.exe', 'yk.exe') {
+            if (!(Test-Path (Join-Path $installPath "bin/$name"))) { throw "Installer omitted $name" }
+          }
+          & (Join-Path $installPath 'bin/yk.exe') validate (Join-Path $installPath 'share/yk-engine/YK-DemoGame')
+          if ($LASTEXITCODE -ne 0) { throw 'The installed engine cannot validate its sample' }
+          Get-FileHash $installer.FullName -Algorithm SHA256 | Format-List
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: build/windows-dist/YKEngine-*-windows-x64.exe
+          if-no-files-found: error
+
+  macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check version
+        run: test "$(sed -n 's/^project(YKEngine VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)" = "${{ inputs.version }}"
+      - name: Install Ninja on the build runner
+        run: brew install ninja
+      - name: Configure
+        run: cmake --preset release
+      - name: Build
+        run: cmake --build --preset release
+      - name: Test
+        run: ctest --preset release
+      - name: Build macOS installers
+        run: scripts/package-macos.sh --no-build
+      - name: Verify the packaged application and installers
+        run: scripts/verify-macos-app.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-installers
+          path: |
+            build/macos-dist/*.dmg
+            build/macos-dist/*.pkg
+          if-no-files-found: error
+
+  publish:
+    needs: [windows, macos]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: '*-installer*'
+          path: installers
+          merge-multiple: true
+      - name: Publish only after both platform checks pass
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          test "$(find installers -maxdepth 1 -name '*.exe' | wc -l)" -eq 1
+          test "$(find installers -maxdepth 1 -name '*.dmg' | wc -l)" -eq 1
+          test "$(find installers -maxdepth 1 -name '*.pkg' | wc -l)" -eq 1
+          sha256sum installers/* > installers/SHA256SUMS.txt
+          tag="v$RELEASE_VERSION"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" installers/* --clobber
+          else
+            gh release create "$tag" installers/* --target "$GITHUB_SHA" --title "YK Engine $RELEASE_VERSION" \
+              --notes-file docs/RELEASE_NOTES.md --draft
+          fi
+          gh release edit "$tag" --draft=false

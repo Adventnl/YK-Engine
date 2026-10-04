@@ -1,19 +1,21 @@
 #!/usr/bin/env bash
-# Builds the macOS release of the engine: "YK Engine.app" and the disk image a user installs it from.
+# Builds the macOS release of the engine: an app, a drag-to-Applications disk image, and an
+# Installer wizard package. End users do not need CMake, SDL or a compiler.
 # Run it on a Mac with Xcode's command line tools, CMake 3.25+ and Ninja.
 #
 #   scripts/package-macos.sh                 build, assemble, sign ad hoc, write the .dmg
 #   scripts/package-macos.sh --no-build      reuse build/release (only assemble, sign, package)
 #
-# Output: build/macos-dist/YK Engine.app and build/macos-dist/YKEngine-<version>-macos-<arch>.dmg
+# Output: build/macos-dist/YK Engine.app and YKEngine-<version>-macos-<arch>.{dmg,pkg}
 #
 # Signing and notarization (where Apple's credentials enter the pipeline):
 #   YK_CODESIGN_IDENTITY   a "Developer ID Application: Name (TEAMID)" identity in the keychain.
 #                          Unset: the app is signed ad hoc, which runs on this Mac and, once
 #                          downloaded elsewhere, needs Control-click > Open on first launch.
 #   YK_NOTARY_PROFILE      a notarytool keychain profile (xcrun notarytool store-credentials ...).
-#                          With it the .dmg is submitted to Apple, waited for and stapled, so it
-#                          opens on any Mac without a warning. Needs YK_CODESIGN_IDENTITY.
+#                          With it both installers are submitted to Apple and stapled.
+#   YK_INSTALLER_IDENTITY  a "Developer ID Installer: Name (TEAMID)" identity in the keychain.
+#                          Needed to sign and notarize the .pkg.
 # Other settings: YK_DEPS_DIR (pre-fetched dependencies, scripts/fetch-deps.sh).
 set -euo pipefail
 
@@ -26,7 +28,10 @@ build=1
 
 identity="${YK_CODESIGN_IDENTITY:-}"
 profile="${YK_NOTARY_PROFILE:-}"
-[[ -z "$profile" || -n "$identity" ]] || { echo "YK_NOTARY_PROFILE needs YK_CODESIGN_IDENTITY" >&2; exit 1; }
+installer_identity="${YK_INSTALLER_IDENTITY:-}"
+[[ -z "$profile" || ( -n "$identity" && -n "$installer_identity" ) ]] || {
+    echo "YK_NOTARY_PROFILE needs YK_CODESIGN_IDENTITY and YK_INSTALLER_IDENTITY" >&2; exit 1;
+}
 
 if [[ $build -eq 1 ]]; then
     cmake --preset release ${YK_DEPS_DIR:+-DYK_DEPS_DIR="$YK_DEPS_DIR"}
@@ -37,6 +42,7 @@ arch=$(uname -m)
 dist="build/macos-dist"
 app="$dist/YK Engine.app"
 dmg="$dist/YKEngine-$version-macos-$arch.dmg"
+pkg="$dist/YKEngine-$version-macos-$arch.pkg"
 rm -rf "$dist"
 mkdir -p "$dist"
 # ditto keeps permissions, symlinks and extended attributes the way Finder does.
@@ -68,15 +74,30 @@ if [[ -n "$identity" ]]; then
     codesign --force --timestamp --sign "$identity" "$dmg"
 fi
 
+echo "== Installer package"
+pkgstage=$(mktemp -d)
+trap 'rm -rf "$stage" "$pkgstage"' EXIT
+ditto "$app" "$pkgstage/YK Engine.app"
+pkg_args=()
+if [[ -n "$installer_identity" ]]; then
+    pkg_args=(--sign "$installer_identity")
+fi
+pkgbuild --root "$pkgstage" --install-location /Applications \
+    --identifier com.yk.engine --version "$version" "${pkg_args[@]}" "$pkg"
+
 if [[ -n "$profile" ]]; then
     echo "== Notarizing (this waits for Apple)"
     xcrun notarytool submit "$dmg" --keychain-profile "$profile" --wait
     xcrun stapler staple "$dmg"
     xcrun stapler validate "$dmg"
     spctl --assess --type open --context context:primary-signature --verbose=2 "$dmg"
+    xcrun notarytool submit "$pkg" --keychain-profile "$profile" --wait
+    xcrun stapler staple "$pkg"
+    xcrun stapler validate "$pkg"
 fi
 
 echo
 echo "App:        $app"
 echo "Disk image: $dmg"
-shasum -a 256 "$dmg"
+echo "Installer:  $pkg"
+shasum -a 256 "$dmg" "$pkg"

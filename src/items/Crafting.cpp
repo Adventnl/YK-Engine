@@ -230,9 +230,9 @@ void CraftingStation::describe(TypeBuilder<CraftingStation> &type) {
     type.field("range", &CraftingStation::range)
         .range(0.1, 20, 0.1)
         .tooltip("How close the maker must stand.");
-    type.check([](const Entity &, const CraftingStation &station, const CheckContext &,
+    type.check([](const Entity &, const CraftingStation &craftingStation, const CheckContext &,
                   std::vector<std::string> &problems) {
-        if (station.station.empty())
+        if (craftingStation.station.empty())
             problems.push_back("names no kind of station, so no recipe can use it");
     });
 }
