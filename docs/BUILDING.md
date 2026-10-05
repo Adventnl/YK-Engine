@@ -144,6 +144,22 @@ An installation contains `yk_editor`, `yk_player`, `yk`, the demo game
 (`share/doc/YKEngine/licenses`). It contains none of the private dependencies' headers or
 libraries; the `install` test checks that.
 
+## Automatic releases and updates
+
+Each push to `main` starts the release workflow. It builds and tests both platform installers,
+then publishes a GitHub Release with the installers and `SHA256SUMS.txt`. The release version
+is the base `YK_RELEASE_VERSION` in CMakeLists.txt with the workflow run number added to its patch
+component. This gives every release a unique, increasing version without editing a version file on
+each push. If pushes arrive while a release is running, GitHub Actions keeps the newest pending run
+and may skip intermediate commits. No Cloudflare Worker or separate update server is needed.
+
+Installed editors check the newest published GitHub Release at startup. They download the matching
+installer and checksum file, verify SHA-256, and then launch the OS installer. Windows may ask for
+administrator approval; macOS opens Installer and asks the user to complete its authorization
+step. The current editor still opens if the network, download, or checksum check fails. Development builds,
+test runs, and editors installed before the updater was introduced do not update themselves. Set
+`YK_DISABLE_UPDATE=1` to skip a check on a particular launch.
+
 ## Exporting a game
 
 An export is the player program for a target system, renamed after the game, next to a copy of the
@@ -241,9 +257,9 @@ What the application is, so nothing is missing when it is copied to Applications
 
 - `Contents/MacOS/yk_editor` is the main executable (`CFBundleExecutable`); `yk_player` and `yk` sit
   next to it. The player is what the editor exports games with, and **Run in Player** starts it.
-- `Contents/Resources` holds `AppIcon.icns`, the sample game (`YK-DemoGame`, offered on the welcome
-  screen), the license notices and these documents. Nothing is read from the build tree or the
-  working directory; the application does not need a terminal, Python, CMake or any script.
+- `Contents/Resources` holds `AppIcon.icns`, the startup updater, the sample game (`YK-DemoGame`,
+  offered on the welcome screen), the license notices and these documents. Nothing is read from the
+  build tree or the working directory; the application does not need Python or CMake.
 - `Info.plist` declares the `.ykproj` document type, so double-clicking a project (or
   `open -a "YK Engine" project.ykproj`) opens it in the editor.
 - Logs and crash reports: `~/Library/Logs/YKEngine/Editor/`; settings:

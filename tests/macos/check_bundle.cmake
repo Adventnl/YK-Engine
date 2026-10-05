@@ -40,7 +40,7 @@ set(macos "${app}/Contents/MacOS")
 set(resources "${app}/Contents/Resources")
 foreach(required
         "${app}/Contents/Info.plist" "${macos}/${editor_name}" "${macos}/${player_name}"
-        "${macos}/${tool_name}" "${resources}/AppIcon.icns"
+        "${macos}/${tool_name}" "${resources}/AppIcon.icns" "${resources}/macos.sh"
         "${resources}/YK-DemoGame/project.ykproj" "${resources}/YK-DemoGame/assets/icon.png"
         "${resources}/licenses/SDL3.txt" "${resources}/licenses/Box2D-MIT.txt"
         "${resources}/docs/EDITOR.md" "${resources}/docs/THIRD_PARTY.md")

@@ -1,27 +1,50 @@
 name: Release installers
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
-    inputs:
-      version:
-        description: Version in CMakeLists.txt, without the v prefix
-        required: true
-        default: 0.3.1
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
 
 permissions:
   contents: read
 
 jobs:
-  windows:
-    runs-on: windows-2022
+  prepare:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
-      - name: Check version
+      - name: Assign a unique version to this push
+        id: version
+        run: |
+          base=$(sed -n 's/^set(YK_RELEASE_VERSION "\([0-9.]*\)".*/\1/p' CMakeLists.txt)
+          test -n "$base"
+          IFS=. read -r major minor patch <<< "$base"
+          echo "version=$major.$minor.$((patch + GITHUB_RUN_NUMBER))" >> "$GITHUB_OUTPUT"
+
+  windows:
+    needs: prepare
+    runs-on: windows-2022
+    env:
+      RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check updater syntax
         shell: pwsh
         run: |
-          $project = Get-Content CMakeLists.txt -Raw
-          if ($project -notmatch 'project\(YKEngine VERSION ([0-9.]+)') { throw 'Project version missing' }
-          if ($Matches[1] -ne '${{ inputs.version }}') { throw 'Release version differs from CMakeLists.txt' }
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path 'packaging/update/windows.ps1'), [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count) { throw ($errors | Out-String) }
+          & tests/update/windows-mock.ps1
+          if ($LASTEXITCODE -ne 0) { throw 'Windows updater mock test failed' }
       - name: Install NSIS on the build runner
         shell: pwsh
         run: |
@@ -30,7 +53,7 @@ jobs:
           if (!(Test-Path (Join-Path $nsis 'makensis.exe'))) { throw 'NSIS was not installed' }
           $nsis | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
       - name: Configure with a static C++ runtime
-        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DBUILD_TESTING=ON -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DBUILD_TESTING=ON -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DYK_RELEASE_VERSION=${{ env.RELEASE_VERSION }}
       - name: Build
         run: cmake --build build --config Release --parallel
       - name: Test
@@ -74,15 +97,18 @@ jobs:
           if-no-files-found: error
 
   macos:
+    needs: prepare
     runs-on: macos-14
+    env:
+      RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
     steps:
       - uses: actions/checkout@v4
-      - name: Check version
-        run: test "$(sed -n 's/^project(YKEngine VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)" = "${{ inputs.version }}"
+      - name: Check updater syntax
+        run: bash -n packaging/update/macos.sh
       - name: Install Ninja on the build runner
         run: brew install ninja
       - name: Configure
-        run: cmake --preset release -DYK_WARNINGS_AS_ERRORS=OFF
+        run: cmake --preset release -DYK_WARNINGS_AS_ERRORS=OFF -DYK_RELEASE_VERSION="$RELEASE_VERSION"
       - name: Build
         run: cmake --build --preset release
       - name: Test
@@ -100,7 +126,7 @@ jobs:
           if-no-files-found: error
 
   publish:
-    needs: [windows, macos]
+    needs: [prepare, windows, macos]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -114,7 +140,7 @@ jobs:
       - name: Publish only after both platform checks pass
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
         run: |
           set -euo pipefail
           test "$(find installers -maxdepth 1 -name '*.exe' | wc -l)" -eq 1
@@ -126,6 +152,6 @@ jobs:
             gh release upload "$tag" installers/* --clobber
           else
             gh release create "$tag" installers/* --target "$GITHUB_SHA" --title "YK Engine $RELEASE_VERSION" \
-              --notes-file docs/RELEASE_NOTES.md --draft
+              --generate-notes --draft
           fi
-          gh release edit "$tag" --draft=false
+          gh release edit "$tag" --draft=false --latest

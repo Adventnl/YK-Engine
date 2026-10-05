@@ -51,6 +51,9 @@ foreach(required
         message(FATAL_ERROR "The installation lacks ${required}")
     endif()
 endforeach()
+if(WIN32 AND NOT EXISTS "${prefix}/share/yk-engine/update/windows.ps1")
+    message(FATAL_ERROR "The Windows installation lacks its startup updater")
+endif()
 
 # Box2D, SDL and Dear ImGui are linked statically and stay private: nothing of theirs may be installed
 # besides the notices, so the prefix holds exactly the programs and shared data.

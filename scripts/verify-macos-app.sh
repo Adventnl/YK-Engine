@@ -45,6 +45,7 @@ lipo -info "$app/Contents/MacOS/yk_editor"
 for program in yk_editor yk_player yk; do
     [[ -x "$app/Contents/MacOS/$program" ]] || fail "$program is missing or not executable"
 done
+[[ -f "$app/Contents/Resources/macos.sh" ]] || fail "the app has no startup updater"
 # Apple's own tool has to accept the icon file.
 iconutil --convert iconset --output "$work/engine.iconset" "$app/Contents/Resources/AppIcon.icns" \
     && ls "$work/engine.iconset" | head -3 && pass "AppIcon.icns is accepted by iconutil"

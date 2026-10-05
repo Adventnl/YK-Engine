@@ -56,6 +56,7 @@ endif()
 file(COPY "${SOURCE_DIR}/LICENSES/" DESTINATION "${OUT}/Contents/Resources/licenses")
 file(COPY "${SOURCE_DIR}/README.md" "${SOURCE_DIR}/THIRD_PARTY.md" DESTINATION
     "${OUT}/Contents/Resources/docs")
+file(COPY "${SOURCE_DIR}/packaging/update/macos.sh" DESTINATION "${OUT}/Contents/Resources")
 file(GLOB documents "${SOURCE_DIR}/docs/*.md")
 file(COPY ${documents} DESTINATION "${OUT}/Contents/Resources/docs")
 message(STATUS "Assembled ${OUT}")

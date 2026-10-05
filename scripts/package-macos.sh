@@ -37,7 +37,8 @@ if [[ $build -eq 1 ]]; then
     cmake --preset release ${YK_DEPS_DIR:+-DYK_DEPS_DIR="$YK_DEPS_DIR"}
     cmake --build --preset release --target yk_engine_app
 fi
-version=$(sed -n 's/^project(YKEngine VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)
+version=$(sed -n 's/^YK_RELEASE_VERSION:STRING=//p' build/release/CMakeCache.txt)
+[[ -n "$version" ]] || { echo "YK_RELEASE_VERSION missing from CMake cache" >&2; exit 1; }
 arch=$(uname -m)
 dist="build/macos-dist"
 app="$dist/YK Engine.app"
