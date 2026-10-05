@@ -46,9 +46,10 @@ int runWindowsUpdater(const std::filesystem::path &script, const std::filesystem
     // local paths, and both the script and install root are quoted as single process arguments.
     std::wstring command = L"\"" + powershell.wstring() +
                            L"\" -NoProfile -NonInteractive -WindowStyle Hidden "
-                           L"-ExecutionPolicy Bypass -File \"" + script.wstring() + L"\" " +
-                           L"\"" + std::filesystem::path(YK_VERSION).wstring() + L"\" \"" +
-                           root.wstring() + L"\"";
+                           L"-ExecutionPolicy Bypass -File \"" +
+                           script.wstring() + L"\" " + L"\"" +
+                           std::filesystem::path(YK_VERSION).wstring() + L"\" \"" + root.wstring() +
+                           L"\"";
     STARTUPINFOW startup{};
     startup.cb = sizeof(startup);
     PROCESS_INFORMATION process{};
@@ -80,8 +81,8 @@ bool startUpdateIfAvailable(int argc, char **argv) {
     const auto script = resources / "macos.sh";
     if (resources.empty() || !std::filesystem::is_regular_file(script))
         return false;
-    const auto result = runProcess({"/bin/bash", script.string(), YK_VERSION,
-                                    resources.parent_path().parent_path().string()});
+    const auto result = runProcess(
+        {"/bin/bash", script.string(), YK_VERSION, resources.parent_path().parent_path().string()});
     return result && result.value().exitCode == installerStarted;
 #else
     return false;

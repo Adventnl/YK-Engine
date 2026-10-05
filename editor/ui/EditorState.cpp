@@ -76,8 +76,8 @@ EditorState::~EditorState() {
 
 Status EditorState::initialize(Renderer &rendererRef) {
     renderer = &rendererRef;
-    if (auto loaded = renderer->loadPngMemory({logodata::logo, logodata::logoSize},
-                                              TextureFilter::Linear))
+    if (auto loaded =
+            renderer->loadPngMemory({logodata::logo, logodata::logoSize}, TextureFilter::Linear))
         logo = loaded.value();
     else
         log(LogLevel::Warning, "editor", "Logo not loaded: " + loaded.error());

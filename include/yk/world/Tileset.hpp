@@ -16,14 +16,14 @@ inline constexpr int tilesetFormatVersion = 1;
 // properties: the same wall tile blocks the character, the guard's sight line and the path of an
 // agent because the tileset says it is solid and opaque, not because a game wrote code for walls.
 struct TileProperties {
-    bool solid{false};   // Blocks movement: physics collision and navigation.
-    bool opaque{false};  // Blocks line of sight.
-    std::string area;    // Navigation area name ("grass", "restricted"); empty: the default area.
-    float cost{1.0F};    // Navigation cost multiplier (1 normal, 3 slow ground).
+    bool solid{false};  // Blocks movement: physics collision and navigation.
+    bool opaque{false}; // Blocks line of sight.
+    std::string area;   // Navigation area name ("grass", "restricted"); empty: the default area.
+    float cost{1.0F};   // Navigation cost multiplier (1 normal, 3 slow ground).
     float noiseDamping{0.0F}; // 0..1: how much of a noise a tile absorbs (a thick wall near 1).
     std::vector<std::string> tags; // Free labels ("wall", "floor", "vent"), for scripts and rules.
-    // A solid tile blocks its whole cell unless it names a smaller box (fractions of the tile, 0..1:
-    // a fence post, a thin wall along the top of the cell).
+    // A solid tile blocks its whole cell unless it names a smaller box (fractions of the tile,
+    // 0..1: a fence post, a thin wall along the top of the cell).
     std::optional<Rect> collider;
     struct Animation {
         std::vector<int> frames; // Tile indices shown in turn (water, a flickering light).
@@ -47,10 +47,10 @@ struct TileProperties {
 // that index plus one, so that zero can mean an empty cell.
 struct Tileset {
     std::string name;
-    std::string texture; // Project-relative sheet.
+    std::string texture;               // Project-relative sheet.
     int tileWidth{16}, tileHeight{16}; // Pixels.
     int columns{1}, rows{1};
-    int spacing{0}, margin{0}; // Pixels between tiles and around the sheet.
+    int spacing{0}, margin{0};           // Pixels between tiles and around the sheet.
     std::map<int, TileProperties> tiles; // Sparse: tiles not listed use the defaults.
 
     int tileCount() const {

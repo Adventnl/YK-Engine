@@ -25,7 +25,8 @@ inline constexpr int unknownLevel = -2;
 inline constexpr const char *everyLevelId = "*";
 
 struct WorldLevelDef {
-    std::string id;   // Stable key ("ground", "floor1", "vents"); lower case letters, digits, _ and -.
+    std::string
+        id; // Stable key ("ground", "floor1", "vents"); lower case letters, digits, _ and -.
     std::string name; // For people ("Ground floor"); the id when empty.
     LevelKind kind{LevelKind::Floor};
     float elevation{0.0F}; // Meters above the ground floor (negative below), for falls and the map.
@@ -43,7 +44,8 @@ enum class LevelViewMode { All, FocusOnly, FocusAndBelow };
 const std::vector<std::string> &levelViewModeNames();
 
 struct WorldLevelSet {
-    std::vector<WorldLevelDef> levels; // In vertical order, lowest first. Empty: one implicit level.
+    std::vector<WorldLevelDef>
+        levels; // In vertical order, lowest first. Empty: one implicit level.
     LevelViewMode viewMode{LevelViewMode::All};
     float belowAlpha{0.35F};
 
@@ -80,7 +82,8 @@ int levelOf(const Entity &entity);
 // the one place that changes it at run time, so all of them hear about it ("level_changed").
 class WorldLayer final : public Component {
   public:
-    std::string level; // A level id of the scene, or "*" for every level; empty: the parent's or the first.
+    std::string
+        level; // A level id of the scene, or "*" for every level; empty: the parent's or the first.
     static void describe(TypeBuilder<WorldLayer> &type);
     // At run time: moves the entity and everything below it to `levelId`. False for an unknown id.
     bool moveTo(GameContext &context, const std::string &levelId);

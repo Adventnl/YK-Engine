@@ -234,8 +234,8 @@ void titleBar(EditorState &state, Rect rect) {
             constexpr float tileLow = 100.0F / 1024.0F, tileHigh = 924.0F / 1024.0F;
             list.AddImageRounded(
                 ImTextureRef(static_cast<ImTextureID>(reinterpret_cast<std::uintptr_t>(logo))),
-                markLow, {markLow.x + mark, markLow.y + mark}, {tileLow, tileLow}, {tileHigh, tileHigh},
-                IM_COL32_WHITE, dp(5.0F));
+                markLow, {markLow.x + mark, markLow.y + mark}, {tileLow, tileLow},
+                {tileHigh, tileHigh}, IM_COL32_WHITE, dp(5.0F));
         } else { // The logo did not load: a plain mark rather than a hole.
             list.AddRectFilled(markLow, {markLow.x + mark, markLow.y + mark}, packed(vs::focus),
                                dp(6.0F));

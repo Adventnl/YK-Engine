@@ -12,9 +12,9 @@
 // Navigation over a WorldGrid that has several levels: weighted cells, doors with states and
 // access, links between levels (stairs, ladders, vents, drops, lifts), agent size, per-agent
 // permissions and costs, a resumable A* that can be given a few thousand node expansions per tick,
-// and honest answers when the goal cannot be reached (a partial path to the closest point, and why).
-// Nothing here knows a scene or a game: tile maps and components feed the grid, doors and links; this
-// answers questions about paths.
+// and honest answers when the goal cannot be reached (a partial path to the closest point, and
+// why). Nothing here knows a scene or a game: tile maps and components feed the grid, doors and
+// links; this answers questions about paths.
 namespace yk::nav {
 inline constexpr int maxAreas = 32;
 // Agents up to this many cells of radius beyond their own cell can be routed (clearance is kept to
@@ -57,8 +57,8 @@ struct LinkDef {
     Vec2 from;
     int toLevel{0};
     Vec2 to;
-    bool bidirectional{true}; // False: a drop or a one-way vent only goes from `from` to `to`.
-    float cost{1.0F};          // Meters of path cost on top of the walk between the two points.
+    bool bidirectional{true};      // False: a drop or a one-way vent only goes from `from` to `to`.
+    float cost{1.0F};              // Meters of path cost on top of the walk between the two points.
     std::uint32_t capabilities{0}; // Needed by the agent (all of them); 0 needs none.
     std::uint64_t access{0};       // Access classes needed; 0 needs none.
     bool open{true};               // A closed link (an elevator that is off) cannot be used.
@@ -69,7 +69,7 @@ struct LinkDef {
 // Everything the path search needs to know about the agent asking.
 struct AgentProfile {
     int radiusCells{0}; // Cells beyond the center cell the agent needs clear (0..maxClearance-1).
-    std::uint32_t areaMask{0xFFFFFFFFU}; // Areas it may walk in.
+    std::uint32_t areaMask{0xFFFFFFFFU};    // Areas it may walk in.
     std::array<float, maxAreas> areaCost{}; // Cost multiplier per area (>= 1); zero means 1.
     std::uint32_t capabilities{capability::standard};
     std::uint64_t access{0}; // Access classes it holds.
@@ -101,7 +101,15 @@ enum class PathStatus {
     Unreachable, // Nowhere to go (the start is enclosed or blocked); the path is empty.
     Invalid      // The query is outside the grid or has no levels.
 };
-enum class PathFailure { None, BudgetExceeded, NoRoute, GoalBlocked, StartBlocked, BadInput, Stuck };
+enum class PathFailure {
+    None,
+    BudgetExceeded,
+    NoRoute,
+    GoalBlocked,
+    StartBlocked,
+    BadInput,
+    Stuck
+};
 const char *pathStatusName(PathStatus status);
 const char *pathFailureName(PathFailure failure);
 
@@ -154,7 +162,8 @@ class NavigationWorld {
     int areaId(const std::string &name);
     int findArea(const std::string &name) const;
     const std::string &areaName(int id) const;
-    int capabilityId(const std::string &name); // Bit index 0..31 (the first five are fixed); -1 full.
+    int
+    capabilityId(const std::string &name); // Bit index 0..31 (the first five are fixed); -1 full.
     std::uint32_t capabilityMask(const std::vector<std::string> &names);
 
     // ---- Doors and links ----------------------------------------------------------------------

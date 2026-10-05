@@ -164,8 +164,7 @@ void SpatialHash::forEachInCircle(Vec2 center, float radius, int level,
                 consider(slot, x, y);
 }
 
-std::vector<SpatialHash::Hit> SpatialHash::queryCircle(Vec2 center, float radius,
-                                                       int level) const {
+std::vector<SpatialHash::Hit> SpatialHash::queryCircle(Vec2 center, float radius, int level) const {
     std::vector<Hit> hits;
     forEachInCircle(center, radius, level, [&](EntityId id, Vec2 position, float) {
         hits.push_back({id, distance(center, position)});

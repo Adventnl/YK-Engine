@@ -84,7 +84,8 @@ Result<WorldLevelSet> WorldLevelSet::fromJson(const Json &json) {
             WorldLevelDef level;
             level.id = entry.get("id").asString();
             level.name = entry.get("name").asString();
-            const std::string kind = entry.contains("kind") ? entry.get("kind").asString() : "Floor";
+            const std::string kind =
+                entry.contains("kind") ? entry.get("kind").asString() : "Floor";
             const auto found = std::find(levelKindNames().begin(), levelKindNames().end(), kind);
             if (found == levelKindNames().end())
                 return Error{where + ": unknown kind '" + kind + "'"};
@@ -94,8 +95,8 @@ Result<WorldLevelSet> WorldLevelSet::fromJson(const Json &json) {
         }
     }
     if (const Json *view = json.find("view")) {
-        const auto found = std::find(levelViewModeNames().begin(), levelViewModeNames().end(),
-                                     view->asString());
+        const auto found =
+            std::find(levelViewModeNames().begin(), levelViewModeNames().end(), view->asString());
         if (found == levelViewModeNames().end())
             return Error{"levels.view: unknown mode '" + view->asString() + "'"};
         set.viewMode = static_cast<LevelViewMode>(found - levelViewModeNames().begin());
@@ -139,7 +140,8 @@ void WorldLayer::describe(TypeBuilder<WorldLayer> &type) {
         "navigation. Without it an entity is on its parent's level, or the first level.");
     type.field("level", &WorldLayer::level)
         .ref("level")
-        .tooltip("A level id from the scene's World Levels. Empty: the parent's level or the first.");
+        .tooltip(
+            "A level id from the scene's World Levels. Empty: the parent's level or the first.");
 }
 bool WorldLayer::moveTo(GameContext &context, const std::string &levelId) {
     const WorldLevelSet &levels = entity().scene().settings.levels;

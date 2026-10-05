@@ -33,7 +33,8 @@ int Tileset::frameAt(int index, double seconds) const {
     const TileProperties &props = properties(index);
     if (props.animation.frames.empty() || !(props.animation.fps > 0.0F))
         return index;
-    const auto step = static_cast<std::size_t>(std::floor(seconds * static_cast<double>(props.animation.fps)));
+    const auto step =
+        static_cast<std::size_t>(std::floor(seconds * static_cast<double>(props.animation.fps)));
     return props.animation.frames[step % props.animation.frames.size()];
 }
 
@@ -144,8 +145,8 @@ Result<Tileset> Tileset::fromJson(const Json &json) {
         return Error{"missing or invalid tileset version"};
     if (json.get("version").asInt() > tilesetFormatVersion)
         return Error{"tileset version " + std::to_string(json.get("version").asInt()) +
-                     " is newer than this build supports (" +
-                     std::to_string(tilesetFormatVersion) + ")"};
+                     " is newer than this build supports (" + std::to_string(tilesetFormatVersion) +
+                     ")"};
     Tileset set;
     set.name = json.get("name").asString();
     set.texture = json.get("texture").asString();

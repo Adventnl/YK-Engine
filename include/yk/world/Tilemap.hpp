@@ -61,13 +61,13 @@ class TileLayer {
   public:
     std::string name{"Layer"};
     TileLayerKind kind{TileLayerKind::Floor};
-    std::string level;    // World level id this layer belongs to; empty: the first; "*": every level.
-    bool visible{true};   // Drawn (and shown in the editor).
-    bool locked{false};   // The editor will not paint on it.
-    bool solid{false};    // Tiles the tileset calls solid block movement, sight and paths.
-    bool ySort{false};    // Tiles sort with characters by their lower edge (walls, tall props).
-    int sortLayer{0};     // Draw layer, added to the tile map's.
-    float order{0.0F};    // Depth within the draw layer.
+    std::string level;  // World level id this layer belongs to; empty: the first; "*": every level.
+    bool visible{true}; // Drawn (and shown in the editor).
+    bool locked{false}; // The editor will not paint on it.
+    bool solid{false};  // Tiles the tileset calls solid block movement, sight and paths.
+    bool ySort{false};  // Tiles sort with characters by their lower edge (walls, tall props).
+    int sortLayer{0};   // Draw layer, added to the tile map's.
+    float order{0.0F};  // Depth within the draw layer.
     float opacity{1.0F};
 
     std::int32_t cell(int x, int y) const;
@@ -110,9 +110,9 @@ struct TileChange {
 class Tilemap final : public Component {
   public:
     AssetRef tileset;
-    Vec2 cellSize{1.0F, 1.0F}; // World units per tile.
+    Vec2 cellSize{1.0F, 1.0F};           // World units per tile.
     std::string collisionLayer{"Solid"}; // Project collision layer of the solid tiles.
-    int drawLayer{-10};        // Renderer layer of sort layer 0.
+    int drawLayer{-10};                  // Renderer layer of sort layer 0.
     std::vector<TileLayer> layers;
 
     static void describe(TypeBuilder<Tilemap> &type);

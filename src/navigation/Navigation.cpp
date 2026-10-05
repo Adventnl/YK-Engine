@@ -351,7 +351,9 @@ bool NavigationWorld::nearestPassable(int level, Vec2 around, int maxRing,
     grid_.worldToCell(around, cx, cy);
     float best = std::numeric_limits<float>::max();
     bool any = false;
-    for (int ring = 0; ring <= maxRing && !(any && static_cast<float>(ring - 1) * grid_.spec().cellSize > best); ++ring)
+    for (int ring = 0;
+         ring <= maxRing && !(any && static_cast<float>(ring - 1) * grid_.spec().cellSize > best);
+         ++ring)
         for (int dy = -ring; dy <= ring; ++dy)
             for (int dx = -ring; dx <= ring; ++dx) {
                 if (std::max(std::abs(dx), std::abs(dy)) != ring)
@@ -518,9 +520,8 @@ bool NavigationWorld::stepSearch(int budget) {
             s.best = entry.node;
         }
         const Vec2 center = grid_.cellCenter(x, y);
-        if (level == s.query.goalLevel &&
-            ((s.haveGoalNode && entry.node == s.goalNode) ||
-             distance(center, s.query.goal) <= s.query.tolerance)) {
+        if (level == s.query.goalLevel && ((s.haveGoalNode && entry.node == s.goalNode) ||
+                                           distance(center, s.query.goal) <= s.query.tolerance)) {
             s.reached = true;
             s.terminal = entry.node;
             break;
@@ -540,8 +541,8 @@ bool NavigationWorld::stepSearch(int budget) {
             s.heap.push_back({g + heuristic(s, nl, nx, ny), g, next});
             std::push_heap(s.heap.begin(), s.heap.end(), before);
         };
-        static constexpr int steps[8][2] = {{1, 0},  {-1, 0}, {0, 1},  {0, -1},
-                                            {1, 1},  {1, -1}, {-1, 1}, {-1, -1}};
+        static constexpr int steps[8][2] = {{1, 0}, {-1, 0}, {0, 1},  {0, -1},
+                                            {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
         for (const auto &step : steps) {
             const int nx = x + step[0], ny = y + step[1];
             if (!passable(level, nx, ny, profile))
@@ -570,8 +571,8 @@ bool NavigationWorld::stepSearch(int budget) {
                 if (!passable(targetLevel, tx, ty, profile))
                     continue;
                 const Vec2 entryPoint = fromEnd ? link.from : link.to;
-                const float cost = link.cost + distance(center, entryPoint) +
-                                   distance(entryPoint, targetPoint);
+                const float cost =
+                    link.cost + distance(center, entryPoint) + distance(entryPoint, targetPoint);
                 relax(nodeIndex(targetLevel, tx, ty), cost, linkId | (fromEnd ? 0U : reverseBit),
                       targetLevel, tx, ty);
             }

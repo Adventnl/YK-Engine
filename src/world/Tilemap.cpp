@@ -36,7 +36,7 @@ bool TileChunk::set(int localX, int localY, std::int32_t value) {
 }
 
 const std::vector<std::string> &tileLayerKindNames() {
-    static const std::vector<std::string> names{"Floor", "Wall",        "Terrain",   "Roof",
+    static const std::vector<std::string> names{"Floor", "Wall",        "Terrain",    "Roof",
                                                 "Vent",  "Underground", "Decoration", "Collision"};
     return names;
 }
@@ -235,7 +235,8 @@ void Tilemap::describe(TypeBuilder<Tilemap> &type) {
     type.field("tileset", &Tilemap::tileset).asset("tileset");
     type.field("cellSize", &Tilemap::cellSize)
         .range(0.05, 100, 0.05)
-        .tooltip("World units per tile. The entity's position is the top-left corner of cell (0, 0).");
+        .tooltip(
+            "World units per tile. The entity's position is the top-left corner of cell (0, 0).");
     type.field("collisionLayer", &Tilemap::collisionLayer)
         .layer()
         .tooltip("Project collision layer of the solid tiles.");
