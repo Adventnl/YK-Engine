@@ -2797,7 +2797,7 @@
             ],
             "completeSound": "assets/audio/complete.wav",
             "completeDelay": 4.0,
-            "nextScene": "scenes/reference_level.ykscene",
+            "nextScene": "scenes/level02.ykscene",
             "continueAction": "Continue"
           }
         }

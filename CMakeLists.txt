@@ -179,6 +179,8 @@ if(BUILD_TESTING)
     endif()
     yk_add_test(exploration tests/unit/exploration_tests.cpp LIBS yk::gameplay TIMEOUT 60
         DEFINITIONS YK_EXPLORATION_PROJECT_DIR="${CMAKE_CURRENT_SOURCE_DIR}/YK-ExplorationDemo")
+    yk_add_test(simulation_demo tests/unit/simulation_demo_tests.cpp LIBS yk::gameplay TIMEOUT 60
+        DEFINITIONS YK_SIMULATION_PROJECT_DIR="${CMAKE_CURRENT_SOURCE_DIR}/YK-SimulationDemo")
     yk_add_test(editor_core tests/unit/editor_core_tests.cpp LIBS yk::editor_core TIMEOUT 120
         DEFINITIONS YK_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}" YK_DEMO_PROJECT_DIR="${YK_DEMO_PROJECT}")
     # An example game module (one component) and the programs built for it with yk_add_game_hosts:

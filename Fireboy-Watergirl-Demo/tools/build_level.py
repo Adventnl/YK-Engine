@@ -264,7 +264,7 @@ def build():
     flow = Node("Level Flow")
     flow.add("LevelFlow", goals=[ref("Ember Exit"), ref("Tide Exit")],
              completeSound="assets/audio/complete.wav", completeDelay=4.0,
-             nextScene="scenes/reference_level.ykscene", continueAction="Continue")
+             nextScene="scenes/level02.ykscene", continueAction="Continue")
     scene.add(flow)
     scene.place("prefabs/level/hud.ykprefab", "HUD", (0, 0), child_overrides={
         "Ember Score": {"UiPanel": {"size": [290, 52]}},

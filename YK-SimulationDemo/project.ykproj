@@ -1,0 +1,180 @@
+{
+  "format": "yk.project",
+  "version": 1,
+  "name": "Night Shift",
+  "startScene": "scenes/night_shift.ykscene",
+  "window": {
+    "title": "Night Shift - a one minute escape",
+    "width": 1280,
+    "height": 720
+  },
+  "layers": [
+    {
+      "name": "Default",
+      "interactsWith": [
+        "Default"
+      ]
+    },
+    {
+      "name": "Solid",
+      "interactsWith": [
+        "Player",
+        "Prop"
+      ]
+    },
+    {
+      "name": "Player",
+      "interactsWith": [
+        "Solid",
+        "Sensor",
+        "Prop"
+      ]
+    },
+    {
+      "name": "Sensor",
+      "interactsWith": [
+        "Player",
+        "Prop"
+      ]
+    },
+    {
+      "name": "Prop",
+      "interactsWith": [
+        "Solid",
+        "Player",
+        "Sensor",
+        "Prop"
+      ]
+    }
+  ],
+  "textures": {
+    "pixelsPerUnit": 64,
+    "filter": "nearest"
+  },
+  "input": {
+    "sets": [
+      {
+        "name": "Player1",
+        "gamepad": 0,
+        "actions": [
+          {
+            "name": "MoveLeft",
+            "bindings": [
+              "Key:A",
+              "Key:Left",
+              "Pad:DPadLeft",
+              "PadAxis:LeftX-"
+            ]
+          },
+          {
+            "name": "MoveRight",
+            "bindings": [
+              "Key:D",
+              "Key:Right",
+              "Pad:DPadRight",
+              "PadAxis:LeftX+"
+            ]
+          },
+          {
+            "name": "MoveUp",
+            "bindings": [
+              "Key:W",
+              "Key:Up",
+              "Pad:DPadUp",
+              "PadAxis:LeftY-"
+            ]
+          },
+          {
+            "name": "MoveDown",
+            "bindings": [
+              "Key:S",
+              "Key:Down",
+              "Pad:DPadDown",
+              "PadAxis:LeftY+"
+            ]
+          },
+          {
+            "name": "Interact",
+            "bindings": [
+              "Key:E",
+              "Key:Space",
+              "Pad:West"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Player2",
+        "gamepad": 1,
+        "actions": [
+          {
+            "name": "MoveLeft",
+            "bindings": [
+              "Key:Left",
+              "Pad:DPadLeft",
+              "PadAxis:LeftX-"
+            ]
+          },
+          {
+            "name": "MoveRight",
+            "bindings": [
+              "Key:Right",
+              "Pad:DPadRight",
+              "PadAxis:LeftX+"
+            ]
+          },
+          {
+            "name": "Jump",
+            "bindings": [
+              "Key:Up",
+              "Pad:South"
+            ]
+          },
+          {
+            "name": "Interact",
+            "bindings": [
+              "Key:Down",
+              "Key:RightCtrl",
+              "Pad:West"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Global",
+        "gamepad": 0,
+        "actions": [
+          {
+            "name": "Restart",
+            "bindings": [
+              "Key:R",
+              "Pad:Back"
+            ]
+          },
+          {
+            "name": "Pause",
+            "bindings": [
+              "Key:P",
+              "Pad:Start"
+            ]
+          },
+          {
+            "name": "Continue",
+            "bindings": [
+              "Key:Enter",
+              "Pad:East"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "build": {
+    "productName": "Night Shift",
+    "executable": "",
+    "version": "1.0.0",
+    "identifier": "",
+    "copyright": "Original YK Engine escape demo",
+    "exclude": []
+  }
+}

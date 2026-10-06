@@ -24,6 +24,8 @@ on and sink, a moving platform, checkpoints, exits, two rooms that lead into eac
 from the engine's components and prefabs, with original generated art, and no code of its own.
 *Castle Paths* in `YK-ExplorationDemo/` is a second data-only test: top-down movement, NPC
 conversation, a switch and locked gate, and travel between a courtyard and hall.
+*Night Shift* in `YK-SimulationDemo/` is a short top-down escape level with searchable objects,
+two locked gates, an objective panel and a win state.
 `Fireboy-Watergirl-Demo/` is a separate playable level using the supplied room and pixel-art
 library, with two animated characters, color-specific hazards, switches, moving platforms, and exits.
 
@@ -36,6 +38,7 @@ library, with two animated characters, color-specific hazards, switches, moving 
 | **Packaging** | `YK Engine.app` and its `.dmg` for macOS; the exporter writes a standalone `Game.app` (or Windows/Linux folder) without the editor, with icon, signing and a `.dmg` on a Mac. | `packaging/`, `scripts/`, `src/assets/Export.cpp` |
 | **Demo game** | *Cinder Vale*: a project folder (data) that consumes the engine, and the scripts that generate its art. It is a sample and a test; a game can live in a repository of its own. | `YK-DemoGame/` |
 | **Exploration test** | *Castle Paths*: two small top-down scenes and placeholder artwork that exercise the new reusable exploration systems. | `YK-ExplorationDemo/` |
+| **Escape test** | *Night Shift*: a one minute escape route with interactions, prerequisites, and a clear finish. | `YK-SimulationDemo/` |
 | **Fireboy and Watergirl sample** | Single-screen co-op level assembled from the supplied room, pixel-art cutouts and character poses. | `Fireboy-Watergirl-Demo/` |
 
 ## Use it (macOS)
@@ -65,6 +68,7 @@ ctest --preset dev --output-on-failure
 ./build/dev/yk_player YK-DemoGame           # play it without the editor
 ./build/dev/yk_player Fireboy-Watergirl-Demo  # play the new reference-art level
 ./build/dev/yk_player YK-ExplorationDemo     # play the top-down exploration test
+./build/dev/yk_player YK-SimulationDemo      # play the short escape level
 ./build/dev/yk export YK-DemoGame --target linux --out dist --zip     # package it
 ./build/dev/yk new ~/Games/MyGame --name "My Game"                    # a new project anywhere
 ```

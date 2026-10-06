@@ -215,7 +215,10 @@ void StateGate::onFixedUpdate(GameContext &context, float seconds) {
     }
     const float target = open_ ? 1.0F : 0.0F;
     const float step = animationSeconds > 0 ? seconds / animationSeconds : 1.0F;
-    amount_ = std::clamp(amount_ + (target > amount_ ? step : -step), 0.0F, 1.0F);
+    if (amount_ < target)
+        amount_ = std::min(target, amount_ + step);
+    else if (amount_ > target)
+        amount_ = std::max(target, amount_ - step);
     if (auto *animation = entity().get<AnimatedSprite>())
         animation->setBool("open", open_);
     if (auto *sprite = entity().get<SpriteRenderer>()) {

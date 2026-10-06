@@ -65,7 +65,7 @@ Inspector edits their components, and definition files show a summary there.
 | Destructible world, vents, hiding, search | NOT STARTED | tile `modify` data and tile edits exist |
 | Save games (`SaveGame`, slots, migration) | NOT STARTED | |
 | Runtime UI framework, minimap, full screens | NOT STARTED | `UiText` and the dialogue overlay exist |
-| Reference project `YK-SimulationDemo/` | NOT STARTED | |
+| Reference project `YK-SimulationDemo/` | PARTIAL | `simulation_demo` plays one short, data-only escape route with gated interactions, a goal, and restart. The multi-floor simulation, AI routines, crafting, and second route in the build plan remain open. |
 | Local multiplayer; networking | NOT STARTED | |
 | Specialised editors, asset browser upgrades, CLI additions, `.ykpak`, installer | NOT STARTED | |
 
