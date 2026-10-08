@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "start": "start",
+  "nodes": {
+    "start": {
+      "branch": [
+        {
+          "if": {
+            "var": "code"
+          },
+          "next": "access"
+        },
+        {
+          "next": "locked"
+        }
+      ]
+    },
+    "access": {
+      "speaker": "Security terminal",
+      "text": "Code accepted. Yard gate unlocked. Take your rebuilt relay to the maintenance breaker.",
+      "actions": [
+        {
+          "type": "SetVariable",
+          "name": "yard_access",
+          "value": 1
+        }
+      ]
+    },
+    "locked": {
+      "speaker": "Security terminal",
+      "text": "Access code required. Talk to Milo in Cell Block A."
+    }
+  }
+}

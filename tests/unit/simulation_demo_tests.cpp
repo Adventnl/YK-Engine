@@ -24,7 +24,8 @@ int main() {
             return Error{path.error()};
         return loadScene(path.value(), registry);
     };
-    auto scene = load(project.startScene);
+    const std::string scenePath = "scenes/night_shift.ykscene";
+    auto scene = load(scenePath);
     CHECK(scene);
     if (!scene)
         return test::finish("simulation_demo");
@@ -32,7 +33,7 @@ int main() {
     options.layers = project.layers;
     options.inputMap = project.input;
     options.assets = &assets;
-    auto created = GameSession::create(std::move(scene.value()), project.startScene, options, load);
+    auto created = GameSession::create(std::move(scene.value()), scenePath, options, load);
     CHECK(created);
     if (!created)
         return test::finish("simulation_demo");

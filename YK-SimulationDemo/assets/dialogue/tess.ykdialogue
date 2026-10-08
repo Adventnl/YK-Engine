@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "start": "start",
+  "nodes": {
+    "start": {
+      "branch": [
+        {
+          "if": {
+            "var": "fuse"
+          },
+          "next": "done"
+        },
+        {
+          "next": "offer"
+        }
+      ]
+    },
+    "offer": {
+      "speaker": "Tess / laundry",
+      "text": "I've got a spare fuse. Bring me the snack from the canteen and it's yours.",
+      "choices": [
+        {
+          "text": "Trade the snack.",
+          "if": {
+            "var": "snack"
+          },
+          "next": "trade"
+        },
+        {
+          "text": "I'll come back."
+        }
+      ]
+    },
+    "trade": {
+      "speaker": "Tess / laundry",
+      "text": "The fuse is yours. Rex has the tool you need. Rebuild a relay at the workshop bench.",
+      "actions": [
+        {
+          "type": "SetVariable",
+          "name": "snack",
+          "value": 0
+        },
+        {
+          "type": "SetVariable",
+          "name": "fuse",
+          "value": 1
+        }
+      ]
+    },
+    "done": {
+      "speaker": "Tess / laundry",
+      "text": "The fuse is yours. Rex has the tool you need. Rebuild a relay at the workshop bench."
+    }
+  }
+}

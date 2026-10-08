@@ -1,12 +1,12 @@
 {
   "format": "yk.project",
   "version": 1,
-  "name": "Night Shift",
-  "startScene": "scenes/night_shift.ykscene",
+  "name": "Night Shift / Blackwater",
+  "startScene": "scenes/blackwater.ykscene",
   "window": {
-    "title": "Night Shift - a one minute escape",
-    "width": 1280,
-    "height": 720
+    "title": "Blackwater - Lockdown | Night Shift",
+    "width": 1600,
+    "height": 1000
   },
   "layers": [
     {

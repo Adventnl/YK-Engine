@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "start": "start",
+  "nodes": {
+    "start": {
+      "branch": [
+        {
+          "if": {
+            "var": "tool"
+          },
+          "next": "done"
+        },
+        {
+          "next": "offer"
+        }
+      ]
+    },
+    "offer": {
+      "speaker": "Rex / workshop",
+      "text": "Cut my hand on the bench. Bring a bandage from the infirmary and I'll lend you my screwdriver.",
+      "choices": [
+        {
+          "text": "Trade the bandage.",
+          "if": {
+            "var": "bandage"
+          },
+          "next": "trade"
+        },
+        {
+          "text": "I'll come back."
+        }
+      ]
+    },
+    "trade": {
+      "speaker": "Rex / workshop",
+      "text": "Take my screwdriver. Combine it with Tess's fuse at the relay bench.",
+      "actions": [
+        {
+          "type": "SetVariable",
+          "name": "bandage",
+          "value": 0
+        },
+        {
+          "type": "SetVariable",
+          "name": "tool",
+          "value": 1
+        }
+      ]
+    },
+    "done": {
+      "speaker": "Rex / workshop",
+      "text": "Take my screwdriver. Combine it with Tess's fuse at the relay bench."
+    }
+  }
+}

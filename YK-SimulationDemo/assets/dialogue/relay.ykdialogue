@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "start": "start",
+  "nodes": {
+    "start": {
+      "branch": [
+        {
+          "if": {
+            "var": "relay"
+          },
+          "next": "done"
+        },
+        {
+          "if": {
+            "all": [
+              {
+                "var": "fuse"
+              },
+              {
+                "var": "tool"
+              }
+            ]
+          },
+          "next": "build"
+        },
+        {
+          "next": "missing"
+        }
+      ]
+    },
+    "build": {
+      "speaker": "Relay workbench",
+      "text": "Fuse fitted. Contacts tightened. Rebuilt relay acquired! Carry it to the breaker in maintenance.",
+      "actions": [
+        {
+          "type": "SetVariable",
+          "name": "relay",
+          "value": 1
+        }
+      ]
+    },
+    "missing": {
+      "speaker": "Relay workbench",
+      "text": "You need a fuse from Tess (trade a snack) and a screwdriver from Rex (trade a bandage)."
+    },
+    "done": {
+      "speaker": "Relay workbench",
+      "text": "Relay ready. Use Milo's code at security and fit the relay at the maintenance breaker."
+    }
+  }
+}
