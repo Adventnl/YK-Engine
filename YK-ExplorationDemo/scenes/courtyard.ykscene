@@ -4,7 +4,7 @@
   "settings": {
     "name": "Castle Courtyard",
     "gravity": [0, 0],
-    "background": "#283c39ff"
+    "background": "#121b2bff"
   },
   "entities": [
     {
@@ -19,11 +19,11 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "",
+            "texture": "assets/invisible_castle/tiles/light_floor_sample.png",
             "shape": "Rectangle",
             "size": [32, 22],
             "offset": [0, 0],
-            "color": "#536b51ff",
+            "color": "#ffffffff",
             "layer": -20,
             "order": 0,
             "ySort": false,
@@ -33,8 +33,8 @@
             "columns": 1,
             "rows": 1,
             "frame": 0,
-            "drawMode": "Simple",
-            "tileSize": [0, 0],
+            "drawMode": "Tiled",
+            "tileSize": [1.03, 1.03],
             "sliceFill": "Tile",
             "blend": "Alpha",
             "parallax": [1, 1]
@@ -55,11 +55,11 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "",
+            "texture": "assets/invisible_castle/characters/blue_shirt_explorer.png",
             "shape": "Rectangle",
-            "size": [0.8, 1.2],
-            "offset": [0, -0.25],
-            "color": "#6bc0e8ff",
+            "size": [0.85, 1.34],
+            "offset": [0, -0.37],
+            "color": "#ffffffff",
             "layer": 10,
             "order": 0,
             "ySort": true,
@@ -192,12 +192,12 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "",
+            "texture": "assets/invisible_castle/tiles/north_wall_sample.png",
             "shape": "Rectangle",
-            "size": [32, 0.5],
-            "offset": [0, 0],
-            "color": "#536574ff",
-            "layer": 10,
+            "size": [32, 1.05],
+            "offset": [0, 0.25],
+            "color": "#ffffffff",
+            "layer": 2,
             "order": 0,
             "ySort": false,
             "sortOffset": 0,
@@ -206,8 +206,8 @@
             "columns": 1,
             "rows": 1,
             "frame": 0,
-            "drawMode": "Simple",
-            "tileSize": [0, 0],
+            "drawMode": "Tiled",
+            "tileSize": [1.03, 1.05],
             "sliceFill": "Tile",
             "blend": "Alpha",
             "parallax": [1, 1]
@@ -244,12 +244,12 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "",
+            "texture": "assets/invisible_castle/tiles/south_wall_sample.png",
             "shape": "Rectangle",
-            "size": [32, 0.5],
-            "offset": [0, 0],
-            "color": "#536574ff",
-            "layer": 10,
+            "size": [32, 1.05],
+            "offset": [0, -0.25],
+            "color": "#ffffffff",
+            "layer": 2,
             "order": 0,
             "ySort": false,
             "sortOffset": 0,
@@ -258,8 +258,8 @@
             "columns": 1,
             "rows": 1,
             "frame": 0,
-            "drawMode": "Simple",
-            "tileSize": [0, 0],
+            "drawMode": "Tiled",
+            "tileSize": [1.03, 1.05],
             "sliceFill": "Tile",
             "blend": "Alpha",
             "parallax": [1, 1]
@@ -296,12 +296,12 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "",
+            "texture": "assets/invisible_castle/tiles/vertical_wall_sample.png",
             "shape": "Rectangle",
-            "size": [0.5, 22],
+            "size": [0.65, 22],
             "offset": [0, 0],
-            "color": "#536574ff",
-            "layer": 10,
+            "color": "#ffffffff",
+            "layer": 3,
             "order": 0,
             "ySort": false,
             "sortOffset": 0,
@@ -310,8 +310,8 @@
             "columns": 1,
             "rows": 1,
             "frame": 0,
-            "drawMode": "Simple",
-            "tileSize": [0, 0],
+            "drawMode": "Tiled",
+            "tileSize": [0.65, 1.04],
             "sliceFill": "Tile",
             "blend": "Alpha",
             "parallax": [1, 1]
@@ -348,12 +348,12 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "",
+            "texture": "assets/invisible_castle/tiles/vertical_wall_sample.png",
             "shape": "Rectangle",
-            "size": [0.5, 22],
+            "size": [0.65, 22],
             "offset": [0, 0],
-            "color": "#536574ff",
-            "layer": 10,
+            "color": "#ffffffff",
+            "layer": 3,
             "order": 0,
             "ySort": false,
             "sortOffset": 0,
@@ -362,8 +362,8 @@
             "columns": 1,
             "rows": 1,
             "frame": 0,
-            "drawMode": "Simple",
-            "tileSize": [0, 0],
+            "drawMode": "Tiled",
+            "tileSize": [0.65, 1.04],
             "sliceFill": "Tile",
             "blend": "Alpha",
             "parallax": [1, 1]
@@ -400,12 +400,12 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "",
+            "texture": "assets/invisible_castle/tiles/vertical_wall_sample.png",
             "shape": "Rectangle",
-            "size": [0.7, 9],
+            "size": [0.8, 9],
             "offset": [0, 0],
-            "color": "#536574ff",
-            "layer": 10,
+            "color": "#ffffffff",
+            "layer": 3,
             "order": 0,
             "ySort": false,
             "sortOffset": 0,
@@ -414,8 +414,8 @@
             "columns": 1,
             "rows": 1,
             "frame": 0,
-            "drawMode": "Simple",
-            "tileSize": [0, 0],
+            "drawMode": "Tiled",
+            "tileSize": [0.8, 1.04],
             "sliceFill": "Tile",
             "blend": "Alpha",
             "parallax": [1, 1]
@@ -452,12 +452,12 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "",
+            "texture": "assets/invisible_castle/tiles/vertical_wall_sample.png",
             "shape": "Rectangle",
-            "size": [0.7, 10],
+            "size": [0.8, 10],
             "offset": [0, 0],
-            "color": "#536574ff",
-            "layer": 10,
+            "color": "#ffffffff",
+            "layer": 3,
             "order": 0,
             "ySort": false,
             "sortOffset": 0,
@@ -466,8 +466,8 @@
             "columns": 1,
             "rows": 1,
             "frame": 0,
-            "drawMode": "Simple",
-            "tileSize": [0, 0],
+            "drawMode": "Tiled",
+            "tileSize": [0.8, 1.04],
             "sliceFill": "Tile",
             "blend": "Alpha",
             "parallax": [1, 1]
@@ -504,11 +504,11 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "",
+            "texture": "assets/invisible_castle/props/plant_upper_left.png",
             "shape": "Rectangle",
-            "size": [2.5, 3.4],
-            "offset": [0, -0.8],
-            "color": "#326b55ff",
+            "size": [1.12, 1.58],
+            "offset": [0, -0.5],
+            "color": "#ffffffff",
             "layer": 10,
             "order": 0,
             "ySort": true,
@@ -529,8 +529,8 @@
           "type": "Collider",
           "properties": {
             "shape": "Box",
-            "size": [0.85, 0.55],
-            "offset": [0, 0.1],
+            "size": [0.7, 0.45],
+            "offset": [0, 0.16],
             "oneWay": false,
             "isTrigger": false,
             "detectTriggers": false,
@@ -556,11 +556,11 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "",
+            "texture": "assets/invisible_castle/props/plant_upper_middle.png",
             "shape": "Rectangle",
-            "size": [2.5, 3.4],
-            "offset": [0, -0.8],
-            "color": "#326b55ff",
+            "size": [1.12, 1.58],
+            "offset": [0, -0.5],
+            "color": "#ffffffff",
             "layer": 10,
             "order": 0,
             "ySort": true,
@@ -581,8 +581,8 @@
           "type": "Collider",
           "properties": {
             "shape": "Box",
-            "size": [0.85, 0.55],
-            "offset": [0, 0.1],
+            "size": [0.7, 0.45],
+            "offset": [0, 0.16],
             "oneWay": false,
             "isTrigger": false,
             "detectTriggers": false,
@@ -608,11 +608,11 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "",
+            "texture": "assets/invisible_castle/props/plant_statue_left.png",
             "shape": "Rectangle",
-            "size": [2.5, 3.4],
-            "offset": [0, -0.8],
-            "color": "#326b55ff",
+            "size": [1.12, 1.58],
+            "offset": [0, -0.5],
+            "color": "#ffffffff",
             "layer": 10,
             "order": 0,
             "ySort": true,
@@ -633,8 +633,8 @@
           "type": "Collider",
           "properties": {
             "shape": "Box",
-            "size": [0.85, 0.55],
-            "offset": [0, 0.1],
+            "size": [0.7, 0.45],
+            "offset": [0, 0.16],
             "oneWay": false,
             "isTrigger": false,
             "detectTriggers": false,
@@ -660,11 +660,11 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "",
+            "texture": "assets/invisible_castle/props/plant_statue_right.png",
             "shape": "Rectangle",
-            "size": [2.5, 3.4],
-            "offset": [0, -0.8],
-            "color": "#326b55ff",
+            "size": [1.12, 1.58],
+            "offset": [0, -0.5],
+            "color": "#ffffffff",
             "layer": 10,
             "order": 0,
             "ySort": true,
@@ -685,8 +685,8 @@
           "type": "Collider",
           "properties": {
             "shape": "Box",
-            "size": [0.85, 0.55],
-            "offset": [0, 0.1],
+            "size": [0.7, 0.45],
+            "offset": [0, 0.16],
             "oneWay": false,
             "isTrigger": false,
             "detectTriggers": false,
@@ -712,11 +712,11 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "",
+            "texture": "assets/invisible_castle/tiles/corridor_floor_sample.png",
             "shape": "Rectangle",
             "size": [24, 2.4],
             "offset": [0, 0],
-            "color": "#a8a083ff",
+            "color": "#ffffffff",
             "layer": -10,
             "order": 0,
             "ySort": false,
@@ -726,8 +726,8 @@
             "columns": 1,
             "rows": 1,
             "frame": 0,
-            "drawMode": "Simple",
-            "tileSize": [0, 0],
+            "drawMode": "Tiled",
+            "tileSize": [1.03, 1.03],
             "sliceFill": "Tile",
             "blend": "Alpha",
             "parallax": [1, 1]
@@ -747,10 +747,10 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/characters/keeper.png",
+            "texture": "assets/invisible_castle/characters/white_shirt_explorer.png",
             "shape": "Rectangle",
-            "size": [0.8, 1.2],
-            "offset": [0, -0.25],
+            "size": [0.98, 1.35],
+            "offset": [0, -0.38],
             "color": "#ffffffff",
             "layer": 10,
             "order": 0,
@@ -845,11 +845,11 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "",
+            "texture": "assets/invisible_castle/props/wall_torch_west_upper.png",
             "shape": "Rectangle",
-            "size": [0.7, 0.7],
-            "offset": [0, 0],
-            "color": "#e5ba58ff",
+            "size": [0.72, 1.15],
+            "offset": [0, -0.2],
+            "color": "#ffffffff",
             "layer": 10,
             "order": 0,
             "ySort": true,
@@ -869,7 +869,7 @@
         {
           "type": "Interactable",
           "properties": {
-            "prompt": "E  Activate switch",
+            "prompt": "E  Light brass torch",
             "range": 1.4,
             "requiredFlag": "",
             "setFlag": "courtyard_switch",
@@ -892,11 +892,11 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "",
+            "texture": "assets/invisible_castle/architecture/gold_threshold_west.png",
             "shape": "Rectangle",
-            "size": [0.7, 2.5],
+            "size": [0.9, 2.5],
             "offset": [0, 0],
-            "color": "#b97d43ff",
+            "color": "#ffffffff",
             "layer": 10,
             "order": 0,
             "ySort": true,
@@ -968,12 +968,12 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "",
+            "texture": "assets/invisible_castle/props/green_exit_portal.png",
             "shape": "Rectangle",
-            "size": [2, 2.5],
+            "size": [2.0, 2.5],
             "offset": [0, 0],
-            "color": "#394452ff",
-            "layer": 8,
+            "color": "#ffffffff",
+            "layer": 7,
             "order": 0,
             "ySort": false,
             "sortOffset": 0,
@@ -1055,6 +1055,1035 @@
         "scale": [1, 1]
       },
       "components": []
+    },
+    {
+      "id": "0000000000004016",
+      "name": "East chamber floor",
+      "transform": {
+        "position": [25.5, 11],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/invisible_castle/tiles/dark_floor_sample.png",
+            "shape": "Rectangle",
+            "size": [13, 22],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": -19,
+            "order": 0,
+            "ySort": false,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Tiled",
+            "tileSize": [1.03, 1.03],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000004017",
+      "name": "Great hall rug",
+      "transform": {
+        "position": [24.8, 7.0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/invisible_castle/furniture/middle_rug_reconstructed.png",
+            "shape": "Rectangle",
+            "size": [5.7, 3.1],
+            "offset": [0, 0],
+            "color": "#ffffffff",
+            "layer": -9,
+            "order": 0,
+            "ySort": false,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000004018",
+      "name": "West chart table",
+      "transform": {
+        "position": [10.3, 4.0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/invisible_castle/furniture/west_table_map_candle.png",
+            "shape": "Rectangle",
+            "size": [2.52, 1.83],
+            "offset": [0, -0.48],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "ySort": true,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [2.25, 0.5],
+            "offset": [0, 0.25],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000004019",
+      "name": "West storage",
+      "transform": {
+        "position": [2.6, 4.0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/invisible_castle/furniture/west_storage_with_jar.png",
+            "shape": "Rectangle",
+            "size": [1.4, 1.34],
+            "offset": [0, -0.4],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "ySort": true,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.0, 0.55],
+            "offset": [0, 0.15],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        }
+      ]
+    },
+    {
+      "id": "000000000000401a",
+      "name": "Barrel and crate",
+      "transform": {
+        "position": [17.1, 3.6],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/invisible_castle/furniture/west_crate_and_barrel.png",
+            "shape": "Rectangle",
+            "size": [1.27, 1.66],
+            "offset": [0, -0.5],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "ySort": true,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.8, 0.6],
+            "offset": [0, 0.12],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        }
+      ]
+    },
+    {
+      "id": "000000000000401b",
+      "name": "North bookcase",
+      "transform": {
+        "position": [26.8, 3.2],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/invisible_castle/furniture/north_bookshelf_crates.png",
+            "shape": "Rectangle",
+            "size": [1.72, 1.55],
+            "offset": [0, -0.45],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "ySort": true,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.55, 0.5],
+            "offset": [0, 0.24],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        }
+      ]
+    },
+    {
+      "id": "000000000000401c",
+      "name": "Library shelves",
+      "transform": {
+        "position": [28.7, 7.2],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/invisible_castle/furniture/east_library_with_torch.png",
+            "shape": "Rectangle",
+            "size": [2.34, 2.95],
+            "offset": [0, -0.85],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "ySort": true,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.8, 0.65],
+            "offset": [0, 0.28],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        }
+      ]
+    },
+    {
+      "id": "000000000000401d",
+      "name": "Cartographer table",
+      "transform": {
+        "position": [24.7, 6.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/invisible_castle/furniture/middle_table_map_candle.png",
+            "shape": "Rectangle",
+            "size": [3.08, 1.82],
+            "offset": [0, -0.5],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "ySort": true,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [2.65, 0.58],
+            "offset": [0, 0.2],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        }
+      ]
+    },
+    {
+      "id": "000000000000401e",
+      "name": "Reading stool",
+      "transform": {
+        "position": [26.7, 9.1],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/invisible_castle/furniture/middle_stool.png",
+            "shape": "Rectangle",
+            "size": [0.66, 0.72],
+            "offset": [0, -0.15],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "ySort": true,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.48, 0.35],
+            "offset": [0, 0.17],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        }
+      ]
+    },
+    {
+      "id": "000000000000401f",
+      "name": "Eastern crates",
+      "transform": {
+        "position": [29.7, 16.8],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/invisible_castle/furniture/east_crate_stack.png",
+            "shape": "Rectangle",
+            "size": [2.55, 1.9],
+            "offset": [0, -0.55],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "ySort": true,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [1.9, 0.6],
+            "offset": [0, 0.16],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000004020",
+      "name": "West knight statue",
+      "transform": {
+        "position": [6.0, 17.0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/invisible_castle/props/statue_west.png",
+            "shape": "Rectangle",
+            "size": [1.3, 2.28],
+            "offset": [0, -0.8],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "ySort": true,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.8, 0.5],
+            "offset": [0, 0.13],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000004021",
+      "name": "West statue plant",
+      "transform": {
+        "position": [4.2, 17.2],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/invisible_castle/props/plant_statue_left.png",
+            "shape": "Rectangle",
+            "size": [0.98, 1.65],
+            "offset": [0, -0.55],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "ySort": true,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.5, 0.4],
+            "offset": [0, 0.1],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000004022",
+      "name": "East statue plant",
+      "transform": {
+        "position": [7.8, 17.2],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/invisible_castle/props/plant_statue_right.png",
+            "shape": "Rectangle",
+            "size": [1.2, 1.68],
+            "offset": [0, -0.55],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "ySort": true,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Box",
+            "size": [0.5, 0.4],
+            "offset": [0, 0.1],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Solid",
+            "friction": 0.6,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [0, 0]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000004023",
+      "name": "Azure banner 1",
+      "transform": {
+        "position": [4.5, 1.4],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/invisible_castle/props/banner_west.png",
+            "shape": "Rectangle",
+            "size": [0.83, 1.15],
+            "offset": [0, 0.05],
+            "color": "#ffffffff",
+            "layer": 8,
+            "order": 0,
+            "ySort": false,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000004024",
+      "name": "Azure banner 2",
+      "transform": {
+        "position": [15.3, 1.4],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/invisible_castle/props/banner_middle.png",
+            "shape": "Rectangle",
+            "size": [0.83, 1.15],
+            "offset": [0, 0.05],
+            "color": "#ffffffff",
+            "layer": 8,
+            "order": 0,
+            "ySort": false,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000004025",
+      "name": "Azure banner 3",
+      "transform": {
+        "position": [28.1, 1.4],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/invisible_castle/props/banner_east.png",
+            "shape": "Rectangle",
+            "size": [0.83, 1.15],
+            "offset": [0, 0.05],
+            "color": "#ffffffff",
+            "layer": 8,
+            "order": 0,
+            "ySort": false,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000004026",
+      "name": "Castle torch 1",
+      "transform": {
+        "position": [18.0, 7.0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/invisible_castle/props/wall_torch_west_lower.png",
+            "shape": "Rectangle",
+            "size": [0.75, 1.35],
+            "offset": [0, -0.28],
+            "color": "#ffffffff",
+            "layer": 9,
+            "order": 0,
+            "ySort": false,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000004027",
+      "name": "Castle torch 2",
+      "transform": {
+        "position": [18.0, 15.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/invisible_castle/props/wall_torch_west_lower.png",
+            "shape": "Rectangle",
+            "size": [0.75, 1.35],
+            "offset": [0, -0.28],
+            "color": "#ffffffff",
+            "layer": 9,
+            "order": 0,
+            "ySort": false,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000004028",
+      "name": "Castle torch 3",
+      "transform": {
+        "position": [30.3, 5.0],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/invisible_castle/props/wall_torch_west_lower.png",
+            "shape": "Rectangle",
+            "size": [0.75, 1.35],
+            "offset": [0, -0.28],
+            "color": "#ffffffff",
+            "layer": 9,
+            "order": 0,
+            "ySort": false,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000004029",
+      "name": "Silver-haired scout",
+      "transform": {
+        "position": [5.1, 8.1],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/invisible_castle/characters/silver_hair_explorer.png",
+            "shape": "Rectangle",
+            "size": [1.0, 1.47],
+            "offset": [0, -0.43],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "ySort": true,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Interactable",
+          "properties": {
+            "prompt": "E  Talk to scout",
+            "range": 1.5,
+            "requiredFlag": "",
+            "setFlag": "",
+            "once": false,
+            "hideWhenUsed": false,
+            "event": ""
+          }
+        },
+        {
+          "type": "Dialogue",
+          "properties": {
+            "sequence": "",
+            "speaker": "Castle Scout",
+            "pages": ["The blue banners mark the way toward the inner hall."],
+            "portrait": "",
+            "advanceSet": "Player1",
+            "advanceAction": "Interact",
+            "charactersPerSecond": 42
+          }
+        }
+      ]
+    },
+    {
+      "id": "000000000000402a",
+      "name": "Dark-haired traveller",
+      "transform": {
+        "position": [22.7, 16.5],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/invisible_castle/characters/dark_hair_explorer.png",
+            "shape": "Rectangle",
+            "size": [1.0, 1.42],
+            "offset": [0, -0.4],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "ySort": true,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Interactable",
+          "properties": {
+            "prompt": "E  Talk to traveller",
+            "range": 1.5,
+            "requiredFlag": "",
+            "setFlag": "",
+            "once": false,
+            "hideWhenUsed": false,
+            "event": ""
+          }
+        },
+        {
+          "type": "Dialogue",
+          "properties": {
+            "sequence": "",
+            "speaker": "Traveller",
+            "pages": ["I heard a mechanism click beyond the stone wall."],
+            "portrait": "",
+            "advanceSet": "Player1",
+            "advanceAction": "Interact",
+            "charactersPerSecond": 42
+          }
+        }
+      ]
+    },
+    {
+      "id": "000000000000402b",
+      "name": "Hat-wearing explorer",
+      "transform": {
+        "position": [27.8, 17.3],
+        "rotation": 0,
+        "scale": [1, 1]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/invisible_castle/characters/hat_explorer.png",
+            "shape": "Rectangle",
+            "size": [1.05, 1.48],
+            "offset": [0, -0.42],
+            "color": "#ffffffff",
+            "layer": 10,
+            "order": 0,
+            "ySort": true,
+            "sortOffset": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [0, 0],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [1, 1]
+          }
+        },
+        {
+          "type": "Interactable",
+          "properties": {
+            "prompt": "E  Talk to explorer",
+            "range": 1.5,
+            "requiredFlag": "",
+            "setFlag": "",
+            "once": false,
+            "hideWhenUsed": false,
+            "event": ""
+          }
+        },
+        {
+          "type": "Dialogue",
+          "properties": {
+            "sequence": "",
+            "speaker": "Explorer",
+            "pages": ["The green doorway leads farther inside the castle."],
+            "portrait": "",
+            "advanceSet": "Player1",
+            "advanceAction": "Interact",
+            "charactersPerSecond": 42
+          }
+        }
+      ]
     }
   ]
 }

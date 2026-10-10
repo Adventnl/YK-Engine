@@ -1,263 +1,220 @@
-"""Build the Sky Foundry: a new art set and a vertical co-op route for Level Two."""
-import math
-import random
-from pathlib import Path
+"""Import the supplied classroom cutouts and build the second playable level.
 
-from PIL import Image, ImageDraw
+Positions and collision bounds are pixels on the 1672 x 941 reference canvas.
+The source artwork is visual only; all gameplay shapes are authored here.
+"""
+import json
+from pathlib import Path
+from zipfile import ZipFile
 
 from authoring import Node, SceneBuilder, ref, write_json
 
-PROJECT = Path(__file__).resolve().parents[1]
-ART = PROJECT / "assets" / "sky_foundry"
-WIDTH, HEIGHT = 33.44, 18.82
-GROUND, UPPER = 16.0, 10.2
-PREFABS = "prefabs/"
+ROOT = Path(__file__).resolve().parents[2]
+PROJECT = ROOT / "Fireboy-Watergirl-Demo"
+ARCHIVE = ROOT.parent.parent / "Downloads" / "classroom_level_assets.zip"
+ART = PROJECT / "assets" / "classroom"
+SCALE = 50.0
+WIDTH, HEIGHT = 1672 / SCALE, 941 / SCALE
 
 
-def save_art(name, image, ppu=64):
-    ART.mkdir(parents=True, exist_ok=True)
-    path = ART / f"{name}.png"
-    image.save(path)
-    write_json(str(path) + ".ykmeta", {"format": "yk.texture", "version": 1,
-                                       "pixelsPerUnit": ppu, "filter": "linear"})
+def xy(x, y):
+    return (round(x / SCALE, 4), round(y / SCALE, 4))
 
 
-def make_art():
-    rng = random.Random(2026)
-    sky = Image.new("RGB", (1672, 941))
-    pixels = sky.load()
-    for y in range(941):
-        t = y / 940
-        for x in range(1672):
-            glow = max(0, 1-abs(x-1180)/900) * max(0, 1-abs(y-300)/800)
-            pixels[x, y] = (int(10+28*t+16*glow), int(20+12*t+8*glow),
-                            int(46+32*t+28*glow))
-    d = ImageDraw.Draw(sky, "RGBA")
-    for _ in range(140):
-        x, y = rng.randrange(30, 1640), rng.randrange(75, 720)
-        r = rng.choice((1, 1, 2, 3))
-        d.ellipse((x-r, y-r, x+r, y+r), fill=(180, 230, 255, rng.randrange(60, 180)))
-    d.ellipse((1130, 70, 1540, 480), outline=(95, 224, 245, 90), width=5)
-    d.ellipse((1180, 120, 1490, 430), outline=(252, 177, 94, 100), width=3)
-    d.ellipse((1250, 190, 1420, 360), fill=(255, 220, 169, 110))
-    for i in range(17):
-        x, h = i*106-25, rng.randrange(95, 285)
-        d.rectangle((x, 795-h, x+76, 941), fill=(9, 20, 42, 150))
-        d.polygon([(x+12, 795-h), (x+38, 750-h), (x+64, 795-h)],
-                  fill=(9, 20, 42, 150))
-        for yy in range(820-h, 760, 32):
-            d.rectangle((x+18, yy, x+25, yy+8), fill=(62, 222, 236, 100))
-            d.rectangle((x+51, yy, x+58, yy+8), fill=(255, 164, 92, 75))
-    save_art("sky", sky, 50)
+def box(x0, y0, x1, y1):
+    return xy((x0 + x1) / 2, (y0 + y1) / 2), xy(x1 - x0, y1 - y0)
 
-    for name, fill, trim in (("deck", (20, 38, 63, 255), (71, 226, 231, 255)),
-                             ("wall", (29, 29, 59, 255), (155, 108, 218, 255))):
-        im = Image.new("RGBA", (256, 128), fill)
-        p = ImageDraw.Draw(im)
-        p.rectangle((3, 3, 252, 124), outline=trim, width=4)
-        p.rectangle((8, 11, 247, 22), fill=trim)
-        for x in (60, 128, 196):
-            p.line((x, 32, x, 118), fill=(9, 18, 40, 180), width=4)
-            p.ellipse((x-4, 59, x+4, 67), fill=trim)
-        save_art(name, im)
 
-    for name, trim in (("lift", (255, 185, 91, 255)),
-                       ("bridge", (78, 236, 237, 255))):
-        im = Image.new("RGBA", (256, 60))
-        p = ImageDraw.Draw(im)
-        p.rounded_rectangle((3, 8, 252, 54), radius=12, fill=(22, 34, 65, 255),
-                            outline=trim, width=5)
-        p.rectangle((20, 20, 235, 29), fill=trim)
-        for x in range(38, 226, 46):
-            p.polygon([(x, 41), (x+17, 41), (x+27, 34), (x+10, 34)],
-                      fill=(212, 228, 255, 150))
-        save_art(name, im)
-
-    for name, base, line in (("ember_flow", (244, 87, 44), (255, 209, 105, 255)),
-                             ("tide_flow", (34, 120, 229), (115, 238, 255, 255)),
-                             ("void_flow", (148, 53, 191), (252, 126, 231, 255))):
-        im = Image.new("RGBA", (256, 72))
-        p = ImageDraw.Draw(im)
-        for y in range(8, 72):
-            t = (y-8)/64
-            p.line((0, y, 255, y), fill=tuple(int(base[i]*(1-t)+18*t)
-                                               for i in range(3))+(245,))
-        p.line([(x, 10+int(5*math.sin(x/18))) for x in range(256)], fill=line, width=6)
-        for x, y in ((29, 44), (91, 58), (152, 32), (212, 49)):
-            p.ellipse((x-5, y-5, x+5, y+5), outline=line, width=2)
-        save_art(name, im)
-
-    im = Image.new("RGBA", (128, 34))
-    p = ImageDraw.Draw(im)
-    p.rounded_rectangle((2, 10, 126, 32), radius=7, fill=(25, 38, 65, 255),
-                        outline=(137, 172, 206, 255), width=3)
-    p.rounded_rectangle((15, 3, 113, 19), radius=7, fill=(255, 182, 77, 255),
-                        outline=(255, 236, 174, 255), width=3)
-    save_art("pad", im)
-    im = Image.new("RGBA", (88, 132))
-    p = ImageDraw.Draw(im)
-    p.rounded_rectangle((17, 78, 71, 127), radius=8, fill=(25, 35, 63, 255),
-                        outline=(80, 219, 227, 255), width=4)
-    p.line((44, 84, 53, 44), fill=(225, 231, 244, 255), width=8)
-    p.ellipse((37, 18, 70, 51), fill=(255, 174, 84, 255),
-              outline=(255, 237, 171, 255), width=4)
-    save_art("console", im)
-    im = Image.new("RGBA", (90, 300))
-    p = ImageDraw.Draw(im)
-    p.rounded_rectangle((12, 2, 78, 298), radius=12, fill=(33, 31, 77, 255),
-                        outline=(168, 117, 237, 255), width=6)
-    for y in range(28, 285, 35):
-        p.line((24, y, 66, y-9), fill=(102, 235, 242, 240), width=6)
-    save_art("seal", im)
-    for name, rim in (("fire_portal", (255, 155, 77, 255)),
-                      ("water_portal", (84, 218, 255, 255))):
-        im = Image.new("RGBA", (150, 220))
-        p = ImageDraw.Draw(im)
-        p.rounded_rectangle((12, 10, 138, 215), radius=54, fill=(19, 32, 64, 240),
-                            outline=rim, width=12)
-        p.rounded_rectangle((33, 33, 117, 195), radius=38, fill=(*rim[:3], 60),
-                            outline=(*rim[:3], 190), width=3)
-        p.polygon([(75, 54), (85, 104), (75, 169), (65, 104)],
-                  fill=(*rim[:3], 180))
-        save_art(name, im)
+def import_art():
+    if ARCHIVE.exists():
+        with ZipFile(ARCHIVE) as archive:
+            prefix = "classroom_level_assets/"
+            manifest_bytes = archive.read(prefix + "manifest.json")
+            ART.mkdir(parents=True, exist_ok=True)
+            (ART / "manifest.json").write_bytes(manifest_bytes)
+            manifest = json.loads(manifest_bytes)
+            for asset in manifest["assets"]:
+                destination = ART / asset["file"]
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                destination.write_bytes(archive.read(prefix + asset["file"]))
+    else:
+        manifest = json.loads((ART / "manifest.json").read_text())
+    for asset in manifest["assets"]:
+        destination = ART / asset["file"]
+        if not destination.is_file():
+            raise FileNotFoundError(destination)
+        write_json(str(destination) + ".ykmeta", {
+            "format": "yk.texture", "version": 1,
+            "pixelsPerUnit": SCALE, "filter": "nearest"})
+    return {asset["name"]: asset for asset in manifest["assets"]}
 
 
 def build():
-    make_art()
-    scene = SceneBuilder(str(PROJECT), "Fireboy and Watergirl - Sky Foundry",
-                         background="#0e1938ff")
-    scene.add(Node("Camera", (WIDTH/2, HEIGHT/2)).add(
+    assets = import_art()
+    scene = SceneBuilder(str(PROJECT), "Fireboy and Watergirl - Classroom", background="#000000ff")
+    scene.add(Node("Camera", xy(836, 470.5)).add(
         "Camera", mode="Fixed", orthographicHeight=HEIGHT, clampToBounds=True,
         boundsMin=[0, 0], boundsMax=[WIDTH, HEIGHT]))
-    scene.add(Node("Sky", (WIDTH/2, HEIGHT/2), locked=True).add(
-        "SpriteRenderer", texture="assets/sky_foundry/sky.png",
-        size=[WIDTH, HEIGHT], layer=-100))
-    for group in ("Terrain", "Hazards", "Mechanisms", "Collectibles", "Characters"):
+    for group in ("Artwork", "Terrain", "Hazards", "Mechanisms", "Collectibles", "Characters"):
         scene.group(group)
 
-    def solid(name, x0, y0, x1, y1, art="deck"):
-        w, h = x1-x0, y1-y0
-        scene.add(Node(name, ((x0+x1)/2, (y0+y1)/2))
-                  .add("SpriteRenderer", texture=f"assets/sky_foundry/{art}.png",
-                       size=[w, h], layer=10)
-                  .add("Collider", size=[w, h], layer="Solid", friction=0.8),
-                  parent="Terrain")
+    def art(name, layer=10, parent="Artwork", entity_name=None):
+        asset = assets[name]
+        at, size = box(*asset["source_position_px"],
+                       asset["source_position_px"][0] + asset["size_px"][0],
+                       asset["source_position_px"][1] + asset["size_px"][1])
+        node = Node(entity_name or "Art " + name.replace("_", " ").title(), at)
+        node.add("SpriteRenderer", texture="assets/classroom/" + asset["file"],
+                 size=list(size), layer=layer)
+        scene.add(node, parent=parent)
+        return node
 
-    def hazard(name, art, x0, y0, x1, y1, tags):
-        w, h = x1-x0, y1-y0
-        scene.add(Node(name, ((x0+x1)/2, (y0+y1)/2))
-                  .add("SpriteRenderer", texture=f"assets/sky_foundry/{art}.png",
-                       size=[w, h], layer=50)
-                  .add("Collider", size=[w-0.08, h-0.1], isTrigger=True,
-                       layer="Sensor")
-                  .add("Hazard", affectsTags=tags), parent="Hazards")
+    def sync_art(node):
+        # SceneBuilder flattens a node when it is added. Gameplay components
+        # attached after placement must also be copied to its scene record.
+        record = next(r for r in scene.records if r["name"] == node.name)
+        record["components"] = node.components
 
-    def plate(name, x, top, target):
-        scene.add(Node(name, (x, top-0.05))
-                  .add("SpriteRenderer", texture="assets/sky_foundry/pad.png",
-                       size=[1.8, 0.48], layer=30)
-                  .add("Collider", size=[1.7, 0.35], isTrigger=True, layer="Sensor")
+    def solid(name, x0, y0, x1, y1, one_way=False):
+        at, size = box(x0, y0, x1, y1)
+        scene.add(Node(name, at).add("Collider", size=list(size),
+                  oneWay=one_way, layer="Solid", friction=0.8), parent="Terrain")
+
+    def hazard(name, x0, y0, x1, y1, affected):
+        at, size = box(x0, y0, x1, y1)
+        scene.add(Node(name, at)
+                  .add("Collider", size=list(size), isTrigger=True, layer="Sensor")
+                  .add("Hazard", affectsTags=affected), parent="Hazards")
+
+    def plate(name, x0, y0, x1, y1, target, latch=False, tags=()):
+        at, size = box(x0, y0, x1, y1)
+        scene.add(Node(name, at)
+                  .add("Collider", size=list(size), isTrigger=True, layer="Sensor")
                   .add("PressurePlate", targets=[ref(target)], sensing="Region",
-                       pressDepth=0.06, pressedColor="#ffda83ff",
+                       activatorTags=list(tags), latch=latch, pressDepth=0.04,
                        pressSound="assets/audio/plate_down.wav",
                        releaseSound="assets/audio/plate_up.wav"), parent="Mechanisms")
 
-    def mover(name, x, y, art, travel, speed):
-        scene.add(Node(name, (x, y))
-                  .add("SpriteRenderer", texture=f"assets/sky_foundry/{art}.png",
-                       size=[2.8, 0.66], layer=25)
-                  .add("RigidBody", type="Kinematic")
-                  .add("Collider", size=[2.7, 0.4], offset=[0, -0.1],
-                       layer="Solid", friction=1.0)
-                  .add("MovingPlatform", travel=travel, speed=speed,
-                       pause=0.6, requireSignal=True), parent="Mechanisms")
+    def mover(name, asset_name, collider, travel, speed, collider_offset=(0, -6)):
+        node = art(asset_name, 30, "Mechanisms", name)
+        node.add("RigidBody", type="Kinematic")
+        node.add("Collider", size=list(xy(*collider)), offset=list(xy(*collider_offset)),
+                 layer="Solid", friction=1.0)
+        node.add("MovingPlatform", travel=list(xy(*travel)), speed=speed,
+                 pause=0.7, requireSignal=True)
+        sync_art(node)
 
-    # A rising route across floating docks, a lift shaft, and a coolant channel.
-    solid("Left Rail", 0, 0, 0.9, HEIGHT, "wall")
-    solid("Right Rail", WIDTH-0.9, 0, WIDTH, HEIGHT, "wall")
-    solid("Launch Dock", 0.9, GROUND, 6.4, HEIGHT)
-    solid("Ember Basin", 6.4, GROUND+1, 10.4, HEIGHT, "wall")
-    solid("Control Dock", 10.4, GROUND, 17.6, HEIGHT)
-    hazard("Ember Current", "ember_flow", 6.4, GROUND, 10.4, GROUND+1, ["Tide"])
-    solid("Reactor Basin", 17.6, 18.0, WIDTH-0.9, HEIGHT, "wall")
-    hazard("Reactor Void", "void_flow", 17.6, 17.0, WIDTH-0.9, 18.0, [])
-    solid("Lift Shaft Cap", 14.15, 8.5, 15.05, 13.0, "wall")
-    solid("Observatory Deck", 18.3, UPPER, 24.3, UPPER+0.9)
-    solid("Coolant Basin", 24.3, UPPER+1, 28.3, UPPER+1.9, "wall")
-    solid("Exit Deck", 28.3, UPPER, WIDTH-0.9, UPPER+0.9)
-    hazard("Coolant Channel", "tide_flow", 24.3, UPPER, 28.3, UPPER+1,
-           ["Ember"])
+    # The cutouts preserve the exact composition. Some props and basin gems are
+    # already baked into their desk/basin cutouts, so they are not drawn twice.
+    for name in ("left_desk_with_ramp", "orange_hazard_basin", "middle_desk",
+                 "purple_hazard_basin", "upper_left_desk", "upper_blue_basin",
+                 "upper_right_desk"):
+        art(name, 10 if "basin" not in name else 18)
+    art("purple_bookcase_top", 24)
+    art("red_exit_door", 45, "Mechanisms", "Ember Exit")
+    art("blue_exit_door", 45, "Mechanisms", "Tide Exit")
+    art("pencil_cup_upper_right", 46)
 
-    # Switches and pads create four distinct activations in the new route.
-    mover("Ember Shuttle", 7.1, 14.4, "bridge", [2.6, 0], 1.7)
-    plate("Launch Plate", 4.4, GROUND, "Ember Shuttle")
-    scene.add(Node("Shaft Seal", (14.6, 14.5))
-              .add("SpriteRenderer", texture="assets/sky_foundry/seal.png",
-                   size=[0.9, 3], layer=35)
-              .add("RigidBody", type="Kinematic")
-              .add("Collider", size=[0.85, 3], layer="Solid")
-              .add("Door", openOffset=[0, -3.2], speed=4,
-                   openSound="assets/audio/gate_open.wav",
-                   closeSound="assets/audio/gate_close.wav"), parent="Mechanisms")
-    scene.add(Node("Shaft Console", (12.1, 15.25))
-              .add("SpriteRenderer", texture="assets/sky_foundry/console.png",
-                   size=[0.9, 1.35], layer=35)
-              .add("Collider", size=[1.2, 1.2], isTrigger=True, layer="Sensor")
+    # Lower desks, ramps, liquid basins, and the upper exit route.
+    solid("Left Desk", 10, 674, 180, 814)
+    for name, bounds in (("Ramp Low", (178, 654, 200, 814)),
+                         ("Ramp Mid", (200, 633, 220, 814)),
+                         ("Ramp High", (220, 612, 243, 814)),
+                         ("Red Button Block", (243, 632, 304, 814))):
+        solid(name, *bounds)
+    solid("Orange Basin Floor", 306, 733, 549, 815)
+    solid("Middle Desk", 549, 674, 925, 814)
+    solid("Purple Basin Floor", 926, 773, 1663, 815)
+    solid("Upper Left Desk", 915, 395, 1225, 451)
+    solid("Blue Basin Floor", 1226, 445, 1431, 494)
+    solid("Upper Right Desk", 1431, 395, 1663, 462)
+    solid("Bookcase Upper", 753, 355, 807, 520)
+    solid("Left Boundary", 0, 260, 8, 815)
+    solid("Right Boundary", 1664, 260, 1672, 815)
+    hazard("Orange Liquid", 310, 678, 546, 733, ["Tide"])
+    hazard("Purple Liquid", 933, 715, 1660, 773, [])
+    hazard("Blue Liquid", 1230, 393, 1427, 445, ["Ember"])
+
+    # The red button carries Watergirl over the orange basin. Fireboy can cross
+    # through orange liquid and rejoin her on the middle desk.
+    mover("Left Cyan Conveyor", "left_cyan_conveyor", (145, 23), (90, 0), 1.5)
+    plate("Left Red Button", 251, 611, 293, 635, "Left Cyan Conveyor", tags=("Ember",))
+
+    # Lever retracts the striped lower bookcase panel so both characters can
+    # reach the orange elevator. The yellow button then calls that elevator.
+    panel = art("blue_striped_vertical_panel", 22, "Mechanisms", "Bookcase Panel")
+    panel.add("RigidBody", type="Kinematic")
+    panel.add("Collider", size=list(xy(52, 149)), layer="Solid")
+    panel.add("Door", openOffset=list(xy(0, -157)), speed=4,
+              openSound="assets/audio/gate_open.wav",
+              closeSound="assets/audio/gate_close.wav")
+    sync_art(panel)
+    at, size = box(619, 603, 678, 671)
+    scene.add(Node("Gold Lever", at)
+              .add("Collider", size=list(size), isTrigger=True, layer="Sensor")
               .add("Lever", interactAction="Interact", cooldown=0.4,
-                   targets=[ref("Shaft Seal")], sound="assets/audio/lever.wav"),
+                   targets=[ref("Bookcase Panel")], sound="assets/audio/lever.wav"),
               parent="Mechanisms")
-    mover("Sky Lift", 16.4, 15.55, "lift", [0, -5.1], 1.5)
-    plate("Lift Call", 12.9, GROUND, "Sky Lift")
-    plate("Lift Return", 20.1, UPPER, "Sky Lift")
-    scene.add(Node("Coolant Console", (21.8, UPPER-0.75))
-              .add("SpriteRenderer", texture="assets/sky_foundry/console.png",
-                   size=[0.9, 1.35], layer=35)
-              .add("Collider", size=[1.2, 1.2], isTrigger=True, layer="Sensor")
-              .add("Lever", interactAction="Interact", cooldown=0.4,
-                   targets=[ref("Coolant Bridge")], sound="assets/audio/lever.wav"),
-              parent="Mechanisms")
-    mover("Coolant Bridge", 24.9, 9.96, "bridge", [2.7, 0], 1.8)
-    scene.place(PREFABS + "mechanisms/checkpoint.ykprefab", "Shaft Checkpoint",
-                (11.3, GROUND-0.75), parent="Mechanisms")
+    # Its visual overhang can pass the upper desk; the rider surface stays left
+    # of the desk's solid edge while rising.
+    mover("Orange Elevator", "middle_orange_conveyor", (80, 22), (0, -235),
+          1.8, collider_offset=(-25, -6))
+    plate("Middle Yellow Button", 685, 646, 743, 674, "Orange Elevator", latch=True)
 
-    for who, color, x in (("Ember", "orange", 2.2), ("Tide", "blue", 3.1)):
-        y = GROUND-0.96
-        scene.place(PREFABS + f"characters/{who.lower()}.ykprefab", who,
-                    (x, y), parent="Characters", overrides={
+    # The upper button sends the cyan conveyor over the blue channel. Both
+    # exit doors use their own trigger, matching the two-player goal flow.
+    mover("Upper Cyan Conveyor", "upper_cyan_conveyor", (131, 18), (94, 0), 1.6)
+    plate("Upper Yellow Button", 1010, 375, 1066, 399,
+          "Upper Cyan Conveyor", latch=True)
+    for name, tag, bounds in (("Ember Exit", "Ember", (1455, 273, 1516, 382)),
+                              ("Tide Exit", "Tide", (1547, 273, 1608, 382))):
+        record = next(r for r in scene.records if r["name"] == name)
+        at, size = box(*bounds)
+        record["components"].append({"type": "Collider", "properties": {
+            "size": list(size), "offset": list(xy(at[0] * SCALE - record["transform"]["position"][0] * SCALE,
+                                               at[1] * SCALE - record["transform"]["position"][1] * SCALE)),
+            "isTrigger": True, "layer": "Sensor"}})
+        record["components"].append({"type": "Goal", "properties": {
+            "requiredTag": tag, "sound": "assets/audio/exit.wav"}})
+
+    # Four free-standing glowing gems are collectibles. The two basin gems are
+    # part of the supplied basin images and remain visible as scenery.
+    for name, tag, variable in (("blue_gem_left", "Tide", "tide_gems"),
+                                ("red_gem_column", "Ember", "ember_gems"),
+                                ("blue_gem_upper", "Tide", "tide_gems"),
+                                ("red_gem_upper", "Ember", "ember_gems")):
+        node = art(name, 55, "Collectibles")
+        asset = assets[name]
+        node.add("Collider", shape="Circle", size=list(xy(*asset["size_px"])),
+                 isTrigger=True, layer="Sensor")
+        node.add("Collectible", collectorTags=[tag], variable=variable, value=1,
+                 sound="assets/audio/collect.wav",
+                 collectEffect=f"prefabs/fx/spark_{'red' if tag == 'Ember' else 'blue'}.ykprefab")
+        node.add("Oscillator", position=[0, 0.1], frequency=0.9)
+        sync_art(node)
+
+    for who, color, px in (("Ember", "orange", 80), ("Tide", "blue", 137)):
+        y = 674 / SCALE - 0.96
+        scene.place(f"prefabs/characters/{who.lower()}.ykprefab", who,
+                    (px / SCALE, y), parent="Characters", overrides={
                         "SpriteRenderer": {"texture": f"assets/reference/{color}_motion.png",
                                            "size": [1.6, 2.4], "offset": [0, -0.23],
                                            "columns": 8, "rows": 4},
                         "AnimatedSprite": {"animation": f"assets/reference/{color}_motion.ykanim"},
                         "Collider": {"size": [0.68, 1.92]},
                         "PlatformerController": {"jumpHeight": 4.2, "moveSpeed": 5.8}})
-        scene.place(PREFABS + "level/spawn_point.ykprefab", f"{who} Spawn",
-                    (x, y), parent="Characters",
+        scene.place("prefabs/level/spawn_point.ykprefab", f"{who} Spawn",
+                    (px / SCALE, y), parent="Characters",
                     overrides={"SpawnPoint": {"character": ref(who)}})
-
-    for who, art, x in (("Ember", "fire_portal", 29.4),
-                        ("Tide", "water_portal", 31.2)):
-        scene.add(Node(f"{who} Exit", (x, UPPER-1.1))
-                  .add("SpriteRenderer", texture=f"assets/sky_foundry/{art}.png",
-                       size=[1.5, 2.2], layer=40)
-                  .add("Collider", size=[1.2, 1.8], isTrigger=True, layer="Sensor")
-                  .add("Goal", requiredTag=who, sound="assets/audio/exit.wav"),
-                  parent="Mechanisms")
-
-    for color, points in (("red", [(8.2, 16.5), (15.9, 12.6), (22.2, 9.2)]),
-                          ("blue", [(8.3, 13.5), (18.9, 9.2), (26.3, 10.8)])):
-        for number, point in enumerate(points, 1):
-            scene.place(PREFABS + f"items/gem_{color}.ykprefab",
-                        f"{color.title()} Gem {number}", point,
-                        parent="Collectibles")
 
     scene.add(Node("Level Flow").add(
         "LevelFlow", goals=[ref("Ember Exit"), ref("Tide Exit")],
         completeSound="assets/audio/complete.wav", completeDelay=4.0,
         continueAction="Continue"))
-    scene.place(PREFABS + "level/hud.ykprefab", "HUD", (0, 0), child_overrides={
+    scene.place("prefabs/level/hud.ykprefab", "HUD", (0, 0), child_overrides={
         "Ember Gems": {"UiText": {"text": "FIREBOY {ember_gems:0}/{ember_gems_total:0}"}},
         "Tide Gems": {"UiText": {"text": "WATERGIRL {tide_gems:0}/{tide_gems_total:0}"}},
-        "Controls": {"UiText": {"text": "SKY FOUNDRY  A/D/W/S + ARROWS/DOWN   R RESTART  P PAUSE"}},
+        "Controls": {"UiText": {"text": "CLASSROOM  A/D/W/S + ARROWS/DOWN   R RESTART  P PAUSE"}},
     })
     audio = Node("Audio")
     audio.child(Node("Ambience")).add("AudioSource", sound="assets/audio/ambience.wav",
@@ -266,7 +223,7 @@ def build():
                                     volume=0.28, loop=True, playOnStart=True)
     scene.add(audio)
     scene.write("scenes/level02.ykscene")
-    print(f"level02: {len(scene.records)} entities")
+    print(f"level02 classroom: {len(scene.records)} entities, {len(assets)} supplied sprites")
 
 
 if __name__ == "__main__":

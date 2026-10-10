@@ -32,7 +32,7 @@
   ],
   "textures": {
     "pixelsPerUnit": 64,
-    "filter": "linear"
+    "filter": "nearest"
   },
   "input": {
     "sets": [

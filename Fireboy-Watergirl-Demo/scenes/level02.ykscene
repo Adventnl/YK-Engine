@@ -2,16 +2,16 @@
   "format": "yk.scene",
   "version": 1,
   "settings": {
-    "name": "Fireboy and Watergirl - Sky Foundry",
+    "name": "Fireboy and Watergirl - Classroom",
     "gravity": [
       0,
       9.81
     ],
-    "background": "#0e1938ff"
+    "background": "#000000ff"
   },
   "entities": [
     {
-      "id": "822afb9e85b440cd",
+      "id": "999d722a35d08b85",
       "name": "Camera",
       "transform": {
         "position": [
@@ -44,13 +44,12 @@
       ]
     },
     {
-      "id": "896bd8606daeceec",
-      "name": "Sky",
-      "locked": true,
+      "id": "78108efe4382f137",
+      "name": "Artwork",
       "transform": {
         "position": [
-          16.72,
-          9.41
+          0,
+          0
         ],
         "rotation": 0,
         "scale": [
@@ -58,22 +57,10 @@
           1
         ]
       },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/sky_foundry/sky.png",
-            "size": [
-              33.44,
-              18.82
-            ],
-            "layer": -100
-          }
-        }
-      ]
+      "components": []
     },
     {
-      "id": "e3989dd46dec5152",
+      "id": "0e5500192901c845",
       "name": "Terrain",
       "transform": {
         "position": [
@@ -89,7 +76,7 @@
       "components": []
     },
     {
-      "id": "b83635d65020c232",
+      "id": "642d944e55ece6aa",
       "name": "Hazards",
       "transform": {
         "position": [
@@ -105,7 +92,7 @@
       "components": []
     },
     {
-      "id": "3278e06783a3d8b8",
+      "id": "a55cc260a63f794d",
       "name": "Mechanisms",
       "transform": {
         "position": [
@@ -121,7 +108,7 @@
       "components": []
     },
     {
-      "id": "3d20ff5e1ea5f036",
+      "id": "83f3823e07cfb0d5",
       "name": "Collectibles",
       "transform": {
         "position": [
@@ -137,7 +124,7 @@
       "components": []
     },
     {
-      "id": "eedc35f0feace715",
+      "id": "3b448068accef81f",
       "name": "Characters",
       "transform": {
         "position": [
@@ -153,13 +140,13 @@
       "components": []
     },
     {
-      "id": "596f5ee6d603857e",
-      "name": "Left Rail",
-      "parent": "e3989dd46dec5152",
+      "id": "9c77c67305bc8360",
+      "name": "Art Left Desk With Ramp",
+      "parent": "78108efe4382f137",
       "transform": {
         "position": [
-          0.45,
-          9.41
+          3.18,
+          14.19
         ],
         "rotation": 0,
         "scale": [
@@ -171,35 +158,358 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/sky_foundry/wall.png",
+            "texture": "assets/classroom/png/terrain/left_desk_with_ramp.png",
+            "size": [
+              6.0,
+              4.22
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "2e37ecfb5ad1b99f",
+      "name": "Art Orange Hazard Basin",
+      "parent": "78108efe4382f137",
+      "transform": {
+        "position": [
+          8.55,
+          14.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/png/terrain/orange_hazard_basin.png",
+            "size": [
+              4.9,
+              3.24
+            ],
+            "layer": 18
+          }
+        }
+      ]
+    },
+    {
+      "id": "869e7359f73e24b6",
+      "name": "Art Middle Desk",
+      "parent": "78108efe4382f137",
+      "transform": {
+        "position": [
+          14.74,
+          14.06
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/png/terrain/middle_desk.png",
+            "size": [
+              7.8,
+              4.48
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "b00475dfec6a88da",
+      "name": "Art Purple Hazard Basin",
+      "parent": "78108efe4382f137",
+      "transform": {
+        "position": [
+          25.88,
+          15.18
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/png/terrain/purple_hazard_basin.png",
+            "size": [
+              14.76,
+              2.24
+            ],
+            "layer": 18
+          }
+        }
+      ]
+    },
+    {
+      "id": "d48fef2e5b842459",
+      "name": "Art Upper Left Desk",
+      "parent": "78108efe4382f137",
+      "transform": {
+        "position": [
+          21.4,
+          8.23
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/png/terrain/upper_left_desk.png",
+            "size": [
+              6.24,
+              1.7
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "7a009db1a273a6ed",
+      "name": "Art Upper Blue Basin",
+      "parent": "78108efe4382f137",
+      "transform": {
+        "position": [
+          26.55,
+          8.76
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/png/terrain/upper_blue_basin.png",
+            "size": [
+              4.3,
+              2.24
+            ],
+            "layer": 18
+          }
+        }
+      ]
+    },
+    {
+      "id": "d55e5b6f893e3bb3",
+      "name": "Art Upper Right Desk",
+      "parent": "78108efe4382f137",
+      "transform": {
+        "position": [
+          30.91,
+          8.34
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/png/terrain/upper_right_desk.png",
+            "size": [
+              4.74,
+              1.88
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "1056f70d853496c9",
+      "name": "Art Purple Bookcase Top",
+      "parent": "78108efe4382f137",
+      "transform": {
+        "position": [
+          15.6,
+          8.43
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/png/props/purple_bookcase_top.png",
+            "size": [
+              1.12,
+              4.14
+            ],
+            "layer": 24
+          }
+        }
+      ]
+    },
+    {
+      "id": "26a700fce864e42a",
+      "name": "Ember Exit",
+      "parent": "a55cc260a63f794d",
+      "transform": {
+        "position": [
+          29.73,
+          6.55
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/png/props/red_exit_door.png",
+            "size": [
+              1.74,
+              2.66
+            ],
+            "layer": 45
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              1.22,
+              2.18
+            ],
+            "offset": [
+              -0.02,
+              0.0
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Goal",
+          "properties": {
+            "requiredTag": "Ember",
+            "sound": "assets/audio/exit.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "8ad635bc54f17f3b",
+      "name": "Tide Exit",
+      "parent": "a55cc260a63f794d",
+      "transform": {
+        "position": [
+          31.53,
+          6.55
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/png/props/blue_exit_door.png",
+            "size": [
+              1.62,
+              2.66
+            ],
+            "layer": 45
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              1.22,
+              2.18
+            ],
+            "offset": [
+              0.02,
+              0.0
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Goal",
+          "properties": {
+            "requiredTag": "Tide",
+            "sound": "assets/audio/exit.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "7ca35b73b0af0b02",
+      "name": "Art Pencil Cup Upper Right",
+      "parent": "78108efe4382f137",
+      "transform": {
+        "position": [
+          32.77,
+          7.31
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/png/props/pencil_cup_upper_right.png",
             "size": [
               0.9,
-              18.82
+              1.18
             ],
-            "layer": 10
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "size": [
-              0.9,
-              18.82
-            ],
-            "layer": "Solid",
-            "friction": 0.8
+            "layer": 46
           }
         }
       ]
     },
     {
-      "id": "9faa7606d7277691",
-      "name": "Right Rail",
-      "parent": "e3989dd46dec5152",
+      "id": "98bc1dcd393cfeeb",
+      "name": "Left Desk",
+      "parent": "0e5500192901c845",
       "transform": {
         "position": [
-          32.989999999999995,
-          9.41
+          1.9,
+          14.88
         ],
         "rotation": 0,
         "scale": [
@@ -209,23 +519,13 @@
       },
       "components": [
         {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/sky_foundry/wall.png",
-            "size": [
-              0.8999999999999986,
-              18.82
-            ],
-            "layer": 10
-          }
-        },
-        {
           "type": "Collider",
           "properties": {
             "size": [
-              0.8999999999999986,
-              18.82
+              3.4,
+              2.8
             ],
+            "oneWay": false,
             "layer": "Solid",
             "friction": 0.8
           }
@@ -233,13 +533,13 @@
       ]
     },
     {
-      "id": "168b495689fdf412",
-      "name": "Launch Dock",
-      "parent": "e3989dd46dec5152",
+      "id": "53442502230dabbf",
+      "name": "Ramp Low",
+      "parent": "0e5500192901c845",
       "transform": {
         "position": [
-          3.6500000000000004,
-          17.41
+          3.78,
+          14.68
         ],
         "rotation": 0,
         "scale": [
@@ -249,23 +549,13 @@
       },
       "components": [
         {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/sky_foundry/deck.png",
-            "size": [
-              5.5,
-              2.8200000000000003
-            ],
-            "layer": 10
-          }
-        },
-        {
           "type": "Collider",
           "properties": {
             "size": [
-              5.5,
-              2.8200000000000003
+              0.44,
+              3.2
             ],
+            "oneWay": false,
             "layer": "Solid",
             "friction": 0.8
           }
@@ -273,13 +563,13 @@
       ]
     },
     {
-      "id": "5c6609a6372f02eb",
-      "name": "Ember Basin",
-      "parent": "e3989dd46dec5152",
+      "id": "8c934dc466169162",
+      "name": "Ramp Mid",
+      "parent": "0e5500192901c845",
       "transform": {
         "position": [
-          8.4,
-          17.91
+          4.2,
+          14.47
         ],
         "rotation": 0,
         "scale": [
@@ -289,23 +579,13 @@
       },
       "components": [
         {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/sky_foundry/wall.png",
-            "size": [
-              4.0,
-              1.8200000000000003
-            ],
-            "layer": 10
-          }
-        },
-        {
           "type": "Collider",
           "properties": {
             "size": [
-              4.0,
-              1.8200000000000003
+              0.4,
+              3.62
             ],
+            "oneWay": false,
             "layer": "Solid",
             "friction": 0.8
           }
@@ -313,13 +593,13 @@
       ]
     },
     {
-      "id": "50cc0e2eabefeace",
-      "name": "Control Dock",
-      "parent": "e3989dd46dec5152",
+      "id": "2e38c48003cd7601",
+      "name": "Ramp High",
+      "parent": "0e5500192901c845",
       "transform": {
         "position": [
-          14.0,
-          17.41
+          4.63,
+          14.26
         ],
         "rotation": 0,
         "scale": [
@@ -329,23 +609,13 @@
       },
       "components": [
         {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/sky_foundry/deck.png",
-            "size": [
-              7.200000000000001,
-              2.8200000000000003
-            ],
-            "layer": 10
-          }
-        },
-        {
           "type": "Collider",
           "properties": {
             "size": [
-              7.200000000000001,
-              2.8200000000000003
+              0.46,
+              4.04
             ],
+            "oneWay": false,
             "layer": "Solid",
             "friction": 0.8
           }
@@ -353,13 +623,13 @@
       ]
     },
     {
-      "id": "fd8eab3264735836",
-      "name": "Ember Current",
-      "parent": "b83635d65020c232",
+      "id": "4134f23637627658",
+      "name": "Red Button Block",
+      "parent": "0e5500192901c845",
       "transform": {
         "position": [
-          8.4,
-          16.5
+          5.47,
+          14.46
         ],
         "rotation": 0,
         "scale": [
@@ -369,22 +639,311 @@
       },
       "components": [
         {
-          "type": "SpriteRenderer",
+          "type": "Collider",
           "properties": {
-            "texture": "assets/sky_foundry/ember_flow.png",
             "size": [
-              4.0,
-              1.0
+              1.22,
+              3.64
             ],
-            "layer": 50
+            "oneWay": false,
+            "layer": "Solid",
+            "friction": 0.8
           }
-        },
+        }
+      ]
+    },
+    {
+      "id": "a5a4a7665bbed5c1",
+      "name": "Orange Basin Floor",
+      "parent": "0e5500192901c845",
+      "transform": {
+        "position": [
+          8.55,
+          15.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
         {
           "type": "Collider",
           "properties": {
             "size": [
-              3.92,
-              0.9
+              4.86,
+              1.64
+            ],
+            "oneWay": false,
+            "layer": "Solid",
+            "friction": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "4360b4854bea78bb",
+      "name": "Middle Desk",
+      "parent": "0e5500192901c845",
+      "transform": {
+        "position": [
+          14.74,
+          14.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              7.52,
+              2.8
+            ],
+            "oneWay": false,
+            "layer": "Solid",
+            "friction": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "a3941eb6c1ee695e",
+      "name": "Purple Basin Floor",
+      "parent": "0e5500192901c845",
+      "transform": {
+        "position": [
+          25.89,
+          15.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              14.74,
+              0.84
+            ],
+            "oneWay": false,
+            "layer": "Solid",
+            "friction": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "d50570fe7cc92212",
+      "name": "Upper Left Desk",
+      "parent": "0e5500192901c845",
+      "transform": {
+        "position": [
+          21.4,
+          8.46
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              6.2,
+              1.12
+            ],
+            "oneWay": false,
+            "layer": "Solid",
+            "friction": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "feff3ab9991774cf",
+      "name": "Blue Basin Floor",
+      "parent": "0e5500192901c845",
+      "transform": {
+        "position": [
+          26.57,
+          9.39
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              4.1,
+              0.98
+            ],
+            "oneWay": false,
+            "layer": "Solid",
+            "friction": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "9a04083593fd4765",
+      "name": "Upper Right Desk",
+      "parent": "0e5500192901c845",
+      "transform": {
+        "position": [
+          30.94,
+          8.57
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              4.64,
+              1.34
+            ],
+            "oneWay": false,
+            "layer": "Solid",
+            "friction": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "06a4d4b6d09ce0de",
+      "name": "Bookcase Upper",
+      "parent": "0e5500192901c845",
+      "transform": {
+        "position": [
+          15.6,
+          8.75
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              1.08,
+              3.3
+            ],
+            "oneWay": false,
+            "layer": "Solid",
+            "friction": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "37d7058dd568e111",
+      "name": "Left Boundary",
+      "parent": "0e5500192901c845",
+      "transform": {
+        "position": [
+          0.08,
+          10.75
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              0.16,
+              11.1
+            ],
+            "oneWay": false,
+            "layer": "Solid",
+            "friction": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "8008c7557a4175c0",
+      "name": "Right Boundary",
+      "parent": "0e5500192901c845",
+      "transform": {
+        "position": [
+          33.36,
+          10.75
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              0.16,
+              11.1
+            ],
+            "oneWay": false,
+            "layer": "Solid",
+            "friction": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "8ae986ea31f18a6c",
+      "name": "Orange Liquid",
+      "parent": "642d944e55ece6aa",
+      "transform": {
+        "position": [
+          8.56,
+          14.11
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              4.72,
+              1.1
             ],
             "isTrigger": true,
             "layer": "Sensor"
@@ -401,13 +960,13 @@
       ]
     },
     {
-      "id": "67df095a9cc91e0a",
-      "name": "Reactor Basin",
-      "parent": "e3989dd46dec5152",
+      "id": "9811cba2db05e466",
+      "name": "Purple Liquid",
+      "parent": "642d944e55ece6aa",
       "transform": {
         "position": [
-          25.07,
-          18.41
+          25.93,
+          14.88
         ],
         "rotation": 0,
         "scale": [
@@ -417,62 +976,11 @@
       },
       "components": [
         {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/sky_foundry/wall.png",
-            "size": [
-              14.939999999999998,
-              0.8200000000000003
-            ],
-            "layer": 10
-          }
-        },
-        {
           "type": "Collider",
           "properties": {
             "size": [
-              14.939999999999998,
-              0.8200000000000003
-            ],
-            "layer": "Solid",
-            "friction": 0.8
-          }
-        }
-      ]
-    },
-    {
-      "id": "55ba979f78a2edc2",
-      "name": "Reactor Void",
-      "parent": "b83635d65020c232",
-      "transform": {
-        "position": [
-          25.07,
-          17.5
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/sky_foundry/void_flow.png",
-            "size": [
-              14.939999999999998,
-              1.0
-            ],
-            "layer": 50
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "size": [
-              14.859999999999998,
-              0.9
+              14.54,
+              1.16
             ],
             "isTrigger": true,
             "layer": "Sensor"
@@ -487,13 +995,13 @@
       ]
     },
     {
-      "id": "c714bd98fb556bff",
-      "name": "Lift Shaft Cap",
-      "parent": "e3989dd46dec5152",
+      "id": "da9cbb004264b4c1",
+      "name": "Blue Liquid",
+      "parent": "642d944e55ece6aa",
       "transform": {
         "position": [
-          14.600000000000001,
-          10.75
+          26.57,
+          8.38
         ],
         "rotation": 0,
         "scale": [
@@ -503,182 +1011,11 @@
       },
       "components": [
         {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/sky_foundry/wall.png",
-            "size": [
-              0.9000000000000004,
-              4.5
-            ],
-            "layer": 10
-          }
-        },
-        {
           "type": "Collider",
           "properties": {
             "size": [
-              0.9000000000000004,
-              4.5
-            ],
-            "layer": "Solid",
-            "friction": 0.8
-          }
-        }
-      ]
-    },
-    {
-      "id": "903efb1dd489414d",
-      "name": "Observatory Deck",
-      "parent": "e3989dd46dec5152",
-      "transform": {
-        "position": [
-          21.3,
-          10.649999999999999
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/sky_foundry/deck.png",
-            "size": [
-              6.0,
-              0.9000000000000004
-            ],
-            "layer": 10
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "size": [
-              6.0,
-              0.9000000000000004
-            ],
-            "layer": "Solid",
-            "friction": 0.8
-          }
-        }
-      ]
-    },
-    {
-      "id": "cfa21e3f4f4ecb87",
-      "name": "Coolant Basin",
-      "parent": "e3989dd46dec5152",
-      "transform": {
-        "position": [
-          26.3,
-          11.649999999999999
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/sky_foundry/wall.png",
-            "size": [
-              4.0,
-              0.9000000000000004
-            ],
-            "layer": 10
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "size": [
-              4.0,
-              0.9000000000000004
-            ],
-            "layer": "Solid",
-            "friction": 0.8
-          }
-        }
-      ]
-    },
-    {
-      "id": "cf23abc779d8cff5",
-      "name": "Exit Deck",
-      "parent": "e3989dd46dec5152",
-      "transform": {
-        "position": [
-          30.42,
-          10.649999999999999
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/sky_foundry/deck.png",
-            "size": [
-              4.239999999999998,
-              0.9000000000000004
-            ],
-            "layer": 10
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "size": [
-              4.239999999999998,
-              0.9000000000000004
-            ],
-            "layer": "Solid",
-            "friction": 0.8
-          }
-        }
-      ]
-    },
-    {
-      "id": "fa2319eac32a3646",
-      "name": "Coolant Channel",
-      "parent": "b83635d65020c232",
-      "transform": {
-        "position": [
-          26.3,
-          10.7
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/sky_foundry/tide_flow.png",
-            "size": [
-              4.0,
-              1.0
-            ],
-            "layer": 50
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "size": [
-              3.92,
-              0.9
+              3.94,
+              1.04
             ],
             "isTrigger": true,
             "layer": "Sensor"
@@ -695,13 +1032,13 @@
       ]
     },
     {
-      "id": "5c760a0518e8ee4e",
-      "name": "Ember Shuttle",
-      "parent": "3278e06783a3d8b8",
+      "id": "d281b893cf591e4b",
+      "name": "Left Cyan Conveyor",
+      "parent": "a55cc260a63f794d",
       "transform": {
         "position": [
-          7.1,
-          14.4
+          7.42,
+          11.22
         ],
         "rotation": 0,
         "scale": [
@@ -713,12 +1050,12 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/sky_foundry/bridge.png",
+            "texture": "assets/classroom/png/platforms/left_cyan_conveyor.png",
             "size": [
-              2.8,
-              0.66
+              3.16,
+              0.88
             ],
-            "layer": 25
+            "layer": 30
           }
         },
         {
@@ -731,12 +1068,12 @@
           "type": "Collider",
           "properties": {
             "size": [
-              2.7,
-              0.4
+              2.9,
+              0.46
             ],
             "offset": [
-              0,
-              -0.1
+              0.0,
+              -0.12
             ],
             "layer": "Solid",
             "friction": 1.0
@@ -746,24 +1083,24 @@
           "type": "MovingPlatform",
           "properties": {
             "travel": [
-              2.6,
-              0
+              1.8,
+              0.0
             ],
-            "speed": 1.7,
-            "pause": 0.6,
+            "speed": 1.5,
+            "pause": 0.7,
             "requireSignal": true
           }
         }
       ]
     },
     {
-      "id": "fc50a75469af1046",
-      "name": "Launch Plate",
-      "parent": "3278e06783a3d8b8",
+      "id": "64cfb7a1d0582b22",
+      "name": "Left Red Button",
+      "parent": "a55cc260a63f794d",
       "transform": {
         "position": [
-          4.4,
-          15.95
+          5.44,
+          12.46
         ],
         "rotation": 0,
         "scale": [
@@ -773,22 +1110,11 @@
       },
       "components": [
         {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/sky_foundry/pad.png",
-            "size": [
-              1.8,
-              0.48
-            ],
-            "layer": 30
-          }
-        },
-        {
           "type": "Collider",
           "properties": {
             "size": [
-              1.7,
-              0.35
+              0.84,
+              0.48
             ],
             "isTrigger": true,
             "layer": "Sensor"
@@ -798,11 +1124,14 @@
           "type": "PressurePlate",
           "properties": {
             "targets": [
-              "5c760a0518e8ee4e"
+              "d281b893cf591e4b"
             ],
             "sensing": "Region",
-            "pressDepth": 0.06,
-            "pressedColor": "#ffda83ff",
+            "activatorTags": [
+              "Ember"
+            ],
+            "latch": false,
+            "pressDepth": 0.04,
             "pressSound": "assets/audio/plate_down.wav",
             "releaseSound": "assets/audio/plate_up.wav"
           }
@@ -810,13 +1139,13 @@
       ]
     },
     {
-      "id": "e324d6f10df00efe",
-      "name": "Shaft Seal",
-      "parent": "3278e06783a3d8b8",
+      "id": "cffa2848e6b36e03",
+      "name": "Bookcase Panel",
+      "parent": "a55cc260a63f794d",
       "transform": {
         "position": [
-          14.6,
-          14.5
+          15.56,
+          11.93
         ],
         "rotation": 0,
         "scale": [
@@ -828,12 +1157,12 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/sky_foundry/seal.png",
+            "texture": "assets/classroom/png/props/blue_striped_vertical_panel.png",
             "size": [
-              0.9,
-              3
+              1.24,
+              3.1
             ],
-            "layer": 35
+            "layer": 22
           }
         },
         {
@@ -846,8 +1175,8 @@
           "type": "Collider",
           "properties": {
             "size": [
-              0.85,
-              3
+              1.04,
+              2.98
             ],
             "layer": "Solid"
           }
@@ -856,8 +1185,8 @@
           "type": "Door",
           "properties": {
             "openOffset": [
-              0,
-              -3.2
+              0.0,
+              -3.14
             ],
             "speed": 4,
             "openSound": "assets/audio/gate_open.wav",
@@ -867,13 +1196,13 @@
       ]
     },
     {
-      "id": "ddeda0aa1b86b946",
-      "name": "Shaft Console",
-      "parent": "3278e06783a3d8b8",
+      "id": "ca227b84678e87cd",
+      "name": "Gold Lever",
+      "parent": "a55cc260a63f794d",
       "transform": {
         "position": [
-          12.1,
-          15.25
+          12.97,
+          12.74
         ],
         "rotation": 0,
         "scale": [
@@ -883,22 +1212,11 @@
       },
       "components": [
         {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/sky_foundry/console.png",
-            "size": [
-              0.9,
-              1.35
-            ],
-            "layer": 35
-          }
-        },
-        {
           "type": "Collider",
           "properties": {
             "size": [
-              1.2,
-              1.2
+              1.18,
+              1.36
             ],
             "isTrigger": true,
             "layer": "Sensor"
@@ -910,7 +1228,7 @@
             "interactAction": "Interact",
             "cooldown": 0.4,
             "targets": [
-              "e324d6f10df00efe"
+              "cffa2848e6b36e03"
             ],
             "sound": "assets/audio/lever.wav"
           }
@@ -918,13 +1236,13 @@
       ]
     },
     {
-      "id": "05926f321bfa8dcc",
-      "name": "Sky Lift",
-      "parent": "3278e06783a3d8b8",
+      "id": "95e8d2ec7449057a",
+      "name": "Orange Elevator",
+      "parent": "a55cc260a63f794d",
       "transform": {
         "position": [
-          16.4,
-          15.55
+          17.63,
+          12.93
         ],
         "rotation": 0,
         "scale": [
@@ -936,12 +1254,12 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/sky_foundry/lift.png",
+            "texture": "assets/classroom/png/platforms/middle_orange_conveyor.png",
             "size": [
-              2.8,
-              0.66
+              3.14,
+              1.18
             ],
-            "layer": 25
+            "layer": 30
           }
         },
         {
@@ -954,12 +1272,12 @@
           "type": "Collider",
           "properties": {
             "size": [
-              2.7,
-              0.4
+              1.6,
+              0.44
             ],
             "offset": [
-              0,
-              -0.1
+              -0.5,
+              -0.12
             ],
             "layer": "Solid",
             "friction": 1.0
@@ -969,244 +1287,67 @@
           "type": "MovingPlatform",
           "properties": {
             "travel": [
-              0,
-              -5.1
-            ],
-            "speed": 1.5,
-            "pause": 0.6,
-            "requireSignal": true
-          }
-        }
-      ]
-    },
-    {
-      "id": "dcc462f17ce81cfa",
-      "name": "Lift Call",
-      "parent": "3278e06783a3d8b8",
-      "transform": {
-        "position": [
-          12.9,
-          15.95
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/sky_foundry/pad.png",
-            "size": [
-              1.8,
-              0.48
-            ],
-            "layer": 30
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "size": [
-              1.7,
-              0.35
-            ],
-            "isTrigger": true,
-            "layer": "Sensor"
-          }
-        },
-        {
-          "type": "PressurePlate",
-          "properties": {
-            "targets": [
-              "05926f321bfa8dcc"
-            ],
-            "sensing": "Region",
-            "pressDepth": 0.06,
-            "pressedColor": "#ffda83ff",
-            "pressSound": "assets/audio/plate_down.wav",
-            "releaseSound": "assets/audio/plate_up.wav"
-          }
-        }
-      ]
-    },
-    {
-      "id": "fbc6a4cfb754741e",
-      "name": "Lift Return",
-      "parent": "3278e06783a3d8b8",
-      "transform": {
-        "position": [
-          20.1,
-          10.149999999999999
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/sky_foundry/pad.png",
-            "size": [
-              1.8,
-              0.48
-            ],
-            "layer": 30
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "size": [
-              1.7,
-              0.35
-            ],
-            "isTrigger": true,
-            "layer": "Sensor"
-          }
-        },
-        {
-          "type": "PressurePlate",
-          "properties": {
-            "targets": [
-              "05926f321bfa8dcc"
-            ],
-            "sensing": "Region",
-            "pressDepth": 0.06,
-            "pressedColor": "#ffda83ff",
-            "pressSound": "assets/audio/plate_down.wav",
-            "releaseSound": "assets/audio/plate_up.wav"
-          }
-        }
-      ]
-    },
-    {
-      "id": "adb96ed2f973c99d",
-      "name": "Coolant Console",
-      "parent": "3278e06783a3d8b8",
-      "transform": {
-        "position": [
-          21.8,
-          9.45
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/sky_foundry/console.png",
-            "size": [
-              0.9,
-              1.35
-            ],
-            "layer": 35
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "size": [
-              1.2,
-              1.2
-            ],
-            "isTrigger": true,
-            "layer": "Sensor"
-          }
-        },
-        {
-          "type": "Lever",
-          "properties": {
-            "interactAction": "Interact",
-            "cooldown": 0.4,
-            "targets": [
-              "e61955ce5fce08cc"
-            ],
-            "sound": "assets/audio/lever.wav"
-          }
-        }
-      ]
-    },
-    {
-      "id": "e61955ce5fce08cc",
-      "name": "Coolant Bridge",
-      "parent": "3278e06783a3d8b8",
-      "transform": {
-        "position": [
-          24.9,
-          9.96
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/sky_foundry/bridge.png",
-            "size": [
-              2.8,
-              0.66
-            ],
-            "layer": 25
-          }
-        },
-        {
-          "type": "RigidBody",
-          "properties": {
-            "type": "Kinematic"
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "size": [
-              2.7,
-              0.4
-            ],
-            "offset": [
-              0,
-              -0.1
-            ],
-            "layer": "Solid",
-            "friction": 1.0
-          }
-        },
-        {
-          "type": "MovingPlatform",
-          "properties": {
-            "travel": [
-              2.7,
-              0
+              0.0,
+              -4.7
             ],
             "speed": 1.8,
-            "pause": 0.6,
+            "pause": 0.7,
             "requireSignal": true
           }
         }
       ]
     },
     {
-      "id": "89d149631cc81194",
-      "name": "Shaft Checkpoint",
-      "parent": "3278e06783a3d8b8",
-      "prefab": "prefabs/mechanisms/checkpoint.ykprefab",
+      "id": "5b3867308432e250",
+      "name": "Middle Yellow Button",
+      "parent": "a55cc260a63f794d",
       "transform": {
         "position": [
-          11.3,
-          15.25
+          14.28,
+          13.2
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              1.16,
+              0.56
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "PressurePlate",
+          "properties": {
+            "targets": [
+              "95e8d2ec7449057a"
+            ],
+            "sensing": "Region",
+            "activatorTags": [],
+            "latch": true,
+            "pressDepth": 0.04,
+            "pressSound": "assets/audio/plate_down.wav",
+            "releaseSound": "assets/audio/plate_up.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "a8b93fee4496ed7f",
+      "name": "Upper Cyan Conveyor",
+      "parent": "a55cc260a63f794d",
+      "transform": {
+        "position": [
+          25.27,
+          7.46
         ],
         "rotation": 0,
         "scale": [
@@ -1218,101 +1359,356 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/mechanisms/checkpoint.png",
-            "shape": "Rectangle",
+            "texture": "assets/classroom/png/platforms/upper_cyan_conveyor.png",
             "size": [
-              1,
-              1.5
+              2.9,
+              0.72
             ],
-            "offset": [
-              0,
-              0
-            ],
-            "color": "#ffffffff",
-            "layer": 20,
-            "order": 0,
-            "flipX": false,
-            "visible": true,
-            "columns": 2,
-            "rows": 1,
-            "frame": 0,
-            "drawMode": "Simple",
-            "tileSize": [
-              0,
-              0
-            ],
-            "sliceFill": "Tile",
-            "blend": "Alpha",
-            "parallax": [
-              1,
-              1
-            ]
+            "layer": 30
           }
         },
         {
-          "type": "AnimatedSprite",
+          "type": "RigidBody",
           "properties": {
-            "animation": "assets/mechanisms/checkpoint.ykanim",
-            "controller": "assets/mechanisms/checkpoint.ykctl",
-            "clip": "",
-            "speed": 1,
-            "playOnStart": true,
-            "flipParameter": "",
-            "artFacesLeft": false
+            "type": "Kinematic"
           }
         },
         {
           "type": "Collider",
           "properties": {
-            "shape": "Box",
             "size": [
-              0.9,
-              1.3
+              2.62,
+              0.36
             ],
             "offset": [
+              0.0,
+              -0.12
+            ],
+            "layer": "Solid",
+            "friction": 1.0
+          }
+        },
+        {
+          "type": "MovingPlatform",
+          "properties": {
+            "travel": [
+              1.88,
+              0.0
+            ],
+            "speed": 1.6,
+            "pause": 0.7,
+            "requireSignal": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "d180f7be90445b0e",
+      "name": "Upper Yellow Button",
+      "parent": "a55cc260a63f794d",
+      "transform": {
+        "position": [
+          20.76,
+          7.74
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              1.12,
+              0.48
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "PressurePlate",
+          "properties": {
+            "targets": [
+              "a8b93fee4496ed7f"
+            ],
+            "sensing": "Region",
+            "activatorTags": [],
+            "latch": true,
+            "pressDepth": 0.04,
+            "pressSound": "assets/audio/plate_down.wav",
+            "releaseSound": "assets/audio/plate_up.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "a07e22022bb9c988",
+      "name": "Art Blue Gem Left",
+      "parent": "83f3823e07cfb0d5",
+      "transform": {
+        "position": [
+          8.06,
+          10.3
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/png/collectibles/blue_gem_left.png",
+            "size": [
+              1.64,
+              1.32
+            ],
+            "layer": 55
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [
+              1.64,
+              1.32
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": [
+              "Tide"
+            ],
+            "variable": "tide_gems",
+            "value": 1,
+            "sound": "assets/audio/collect.wav",
+            "collectEffect": "prefabs/fx/spark_blue.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [
               0,
               0.1
             ],
-            "oneWay": false,
-            "isTrigger": true,
-            "detectTriggers": false,
-            "layer": "Sensor",
-            "friction": 0.6,
-            "restitution": 0,
-            "density": 1,
-            "cornerRadius": 0,
-            "chamfer": [
-              0,
-              0
-            ]
-          }
-        },
-        {
-          "type": "Checkpoint",
-          "properties": {
-            "activatorTags": [],
-            "respawnOffset": [
-              0,
-              -0.3
-            ],
-            "activeColor": "#ffdc50ff",
-            "sound": "assets/audio/checkpoint.wav"
+            "frequency": 0.9
           }
         }
       ]
     },
     {
-      "id": "aabaf283c717794e",
+      "id": "a42d23d567199ad1",
+      "name": "Art Red Gem Column",
+      "parent": "83f3823e07cfb0d5",
+      "transform": {
+        "position": [
+          16.7,
+          9.41
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/png/collectibles/red_gem_column.png",
+            "size": [
+              1.04,
+              1.3
+            ],
+            "layer": 55
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [
+              1.04,
+              1.3
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": [
+              "Ember"
+            ],
+            "variable": "ember_gems",
+            "value": 1,
+            "sound": "assets/audio/collect.wav",
+            "collectEffect": "prefabs/fx/spark_red.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [
+              0,
+              0.1
+            ],
+            "frequency": 0.9
+          }
+        }
+      ]
+    },
+    {
+      "id": "e603283de345b695",
+      "name": "Art Blue Gem Upper",
+      "parent": "83f3823e07cfb0d5",
+      "transform": {
+        "position": [
+          19.57,
+          6.77
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/png/collectibles/blue_gem_upper.png",
+            "size": [
+              1.26,
+              1.22
+            ],
+            "layer": 55
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [
+              1.26,
+              1.22
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": [
+              "Tide"
+            ],
+            "variable": "tide_gems",
+            "value": 1,
+            "sound": "assets/audio/collect.wav",
+            "collectEffect": "prefabs/fx/spark_blue.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [
+              0,
+              0.1
+            ],
+            "frequency": 0.9
+          }
+        }
+      ]
+    },
+    {
+      "id": "62a363abbf5aa8bf",
+      "name": "Art Red Gem Upper",
+      "parent": "83f3823e07cfb0d5",
+      "transform": {
+        "position": [
+          22.62,
+          6.83
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/png/collectibles/red_gem_upper.png",
+            "size": [
+              1.04,
+              1.26
+            ],
+            "layer": 55
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [
+              1.04,
+              1.26
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": [
+              "Ember"
+            ],
+            "variable": "ember_gems",
+            "value": 1,
+            "sound": "assets/audio/collect.wav",
+            "collectEffect": "prefabs/fx/spark_red.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [
+              0,
+              0.1
+            ],
+            "frequency": 0.9
+          }
+        }
+      ]
+    },
+    {
+      "id": "ea5857d67caa6c2e",
       "name": "Ember",
-      "parent": "eedc35f0feace715",
+      "parent": "3b448068accef81f",
       "prefab": "prefabs/characters/ember.ykprefab",
       "tags": [
         "Ember"
       ],
       "transform": {
         "position": [
-          2.2,
-          15.04
+          1.6,
+          12.52
         ],
         "rotation": 0,
         "scale": [
@@ -1455,9 +1851,9 @@
       ]
     },
     {
-      "id": "1ed5e5faf56f47fd",
+      "id": "c23c06f3392a4ff6",
       "name": "Aura",
-      "parent": "aabaf283c717794e",
+      "parent": "ea5857d67caa6c2e",
       "transform": {
         "position": [
           0,
@@ -1489,9 +1885,9 @@
       ]
     },
     {
-      "id": "695bb062c2a4eedf",
+      "id": "7a7dfcf2cfe7dd2c",
       "name": "Trail",
-      "parent": "aabaf283c717794e",
+      "parent": "ea5857d67caa6c2e",
       "transform": {
         "position": [
           0,
@@ -1559,14 +1955,14 @@
       ]
     },
     {
-      "id": "502f42bf7550af21",
+      "id": "ffba8051b70fd3fb",
       "name": "Ember Spawn",
-      "parent": "eedc35f0feace715",
+      "parent": "3b448068accef81f",
       "prefab": "prefabs/level/spawn_point.ykprefab",
       "transform": {
         "position": [
-          2.2,
-          15.04
+          1.6,
+          12.52
         ],
         "rotation": 0,
         "scale": [
@@ -1578,23 +1974,23 @@
         {
           "type": "SpawnPoint",
           "properties": {
-            "character": "aabaf283c717794e"
+            "character": "ea5857d67caa6c2e"
           }
         }
       ]
     },
     {
-      "id": "7514e853025ec162",
+      "id": "eba99f6ec3615c41",
       "name": "Tide",
-      "parent": "eedc35f0feace715",
+      "parent": "3b448068accef81f",
       "prefab": "prefabs/characters/tide.ykprefab",
       "tags": [
         "Tide"
       ],
       "transform": {
         "position": [
-          3.1,
-          15.04
+          2.74,
+          12.52
         ],
         "rotation": 0,
         "scale": [
@@ -1737,9 +2133,9 @@
       ]
     },
     {
-      "id": "65b41fe7a2d96a6b",
+      "id": "d01ee3ae49d81223",
       "name": "Aura",
-      "parent": "7514e853025ec162",
+      "parent": "eba99f6ec3615c41",
       "transform": {
         "position": [
           0,
@@ -1771,9 +2167,9 @@
       ]
     },
     {
-      "id": "c2296315cc4ad1c4",
+      "id": "fb819b6c1ddf899a",
       "name": "Trail",
-      "parent": "7514e853025ec162",
+      "parent": "eba99f6ec3615c41",
       "transform": {
         "position": [
           0,
@@ -1841,14 +2237,14 @@
       ]
     },
     {
-      "id": "ed91595b8465e2c6",
+      "id": "e7176987f0ecc39e",
       "name": "Tide Spawn",
-      "parent": "eedc35f0feace715",
+      "parent": "3b448068accef81f",
       "prefab": "prefabs/level/spawn_point.ykprefab",
       "transform": {
         "position": [
-          3.1,
-          15.04
+          2.74,
+          12.52
         ],
         "rotation": 0,
         "scale": [
@@ -1860,1055 +2256,13 @@
         {
           "type": "SpawnPoint",
           "properties": {
-            "character": "7514e853025ec162"
+            "character": "eba99f6ec3615c41"
           }
         }
       ]
     },
     {
-      "id": "4d504e5b00838aa5",
-      "name": "Ember Exit",
-      "parent": "3278e06783a3d8b8",
-      "transform": {
-        "position": [
-          29.4,
-          9.1
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/sky_foundry/fire_portal.png",
-            "size": [
-              1.5,
-              2.2
-            ],
-            "layer": 40
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "size": [
-              1.2,
-              1.8
-            ],
-            "isTrigger": true,
-            "layer": "Sensor"
-          }
-        },
-        {
-          "type": "Goal",
-          "properties": {
-            "requiredTag": "Ember",
-            "sound": "assets/audio/exit.wav"
-          }
-        }
-      ]
-    },
-    {
-      "id": "6c07cf5db597eb55",
-      "name": "Tide Exit",
-      "parent": "3278e06783a3d8b8",
-      "transform": {
-        "position": [
-          31.2,
-          9.1
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/sky_foundry/water_portal.png",
-            "size": [
-              1.5,
-              2.2
-            ],
-            "layer": 40
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "size": [
-              1.2,
-              1.8
-            ],
-            "isTrigger": true,
-            "layer": "Sensor"
-          }
-        },
-        {
-          "type": "Goal",
-          "properties": {
-            "requiredTag": "Tide",
-            "sound": "assets/audio/exit.wav"
-          }
-        }
-      ]
-    },
-    {
-      "id": "66c92193728d8ef8",
-      "name": "Red Gem 1",
-      "parent": "3d20ff5e1ea5f036",
-      "prefab": "prefabs/items/gem_red.ykprefab",
-      "tags": [
-        "gem"
-      ],
-      "transform": {
-        "position": [
-          8.2,
-          16.5
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/items/gem_red.png",
-            "shape": "Rectangle",
-            "size": [
-              0.7,
-              0.7
-            ],
-            "offset": [
-              0,
-              0
-            ],
-            "color": "#ffffffff",
-            "layer": 55,
-            "order": 0,
-            "flipX": false,
-            "visible": true,
-            "columns": 4,
-            "rows": 1,
-            "frame": 0,
-            "drawMode": "Simple",
-            "tileSize": [
-              0,
-              0
-            ],
-            "sliceFill": "Tile",
-            "blend": "Alpha",
-            "parallax": [
-              1,
-              1
-            ]
-          }
-        },
-        {
-          "type": "AnimatedSprite",
-          "properties": {
-            "animation": "assets/items/gem_red.ykanim",
-            "controller": "",
-            "clip": "shine",
-            "speed": 1,
-            "playOnStart": true,
-            "flipParameter": "",
-            "artFacesLeft": false
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "shape": "Circle",
-            "size": [
-              0.55,
-              0.55
-            ],
-            "offset": [
-              0,
-              0
-            ],
-            "oneWay": false,
-            "isTrigger": true,
-            "detectTriggers": false,
-            "layer": "Sensor",
-            "friction": 0.6,
-            "restitution": 0,
-            "density": 1,
-            "cornerRadius": 0,
-            "chamfer": [
-              0,
-              0
-            ]
-          }
-        },
-        {
-          "type": "Collectible",
-          "properties": {
-            "collectorTags": [
-              "Ember"
-            ],
-            "variable": "ember_gems",
-            "value": 1,
-            "sound": "assets/audio/collect.wav",
-            "collectEffect": "prefabs/fx/spark_red.ykprefab"
-          }
-        },
-        {
-          "type": "Oscillator",
-          "properties": {
-            "position": [
-              0,
-              0.1
-            ],
-            "rotation": 0,
-            "scale": [
-              0,
-              0
-            ],
-            "frequency": 0.8,
-            "phase": 0,
-            "randomPhase": true,
-            "wave": "Sine"
-          }
-        }
-      ]
-    },
-    {
-      "id": "dec83d388fa787aa",
-      "name": "Glow",
-      "parent": "66c92193728d8ef8",
-      "transform": {
-        "position": [
-          0,
-          0
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "Light2D",
-          "properties": {
-            "color": "#ff5a78ff",
-            "intensity": 0.45,
-            "radius": 1.3,
-            "offset": [
-              0,
-              0
-            ],
-            "flicker": 0,
-            "flickerSpeed": 6,
-            "layer": 70,
-            "order": 0
-          }
-        }
-      ]
-    },
-    {
-      "id": "a7a57c95cf3b611f",
-      "name": "Red Gem 2",
-      "parent": "3d20ff5e1ea5f036",
-      "prefab": "prefabs/items/gem_red.ykprefab",
-      "tags": [
-        "gem"
-      ],
-      "transform": {
-        "position": [
-          15.9,
-          12.6
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/items/gem_red.png",
-            "shape": "Rectangle",
-            "size": [
-              0.7,
-              0.7
-            ],
-            "offset": [
-              0,
-              0
-            ],
-            "color": "#ffffffff",
-            "layer": 55,
-            "order": 0,
-            "flipX": false,
-            "visible": true,
-            "columns": 4,
-            "rows": 1,
-            "frame": 0,
-            "drawMode": "Simple",
-            "tileSize": [
-              0,
-              0
-            ],
-            "sliceFill": "Tile",
-            "blend": "Alpha",
-            "parallax": [
-              1,
-              1
-            ]
-          }
-        },
-        {
-          "type": "AnimatedSprite",
-          "properties": {
-            "animation": "assets/items/gem_red.ykanim",
-            "controller": "",
-            "clip": "shine",
-            "speed": 1,
-            "playOnStart": true,
-            "flipParameter": "",
-            "artFacesLeft": false
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "shape": "Circle",
-            "size": [
-              0.55,
-              0.55
-            ],
-            "offset": [
-              0,
-              0
-            ],
-            "oneWay": false,
-            "isTrigger": true,
-            "detectTriggers": false,
-            "layer": "Sensor",
-            "friction": 0.6,
-            "restitution": 0,
-            "density": 1,
-            "cornerRadius": 0,
-            "chamfer": [
-              0,
-              0
-            ]
-          }
-        },
-        {
-          "type": "Collectible",
-          "properties": {
-            "collectorTags": [
-              "Ember"
-            ],
-            "variable": "ember_gems",
-            "value": 1,
-            "sound": "assets/audio/collect.wav",
-            "collectEffect": "prefabs/fx/spark_red.ykprefab"
-          }
-        },
-        {
-          "type": "Oscillator",
-          "properties": {
-            "position": [
-              0,
-              0.1
-            ],
-            "rotation": 0,
-            "scale": [
-              0,
-              0
-            ],
-            "frequency": 0.8,
-            "phase": 0,
-            "randomPhase": true,
-            "wave": "Sine"
-          }
-        }
-      ]
-    },
-    {
-      "id": "49bd8e88cc000cd6",
-      "name": "Glow",
-      "parent": "a7a57c95cf3b611f",
-      "transform": {
-        "position": [
-          0,
-          0
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "Light2D",
-          "properties": {
-            "color": "#ff5a78ff",
-            "intensity": 0.45,
-            "radius": 1.3,
-            "offset": [
-              0,
-              0
-            ],
-            "flicker": 0,
-            "flickerSpeed": 6,
-            "layer": 70,
-            "order": 0
-          }
-        }
-      ]
-    },
-    {
-      "id": "4555e5d7562f1ced",
-      "name": "Red Gem 3",
-      "parent": "3d20ff5e1ea5f036",
-      "prefab": "prefabs/items/gem_red.ykprefab",
-      "tags": [
-        "gem"
-      ],
-      "transform": {
-        "position": [
-          22.2,
-          9.2
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/items/gem_red.png",
-            "shape": "Rectangle",
-            "size": [
-              0.7,
-              0.7
-            ],
-            "offset": [
-              0,
-              0
-            ],
-            "color": "#ffffffff",
-            "layer": 55,
-            "order": 0,
-            "flipX": false,
-            "visible": true,
-            "columns": 4,
-            "rows": 1,
-            "frame": 0,
-            "drawMode": "Simple",
-            "tileSize": [
-              0,
-              0
-            ],
-            "sliceFill": "Tile",
-            "blend": "Alpha",
-            "parallax": [
-              1,
-              1
-            ]
-          }
-        },
-        {
-          "type": "AnimatedSprite",
-          "properties": {
-            "animation": "assets/items/gem_red.ykanim",
-            "controller": "",
-            "clip": "shine",
-            "speed": 1,
-            "playOnStart": true,
-            "flipParameter": "",
-            "artFacesLeft": false
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "shape": "Circle",
-            "size": [
-              0.55,
-              0.55
-            ],
-            "offset": [
-              0,
-              0
-            ],
-            "oneWay": false,
-            "isTrigger": true,
-            "detectTriggers": false,
-            "layer": "Sensor",
-            "friction": 0.6,
-            "restitution": 0,
-            "density": 1,
-            "cornerRadius": 0,
-            "chamfer": [
-              0,
-              0
-            ]
-          }
-        },
-        {
-          "type": "Collectible",
-          "properties": {
-            "collectorTags": [
-              "Ember"
-            ],
-            "variable": "ember_gems",
-            "value": 1,
-            "sound": "assets/audio/collect.wav",
-            "collectEffect": "prefabs/fx/spark_red.ykprefab"
-          }
-        },
-        {
-          "type": "Oscillator",
-          "properties": {
-            "position": [
-              0,
-              0.1
-            ],
-            "rotation": 0,
-            "scale": [
-              0,
-              0
-            ],
-            "frequency": 0.8,
-            "phase": 0,
-            "randomPhase": true,
-            "wave": "Sine"
-          }
-        }
-      ]
-    },
-    {
-      "id": "37234fa031c5dcfe",
-      "name": "Glow",
-      "parent": "4555e5d7562f1ced",
-      "transform": {
-        "position": [
-          0,
-          0
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "Light2D",
-          "properties": {
-            "color": "#ff5a78ff",
-            "intensity": 0.45,
-            "radius": 1.3,
-            "offset": [
-              0,
-              0
-            ],
-            "flicker": 0,
-            "flickerSpeed": 6,
-            "layer": 70,
-            "order": 0
-          }
-        }
-      ]
-    },
-    {
-      "id": "559fe7607634edaa",
-      "name": "Blue Gem 1",
-      "parent": "3d20ff5e1ea5f036",
-      "prefab": "prefabs/items/gem_blue.ykprefab",
-      "tags": [
-        "gem"
-      ],
-      "transform": {
-        "position": [
-          8.3,
-          13.5
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/items/gem_blue.png",
-            "shape": "Rectangle",
-            "size": [
-              0.7,
-              0.7
-            ],
-            "offset": [
-              0,
-              0
-            ],
-            "color": "#ffffffff",
-            "layer": 55,
-            "order": 0,
-            "flipX": false,
-            "visible": true,
-            "columns": 4,
-            "rows": 1,
-            "frame": 0,
-            "drawMode": "Simple",
-            "tileSize": [
-              0,
-              0
-            ],
-            "sliceFill": "Tile",
-            "blend": "Alpha",
-            "parallax": [
-              1,
-              1
-            ]
-          }
-        },
-        {
-          "type": "AnimatedSprite",
-          "properties": {
-            "animation": "assets/items/gem_blue.ykanim",
-            "controller": "",
-            "clip": "shine",
-            "speed": 1,
-            "playOnStart": true,
-            "flipParameter": "",
-            "artFacesLeft": false
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "shape": "Circle",
-            "size": [
-              0.55,
-              0.55
-            ],
-            "offset": [
-              0,
-              0
-            ],
-            "oneWay": false,
-            "isTrigger": true,
-            "detectTriggers": false,
-            "layer": "Sensor",
-            "friction": 0.6,
-            "restitution": 0,
-            "density": 1,
-            "cornerRadius": 0,
-            "chamfer": [
-              0,
-              0
-            ]
-          }
-        },
-        {
-          "type": "Collectible",
-          "properties": {
-            "collectorTags": [
-              "Tide"
-            ],
-            "variable": "tide_gems",
-            "value": 1,
-            "sound": "assets/audio/collect.wav",
-            "collectEffect": "prefabs/fx/spark_blue.ykprefab"
-          }
-        },
-        {
-          "type": "Oscillator",
-          "properties": {
-            "position": [
-              0,
-              0.1
-            ],
-            "rotation": 0,
-            "scale": [
-              0,
-              0
-            ],
-            "frequency": 0.8,
-            "phase": 0,
-            "randomPhase": true,
-            "wave": "Sine"
-          }
-        }
-      ]
-    },
-    {
-      "id": "c8950178ed03bbf3",
-      "name": "Glow",
-      "parent": "559fe7607634edaa",
-      "transform": {
-        "position": [
-          0,
-          0
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "Light2D",
-          "properties": {
-            "color": "#64b4ffff",
-            "intensity": 0.45,
-            "radius": 1.3,
-            "offset": [
-              0,
-              0
-            ],
-            "flicker": 0,
-            "flickerSpeed": 6,
-            "layer": 70,
-            "order": 0
-          }
-        }
-      ]
-    },
-    {
-      "id": "d1d3c18342446391",
-      "name": "Blue Gem 2",
-      "parent": "3d20ff5e1ea5f036",
-      "prefab": "prefabs/items/gem_blue.ykprefab",
-      "tags": [
-        "gem"
-      ],
-      "transform": {
-        "position": [
-          18.9,
-          9.2
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/items/gem_blue.png",
-            "shape": "Rectangle",
-            "size": [
-              0.7,
-              0.7
-            ],
-            "offset": [
-              0,
-              0
-            ],
-            "color": "#ffffffff",
-            "layer": 55,
-            "order": 0,
-            "flipX": false,
-            "visible": true,
-            "columns": 4,
-            "rows": 1,
-            "frame": 0,
-            "drawMode": "Simple",
-            "tileSize": [
-              0,
-              0
-            ],
-            "sliceFill": "Tile",
-            "blend": "Alpha",
-            "parallax": [
-              1,
-              1
-            ]
-          }
-        },
-        {
-          "type": "AnimatedSprite",
-          "properties": {
-            "animation": "assets/items/gem_blue.ykanim",
-            "controller": "",
-            "clip": "shine",
-            "speed": 1,
-            "playOnStart": true,
-            "flipParameter": "",
-            "artFacesLeft": false
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "shape": "Circle",
-            "size": [
-              0.55,
-              0.55
-            ],
-            "offset": [
-              0,
-              0
-            ],
-            "oneWay": false,
-            "isTrigger": true,
-            "detectTriggers": false,
-            "layer": "Sensor",
-            "friction": 0.6,
-            "restitution": 0,
-            "density": 1,
-            "cornerRadius": 0,
-            "chamfer": [
-              0,
-              0
-            ]
-          }
-        },
-        {
-          "type": "Collectible",
-          "properties": {
-            "collectorTags": [
-              "Tide"
-            ],
-            "variable": "tide_gems",
-            "value": 1,
-            "sound": "assets/audio/collect.wav",
-            "collectEffect": "prefabs/fx/spark_blue.ykprefab"
-          }
-        },
-        {
-          "type": "Oscillator",
-          "properties": {
-            "position": [
-              0,
-              0.1
-            ],
-            "rotation": 0,
-            "scale": [
-              0,
-              0
-            ],
-            "frequency": 0.8,
-            "phase": 0,
-            "randomPhase": true,
-            "wave": "Sine"
-          }
-        }
-      ]
-    },
-    {
-      "id": "3eb4cecf8d2a37cc",
-      "name": "Glow",
-      "parent": "d1d3c18342446391",
-      "transform": {
-        "position": [
-          0,
-          0
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "Light2D",
-          "properties": {
-            "color": "#64b4ffff",
-            "intensity": 0.45,
-            "radius": 1.3,
-            "offset": [
-              0,
-              0
-            ],
-            "flicker": 0,
-            "flickerSpeed": 6,
-            "layer": 70,
-            "order": 0
-          }
-        }
-      ]
-    },
-    {
-      "id": "5d37736ae2c06c30",
-      "name": "Blue Gem 3",
-      "parent": "3d20ff5e1ea5f036",
-      "prefab": "prefabs/items/gem_blue.ykprefab",
-      "tags": [
-        "gem"
-      ],
-      "transform": {
-        "position": [
-          26.3,
-          10.8
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/items/gem_blue.png",
-            "shape": "Rectangle",
-            "size": [
-              0.7,
-              0.7
-            ],
-            "offset": [
-              0,
-              0
-            ],
-            "color": "#ffffffff",
-            "layer": 55,
-            "order": 0,
-            "flipX": false,
-            "visible": true,
-            "columns": 4,
-            "rows": 1,
-            "frame": 0,
-            "drawMode": "Simple",
-            "tileSize": [
-              0,
-              0
-            ],
-            "sliceFill": "Tile",
-            "blend": "Alpha",
-            "parallax": [
-              1,
-              1
-            ]
-          }
-        },
-        {
-          "type": "AnimatedSprite",
-          "properties": {
-            "animation": "assets/items/gem_blue.ykanim",
-            "controller": "",
-            "clip": "shine",
-            "speed": 1,
-            "playOnStart": true,
-            "flipParameter": "",
-            "artFacesLeft": false
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "shape": "Circle",
-            "size": [
-              0.55,
-              0.55
-            ],
-            "offset": [
-              0,
-              0
-            ],
-            "oneWay": false,
-            "isTrigger": true,
-            "detectTriggers": false,
-            "layer": "Sensor",
-            "friction": 0.6,
-            "restitution": 0,
-            "density": 1,
-            "cornerRadius": 0,
-            "chamfer": [
-              0,
-              0
-            ]
-          }
-        },
-        {
-          "type": "Collectible",
-          "properties": {
-            "collectorTags": [
-              "Tide"
-            ],
-            "variable": "tide_gems",
-            "value": 1,
-            "sound": "assets/audio/collect.wav",
-            "collectEffect": "prefabs/fx/spark_blue.ykprefab"
-          }
-        },
-        {
-          "type": "Oscillator",
-          "properties": {
-            "position": [
-              0,
-              0.1
-            ],
-            "rotation": 0,
-            "scale": [
-              0,
-              0
-            ],
-            "frequency": 0.8,
-            "phase": 0,
-            "randomPhase": true,
-            "wave": "Sine"
-          }
-        }
-      ]
-    },
-    {
-      "id": "2ead83880d59ce1f",
-      "name": "Glow",
-      "parent": "5d37736ae2c06c30",
-      "transform": {
-        "position": [
-          0,
-          0
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "Light2D",
-          "properties": {
-            "color": "#64b4ffff",
-            "intensity": 0.45,
-            "radius": 1.3,
-            "offset": [
-              0,
-              0
-            ],
-            "flicker": 0,
-            "flickerSpeed": 6,
-            "layer": 70,
-            "order": 0
-          }
-        }
-      ]
-    },
-    {
-      "id": "7ffd4701faa6de65",
+      "id": "bd5d967907d34c43",
       "name": "Level Flow",
       "transform": {
         "position": [
@@ -2926,8 +2280,8 @@
           "type": "LevelFlow",
           "properties": {
             "goals": [
-              "4d504e5b00838aa5",
-              "6c07cf5db597eb55"
+              "26a700fce864e42a",
+              "8ad635bc54f17f3b"
             ],
             "completeSound": "assets/audio/complete.wav",
             "completeDelay": 4.0,
@@ -2937,7 +2291,7 @@
       ]
     },
     {
-      "id": "c0c2440afd92d35a",
+      "id": "691642d8aad9158c",
       "name": "HUD",
       "prefab": "prefabs/level/hud.ykprefab",
       "transform": {
@@ -2954,9 +2308,9 @@
       "components": []
     },
     {
-      "id": "4639344d5bce9a69",
+      "id": "a901aad7dcdf03ed",
       "name": "Vignette",
-      "parent": "c0c2440afd92d35a",
+      "parent": "691642d8aad9158c",
       "transform": {
         "position": [
           0,
@@ -2993,9 +2347,9 @@
       ]
     },
     {
-      "id": "21f71ba84b88745a",
+      "id": "cea5be35e4649402",
       "name": "Ember Score",
-      "parent": "c0c2440afd92d35a",
+      "parent": "691642d8aad9158c",
       "transform": {
         "position": [
           0,
@@ -3027,9 +2381,9 @@
       ]
     },
     {
-      "id": "c4097747ccf5fa44",
+      "id": "83d682462c22d701",
       "name": "Ember Gem Icon",
-      "parent": "c0c2440afd92d35a",
+      "parent": "691642d8aad9158c",
       "transform": {
         "position": [
           0,
@@ -3066,9 +2420,9 @@
       ]
     },
     {
-      "id": "3485d4cb5a45db27",
+      "id": "531ae18a918980b9",
       "name": "Ember Gems",
-      "parent": "c0c2440afd92d35a",
+      "parent": "691642d8aad9158c",
       "transform": {
         "position": [
           0,
@@ -3099,9 +2453,9 @@
       ]
     },
     {
-      "id": "8ca7554f30f19129",
+      "id": "0ba35876433faeb0",
       "name": "Tide Score",
-      "parent": "c0c2440afd92d35a",
+      "parent": "691642d8aad9158c",
       "transform": {
         "position": [
           0,
@@ -3133,9 +2487,9 @@
       ]
     },
     {
-      "id": "d3b3a855c878afca",
+      "id": "8df27396096710c7",
       "name": "Tide Gem Icon",
-      "parent": "c0c2440afd92d35a",
+      "parent": "691642d8aad9158c",
       "transform": {
         "position": [
           0,
@@ -3172,9 +2526,9 @@
       ]
     },
     {
-      "id": "0bdd45ad55c9c350",
+      "id": "c19cee95cf658ead",
       "name": "Tide Gems",
-      "parent": "c0c2440afd92d35a",
+      "parent": "691642d8aad9158c",
       "transform": {
         "position": [
           0,
@@ -3205,9 +2559,9 @@
       ]
     },
     {
-      "id": "d21ce01491b58433",
+      "id": "baabeaf969c1e971",
       "name": "Timer",
-      "parent": "c0c2440afd92d35a",
+      "parent": "691642d8aad9158c",
       "transform": {
         "position": [
           0,
@@ -3238,9 +2592,9 @@
       ]
     },
     {
-      "id": "93964eed29466b3c",
+      "id": "b2a55efe515870c7",
       "name": "Message",
-      "parent": "c0c2440afd92d35a",
+      "parent": "691642d8aad9158c",
       "transform": {
         "position": [
           0,
@@ -3271,9 +2625,9 @@
       ]
     },
     {
-      "id": "7169104eacb78ccd",
+      "id": "50a4a920a50265cb",
       "name": "Controls",
-      "parent": "c0c2440afd92d35a",
+      "parent": "691642d8aad9158c",
       "transform": {
         "position": [
           0,
@@ -3289,7 +2643,7 @@
         {
           "type": "UiText",
           "properties": {
-            "text": "SKY FOUNDRY  A/D/W/S + ARROWS/DOWN   R RESTART  P PAUSE",
+            "text": "CLASSROOM  A/D/W/S + ARROWS/DOWN   R RESTART  P PAUSE",
             "anchor": "Bottom",
             "offset": [
               0,
@@ -3304,7 +2658,7 @@
       ]
     },
     {
-      "id": "ec32a865cd768c49",
+      "id": "7be62e7b21c46eba",
       "name": "Audio",
       "transform": {
         "position": [
@@ -3320,9 +2674,9 @@
       "components": []
     },
     {
-      "id": "b020c006c74ee2f9",
+      "id": "128860271a0c8f62",
       "name": "Ambience",
-      "parent": "ec32a865cd768c49",
+      "parent": "7be62e7b21c46eba",
       "transform": {
         "position": [
           0,
@@ -3347,9 +2701,9 @@
       ]
     },
     {
-      "id": "95c97d642842b71b",
+      "id": "7dc9ace86804edd6",
       "name": "Music",
-      "parent": "ec32a865cd768c49",
+      "parent": "7be62e7b21c46eba",
       "transform": {
         "position": [
           0,

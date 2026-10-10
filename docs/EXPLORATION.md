@@ -38,9 +38,9 @@ loaded; the engine already culls off-screen sprites. NPCs have paths rather than
 
 Installed editors also offer **Open the Exploration Demo** on the welcome screen.
 
-Move with WASD or arrows; press E or Space to interact and advance dialogue. Talk to Mara, activate
-the brass switch, open the gate, and walk through the hall entrance. The hall has an inscription and
-a return doorway. The two portraits in Mara's dialogue are separate from her small world sprite.
+Move with WASD or arrows; press E or Space to interact and advance dialogue. Talk to Mara, light
+the brass torch, open the gate, and walk through the hall entrance. The hall has an inscription and
+a return doorway. The two portraits in Mara's dialogue are separate from her world sprite.
 The demo's input map assigns Interact to E/Space so S and Down remain movement keys; when converting
 an existing platformer project, adjust its action bindings in Project Settings the same way.
 

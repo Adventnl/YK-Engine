@@ -16,13 +16,13 @@ platform while Watergirl rides across. The central lever and two upper buttons
 run the platform over the green channel. Both players must stand in their own
 doors to finish.
 
-Level Two, **Sky Foundry**, has its own starry city backdrop, metal platforms,
-energy hazards, switches, lift, bridge, seal, and portal art. Fireboy holds the
-launch plate while Watergirl rides across the ember current. The shaft console
-opens a seal. One player holds the lift call plate while the other rides to the
-observatory deck and presses the return plate. A second console powers the
-bridge across the coolant channel. Both exits are on the upper right.
-Completing Level Two leaves the completion screen visible.
+Level Two, **Classroom**, recreates the supplied classroom image with its desk
+platforms, bookcase column, colored liquid basins, glowing gems, and two exit
+doors. Fireboy can press the left red button to carry Watergirl across the orange
+basin. The middle lever opens the striped bookcase panel; the yellow button calls
+the orange elevator to the upper desk. The upper yellow button moves the cyan
+platform across the blue basin. Purple liquid hurts both players. Completing
+Level Two leaves the completion screen visible.
 
 The room backdrop comes from `Image_20261002095859_162_30.png`; the second root
 image was the composition reference. All 30 cutouts in `game_assets_level1` are
@@ -32,8 +32,9 @@ are separate shapes matched to playable surfaces, since the cutouts include
 decorative borders and transparent margins.
 
 The project contains its own copied textures, sounds, prefabs, and scenes so it
-can be opened or exported without referring to the source folders. To rebuild
-from those source folders and the existing YK demo's reusable gameplay library:
+can be opened or exported without referring to the source folders. The classroom
+cutouts came from `classroom_level_assets.zip`; their manifest and imported PNGs
+are stored in `assets/classroom`. To rebuild the scenes:
 
 ```sh
 python Fireboy-Watergirl-Demo/tools/build_level.py

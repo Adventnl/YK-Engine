@@ -1,0 +1,419 @@
+{
+  "source_image": "Pixel-Art Classroom Hazard Level Tileset.png",
+  "source_canvas_px": [
+    1672,
+    941
+  ],
+  "geometry_reference": "d41d04cbf0c09f7285f7a51d5968dc79.png",
+  "coordinate_system": "Top-left pixel position in the supplied transparent classroom art, not coordinates in the smaller geometry screenshot.",
+  "usage": "Use the PNGs as visual sprites. Use Geometry Master to author collision and interaction shapes.",
+  "overlap": "The art is a flattened composition. Static prefabs include some switches or gems also exported as independent visible sprites. Choose the prefab alone or cover its baked detail when replacing it with an interactive sprite. Hidden surfaces cannot be recovered by cropping.",
+  "assets": [
+    {
+      "category": "terrain",
+      "name": "left_desk_with_ramp",
+      "file": "png/terrain/left_desk_with_ramp.png",
+      "source_position_px": [
+        9,
+        604
+      ],
+      "size_px": [
+        300,
+        211
+      ],
+      "note": "Left desk with sloped surface and red button; static prefab."
+    },
+    {
+      "category": "terrain",
+      "name": "orange_hazard_basin",
+      "file": "png/terrain/orange_hazard_basin.png",
+      "source_position_px": [
+        305,
+        653
+      ],
+      "size_px": [
+        245,
+        162
+      ],
+      "note": "Orange hazard channel and purple base; red diamond is baked into the water."
+    },
+    {
+      "category": "terrain",
+      "name": "middle_desk",
+      "file": "png/terrain/middle_desk.png",
+      "source_position_px": [
+        542,
+        591
+      ],
+      "size_px": [
+        390,
+        224
+      ],
+      "note": "Middle desk with drawers and books; objects on its top are baked into this prefab."
+    },
+    {
+      "category": "terrain",
+      "name": "purple_hazard_basin",
+      "file": "png/terrain/purple_hazard_basin.png",
+      "source_position_px": [
+        925,
+        703
+      ],
+      "size_px": [
+        738,
+        112
+      ],
+      "note": "Long purple hazard channel and base."
+    },
+    {
+      "category": "terrain",
+      "name": "upper_left_desk",
+      "file": "png/terrain/upper_left_desk.png",
+      "source_position_px": [
+        914,
+        369
+      ],
+      "size_px": [
+        312,
+        85
+      ],
+      "note": "Upper left desk platform; small buttons are baked into its surface."
+    },
+    {
+      "category": "terrain",
+      "name": "upper_blue_basin",
+      "file": "png/terrain/upper_blue_basin.png",
+      "source_position_px": [
+        1220,
+        382
+      ],
+      "size_px": [
+        215,
+        112
+      ],
+      "note": "Upper blue hazard basin; blue diamond is baked into the water."
+    },
+    {
+      "category": "terrain",
+      "name": "upper_right_desk",
+      "file": "png/terrain/upper_right_desk.png",
+      "source_position_px": [
+        1427,
+        370
+      ],
+      "size_px": [
+        237,
+        94
+      ],
+      "note": "Upper right desk platform and drawers; door bases are baked into its top."
+    },
+    {
+      "category": "terrain",
+      "name": "bookcase_column",
+      "file": "png/terrain/bookcase_column.png",
+      "source_position_px": [
+        744,
+        318
+      ],
+      "size_px": [
+        65,
+        356
+      ],
+      "note": "Narrow bookcase over blue striped vertical support; fixed column."
+    },
+    {
+      "category": "platforms",
+      "name": "left_cyan_conveyor",
+      "file": "png/platforms/left_cyan_conveyor.png",
+      "source_position_px": [
+        292,
+        539
+      ],
+      "size_px": [
+        158,
+        44
+      ],
+      "note": "Suspended cyan platform at left."
+    },
+    {
+      "category": "platforms",
+      "name": "middle_orange_conveyor",
+      "file": "png/platforms/middle_orange_conveyor.png",
+      "source_position_px": [
+        803,
+        617
+      ],
+      "size_px": [
+        157,
+        59
+      ],
+      "note": "Orange striped suspended platform beside the bookcase."
+    },
+    {
+      "category": "platforms",
+      "name": "upper_cyan_conveyor",
+      "file": "png/platforms/upper_cyan_conveyor.png",
+      "source_position_px": [
+        1191,
+        355
+      ],
+      "size_px": [
+        145,
+        36
+      ],
+      "note": "Upper cyan striped platform above the blue basin."
+    },
+    {
+      "category": "props",
+      "name": "red_button_left",
+      "file": "png/props/red_button_left.png",
+      "source_position_px": [
+        242,
+        604
+      ],
+      "size_px": [
+        62,
+        37
+      ],
+      "note": "Red button atop the left ramp block."
+    },
+    {
+      "category": "props",
+      "name": "pencil_cup_middle",
+      "file": "png/props/pencil_cup_middle.png",
+      "source_position_px": [
+        558,
+        596
+      ],
+      "size_px": [
+        59,
+        76
+      ],
+      "note": "Pencil cup on middle desk."
+    },
+    {
+      "category": "props",
+      "name": "gold_lever_middle",
+      "file": "png/props/gold_lever_middle.png",
+      "source_position_px": [
+        619,
+        601
+      ],
+      "size_px": [
+        61,
+        72
+      ],
+      "note": "Gold lever on middle desk."
+    },
+    {
+      "category": "props",
+      "name": "yellow_button_middle",
+      "file": "png/props/yellow_button_middle.png",
+      "source_position_px": [
+        673,
+        634
+      ],
+      "size_px": [
+        79,
+        40
+      ],
+      "note": "Yellow button on middle desk."
+    },
+    {
+      "category": "props",
+      "name": "purple_bookcase_top",
+      "file": "png/props/purple_bookcase_top.png",
+      "source_position_px": [
+        752,
+        318
+      ],
+      "size_px": [
+        56,
+        207
+      ],
+      "note": "Upper bookcase section."
+    },
+    {
+      "category": "props",
+      "name": "blue_striped_vertical_panel",
+      "file": "png/props/blue_striped_vertical_panel.png",
+      "source_position_px": [
+        747,
+        519
+      ],
+      "size_px": [
+        62,
+        155
+      ],
+      "note": "Lower vertical mechanism section."
+    },
+    {
+      "category": "props",
+      "name": "red_exit_door",
+      "file": "png/props/red_exit_door.png",
+      "source_position_px": [
+        1443,
+        261
+      ],
+      "size_px": [
+        87,
+        133
+      ],
+      "note": "Red exit door."
+    },
+    {
+      "category": "props",
+      "name": "blue_exit_door",
+      "file": "png/props/blue_exit_door.png",
+      "source_position_px": [
+        1536,
+        261
+      ],
+      "size_px": [
+        81,
+        133
+      ],
+      "note": "Blue exit door."
+    },
+    {
+      "category": "props",
+      "name": "pencil_cup_upper_right",
+      "file": "png/props/pencil_cup_upper_right.png",
+      "source_position_px": [
+        1616,
+        336
+      ],
+      "size_px": [
+        45,
+        59
+      ],
+      "note": "Small pencil holder beside blue exit."
+    },
+    {
+      "category": "props",
+      "name": "blue_button_upper",
+      "file": "png/props/blue_button_upper.png",
+      "source_position_px": [
+        938,
+        370
+      ],
+      "size_px": [
+        64,
+        30
+      ],
+      "note": "Blue desk switch below upper blue gem."
+    },
+    {
+      "category": "props",
+      "name": "yellow_button_upper",
+      "file": "png/props/yellow_button_upper.png",
+      "source_position_px": [
+        1000,
+        373
+      ],
+      "size_px": [
+        73,
+        28
+      ],
+      "note": "Yellow desk button."
+    },
+    {
+      "category": "props",
+      "name": "red_switch_upper",
+      "file": "png/props/red_switch_upper.png",
+      "source_position_px": [
+        1077,
+        343
+      ],
+      "size_px": [
+        32,
+        51
+      ],
+      "note": "Red upright switch below upper red gem."
+    },
+    {
+      "category": "collectibles",
+      "name": "blue_gem_left",
+      "file": "png/collectibles/blue_gem_left.png",
+      "source_position_px": [
+        362,
+        482
+      ],
+      "size_px": [
+        82,
+        66
+      ],
+      "note": "Blue glowing gem above left cyan platform."
+    },
+    {
+      "category": "collectibles",
+      "name": "red_gem_column",
+      "file": "png/collectibles/red_gem_column.png",
+      "source_position_px": [
+        809,
+        438
+      ],
+      "size_px": [
+        52,
+        65
+      ],
+      "note": "Red glowing gem to the right of bookcase; outer left glow is occluded by the column."
+    },
+    {
+      "category": "collectibles",
+      "name": "blue_gem_upper",
+      "file": "png/collectibles/blue_gem_upper.png",
+      "source_position_px": [
+        947,
+        308
+      ],
+      "size_px": [
+        63,
+        61
+      ],
+      "note": "Blue glowing gem above upper desk."
+    },
+    {
+      "category": "collectibles",
+      "name": "red_gem_upper",
+      "file": "png/collectibles/red_gem_upper.png",
+      "source_position_px": [
+        1105,
+        310
+      ],
+      "size_px": [
+        52,
+        63
+      ],
+      "note": "Red glowing gem above upper desk; outer left glow is occluded by a switch."
+    },
+    {
+      "category": "collectibles",
+      "name": "red_gem_orange_basin",
+      "file": "png/collectibles/red_gem_orange_basin.png",
+      "source_position_px": [
+        412,
+        661
+      ],
+      "size_px": [
+        40,
+        48
+      ],
+      "note": "Visible red diamond in orange basin; rim glow partially intersects the liquid."
+    },
+    {
+      "category": "collectibles",
+      "name": "blue_gem_upper_basin",
+      "file": "png/collectibles/blue_gem_upper_basin.png",
+      "source_position_px": [
+        1307,
+        394
+      ],
+      "size_px": [
+        41,
+        53
+      ],
+      "note": "Visible blue diamond in upper blue basin."
+    }
+  ]
+}

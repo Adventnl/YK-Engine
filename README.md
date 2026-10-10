@@ -37,7 +37,7 @@ library, with two animated characters, color-specific hazards, switches, moving 
 | **Player and tools** | `yk_player` runs any project; `yk` creates, validates, formats, inspects and exports projects. | `player/`, `tools/yk/` |
 | **Packaging** | `YK Engine.app` and its `.dmg` for macOS; the exporter writes a standalone `Game.app` (or Windows/Linux folder) without the editor, with icon, signing and a `.dmg` on a Mac. | `packaging/`, `scripts/`, `src/assets/Export.cpp` |
 | **Demo game** | *Cinder Vale*: a project folder (data) that consumes the engine, and the scripts that generate its art. It is a sample and a test; a game can live in a repository of its own. | `YK-DemoGame/` |
-| **Exploration test** | *Castle Paths*: two small top-down scenes and placeholder artwork that exercise the new reusable exploration systems. | `YK-ExplorationDemo/` |
+| **Exploration test** | *Castle Paths*: two small top-down scenes with Invisible Castle pixel art that exercise the new reusable exploration systems. | `YK-ExplorationDemo/` |
 | **Escape test** | *Night Shift / Blackwater*: two escape routes, inmate trades, repair prerequisites, and a clear finish. | `YK-SimulationDemo/` |
 | **Fireboy and Watergirl sample** | Single-screen co-op level assembled from the supplied room, pixel-art cutouts and character poses. | `Fireboy-Watergirl-Demo/` |
 
