@@ -228,6 +228,7 @@ void Goal::describe(TypeBuilder<Goal> &type) {
                 problems.push_back("needs a trigger Collider to notice what enters it");
         })
         .onAdd([](Entity &entity, Goal &) { turnIntoTrigger(entity); });
+    type.field("requiredFlag", &Goal::requiredFlag);
     type.field("requiredTag", &Goal::requiredTag)
         .tooltip("Only entities with this tag count. Empty: any movable body.");
     type.field("targets", &Goal::targets).tooltip("Receivers driven while the goal is satisfied.");
@@ -309,6 +310,7 @@ void Goal::onFixedUpdate(GameContext &context, float seconds) {
             break;
         }
     }
+    occupied = occupied && (requiredFlag.empty() || context.blackboard().number(requiredFlag) != 0);
     if (occupied != satisfied_) {
         satisfied_ = occupied;
         applyVisuals();

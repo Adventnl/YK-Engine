@@ -66,6 +66,9 @@ class SpriteRenderer final : public Component {
     // 1 moves with the world; 0 stays fixed on screen (far background); in between scrolls slower
     // than the camera. Applied by the game view, not by the editor's scene view.
     Vec2 parallax{1.0F, 1.0F};
+    // Runtime pose for a single-pose character: legs step independently below the torso.
+    // Not serialized; CharacterMotion supplies it from body velocity.
+    float stepSwing{};
     static void describe(TypeBuilder<SpriteRenderer> &type);
 };
 

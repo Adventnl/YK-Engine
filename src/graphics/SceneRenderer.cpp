@@ -327,7 +327,22 @@ Status SceneRenderer::drawSprite(Renderer &renderer, const Entity &entity, const
     Status done = success();
     switch (sprite.drawMode) {
     case SpriteDrawMode::Simple:
-        done = sink.emit(whole, sheet ? std::optional<Rect>(cell) : std::nullopt);
+        if (std::abs(sprite.stepSwing) > 0.0001F) {
+            // Keep the supplied head/torso intact and step each leg from its own texture region.
+            constexpr float torso = 0.73F;
+            done = sink.emit({whole.position, {size.x, size.y * torso}},
+                             Rect{cell.position, {cell.size.x, cell.size.y * torso}});
+            for (int side = 0; side < 2 && done; ++side) {
+                const float swing = sprite.stepSwing * scale.y * (side == 0 ? 1.0F : -1.0F);
+                done = sink.emit(
+                    {whole.position + Vec2{size.x * 0.5F * side, size.y * torso},
+                     {size.x * 0.5F, std::max(0.001F, size.y * (1.0F - torso) + swing)}},
+                    Rect{cell.position + Vec2{cell.size.x * 0.5F * side, cell.size.y * torso},
+                         {cell.size.x * 0.5F, cell.size.y * (1.0F - torso)}});
+            }
+        } else {
+            done = sink.emit(whole, sheet ? std::optional<Rect>(cell) : std::nullopt);
+        }
         break;
     case SpriteDrawMode::Tiled: {
         Vec2 tile = sprite.tileSize;
@@ -878,6 +893,185 @@ Status SceneRenderer::drawUi(Renderer &renderer, const Scene &scene, Vec2 viewpo
                 !drawn)
                 return drawn;
         }
+    }
+    // Escape projects reserve these bands outside the world viewport.
+    if (variables && variables->number("escape_hud") != 0) {
+        const float unit = std::min(viewport.x / 1280.0F, viewport.y / 720.0F);
+        const float bottom = viewport.y - 100.0F * unit;
+        auto rectangle = [&](Vec2 at, Vec2 size, Color color, int layer = 6000) {
+            if (size.x <= 0 || size.y <= 0) return success();
+            Sprite sprite;
+            sprite.texture = white.value(); sprite.anchor = {0, 0};
+            sprite.transform.position = at; sprite.size = size; sprite.tint = color; sprite.layer = layer;
+            return renderer.submit(sprite);
+        };
+        auto text = [&](const std::string &line, Vec2 at, float scale, Color color, int layer = 6002) {
+            return font_->draw(renderer, line, at, scale * unit, color, layer);
+        };
+        const Color ink{225, 218, 190, 255}, gold{229, 181, 97, 255};
+        if (auto status = rectangle({}, {viewport.x, 40 * unit}, {22, 25, 31, 255}); !status) return status;
+        if (auto status = rectangle({0, bottom}, {viewport.x, 100 * unit}, {22, 25, 31, 255}); !status) return status;
+        if (auto status = rectangle({0, bottom}, {viewport.x, unit}, {84, 78, 63, 255}); !status) return status;
+        if (auto status = text(variables->text("escape_title"), {20 * unit, 13 * unit}, 2, gold); !status) return status;
+        const float suspicion = static_cast<float>(variables->number("escape_suspicion"));
+        const std::string routine = suspicion > 0.02F ? "GUARD IS WATCHING" : "DAY 1 / EVENING FREE TIME";
+        if (auto status = text(routine, {viewport.x - 360 * unit, 14 * unit}, 1.7F, suspicion > 0.02F ? Color{245, 125, 101, 255} : ink); !status) return status;
+        if (suspicion > 0)
+            if (auto status = rectangle({viewport.x - 360 * unit, 34 * unit}, {320 * unit * suspicion, 3 * unit}, {245, 125, 101, 255}); !status) return status;
+        const std::string notice = variables->text("escape_notice");
+        if (auto status = text(notice.empty() ? variables->text("objective") : notice, {20 * unit, bottom + 12 * unit}, 1.6F, gold); !status) return status;
+        if (auto status = text(variables->text("interaction_prompt"), {20 * unit, bottom + 37 * unit}, 1.8F, ink); !status) return status;
+        if (auto status = text("WASD / ARROWS MOVE    E USE    ESC CLOSE    R RESTART", {20 * unit, bottom + 76 * unit}, 1.2F, {167, 167, 149, 255}); !status) return status;
+        const float first = viewport.x - 570 * unit;
+        for (int i = 0; i < 6; ++i) {
+            const Vec2 at{first + i * 92 * unit, bottom + 33 * unit};
+            if (auto status = rectangle(at, {52 * unit, 48 * unit}, {46, 49, 53, 255}); !status) return status;
+            const std::string prefix = "escape_slot_" + std::to_string(i);
+            const auto path = variables->text(prefix + "_icon");
+            if (!path.empty()) {
+                const auto &info = textureFor(renderer, path);
+                if (info.handle) {
+                    Sprite icon; icon.texture = *info.handle; icon.anchor = {0, 0};
+                    icon.transform.position = at + Vec2{8 * unit, 6 * unit}; icon.size = {36 * unit, 36 * unit}; icon.layer = 6001;
+                    if (auto status = renderer.submit(icon); !status) return status;
+                }
+                if (auto status = text(variables->text(prefix + "_name"), at + Vec2{-10 * unit, 51 * unit}, 1, ink); !status) return status;
+            }
+        }
+        if (variables->text("level_state") == "complete") {
+            const Vec2 at{(viewport.x - 650 * unit) / 2, (viewport.y - 150 * unit) / 2};
+            if (auto status = rectangle(at, {650 * unit, 150 * unit}, {22, 25, 31, 250}, 8500); !status) return status;
+            if (auto status = text("YOU ESCAPED BLACKTHORN KEEP", at + Vec2{32 * unit, 32 * unit}, 2.8F, gold, 8502); !status) return status;
+            if (auto status = text("Mara follows your rope into the moonlit valley.", at + Vec2{32 * unit, 80 * unit}, 1.8F, ink, 8502); !status) return status;
+            if (auto status = text("R - START AGAIN", at + Vec2{32 * unit, 116 * unit}, 1.5F, ink, 8502); !status) return status;
+        }
+    }
+    if (variables && variables->number("search_ui_active") != 0) {
+        const float unit = std::min(viewport.x / 1280.0F, viewport.y / 720.0F);
+        const bool busy = variables->number("search_ui_busy") != 0;
+        const Vec2 at{busy ? viewport.x - 350 * unit : (viewport.x - 610 * unit) / 2, busy ? 60 * unit : viewport.y - 286 * unit};
+        auto rect = [&](Vec2 offset, Vec2 size, Color color, int layer = 8100) {
+            if (size.x <= 0 || size.y <= 0) return success();
+            Sprite sprite; sprite.texture = white.value(); sprite.anchor = {0, 0};
+            sprite.transform.position = at + offset * unit; sprite.size = size * unit; sprite.tint = color; sprite.layer = layer;
+            return renderer.submit(sprite);
+        };
+        auto label = [&](const std::string &line, Vec2 offset, float scale, Color color) {
+            return font_->draw(renderer, line, at + offset * unit, scale * unit, color, 8102);
+        };
+        if (auto status = rect({}, busy ? Vec2{330, 100} : Vec2{610, 170}, {22, 25, 31, 250}); !status) return status;
+        if (auto status = rect({}, busy ? Vec2{330, 2} : Vec2{610, 2}, {229, 181, 97, 255}); !status) return status;
+        if (auto status = label(variables->text("search_ui_title"), busy ? Vec2{16, 12} : Vec2{24, 18}, busy ? 1.5F : 2.3F, {229, 181, 97, 255}); !status) return status;
+        const std::string message = variables->text("search_ui_message");
+        // Authored action copy wraps at spaces rather than splitting words.
+        std::string wrapped; std::size_t column = 0;
+        for (std::size_t start = 0; start < message.size();) {
+            auto end = message.find(' ', start); if (end == std::string::npos) end = message.size();
+            const auto word = message.substr(start, end - start);
+            if (column && column + word.size() + 1 > (busy ? 38U : 48U)) { wrapped += '\n'; column = 0; }
+            if (column) { wrapped += ' '; ++column; }
+            wrapped += word; column += word.size(); start = end + 1;
+        }
+        if (auto status = label(wrapped, busy ? Vec2{16, 36} : Vec2{24, 58}, busy ? 1.2F : 1.8F, {225, 218, 190, 255}); !status) return status;
+        if (busy) {
+            if (auto status = rect({16, 62}, {298, 6}, {61, 60, 53, 255}); !status) return status;
+            if (auto status = rect({16, 62}, {298 * static_cast<float>(variables->number("search_ui_progress")), 6}, {229, 181, 97, 255}, 8101); !status) return status;
+        } else {
+            const auto path = variables->text("search_ui_icon");
+            if (!path.empty()) {
+                const auto &info = textureFor(renderer, path);
+                if (info.handle) {
+                    Sprite icon; icon.texture = *info.handle; icon.anchor = {0, 0}; icon.layer = 8101;
+                    icon.transform.position = at + Vec2{530 * unit, 100 * unit}; icon.size = {48 * unit, 48 * unit};
+                    if (auto status = renderer.submit(icon); !status) return status;
+                }
+            }
+        }
+        if (auto status = label(busy ? "ESC - CANCEL" : "E - CONTINUE / ESC - CLOSE", busy ? Vec2{16, 82} : Vec2{24, 142}, busy ? 1.1F : 1.3F, {167, 167, 149, 255}); !status) return status;
+    }
+    // Wiring UI reads presentation state published by the gameplay component.
+    if (variables && variables->number("wire_ui_active") != 0) {
+        const float scale = std::min(viewport.x / 900.0F, viewport.y / 600.0F);
+        const Vec2 origin{(viewport.x - 820.0F * scale) * 0.5F,
+                          (viewport.y - 480.0F * scale) * 0.5F};
+        auto rect = [&](Vec2 at, Vec2 size, Color color, int layer) {
+            Sprite quad;
+            quad.texture = white.value();
+            quad.anchor = {0, 0};
+            quad.transform.position = at;
+            quad.size = size;
+            quad.tint = color;
+            quad.layer = layer;
+            return renderer.submit(quad);
+        };
+        auto label = [&](const std::string &text, float x, float y, Color color,
+                         float size = 2.0F) {
+            return font_->draw(renderer, text, origin + Vec2{x, y} * scale, size * scale, color,
+                               9003);
+        };
+        if (auto drawn = rect({}, viewport, {5, 10, 19, 190}, 9000); !drawn)
+            return drawn;
+        if (auto drawn = rect(origin, Vec2{820, 480} * scale, {21, 34, 48, 255}, 9001); !drawn)
+            return drawn;
+        if (auto drawn = label("CONNECT THE WIRES", 32, 26, {255, 221, 142, 255}, 3); !drawn)
+            return drawn;
+        if (auto drawn =
+                label(variables->text("wire_ui_message"), 32, 78, {233, 239, 246, 255}, 1.5F);
+            !drawn)
+            return drawn;
+        if (variables->number("wire_ui_ready") != 0) {
+            const Color colors[] = {{250, 121, 117, 255},
+                                    {107, 193, 250, 255},
+                                    {248, 210, 106, 255},
+                                    {127, 224, 171, 255}};
+            const int selectedSource = static_cast<int>(variables->number("wire_ui_source"));
+            const int selectedTarget = static_cast<int>(variables->number("wire_ui_target"));
+            const int connected = static_cast<int>(variables->number("wire_ui_connected"));
+            for (int i = 0; i < 4; ++i) {
+                const float y = 130.0F + static_cast<float>(i) * 60.0F;
+                const int right = (i + 2) % 4;
+                if (auto drawn =
+                        rect(origin + Vec2{40, y} * scale, Vec2{165, 40} * scale,
+                             selectedSource == i ? Color{63, 82, 101, 255} : Color{30, 46, 63, 255},
+                             9002);
+                    !drawn)
+                    return drawn;
+                if (auto drawn =
+                        rect(origin + Vec2{615, y} * scale, Vec2{165, 40} * scale,
+                             selectedTarget == i ? Color{63, 82, 101, 255} : Color{30, 46, 63, 255},
+                             9002);
+                    !drawn)
+                    return drawn;
+                const std::string left = (selectedSource == i ? "> " : "  ") +
+                                         std::string(1, static_cast<char>('A' + i)) +
+                                         ((connected & (1 << i)) ? "  OK" : "");
+                const std::string target = (selectedTarget == i ? "> " : "  ") +
+                                           std::string(1, static_cast<char>('A' + right));
+                if (auto drawn = label(left, 50, y + 12, colors[i]); !drawn)
+                    return drawn;
+                if (auto drawn = label(target, 625, y + 12, colors[right]); !drawn)
+                    return drawn;
+                if (connected & (1 << i)) {
+                    const Vec2 a = origin + Vec2{205, y + 20} * scale;
+                    const Vec2 b =
+                        origin +
+                        Vec2{615, 150.0F + static_cast<float>((i + 2) % 4) * 60.0F} * scale;
+                    for (int width = -1; width <= 1; ++width)
+                        if (auto drawn = renderer.debugLine(a + Vec2{0, static_cast<float>(width)},
+                                                            b + Vec2{0, static_cast<float>(width)},
+                                                            colors[i], 9002);
+                            !drawn)
+                            return drawn;
+                }
+            }
+            if (auto drawn = label("W/S: WIRE   A/D: TERMINAL   E: CONNECT   ESC: CLOSE", 32, 410,
+                                   {216, 228, 242, 255}, 1.5F);
+                !drawn)
+                return drawn;
+        } else if (auto drawn = label("E / ESC: CLOSE AND FIND THE MISSING SUPPLIES", 32, 410,
+                                      {216, 228, 242, 255}, 1.5F);
+                   !drawn)
+            return drawn;
     }
     // Conversations are screen-space presentations, independent of an NPC's world sprite.
     // Only the first active dialogue is shown; gameplay owns its pages and input lifecycle.

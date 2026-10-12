@@ -1,0 +1,64 @@
+{
+  "format": "yk.data",
+  "version": 1,
+  "items": [
+    {
+      "id": "screwdriver",
+      "displayName": "Screwdriver",
+      "icon": "assets/keep/screwdriver.png",
+      "tags": [
+        "escape"
+      ]
+    },
+    {
+      "id": "rope",
+      "displayName": "Rope",
+      "icon": "assets/keep/rope.png",
+      "tags": [
+        "escape"
+      ]
+    },
+    {
+      "id": "iron_hook",
+      "displayName": "Iron hook",
+      "icon": "assets/keep/iron_hook.png",
+      "tags": [
+        "escape"
+      ]
+    },
+    {
+      "id": "brass_key",
+      "displayName": "Brass key",
+      "icon": "assets/keep/brass_key.png",
+      "tags": [
+        "escape"
+      ]
+    },
+    {
+      "id": "grappling_line",
+      "displayName": "Grapple",
+      "icon": "assets/keep/grappling_line.png",
+      "tags": [
+        "escape"
+      ]
+    }
+  ],
+  "recipes": [
+    {
+      "id": "grappling_line",
+      "displayName": "Grappling line",
+      "station": "workbench",
+      "ingredients": [
+        {
+          "item": "rope"
+        },
+        {
+          "item": "iron_hook"
+        }
+      ],
+      "output": {
+        "item": "grappling_line"
+      }
+    }
+  ]
+}

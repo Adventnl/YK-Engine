@@ -1,37 +1,54 @@
 {
   "format": "yk.project",
   "version": 1,
-  "name": "Castle Paths",
+  "name": "Blackthorn Keep",
   "startScene": "scenes/courtyard.ykscene",
   "window": {
-    "title": "Castle Paths - YK Engine exploration test",
+    "title": "Blackthorn Keep - A Castle Escape",
     "width": 1280,
     "height": 720
   },
   "layers": [
     {
       "name": "Default",
-      "interactsWith": ["Default"]
+      "interactsWith": [
+        "Default"
+      ]
     },
     {
       "name": "Solid",
-      "interactsWith": ["Player", "Prop"]
+      "interactsWith": [
+        "Player",
+        "Prop"
+      ]
     },
     {
       "name": "Player",
-      "interactsWith": ["Solid", "Sensor", "Prop"]
+      "interactsWith": [
+        "Solid",
+        "Sensor",
+        "Prop"
+      ]
     },
     {
       "name": "Sensor",
-      "interactsWith": ["Player", "Prop"]
+      "interactsWith": [
+        "Player",
+        "Prop"
+      ]
     },
     {
       "name": "Prop",
-      "interactsWith": ["Solid", "Player", "Sensor", "Prop"]
+      "interactsWith": [
+        "Solid",
+        "Player",
+        "Sensor",
+        "Prop"
+      ]
     }
   ],
   "textures": {
-    "pixelsPerUnit": 64,
+    "pixelsPerUnit": 32,
     "filter": "nearest"
   },
   "input": {
@@ -42,23 +59,47 @@
         "actions": [
           {
             "name": "MoveLeft",
-            "bindings": ["Key:A", "Key:Left", "Pad:DPadLeft", "PadAxis:LeftX-"]
+            "bindings": [
+              "Key:A",
+              "Key:Left",
+              "Pad:DPadLeft",
+              "PadAxis:LeftX-"
+            ]
           },
           {
             "name": "MoveRight",
-            "bindings": ["Key:D", "Key:Right", "Pad:DPadRight", "PadAxis:LeftX+"]
+            "bindings": [
+              "Key:D",
+              "Key:Right",
+              "Pad:DPadRight",
+              "PadAxis:LeftX+"
+            ]
           },
           {
             "name": "MoveUp",
-            "bindings": ["Key:W", "Key:Up", "Pad:DPadUp", "PadAxis:LeftY-"]
+            "bindings": [
+              "Key:W",
+              "Key:Up",
+              "Pad:DPadUp",
+              "PadAxis:LeftY-"
+            ]
           },
           {
             "name": "MoveDown",
-            "bindings": ["Key:S", "Key:Down", "Pad:DPadDown", "PadAxis:LeftY+"]
+            "bindings": [
+              "Key:S",
+              "Key:Down",
+              "Pad:DPadDown",
+              "PadAxis:LeftY+"
+            ]
           },
           {
             "name": "Interact",
-            "bindings": ["Key:E", "Key:Space", "Pad:West"]
+            "bindings": [
+              "Key:E",
+              "Key:Space",
+              "Pad:West"
+            ]
           }
         ]
       },
@@ -68,19 +109,34 @@
         "actions": [
           {
             "name": "MoveLeft",
-            "bindings": ["Key:Left", "Pad:DPadLeft", "PadAxis:LeftX-"]
+            "bindings": [
+              "Key:Left",
+              "Pad:DPadLeft",
+              "PadAxis:LeftX-"
+            ]
           },
           {
             "name": "MoveRight",
-            "bindings": ["Key:Right", "Pad:DPadRight", "PadAxis:LeftX+"]
+            "bindings": [
+              "Key:Right",
+              "Pad:DPadRight",
+              "PadAxis:LeftX+"
+            ]
           },
           {
             "name": "Jump",
-            "bindings": ["Key:Up", "Pad:South"]
+            "bindings": [
+              "Key:Up",
+              "Pad:South"
+            ]
           },
           {
             "name": "Interact",
-            "bindings": ["Key:Down", "Key:RightCtrl", "Pad:West"]
+            "bindings": [
+              "Key:Down",
+              "Key:RightCtrl",
+              "Pad:West"
+            ]
           }
         ]
       },
@@ -90,22 +146,38 @@
         "actions": [
           {
             "name": "Restart",
-            "bindings": ["Key:R", "Pad:Back"]
+            "bindings": [
+              "Key:R",
+              "Pad:Back"
+            ]
           },
           {
             "name": "Pause",
-            "bindings": ["Key:P", "Pad:Start"]
+            "bindings": [
+              "Key:P",
+              "Pad:Start"
+            ]
           },
           {
             "name": "Continue",
-            "bindings": ["Key:Enter", "Pad:East"]
+            "bindings": [
+              "Key:Enter",
+              "Pad:East"
+            ]
+          },
+          {
+            "name": "Cancel",
+            "bindings": [
+              "Key:Escape",
+              "Pad:East"
+            ]
           }
         ]
       }
     ]
   },
   "build": {
-    "productName": "Castle Paths",
+    "productName": "Blackthorn Keep",
     "executable": "",
     "version": "1.0.0",
     "identifier": "",

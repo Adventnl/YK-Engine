@@ -200,6 +200,75 @@ Destroys the entity after a while (for effect prefabs).
 
 ## Exploration
 
+### SearchAction
+
+Timed, cancellable container search or recipe crafting with a result popup.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `title` | string | "Search" |  |
+| `verb` | string | "SEARCHING" |  |
+| `successText` | string | "Search complete." |  |
+| `emptyText` | string | "Nothing left here." |  |
+| `lockedText` | string | "" |  |
+| `successFlag` | string | "" |  |
+| `recipe` | string | "" |  |
+| `requiredItems` | string list | [] |  |
+| `duration` | float | 2 | (range 0.1 to 30) |
+
+### EscapePresentation
+
+A compact castle HUD with the actor's actual inventory.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `actor` | entity | none |  |
+| `title` | string | "BLACKTHORN KEEP" |  |
+
+### PatrolWatch
+
+A guard notices trespassing in an authored restricted area and returns the actor to their cell.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `actor` | entity | none |  |
+| `restrictedMin` | vec2 | [20,1] |  |
+| `restrictedMax` | vec2 | [30,8] |  |
+| `returnPosition` | vec2 | [3,4] |  |
+| `range` | float | 3.5 | (range 0 to 20) |
+| `catchSeconds` | float | 3 | (range 0.1 to 20) |
+
+### CharacterMotion
+
+Breathing, step bounce and facing for single-pose pixel characters.
+
+Requires: `SpriteRenderer`
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `stepHeight` | float | 0.06 | (range 0 to 0.3) |
+
+### ObjectiveList
+
+Publishes the next unfinished objective and progress.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `flags` | string list | [] |  |
+| `instructions` | string list | [] |  |
+| `completeText` | string | "Escape route ready." |  |
+
+### WirePuzzle
+
+Four-wire matching popup; locks movement until closed.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `requiredFlags` | string list | [] |  |
+| `successFlag` | string | "wires_connected" |  |
+| `missingText` | string | "Find the repair supplies first." |  |
+| `inputSet` | string | "Player1" |  |
+
 ### TopDownController
 
 Four-way, normalized diagonal movement on a zero-gravity body.
@@ -469,6 +538,7 @@ Requires: `Collider`
 
 | Property | Type | Default | Notes |
 |---|---|---|---|
+| `requiredFlag` | string | "" |  |
 | `requiredTag` | string | "" | Only entities with this tag count. Empty: any movable body. |
 | `targets` | entity list | [] | Receivers driven while the goal is satisfied. |
 | `satisfiedColor` | color | "#5adc6eff" |  |

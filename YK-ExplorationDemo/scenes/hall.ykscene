@@ -34,7 +34,7 @@
             "rows": 1,
             "frame": 0,
             "drawMode": "Tiled",
-            "tileSize": [1.03, 1.03],
+            "tileSize": [1, 1],
             "sliceFill": "Tile",
             "blend": "Alpha",
             "parallax": [1, 1]
@@ -126,6 +126,12 @@
           "type": "Interactor",
           "properties": {
             "action": "Interact"
+          }
+        },
+        {
+          "type": "CharacterMotion",
+          "properties": {
+            "stepHeight": 0.06
           }
         }
       ]
@@ -663,11 +669,16 @@
           "properties": {
             "sequence": "",
             "speaker": "Inscription",
-            "pages": ["Beyond this hall lies a larger world. This room proves the same engine can load another map."],
+            "pages": [
+              "Beyond this hall lies a larger world. This room proves the same engine can load another map."
+            ],
             "portrait": "",
             "advanceSet": "Player1",
             "advanceAction": "Interact",
-            "charactersPerSecond": 45
+            "upAction": "MoveUp",
+            "downAction": "MoveDown",
+            "charactersPerSecond": 45,
+            "lockInput": true
           }
         }
       ]
@@ -814,7 +825,7 @@
             "rows": 1,
             "frame": 0,
             "drawMode": "Tiled",
-            "tileSize": [1.03, 1.03],
+            "tileSize": [1, 1],
             "sliceFill": "Tile",
             "blend": "Alpha",
             "parallax": [1, 1]
@@ -911,7 +922,7 @@
           "type": "Collider",
           "properties": {
             "shape": "Box",
-            "size": [2.0, 0.7],
+            "size": [2, 0.7],
             "offset": [0, 0.18],
             "oneWay": false,
             "isTrigger": false,
@@ -982,7 +993,7 @@
       "id": "0000000000004014",
       "name": "Hall east storage",
       "transform": {
-        "position": [21.0, 15.4],
+        "position": [21, 15.4],
         "rotation": 0,
         "scale": [1, 1]
       },
@@ -1086,7 +1097,7 @@
       "id": "0000000000004016",
       "name": "Hall north plant",
       "transform": {
-        "position": [18.1, 3.0],
+        "position": [18.1, 3],
         "rotation": 0,
         "scale": [1, 1]
       },

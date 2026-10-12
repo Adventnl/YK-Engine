@@ -215,6 +215,14 @@ if(BUILD_TESTING)
             TIMEOUT 60 DEFINITIONS SPINNER_PROJECT="${YK_SPINNER_PROJECT}")
     endif()
     if(YK_RUNTIME)
+        # Exercise the actual search popup, including its first zero-progress frame and loot
+        # result. Gameplay-only tests cannot catch invalid sprite dimensions in the HUD.
+        add_test(NAME exploration_search_render COMMAND yk_player
+            ${CMAKE_CURRENT_SOURCE_DIR}/YK-ExplorationDemo --fixed --no-audio --frames 520
+            --keys "S@0-56,D@58-149,S@151-181,A@183-205,S@207-283,A@285-359,E@361-363"
+            --capture ${CMAKE_BINARY_DIR}/exploration-search.bmp)
+        set_tests_properties(exploration_search_render PROPERTIES TIMEOUT 30
+            ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software;SDL_AUDIODRIVER=dummy")
         add_executable(yk_runtime_tests tests/integration/runtime_tests.cpp)
         target_link_libraries(yk_runtime_tests PRIVATE yk::engine SDL3::SDL3)
         yk_target(yk_runtime_tests)

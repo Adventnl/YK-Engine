@@ -109,5 +109,110 @@ class MapSpawn final : public Component {
     void onStart(GameContext &context) override;
 };
 
+// Procedural breathing and stepping for single-pose character artwork.
+class CharacterMotion final : public Component {
+  public:
+    float stepHeight{0.06F};
+    static void describe(TypeBuilder<CharacterMotion> &type);
+    void onStart(GameContext &context) override;
+    void onFixedUpdate(GameContext &context, float seconds) override;
+
+  private:
+    Vec2 offset_{}, size_{};
+    float phase_{};
+};
+
+// Ordered, data-authored objectives. The first missing flag supplies the next instruction.
+class ObjectiveList final : public Component {
+  public:
+    std::vector<std::string> flags, instructions;
+    std::string completeText{"Escape route ready."};
+    static void describe(TypeBuilder<ObjectiveList> &type);
+    void onFixedUpdate(GameContext &context, float seconds) override;
+};
+
+// Presentation and timed actions over the engine's real containers and crafting recipes.
+// Items are transferred only after the action completes; cancellation never grants loot.
+class SearchAction final : public Component {
+  public:
+    std::string title{"Search"}, verb{"SEARCHING"}, successText{"Search complete."};
+    std::string emptyText{"Nothing left here."}, lockedText;
+    std::string successFlag, recipe;
+    std::vector<std::string> requiredItems;
+    float duration{2.0F};
+    static void describe(TypeBuilder<SearchAction> &type);
+    void begin(GameContext &context, Entity &actor);
+    void onFixedUpdate(GameContext &context, float seconds) override;
+    void onDestroy(GameContext &context) override;
+    bool active() const { return active_; }
+  private:
+    void close(GameContext &context);
+    void result(GameContext &context, const std::string &message);
+    EntityId actor_{};
+    bool active_{}, busy_{};
+    float elapsed_{};
+    std::uint64_t startedTick_{};
+};
+
+// Project-authored HUD, inventory presentation and a patrol's restricted-area watch.
+class EscapePresentation final : public Component {
+  public:
+    EntityRef actor;
+    std::string title{"BLACKTHORN KEEP"};
+    static void describe(TypeBuilder<EscapePresentation> &type);
+    void onFixedUpdate(GameContext &context, float seconds) override;
+};
+class PatrolWatch final : public Component {
+  public:
+    EntityRef actor;
+    Vec2 restrictedMin{20, 1}, restrictedMax{30, 8}, returnPosition{3, 4};
+    float range{3.5F}, catchSeconds{3.0F};
+    static void describe(TypeBuilder<PatrolWatch> &type);
+    void onFixedUpdate(GameContext &context, float seconds) override;
+  private:
+    float suspicion_{}, cooldown_{};
+};
+
+// Keyboard/gamepad matching puzzle. Matching all four labeled terminals commits successFlag.
+class WirePuzzle final : public Component {
+  public:
+    std::vector<std::string> requiredFlags;
+    std::string successFlag{"wires_connected"};
+    std::string missingText{"Find the repair supplies first."};
+    std::string inputSet{"Player1"};
+    static void describe(TypeBuilder<WirePuzzle> &type);
+    void begin(GameContext &context, EntityId actor);
+    void onFixedUpdate(GameContext &context, float seconds) override;
+    void onDestroy(GameContext &context) override;
+    bool active() const {
+        return active_;
+    }
+    bool ready() const {
+        return ready_;
+    }
+    int source() const {
+        return source_;
+    }
+    int target() const {
+        return target_;
+    }
+    int connected() const {
+        return connected_;
+    }
+    const std::string &message() const {
+        return message_;
+    }
+    static int targetFor(int source) {
+        return (source + 2) % 4;
+    }
+
+  private:
+    void close(GameContext &context);
+    bool active_{}, ready_{};
+    int source_{}, target_{}, connected_{};
+    std::uint64_t startedTick_{};
+    std::string message_;
+};
+
 void registerExplorationComponents(ComponentRegistry &registry);
 } // namespace yk

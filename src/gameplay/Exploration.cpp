@@ -1,10 +1,23 @@
 #include "yk/gameplay/Exploration.hpp"
 #include "yk/gameplay/Character.hpp"
+#include "yk/items/Inventory.hpp"
+#include "yk/items/Crafting.hpp"
+#include "yk/data/GameData.hpp"
 #include <algorithm>
 #include <cmath>
 #include <limits>
 
 namespace yk {
+namespace {
+bool clearReach(GameContext &context, const Entity &actor, const Entity &target) {
+    const Vec2 start = actor.worldPosition();
+    physics::QueryFilter filter;
+    filter.categoryBits = context.layers().categoryBits("Player");
+    filter.maskBits = context.layers().categoryBits("Solid");
+    const auto hit = context.physics().rayCast(start, target.worldPosition() - start, filter);
+    return hit && (!hit.value() || context.entityOfShape(hit.value()->shape) == &target);
+}
+}
 
 void TopDownController::describe(TypeBuilder<TopDownController> &type) {
     type.category("Exploration")
@@ -27,6 +40,14 @@ void TopDownController::onFixedUpdate(GameContext &context, float seconds) {
     const auto body = context.bodyOf(entity().id());
     if (!input || !body)
         return;
+    if (context.inputLocked()) {
+        context.physics().setVelocity(*body, {});
+        if (context.blackboard().number("search_ui_busy") == 0)
+            detail::animateDirection(entity(), {}, facing_, animation_);
+        else
+            animation_.clear();
+        return;
+    }
     Vec2 direction{input->axis(context, leftAction, rightAction),
                    input->axis(context, upAction, downAction)};
     if (lengthSquared(direction) > 1.0F)
@@ -62,7 +83,8 @@ void NpcPath::onFixedUpdate(GameContext &context, float seconds) {
     Vec2 motion{};
     if (wait_ > 0)
         wait_ = std::max(0.0F, wait_ - seconds);
-    else if ((requiredFlag.empty() || context.blackboard().number(requiredFlag) != 0.0) &&
+    else if ((!context.inputLocked() || context.blackboard().number("search_ui_busy") != 0) &&
+             (requiredFlag.empty() || context.blackboard().number(requiredFlag) != 0.0) &&
              !waypoints.empty() && next_ < waypoints.size()) {
         if (const Entity *waypoint = context.scene().find(waypoints[next_])) {
             const Vec2 delta = waypoint->worldPosition() - entity().worldPosition();
@@ -104,8 +126,20 @@ void Interactable::onStart(GameContext &context) {
 void Interactable::activate(GameContext &context, Entity &actor) {
     if (!available(context))
         return;
+    if (auto *search = entity().get<SearchAction>()) {
+        search->begin(context, actor);
+        return;
+    }
+    if (auto *puzzle = entity().get<WirePuzzle>()) {
+        if (context.blackboard().number(puzzle->successFlag) == 0.0) {
+            puzzle->begin(context, actor.id());
+            return;
+        }
+    }
     if (auto *gate = entity().get<StateGate>()) {
         if (gate->locked(context)) {
+            context.blackboard().set("escape_notice", "LOCKED - find the brass key in the guard office.");
+            context.blackboard().set("escape_notice_until", context.time() + 3.0);
             context.emit("gate_locked", entity().id(), actor.id());
             return;
         }
@@ -148,7 +182,7 @@ void Interactor::onFixedUpdate(GameContext &context, float) {
             if (!candidate || !candidate->available(context))
                 continue;
             const float gap = distance(entity().worldPosition(), object->worldPosition());
-            if (gap <= candidate->range && gap < nearest) {
+            if (gap <= candidate->range && gap < nearest && clearReach(context, entity(), *object)) {
                 closest = candidate;
                 nearest = gap;
             }
@@ -273,7 +307,316 @@ void MapSpawn::onStart(GameContext &context) {
     }
 }
 
+void CharacterMotion::describe(TypeBuilder<CharacterMotion> &type) {
+    type.category("Exploration")
+        .dependsOn("SpriteRenderer")
+        .description("Breathing, step bounce and facing for single-pose pixel characters.");
+    type.field("stepHeight", &CharacterMotion::stepHeight).range(0, 0.3, 0.01);
+}
+void CharacterMotion::onStart(GameContext &) {
+    if (const auto *sprite = entity().get<SpriteRenderer>()) {
+        offset_ = sprite->offset;
+        size_ = sprite->size;
+    }
+}
+void CharacterMotion::onFixedUpdate(GameContext &context, float seconds) {
+    auto *sprite = entity().get<SpriteRenderer>();
+    if (!sprite)
+        return;
+    Vec2 velocity{};
+    if (auto body = context.bodyOf(entity().id()))
+        if (auto state = context.physics().state(*body))
+            velocity = state.value().linearVelocity;
+    const bool walking = lengthSquared(velocity) > 0.04F;
+    phase_ += seconds * (walking ? 14.0F : 2.5F);
+    const float bounce =
+        walking ? std::abs(std::sin(phase_)) * stepHeight : (std::sin(phase_) + 1.0F) * 0.008F;
+    sprite->offset = offset_ + Vec2{walking ? std::sin(phase_) * 0.012F : 0.0F, -bounce};
+    sprite->size = {size_.x, size_.y + bounce * 0.3F};
+    sprite->stepSwing = walking ? std::sin(phase_) * stepHeight * 0.75F : 0.0F;
+    if (std::abs(velocity.x) > 0.1F)
+        sprite->flipX = velocity.x < 0;
+}
+
+void ObjectiveList::describe(TypeBuilder<ObjectiveList> &type) {
+    type.category("Exploration")
+        .description("Publishes the next unfinished objective and progress.");
+    type.field("flags", &ObjectiveList::flags);
+    type.field("instructions", &ObjectiveList::instructions);
+    type.field("completeText", &ObjectiveList::completeText);
+}
+void ObjectiveList::onFixedUpdate(GameContext &context, float) {
+    std::string next = completeText;
+    int done = 0;
+    bool found = false;
+    for (std::size_t i = 0; i < flags.size(); ++i) {
+        if (context.blackboard().number(flags[i]) != 0)
+            ++done;
+        else if (!found) {
+            if (i < instructions.size())
+                next = instructions[i];
+            found = true;
+        }
+    }
+    context.blackboard().set("objective", next);
+    context.blackboard().set("task_progress",
+                             std::to_string(done) + "/" + std::to_string(flags.size()));
+}
+
+void SearchAction::describe(TypeBuilder<SearchAction> &type) {
+    type.category("Exploration").description("Timed, cancellable container search or recipe crafting with a result popup.");
+    type.field("title", &SearchAction::title);
+    type.field("verb", &SearchAction::verb);
+    type.field("successText", &SearchAction::successText);
+    type.field("emptyText", &SearchAction::emptyText);
+    type.field("lockedText", &SearchAction::lockedText);
+    type.field("successFlag", &SearchAction::successFlag);
+    type.field("recipe", &SearchAction::recipe).ref("recipe");
+    type.field("requiredItems", &SearchAction::requiredItems);
+    type.field("duration", &SearchAction::duration).range(0.1, 30, 0.1);
+}
+void SearchAction::result(GameContext &context, const std::string &message) {
+    busy_ = false;
+    context.blackboard().set("search_ui_busy", 0.0);
+    context.blackboard().set("search_ui_message", message);
+}
+void SearchAction::begin(GameContext &context, Entity &actor) {
+    if (active_ || context.inputLocked()) return;
+    actor_ = actor.id();
+    active_ = busy_ = true;
+    elapsed_ = 0;
+    startedTick_ = context.tick();
+    auto &board = context.blackboard();
+    board.set("search_ui_active", 1.0);
+    board.set("search_ui_busy", 1.0);
+    board.set("search_ui_title", title);
+    board.set("search_ui_message", verb);
+    board.set("search_ui_progress", 0.0);
+    board.set("search_ui_icon", "");
+    context.lockInput("search:" + toString(entity().id()), true);
+    const auto *inventory = actor.get<Inventory>();
+    for (const auto &item : requiredItems)
+        if (!inventory || !inventory->has(ItemId(item))) {
+            result(context, lockedText.empty() ? "LOCKED - find the required tool first." : lockedText);
+            return;
+        }
+    if (!successFlag.empty() && board.number(successFlag) != 0) {
+        result(context, emptyText);
+        return;
+    }
+    if (auto *container = entity().get<Container>()) {
+        std::string why;
+        if (!container->open(context, actor)) {
+            container->canOpen(context, actor, &why);
+            result(context, lockedText.empty() ? why : lockedText);
+            return;
+        }
+    }
+    if (!recipe.empty()) {
+        auto *crafter = actor.get<Crafter>();
+        const auto check = crafter ? crafter->check(context, recipe) : CraftResult{};
+        if (!check.ok) {
+            result(context, check.reason.empty() ? "You cannot craft this yet." : check.reason);
+            return;
+        }
+    }
+    if (const auto body = context.bodyOf(actor.id())) context.physics().setVelocity(*body, {});
+    const Vec2 delta = entity().worldPosition() - actor.worldPosition();
+    const std::string facing = std::abs(delta.x) > std::abs(delta.y) ? (delta.x < 0 ? "left" : "right") : (delta.y < 0 ? "up" : "down");
+    if (auto *animation = actor.get<AnimatedSprite>()) animation->play("search_" + facing);
+    context.emit("search_started", entity().id(), actor_);
+}
+void SearchAction::close(GameContext &context) {
+    if (auto *actor = context.scene().find(actor_))
+        if (auto *container = entity().get<Container>()) container->close(context, *actor);
+    active_ = busy_ = false;
+    context.blackboard().set("search_ui_active", 0.0);
+    context.blackboard().set("search_ui_busy", 0.0);
+    context.lockInput("search:" + toString(entity().id()), false);
+}
+void SearchAction::onFixedUpdate(GameContext &context, float seconds) {
+    if (!active_ || context.tick() == startedTick_) return;
+    Entity *actor = context.scene().find(actor_);
+    if (!actor || distance(actor->worldPosition(), entity().worldPosition()) > 2.3F ||
+        context.input().state("Global", "Cancel").pressed) {
+        close(context);
+        return;
+    }
+    if (!busy_) {
+        if (context.input().state("Player1", "Interact").pressed) close(context);
+        return;
+    }
+    elapsed_ += seconds;
+    context.blackboard().set("search_ui_progress", static_cast<double>(std::min(1.0F, elapsed_ / std::max(duration, 0.1F))));
+    if (elapsed_ < duration) return;
+    std::string icon;
+    if (auto *container = entity().get<Container>()) {
+        container->search(context, *actor);
+        auto *contents = entity().get<Inventory>();
+        bool taken = false;
+        if (contents)
+            for (int i = 0; i < contents->size(); ++i) {
+                const auto *definition = gameData(context).items.items.find(contents->slot(i).item.str());
+                if (definition) icon = definition->icon;
+                taken = container->take(context, *actor, i) > 0 || taken;
+            }
+        if (!taken) { result(context, emptyText); return; }
+    }
+    if (!recipe.empty()) {
+        const auto made = actor->get<Crafter>()->craft(context, recipe);
+        if (!made.ok) { result(context, made.reason); return; }
+        if (!made.outputs.empty())
+            if (const auto *definition = gameData(context).items.items.find(made.outputs.front().item.str())) icon = definition->icon;
+    }
+    if (!successFlag.empty()) {
+        context.blackboard().set(successFlag, 1.0);
+        context.blackboard().keep(successFlag);
+    }
+    if (auto *gate = entity().get<StateGate>(); gate && !gate->locked(context) && !gate->open())
+        gate->toggle(context);
+    context.blackboard().set("search_ui_icon", icon);
+    result(context, successText);
+    context.emit("search_completed", entity().id(), actor_);
+}
+void SearchAction::onDestroy(GameContext &context) { if (active_) close(context); }
+
+void EscapePresentation::describe(TypeBuilder<EscapePresentation> &type) {
+    type.category("Exploration").description("A compact castle HUD with the actor's actual inventory.");
+    type.field("actor", &EscapePresentation::actor);
+    type.field("title", &EscapePresentation::title);
+}
+void EscapePresentation::onFixedUpdate(GameContext &context, float) {
+    auto &board = context.blackboard();
+    board.set("escape_hud", 1.0);
+    board.set("escape_title", title);
+    const Entity *person = context.scene().find(actor);
+    const auto *inventory = person ? person->get<Inventory>() : nullptr;
+    for (int i = 0; i < 6; ++i) {
+        const std::string prefix = "escape_slot_" + std::to_string(i);
+        const auto *definition = inventory ? gameData(context).items.items.find(inventory->slot(i).item.str()) : nullptr;
+        board.set(prefix + "_icon", definition ? definition->icon : "");
+        board.set(prefix + "_name", definition ? definition->displayName : "");
+    }
+    if (context.time() > board.number("escape_notice_until")) board.set("escape_notice", "");
+}
+void PatrolWatch::describe(TypeBuilder<PatrolWatch> &type) {
+    type.category("Exploration").description("A guard notices trespassing in an authored restricted area and returns the actor to their cell.");
+    type.field("actor", &PatrolWatch::actor);
+    type.field("restrictedMin", &PatrolWatch::restrictedMin);
+    type.field("restrictedMax", &PatrolWatch::restrictedMax);
+    type.field("returnPosition", &PatrolWatch::returnPosition);
+    type.field("range", &PatrolWatch::range).range(0, 20, 0.1);
+    type.field("catchSeconds", &PatrolWatch::catchSeconds).range(0.1, 20, 0.1);
+}
+void PatrolWatch::onFixedUpdate(GameContext &context, float seconds) {
+    Entity *person = context.scene().find(actor);
+    if (!person || context.blackboard().text("level_state") == "complete") return;
+    cooldown_ = std::max(0.0F, cooldown_ - seconds);
+    const Vec2 at = person->worldPosition();
+    const bool seen = cooldown_ == 0 && at.x > restrictedMin.x && at.x < restrictedMax.x &&
+        at.y > restrictedMin.y && at.y < restrictedMax.y && distance(at, entity().worldPosition()) < range && clearReach(context, entity(), *person);
+    suspicion_ = std::clamp(suspicion_ + seconds * (seen ? 1.0F : -2.0F), 0.0F, catchSeconds);
+    context.blackboard().set("escape_suspicion", static_cast<double>(suspicion_ / catchSeconds));
+    if (suspicion_ >= catchSeconds) {
+        context.teleport(*person, returnPosition);
+        suspicion_ = 0;
+        cooldown_ = 4;
+        context.blackboard().set("escape_notice", "Caught! Back to your cell. Your hidden supplies are safe.");
+        context.blackboard().set("escape_notice_until", context.time() + 4.0);
+        context.emit("guard_caught", entity().id(), person->id());
+    }
+}
+
+void WirePuzzle::describe(TypeBuilder<WirePuzzle> &type) {
+    type.category("Exploration")
+        .description("Four-wire matching popup; locks movement until closed.");
+    type.field("requiredFlags", &WirePuzzle::requiredFlags);
+    type.field("successFlag", &WirePuzzle::successFlag);
+    type.field("missingText", &WirePuzzle::missingText);
+    type.field("inputSet", &WirePuzzle::inputSet).inputSet();
+}
+void WirePuzzle::begin(GameContext &context, EntityId actor) {
+    if (active_ || context.inputLocked())
+        return;
+    ready_ = true;
+    for (const auto &flag : requiredFlags)
+        ready_ = ready_ && context.blackboard().number(flag) != 0;
+    active_ = true;
+    source_ = target_ = connected_ = 0;
+    message_ = ready_ ? "Match labels and colors. Wrong connections can be retried." : missingText;
+    startedTick_ = context.tick();
+    context.blackboard().set("wire_ui_active", 1.0);
+    context.blackboard().set("wire_ui_ready", ready_ ? 1.0 : 0.0);
+    context.blackboard().set("wire_ui_message", message_);
+    context.blackboard().set("wire_ui_source", 0.0);
+    context.blackboard().set("wire_ui_target", 0.0);
+    context.blackboard().set("wire_ui_connected", 0.0);
+    context.lockInput("wires:" + toString(entity().id()), true);
+    context.emit("wire_puzzle_started", entity().id(), actor);
+}
+void WirePuzzle::close(GameContext &context) {
+    active_ = false;
+    context.blackboard().set("wire_ui_active", 0.0);
+    context.lockInput("wires:" + toString(entity().id()), false);
+}
+void WirePuzzle::onFixedUpdate(GameContext &context, float) {
+    if (!active_ || context.tick() == startedTick_)
+        return;
+    const auto &input = context.input();
+    if (input.state("Global", "Cancel").pressed) {
+        close(context);
+        return;
+    }
+    if (!ready_) {
+        if (input.state(inputSet, "Interact").pressed)
+            close(context);
+        return;
+    }
+    if (input.state(inputSet, "MoveUp").pressed)
+        source_ = (source_ + 3) % 4;
+    if (input.state(inputSet, "MoveDown").pressed)
+        source_ = (source_ + 1) % 4;
+    if (input.state(inputSet, "MoveLeft").pressed)
+        target_ = (target_ + 3) % 4;
+    if (input.state(inputSet, "MoveRight").pressed)
+        target_ = (target_ + 1) % 4;
+    context.blackboard().set("wire_ui_source", static_cast<double>(source_));
+    context.blackboard().set("wire_ui_target", static_cast<double>(target_));
+    if (!input.state(inputSet, "Interact").pressed)
+        return;
+    if (target_ != targetFor(source_)) {
+        message_ = "Wrong terminal. Match the letter and color, then press E.";
+        context.blackboard().set("wire_ui_message", message_);
+        return;
+    }
+    connected_ |= 1 << source_;
+    message_ = "Connection secured.";
+    context.blackboard().set("wire_ui_message", message_);
+    context.blackboard().set("wire_ui_connected", static_cast<double>(connected_));
+    if (connected_ == 15) {
+        context.blackboard().set(successFlag, 1.0);
+        context.blackboard().keep(successFlag);
+        context.emit("wire_puzzle_solved", entity().id());
+        close(context);
+    } else {
+        do {
+            source_ = (source_ + 1) % 4;
+        } while (connected_ & (1 << source_));
+        context.blackboard().set("wire_ui_source", static_cast<double>(source_));
+    }
+}
+void WirePuzzle::onDestroy(GameContext &context) {
+    if (active_)
+        close(context);
+}
+
 void registerExplorationComponents(ComponentRegistry &registry) {
+    registry.add<SearchAction>("SearchAction");
+    registry.add<EscapePresentation>("EscapePresentation");
+    registry.add<PatrolWatch>("PatrolWatch");
+    registry.add<CharacterMotion>("CharacterMotion");
+    registry.add<ObjectiveList>("ObjectiveList");
+    registry.add<WirePuzzle>("WirePuzzle");
     registry.add<TopDownController>("TopDownController");
     registry.add<NpcPath>("NpcPath");
     registry.add<Interactor>("Interactor");

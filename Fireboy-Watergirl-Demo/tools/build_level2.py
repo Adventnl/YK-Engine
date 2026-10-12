@@ -51,10 +51,13 @@ def import_art():
 
 def build():
     assets = import_art()
-    scene = SceneBuilder(str(PROJECT), "Fireboy and Watergirl - Classroom", background="#000000ff")
+    scene = SceneBuilder(str(PROJECT), "Fireboy and Watergirl - Classroom", background="#17283bff")
     scene.add(Node("Camera", xy(836, 470.5)).add(
         "Camera", mode="Fixed", orthographicHeight=HEIGHT, clampToBounds=True,
         boundsMin=[0, 0], boundsMax=[WIDTH, HEIGHT]))
+    scene.add(Node("Room", xy(836, 470.5), locked=True).add(
+        "SpriteRenderer", texture="assets/reference/room.png",
+        size=[WIDTH, HEIGHT], layer=-100))
     for group in ("Artwork", "Terrain", "Hazards", "Mechanisms", "Collectibles", "Characters"):
         scene.group(group)
 
@@ -113,15 +116,18 @@ def build():
     art("purple_bookcase_top", 24)
     art("red_exit_door", 45, "Mechanisms", "Ember Exit")
     art("blue_exit_door", 45, "Mechanisms", "Tide Exit")
-    art("pencil_cup_upper_right", 46)
+    # The upper-right desk already includes the pencil cup, like the other
+    # desks include their buttons and lever. Keep only one visible copy.
 
     # Lower desks, ramps, liquid basins, and the upper exit route.
     solid("Left Desk", 10, 674, 180, 814)
-    for name, bounds in (("Ramp Low", (178, 654, 200, 814)),
-                         ("Ramp Mid", (200, 633, 220, 814)),
-                         ("Ramp High", (220, 612, 243, 814)),
-                         ("Red Button Block", (243, 632, 304, 814))):
-        solid(name, *bounds)
+    # The visible ramp rises to the button block. Box steps here act as walls
+    # and stop walking characters; a wedge provides a continuous surface.
+    at, size = box(178, 632, 243, 674)
+    scene.add(Node("Left Ramp", at).add("Collider", shape="Wedge",
+              size=list(size), layer="Solid", friction=0.8), parent="Terrain")
+    solid("Ramp Base", 178, 674, 243, 814)
+    solid("Red Button Block", 243, 632, 304, 814)
     solid("Orange Basin Floor", 306, 733, 549, 815)
     solid("Middle Desk", 549, 674, 925, 814)
     solid("Purple Basin Floor", 926, 773, 1663, 815)

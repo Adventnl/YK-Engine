@@ -11,7 +11,18 @@ Status drawAsPlayed(Renderer &renderer, SceneRenderer &sceneRenderer, const Scen
     CameraView view{{0.0F, 0.0F}, 18.0F};
     if (const Camera *camera = SceneRenderer::primaryCamera(scene))
         view = interpolate ? camera->viewAt(alpha) : camera->view();
-    RenderPass world{SceneRenderer::cameraFor(view, viewport.size), viewport,
+    bool escapeHud = variables && variables->number("escape_hud") != 0;
+    if (!escapeHud)
+        for (const EntityId id : scene.orderedIds())
+            if (const auto *entity = scene.find(id); entity && entity->findComponent("EscapePresentation"))
+                escapeHud = true;
+    Rect worldViewport = viewport;
+    if (escapeHud) {
+        const float scale = std::min(viewport.size.x / 1280.0F, viewport.size.y / 720.0F);
+        worldViewport.position.y += 40.0F * scale;
+        worldViewport.size.y -= 140.0F * scale;
+    }
+    RenderPass world{SceneRenderer::cameraFor(view, worldViewport.size), worldViewport,
                      scene.settings.background, options.target};
     if (auto status = renderer.beginPass(world); !status)
         return status;
@@ -26,7 +37,7 @@ Status drawAsPlayed(Renderer &renderer, SceneRenderer &sceneRenderer, const Scen
     worldView.levelAlpha = levelAlpha.empty() ? nullptr : &levelAlpha;
     worldView.time = time;
     worldView.camera = world.camera;
-    worldView.viewport = viewport.size;
+    worldView.viewport = worldViewport.size;
     worldView.parallax = true;
     worldView.interpolate = interpolate;
     worldView.alpha = alpha;

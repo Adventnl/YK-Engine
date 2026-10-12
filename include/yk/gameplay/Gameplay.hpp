@@ -382,6 +382,7 @@ class SpawnPoint final : public Component {
 // art can play a "going through the door" clip.
 class Goal final : public Component {
   public:
+    std::string requiredFlag; // The exit is inactive until this world-state condition is met.
     std::string requiredTag;
     std::vector<EntityRef> targets;
     Color satisfiedColor{90, 220, 110, 255}; // The sprite's own color is the idle look.
