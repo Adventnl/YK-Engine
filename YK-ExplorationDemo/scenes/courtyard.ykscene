@@ -7638,8 +7638,8 @@
       "name": "Camera",
       "transform": {
         "position": [
-          16,
-          9
+          3.5,
+          4.5
         ],
         "rotation": 0,
         "scale": [
@@ -7651,8 +7651,25 @@
         {
           "type": "Camera",
           "properties": {
-            "mode": "Fixed",
-            "orthographicHeight": 18.125
+            "mode": "Follow",
+            "targets": [
+              "00000000000000b4"
+            ],
+            "orthographicHeight": 12.083333,
+            "viewportInset": [
+              0,
+              140
+            ],
+            "smoothTime": 0.08,
+            "clampToBounds": true,
+            "boundsMin": [
+              0,
+              0
+            ],
+            "boundsMax": [
+              32,
+              18
+            ]
           }
         }
       ]
@@ -10531,7 +10548,9 @@
             "introDuration": 0,
             "restartOnDeath": false,
             "completeDelay": 30,
-            "completeMessage": "YOU ESCAPED BLACKTHORN KEEP"
+            "completeMessage": "YOU ESCAPED BLACKTHORN KEEP",
+            "nextScene": "scenes/level2.ykscene",
+            "continueAction": "Continue"
           }
         }
       ]

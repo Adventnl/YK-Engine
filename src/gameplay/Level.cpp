@@ -53,6 +53,7 @@ void LevelFlow::publish(GameContext &context, const char *state, const std::stri
 void LevelFlow::onStart(GameContext &context) {
     elapsed_ = 0.0F;
     context.blackboard().set("level_time", 0.0);
+    context.blackboard().set("level_has_next", nextScene.path.empty() ? 0.0 : 1.0);
     if (timeLimit > 0.0F)
         context.blackboard().set("level_time_left", std::ceil(static_cast<double>(timeLimit)));
     for (const std::string &name : keepVariables)

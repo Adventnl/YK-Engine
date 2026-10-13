@@ -1,0 +1,37 @@
+{
+  "format": "yk.animation",
+  "version": 2,
+  "texture": "assets/level2/craftsperson.png",
+  "columns": 4,
+  "rows": 1,
+  "clips": [
+    {
+      "name": "idle_down",
+      "frames": [
+        0
+      ],
+      "fps": 4
+    },
+    {
+      "name": "idle_left",
+      "frames": [
+        1
+      ],
+      "fps": 4
+    },
+    {
+      "name": "idle_right",
+      "frames": [
+        2
+      ],
+      "fps": 4
+    },
+    {
+      "name": "idle_up",
+      "frames": [
+        3
+      ],
+      "fps": 4
+    }
+  ]
+}

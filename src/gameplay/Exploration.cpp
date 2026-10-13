@@ -484,11 +484,15 @@ void EscapePresentation::describe(TypeBuilder<EscapePresentation> &type) {
     type.category("Exploration").description("A compact castle HUD with the actor's actual inventory.");
     type.field("actor", &EscapePresentation::actor);
     type.field("title", &EscapePresentation::title);
+    type.field("completionTitle", &EscapePresentation::completionTitle);
+    type.field("completionText", &EscapePresentation::completionText);
 }
 void EscapePresentation::onFixedUpdate(GameContext &context, float) {
     auto &board = context.blackboard();
     board.set("escape_hud", 1.0);
     board.set("escape_title", title);
+    board.set("escape_completion_title", completionTitle);
+    board.set("escape_completion_text", completionText);
     const Entity *person = context.scene().find(actor);
     const auto *inventory = person ? person->get<Inventory>() : nullptr;
     for (int i = 0; i < 6; ++i) {

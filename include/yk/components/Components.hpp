@@ -279,6 +279,7 @@ class Camera final : public Component {
     bool primary{true};
     CameraMode mode{CameraMode::Fixed};
     float orthographicHeight{18.0F};
+    Vec2 viewportInset{}; // Reserved screen pixels at 1280 x 720; scales with the viewport.
     std::vector<EntityRef> targets; // Follow: their midpoint. FitTargets: also zoom to contain all.
     float padding{3.0F};            // Margin around fitted targets, world units.
     float smoothTime{0.15F};        // Seconds to close about 63% of the distance; 0 snaps.

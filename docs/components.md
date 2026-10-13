@@ -224,6 +224,8 @@ A compact castle HUD with the actor's actual inventory.
 |---|---|---|---|
 | `actor` | entity | none |  |
 | `title` | string | "BLACKTHORN KEEP" |  |
+| `completionTitle` | string | "YOU ESCAPED BLACKTHORN KEEP" |  |
+| `completionText` | string | "Mara follows your rope into the moonlit valley." |  |
 
 ### PatrolWatch
 
@@ -899,6 +901,7 @@ Updates in the PostSimulation phase of the tick.
 | `primary` | bool | true |  |
 | `mode` | enum | "Fixed" | Fixed stays put; Follow tracks the targets' midpoint; FitTargets also zooms to keep them in view. Options: Fixed Follow FitTargets |
 | `orthographicHeight` | float | 18 | World units visible vertically. (range 1 to 500) |
+| `viewportInset` | vec2 | [0,0] | Screen width/height reserved by UI at 1280 x 720; excluded from bounds framing. (range 0 to 2000) |
 | `targets` | entity list | [] |  |
 | `padding` | float | 3 | (range 0 to 100) |
 | `smoothTime` | float | 0.15 | (range 0 to 5) |

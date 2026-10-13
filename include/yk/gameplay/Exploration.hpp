@@ -159,6 +159,8 @@ class EscapePresentation final : public Component {
   public:
     EntityRef actor;
     std::string title{"BLACKTHORN KEEP"};
+    std::string completionTitle{"YOU ESCAPED BLACKTHORN KEEP"};
+    std::string completionText{"Mara follows your rope into the moonlit valley."};
     static void describe(TypeBuilder<EscapePresentation> &type);
     void onFixedUpdate(GameContext &context, float seconds) override;
 };

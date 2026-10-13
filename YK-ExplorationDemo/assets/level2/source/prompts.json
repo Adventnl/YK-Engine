@@ -1,0 +1,49 @@
+[
+  {
+    "name": "furniture",
+    "transparent": true,
+    "prompt": "Use case: stylized-concept. Asset type: complete regenerated pixel RPG castle prison furnishing atlas, 4 columns x 4 rows equal cells, 1024x1024 transparent PNG. Reference image is STYLE AND MATERIAL ONLY, NEVER extract its pixels. Draw each complete separate object centered inside its cell with large transparent margin. Orthographic top-down three-quarter view like The Escapists, front visible, NO isometric angles, cool royal blue stone castle, warm amber wood brass trim, dark ink outlines crisp detailed pixel art. Row 1: horizontal wooden bed blue blanket white pillow; vertical bed blue blanket; amber wood chair; wooden dining table with two side benches. Row 2: kitchen cooking hearth fire stone hood; wooden kitchen shelf with pots; kitchen preparation bench with food; tall wooden cabinet. Row 3: square stone laundry basin blue water; linen clothes rail white sheets; wicker laundry basket; folding table with towels. Row 4: stacked wooden crates; single wooden barrel iron bands; wooden storage chest brass latch; terracotta pot leafy green fern. No labels, no floor, no cast shadow outside objects, no grid lines. All 16 cells contain one complete standalone object. Newly illustrate all assets.",
+    "reference": "Supplied contact sheet, style only"
+  },
+  {
+    "name": "equipment",
+    "transparent": true,
+    "prompt": "Use case: stylized-concept. Asset type: complete regenerated pixel RPG castle prison equipment atlas, 4 columns x 4 rows equal cells, transparent PNG 1024x1024. Reference image STYLE MATERIAL ONLY. Draw complete objects centered each cell with transparent margins and no overlap. Orthographic top-down three-quarter Escapists-style front visible, NO isometric angles. Blue stone warm amber wood brass crisp pixel dark outlines. Row 1: control computer desk three small cyan monitors; tall grey security computer tower red button; small cyan screen terminal on plinth; wooden chair with green upholstery. Row 2: wooden tool rack metal tools; wooden workshop workbench with screwdriver pliers; narrow copper pipe mechanism; green glowing power generator brass and copper pipes. Row 3: hospital bed white pillow green blanket; wheeled medical cart white red cross; pale blue folding privacy screen; wooden nightstand candle. Row 4: wooden courtyard bench with iron ends; square stone planter green shrub; tall iron spear weapon rack wood frame; green iron barred escape gate front view complete rectangular frame. No labels or floor. 16 discrete complete newly drawn assets.",
+    "reference": "Supplied contact sheet, style only"
+  },
+  {
+    "name": "details",
+    "transparent": true,
+    "prompt": "Use case: stylized-concept. Asset type: regenerated castle pixel game decorations and escape item icon atlas. EXACT 4 columns 4 rows equal cells transparent PNG 1024x1024. Reference style only. Whole complete objects centered separately in cells with generous transparent padding. Crisp pixel RPG blue slate amber wood brass royal blue banner palette. Row 1: royal blue banner golden fleur de lis; long blue and gold carpet runner (vertical); lit wall torch fixed iron mount orange flame; square golden doorway threshold tile. Row 2: metal screwdriver amber handle; coiled thick rope; iron grappling hook; coiled rope attached to grappling hook. Row 3: brass key; grey steel wire cutters; glowing cyan security keycard; brass electrical fuse cyan ceramic core. Row 4: green emergency exit switch on steel plinth; loose folded white linens; open toolbox metal tools; small bowl food loaf apple. Icons clear silhouettes no text labels floor or background. Do not crop any object.",
+    "reference": "Supplied contact sheet, style only"
+  },
+  {
+    "name": "tiles",
+    "transparent": false,
+    "prompt": "Use case: stylized-concept. Asset type: regenerated seamless game tile atlas EXACT 4 columns 4 rows equal square cells edge-to-edge opaque textures 1024x1024. Reference image style only. Orthographic top down crisp pixel RPG castle textures. Row 1: pale blue square dormitory flagstones; dark blue square common room flagstones; warm beige canteen flagstones; blue grey laundry square tiles. Row 2: deep slate blue control room tiles; grey store room tiles; light neutral corridor tiles; amber workshop stone tiles. Row 3: pale mint hospital tiles; grassy courtyard ground; sandy exercise court ground; grey utility tiles. Row 4: blue castle masonry HORIZONTAL wall tile bright blue bevel coping at top darker front stone facade below; blue castle masonry VERTICAL wall tile bright bevel on left darker face right; blue masonry south wall coping tile; gold brass threshold tile. Every cell entirely filled square texture, equal cell bounds, no spacing margins labels text shadows no perspective. Floors repeat seamlessly. Pixel art no smooth rendering.",
+    "reference": "Supplied contact sheet, style only"
+  },
+  {
+    "name": "hero",
+    "transparent": true,
+    "prompt": "Use case: stylized-concept. Asset type: character animation sprite sheet EXACT 8 columns x 4 rows equal cells transparent 1024x1024 PNG. Reference protagonist appearance only: small chibi white silver spiky hair, black jacket, orange scarf, cyan trousers, dark shoes, light skin. Draw wholly new character sprites in crisp pixel RPG art for Escapists-style top down castle. Rows direction DOWN front, LEFT true profile, RIGHT true profile, UP back of hair jacket. Each row first 4 cells distinct walk cycle feet alternating; last 4 cells reaching searching both arms working in that facing direction. Equal sized complete full bodies same scale and feet baseline centered each cell, plenty padding, no floor no labels no other character no equipment. No duplicate front poses for left right back. All 32 individual cells.",
+    "reference": "No image reference; appearance specified in prompt"
+  },
+  {
+    "name": "guard",
+    "transparent": true,
+    "prompt": "Use case: stylized-concept. Asset type: regenerated guard animation sheet EXACT 8 columns 4 rows equal cells transparent PNG 1024x1024. Reference guard appearance only. Small chibi uniformed security guard navy officer cap golden badge navy coat brass buttons brown belt dark shoes warm skin. Crisp pixel RPG Escapists-style top down three-quarter. Rows: DOWN front; LEFT true profile; RIGHT true profile; UP rear view. First four columns walking cycle alternating feet and arms; last four columns directional searching reaching gesture. Complete character all frames equal scale feet baseline center cell generous clear margin. No ground shadows no text no props no lines. All 32 sprites newly illustrate.",
+    "reference": "No image reference; appearance specified in prompt"
+  },
+  {
+    "name": "residents",
+    "transparent": true,
+    "prompt": "Use case: stylized-concept. Asset type: regenerated NPC character sheet EXACT 4 columns 6 rows equal cells transparent PNG 1024x1536. Reference appearances style only. Crisp small chibi pixel RPG Escapists-style top down castle. Every row different character, columns facing DOWN front, LEFT profile, RIGHT profile, UP rear. Row 1 brown haired companion bright blue shirt amber trousers. Row 2 cook tall white chef hat white apron grey shirt. Row 3 laundry worker brown bob white cap dark blue dress white apron. Row 4 workshop craftsperson copper goggles brown leather apron orange tunic. Row 5 infirmary nurse auburn hair white cap green cross mint white uniform. Row 6 courtyard worker brown wide brim hat brown vest beige shirt. Full body same scale fixed feet baseline ample padding no floor no props no labels. 24 newly drawn complete different direction frames.",
+    "reference": "No image reference; appearance specified in prompt"
+  },
+  {
+    "name": "safe_fuse",
+    "transparent": true,
+    "prompt": "Use case: stylized-concept. Asset type: single small inventory icon for a pixel RPG prison escape game, transparent PNG. Draw one complete cyan ceramic brass electrical fuse carefully wrapped with white cloth strips around the middle, both golden electrical end caps exposed. Newly illustrate this object with dark outline crisp shaded pixel art, warm gold metal and cyan glass with white linen. Diagonal standalone object centered with lots of padding, no text, no panel, no floor or shadow. Clear silhouette suitable for downscaling to 32 by 32 pixels. Escapists-style RPG item."
+  }
+]

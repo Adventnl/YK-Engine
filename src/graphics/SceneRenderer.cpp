@@ -941,9 +941,11 @@ Status SceneRenderer::drawUi(Renderer &renderer, const Scene &scene, Vec2 viewpo
         if (variables->text("level_state") == "complete") {
             const Vec2 at{(viewport.x - 650 * unit) / 2, (viewport.y - 150 * unit) / 2};
             if (auto status = rectangle(at, {650 * unit, 150 * unit}, {22, 25, 31, 250}, 8500); !status) return status;
-            if (auto status = text("YOU ESCAPED BLACKTHORN KEEP", at + Vec2{32 * unit, 32 * unit}, 2.8F, gold, 8502); !status) return status;
-            if (auto status = text("Mara follows your rope into the moonlit valley.", at + Vec2{32 * unit, 80 * unit}, 1.8F, ink, 8502); !status) return status;
-            if (auto status = text("R - START AGAIN", at + Vec2{32 * unit, 116 * unit}, 1.5F, ink, 8502); !status) return status;
+            if (auto status = text(variables->text("escape_completion_title"), at + Vec2{32 * unit, 32 * unit}, 2.8F, gold, 8502); !status) return status;
+            if (auto status = text(variables->text("escape_completion_text"), at + Vec2{32 * unit, 80 * unit}, 1.8F, ink, 8502); !status) return status;
+            const std::string finishControls = variables->number("level_has_next") != 0
+                ? "ENTER - NEXT LEVEL     R - START AGAIN" : "R - START AGAIN";
+            if (auto status = text(finishControls, at + Vec2{32 * unit, 116 * unit}, 1.5F, ink, 8502); !status) return status;
         }
     }
     if (variables && variables->number("search_ui_active") != 0) {

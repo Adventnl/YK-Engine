@@ -2,9 +2,9 @@
   "format": "yk.project",
   "version": 1,
   "name": "Blackthorn Keep",
-  "startScene": "scenes/courtyard.ykscene",
+  "startScene": "scenes/level2.ykscene",
   "window": {
-    "title": "Blackthorn Keep - A Castle Escape",
+    "title": "Blackthorn Keep - Level 2: The Inner Keep",
     "width": 1280,
     "height": 720
   },
@@ -182,6 +182,12 @@
     "version": "1.0.0",
     "identifier": "",
     "copyright": "YK Engine exploration test scene",
-    "exclude": []
+    "exclude": [
+      "assets/level2/source",
+      "assets/keep/source",
+      "tools",
+      ".impeccable",
+      "reference-style-preview.png"
+    ]
   }
 }

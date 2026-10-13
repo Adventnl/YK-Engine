@@ -279,6 +279,8 @@ void Camera::describe(TypeBuilder<Camera> &type) {
     type.field("orthographicHeight", &Camera::orthographicHeight)
         .range(1, 500, 0.5)
         .tooltip("World units visible vertically.");
+    type.field("viewportInset", &Camera::viewportInset).range(0, 2000)
+        .tooltip("Screen width/height reserved by UI at 1280 x 720; excluded from bounds framing.");
     type.field("targets", &Camera::targets);
     type.field("padding", &Camera::padding).range(0, 100, 0.25);
     type.field("smoothTime", &Camera::smoothTime).range(0, 5, 0.01);
@@ -315,7 +317,10 @@ void Camera::onFixedUpdate(GameContext &context, float seconds) {
         seconds = 0.0F;
     previousPosition_ = position_;
     previousHeight_ = height_;
-    const Vec2 viewport = context.viewportSize();
+    Vec2 viewport = context.viewportSize();
+    const float uiScale = std::min(viewport.x / 1280.0F, viewport.y / 720.0F);
+    viewport.x = std::max(1.0F, viewport.x - viewportInset.x * uiScale);
+    viewport.y = std::max(1.0F, viewport.y - viewportInset.y * uiScale);
     const float aspect = viewport.y > 0 ? viewport.x / viewport.y : 16.0F / 9.0F;
     Vec2 goal = entity().worldPosition();
     float height = orthographicHeight;

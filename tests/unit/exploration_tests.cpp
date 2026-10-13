@@ -21,12 +21,12 @@ int main() {
         if (!resolved) return Error{resolved.error()};
         return loadScene(resolved.value(), registry);
     };
-    auto first = load(project.startScene);
+    auto first = load("scenes/courtyard.ykscene");
     CHECK(first);
     if (!first) return test::finish("exploration");
     RuntimeOptions options;
     options.layers = project.layers; options.inputMap = project.input; options.assets = &assets;
-    auto created = GameSession::create(std::move(first.value()), project.startScene, options, load);
+    auto created = GameSession::create(std::move(first.value()), "scenes/courtyard.ykscene", options, load);
     CHECK(created);
     if (!created) return test::finish("exploration");
     auto session = std::move(created.value());
@@ -152,5 +152,13 @@ int main() {
     CHECK(inventory()->count(ItemId("screwdriver")) == 0);
     CHECK(!object("Castle gate")->get<StateGate>()->open());
     CHECK(!session->runtime().inputLocked());
+    // Completing chapter one and continuing loads the authored second chapter.
+    session->runtime().blackboard().set("drain_open", 1.0);
+    session->runtime().teleport(*actor(), {28.5F, 16.65F}); tick(4);
+    CHECK(session->runtime().blackboard().text("level_state") == "complete");
+    press(Key::Enter); tick(60);
+    CHECK(session->scenePath() == "scenes/level2.ykscene");
+    CHECK(session->runtime().blackboard().text("escape_title") == "BLACKTHORN KEEP / LEVEL 2");
+    CHECK(inventory()->freeSlots() == 6);
     return test::finish("exploration");
 }

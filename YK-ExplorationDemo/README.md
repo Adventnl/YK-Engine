@@ -1,5 +1,12 @@
 # Blackthorn Keep
 
+The project now starts in **Level 2: The Inner Keep**, a furnished thirteen-area castle prison
+with freshly generated art, a character-following camera, crafting, guard patrols, a utility
+wire puzzle and a green exit gate. See [LEVEL2.md](LEVEL2.md) for its route and editable assets.
+
+The original chapter described below remains playable with
+`--scene scenes/courtyard.ykscene`; completing it leads into level two.
+
 A playable castle-prison escape game built in YK Engine. The warden has imprisoned you for
 refusing his taxes. Mara knows a drainage passage beneath the east tower. Find tools, make a
 grappling line, and slip past the patrol before you climb out.

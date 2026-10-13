@@ -179,6 +179,8 @@ if(BUILD_TESTING)
     endif()
     yk_add_test(exploration tests/unit/exploration_tests.cpp LIBS yk::gameplay TIMEOUT 60
         DEFINITIONS YK_EXPLORATION_PROJECT_DIR="${CMAKE_CURRENT_SOURCE_DIR}/YK-ExplorationDemo")
+    yk_add_test(castle_level2 tests/unit/castle_level2_tests.cpp LIBS yk::gameplay TIMEOUT 60
+        DEFINITIONS YK_EXPLORATION_PROJECT_DIR="${CMAKE_CURRENT_SOURCE_DIR}/YK-ExplorationDemo")
     yk_add_test(simulation_demo tests/unit/simulation_demo_tests.cpp LIBS yk::gameplay TIMEOUT 60
         DEFINITIONS YK_SIMULATION_PROJECT_DIR="${CMAKE_CURRENT_SOURCE_DIR}/YK-SimulationDemo")
     yk_add_test(blackwater_demo tests/unit/blackwater_demo_tests.cpp LIBS yk::gameplay TIMEOUT 60
@@ -218,7 +220,7 @@ if(BUILD_TESTING)
         # Exercise the actual search popup, including its first zero-progress frame and loot
         # result. Gameplay-only tests cannot catch invalid sprite dimensions in the HUD.
         add_test(NAME exploration_search_render COMMAND yk_player
-            ${CMAKE_CURRENT_SOURCE_DIR}/YK-ExplorationDemo --fixed --no-audio --frames 520
+            ${CMAKE_CURRENT_SOURCE_DIR}/YK-ExplorationDemo --scene scenes/courtyard.ykscene --fixed --no-audio --frames 520
             --keys "S@0-56,D@58-149,S@151-181,A@183-205,S@207-283,A@285-359,E@361-363"
             --capture ${CMAKE_BINARY_DIR}/exploration-search.bmp)
         set_tests_properties(exploration_search_render PROPERTIES TIMEOUT 30
