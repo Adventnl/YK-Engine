@@ -10,6 +10,28 @@ constexpr Color missingTextureColor{255, 0, 220, 255};
 // A tiled sprite needing more quads than this is drawn stretched instead (and reported).
 constexpr std::size_t maxTilesPerSprite = 40000;
 
+std::string wrapWords(const std::string &text, std::size_t columns) {
+    std::string result;
+    std::size_t column = 0;
+    columns = std::max<std::size_t>(1, columns);
+    for (std::size_t start = 0; start < text.size();) {
+        if (text[start] == '\n') {
+            result += '\n'; column = 0; ++start; continue;
+        }
+        if (text[start] == ' ') { ++start; continue; }
+        const auto end = text.find_first_of(" \n", start);
+        const auto word = text.substr(start, end == std::string::npos ? end : end - start);
+        if (column && column + word.size() + 1 > columns) { result += '\n'; column = 0; }
+        if (column) { result += ' '; ++column; }
+        for (char ch : word) {
+            if (column >= columns) { result += '\n'; column = 0; }
+            result += ch; ++column;
+        }
+        start += word.size();
+    }
+    return result;
+}
+
 Color colliderColor(const Entity &entity, const Collider &collider) {
     if (collider.isTrigger)
         return {255, 200, 70, 255};
@@ -913,6 +935,8 @@ Status SceneRenderer::drawUi(Renderer &renderer, const Scene &scene, Vec2 viewpo
         if (auto status = rectangle({0, bottom}, {viewport.x, 100 * unit}, {22, 25, 31, 255}); !status) return status;
         if (auto status = rectangle({0, bottom}, {viewport.x, unit}, {84, 78, 63, 255}); !status) return status;
         if (auto status = text(variables->text("escape_title"), {20 * unit, 13 * unit}, 2, gold); !status) return status;
+        const auto room = variables->text("current_room");
+        if (auto status = text(room, {viewport.x * .5F - static_cast<float>(room.size()) * 5.1F * unit, 14 * unit}, 1.7F, ink); !status) return status;
         const float suspicion = static_cast<float>(variables->number("escape_suspicion"));
         const std::string routine = suspicion > 0.02F ? "GUARD IS WATCHING" : "DAY 1 / EVENING FREE TIME";
         if (auto status = text(routine, {viewport.x - 360 * unit, 14 * unit}, 1.7F, suspicion > 0.02F ? Color{245, 125, 101, 255} : ink); !status) return status;
@@ -1083,87 +1107,67 @@ Status SceneRenderer::drawUi(Renderer &renderer, const Scene &scene, Vec2 viewpo
             entity && entity->activeInHierarchy() ? entity->get<Dialogue>() : nullptr;
         if (!dialogue || !dialogue->enabled || !dialogue->active())
             continue;
-        const float margin = std::max(16.0F, viewport.x * 0.025F);
-        const float height = std::min(210.0F, viewport.y * 0.34F);
-        const Vec2 boxPos{margin, viewport.y - height - margin};
-        const Vec2 boxSize{viewport.x - margin * 2.0F, height};
-        Sprite panel;
-        panel.texture = white.value();
-        panel.anchor = {0, 0};
-        panel.transform.position = boxPos;
-        panel.size = boxSize;
-        panel.tint = {15, 20, 33, 240};
-        panel.layer = 8000;
-        if (auto submitted = renderer.submit(panel); !submitted)
-            return submitted;
         const DialoguePage &page = dialogue->currentPage();
+        const float unit = std::min(viewport.x / 1280.0F, viewport.y / 720.0F);
+        const bool hasPortrait = !page.portrait.path.empty();
         const bool portraitRight = page.side == "right";
-        float textX = boxPos.x + 24.0F;
-        float rightReserved = 0.0F;
-        if (!page.portrait.path.empty()) {
+        const float width = std::min(1040 * unit, viewport.x - 48 * unit);
+        const float portraitSpace = hasPortrait ? 256 * unit : 0;
+        const float scale = 1.8F * unit;
+        const float lineHeight = BitmapFont::lineAdvance * scale;
+        const std::size_t columns = std::max<std::size_t>(1,
+            static_cast<std::size_t>((width - portraitSpace - 64 * unit) / (BitmapFont::advance * scale)));
+        const auto fullText = wrapWords(page.text, columns);
+        const std::size_t lines = 1 + static_cast<std::size_t>(std::count(fullText.begin(), fullText.end(), '\n'));
+        std::size_t choiceLines = 0;
+        for (const auto &choice : dialogue->choices()) {
+            const auto wrappedChoice = wrapWords("> " + choice, columns);
+            choiceLines += 1 + static_cast<std::size_t>(std::count(wrappedChoice.begin(), wrappedChoice.end(), '\n'));
+        }
+        const float height = std::max(300 * unit, 126 * unit + static_cast<float>(lines + choiceLines) * lineHeight);
+        const float progress = std::clamp(dialogue->presentationTime() / .18F, 0.0F, 1.0F);
+        const float arrival = 1.0F - std::pow(1.0F - progress, 3.0F);
+        const Vec2 boxPos{(viewport.x - width) * .5F,
+                         viewport.y - 124 * unit - height + 12 * unit * (1 - arrival)};
+        auto rectangle = [&](Vec2 at, Vec2 size, Color color, int layer) {
+            Sprite quad;
+            quad.texture = white.value(); quad.anchor = {0, 0};
+            quad.transform.position = at; quad.size = size; quad.tint = color; quad.layer = layer;
+            return renderer.submit(quad);
+        };
+        if (auto status = rectangle({}, viewport, {5, 9, 16, static_cast<std::uint8_t>(105 * arrival)}, 8000); !status) return status;
+        if (auto status = rectangle(boxPos + Vec2{0, 6 * unit}, {width, height}, {0, 0, 0, 90}, 8001); !status) return status;
+        if (auto status = rectangle(boxPos, {width, height}, {22, 25, 31, 255}, 8002); !status) return status;
+        if (auto status = rectangle(boxPos, {width, 2 * unit}, {229, 181, 97, 255}, 8003); !status) return status;
+        float textX = boxPos.x + 32 * unit;
+        if (hasPortrait) {
+            const Vec2 portraitAt = boxPos + Vec2{portraitRight ? width - 248 * unit : 16 * unit, 16 * unit};
+            if (auto status = rectangle(portraitAt, {232 * unit, height - 32 * unit}, {36, 42, 52, 255}, 8003); !status) return status;
             const TextureInfo &portrait = textureFor(renderer, page.portrait.path);
             if (portrait.handle && portrait.pixels.x > 0 && portrait.pixels.y > 0) {
-                const float portraitHeight = std::min(viewport.y * 0.58F, height * 2.0F);
-                const float portraitWidth = portraitHeight * portrait.pixels.x / portrait.pixels.y;
+                const float fit = std::min(224 * unit / portrait.pixels.x, (height - 40 * unit) / portrait.pixels.y);
                 Sprite artwork;
-                artwork.texture = *portrait.handle;
-                artwork.anchor = {0, 0};
-                artwork.transform.position = {
-                    portraitRight ? boxPos.x + boxSize.x - 10.0F - portraitWidth : boxPos.x + 10.0F,
-                    boxPos.y + height - portraitHeight};
-                artwork.size = {portraitWidth, portraitHeight};
-                artwork.layer = 8001;
-                if (auto submitted = renderer.submit(artwork); !submitted)
-                    return submitted;
-                const float taken = std::min(portraitWidth + 18.0F, boxSize.x * 0.42F);
-                if (portraitRight)
-                    rightReserved = taken;
-                else
-                    textX += taken;
+                artwork.texture = *portrait.handle; artwork.anchor = {0, 0}; artwork.layer = 8004;
+                artwork.size = portrait.pixels * fit;
+                artwork.transform.position = portraitAt + Vec2{(232 * unit - artwork.size.x) * .5F, height - 32 * unit - artwork.size.y};
+                if (auto status = renderer.submit(artwork); !status) return status;
             }
+            if (!portraitRight) textX += portraitSpace;
         }
-        const float scale = viewport.y < 500.0F ? 2.0F : 3.0F;
-        const float maxWidth =
-            std::max(60.0F, boxPos.x + boxSize.x - textX - 24.0F - rightReserved);
-        const std::size_t columns = std::max<std::size_t>(
-            1, static_cast<std::size_t>(maxWidth / (BitmapFont::advance * scale)));
-        std::string wrapped;
-        std::size_t column = 0;
-        std::size_t lines = 1;
-        for (char ch : dialogue->visibleText()) {
-            if (ch == '\n' || column >= columns) {
-                wrapped.push_back('\n');
-                ++lines;
-                column = 0;
-                if (ch == ' ' || ch == '\n')
-                    continue;
-            }
-            wrapped.push_back(ch);
-            ++column;
-        }
-        if (auto drawn = font_->draw(renderer, page.speaker, {textX, boxPos.y + 17.0F}, scale,
-                                     {255, 220, 116, 255}, 8002);
-            !drawn)
-            return drawn;
-        if (auto drawn = font_->draw(renderer, wrapped, {textX, boxPos.y + 52.0F}, scale,
-                                     {245, 246, 252, 255}, 8002);
-            !drawn)
-            return drawn;
-        // The choices on offer, once the text is all there: the selected one marked and brighter.
+        const Color ink{225, 218, 190, 255}, gold{229, 181, 97, 255};
+        if (auto status = font_->draw(renderer, page.speaker, {textX, boxPos.y + 28 * unit}, 2.5F * unit, gold, 8005); !status) return status;
+        if (auto status = font_->draw(renderer, wrapWords(dialogue->visibleText(), columns), {textX, boxPos.y + 76 * unit}, scale, ink, 8005); !status) return status;
         if (dialogue->choosing()) {
-            const float lineHeight = BitmapFont::lineAdvance * scale;
-            float y = boxPos.y + 52.0F + static_cast<float>(lines) * lineHeight + 10.0F;
+            float y = boxPos.y + 88 * unit + static_cast<float>(lines) * lineHeight;
             for (std::size_t i = 0; i < dialogue->choices().size(); ++i) {
                 const bool selected = static_cast<int>(i) == dialogue->selectedChoice();
-                const std::string line = (selected ? "> " : "  ") + dialogue->choices()[i];
-                if (auto drawn = font_->draw(
-                        renderer, line, {textX, y}, scale,
-                        selected ? Color{255, 220, 116, 255} : Color{190, 196, 214, 255}, 8002);
-                    !drawn)
-                    return drawn;
-                y += lineHeight;
+                const auto line = wrapWords((selected ? "> " : "  ") + dialogue->choices()[i], columns);
+                if (auto status = font_->draw(renderer, line, {textX, y}, scale, selected ? gold : ink, 8005); !status) return status;
+                y += static_cast<float>(1 + std::count(line.begin(), line.end(), '\n')) * lineHeight;
             }
         }
+        const std::string controls = dialogue->choosing() ? "ARROWS SELECT   E CONFIRM   ESC CLOSE" : "E CONTINUE   ESC CLOSE";
+        if (auto status = font_->draw(renderer, controls, {textX, boxPos.y + height - 30 * unit}, 1.4F * unit, gold, 8005); !status) return status;
         break;
     }
     return success();

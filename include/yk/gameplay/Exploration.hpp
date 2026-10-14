@@ -73,6 +73,8 @@ class StateGate final : public Component, public SignalReceiver {
     std::string unlockFlag;
     std::string persistFlag;
     float animationSeconds{0.35F};
+    Vec2 openOffset{}; // Visual slide; zero chooses the barrier's long axis automatically.
+    bool stopWhenBlocked{true};
     static void describe(TypeBuilder<StateGate> &type);
     void onStart(GameContext &context) override;
     void onFixedUpdate(GameContext &context, float seconds) override;
@@ -85,7 +87,8 @@ class StateGate final : public Component, public SignalReceiver {
   private:
     bool open_{};
     float amount_{};
-    std::uint8_t baseAlpha_{255};
+    Vec2 baseOffset_{}, slide_{};
+    bool signalWasActive_{};
 };
 
 class MapPortal final : public Component {
@@ -113,6 +116,9 @@ class MapSpawn final : public Component {
 class CharacterMotion final : public Component {
   public:
     float stepHeight{0.06F};
+    float idleHeight{0.025F};
+    bool animateSteps{true};
+    bool flipWithMovement{true};
     static void describe(TypeBuilder<CharacterMotion> &type);
     void onStart(GameContext &context) override;
     void onFixedUpdate(GameContext &context, float seconds) override;
@@ -120,6 +126,16 @@ class CharacterMotion final : public Component {
   private:
     Vec2 offset_{}, size_{};
     float phase_{};
+};
+
+// Publishes the actor's current room independently of the camera and screen labels.
+class LocationArea final : public Component {
+  public:
+    EntityRef actor;
+    std::string title;
+    Vec2 boundsMin{}, boundsMax{1, 1};
+    static void describe(TypeBuilder<LocationArea> &type);
+    void onFixedUpdate(GameContext &context, float seconds) override;
 };
 
 // Ordered, data-authored objectives. The first missing flag supplies the next instruction.

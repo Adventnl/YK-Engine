@@ -42,7 +42,7 @@ void TopDownController::onFixedUpdate(GameContext &context, float seconds) {
         return;
     if (context.inputLocked()) {
         context.physics().setVelocity(*body, {});
-        if (context.blackboard().number("search_ui_busy") == 0)
+        if (context.blackboard().number("search_ui_busy") == 0 && context.blackboard().number("wire_ui_active") == 0)
             detail::animateDirection(entity(), {}, facing_, animation_);
         else
             animation_.clear();
@@ -81,9 +81,13 @@ void NpcPath::onFixedUpdate(GameContext &context, float seconds) {
     if (!body)
         return;
     Vec2 motion{};
+    const auto *dialogue = entity().get<Dialogue>();
+    const bool talking = dialogue && dialogue->active();
+    const bool worldMoving = !context.inputLocked() || context.blackboard().number("search_ui_busy") != 0 ||
+                             context.blackboard().number("wire_ui_active") != 0 || context.blackboard().number("dialogue_active") != 0;
     if (wait_ > 0)
         wait_ = std::max(0.0F, wait_ - seconds);
-    else if ((!context.inputLocked() || context.blackboard().number("search_ui_busy") != 0) &&
+    else if (!talking && worldMoving &&
              (requiredFlag.empty() || context.blackboard().number(requiredFlag) != 0.0) &&
              !waypoints.empty() && next_ < waypoints.size()) {
         if (const Entity *waypoint = context.scene().find(waypoints[next_])) {
@@ -126,7 +130,8 @@ void Interactable::onStart(GameContext &context) {
 void Interactable::activate(GameContext &context, Entity &actor) {
     if (!available(context))
         return;
-    if (auto *search = entity().get<SearchAction>()) {
+    auto *gate = entity().get<StateGate>();
+    if (auto *search = entity().get<SearchAction>(); search && (!gate || gate->locked(context))) {
         search->begin(context, actor);
         return;
     }
@@ -136,9 +141,9 @@ void Interactable::activate(GameContext &context, Entity &actor) {
             return;
         }
     }
-    if (auto *gate = entity().get<StateGate>()) {
+    if (gate) {
         if (gate->locked(context)) {
-            context.blackboard().set("escape_notice", "LOCKED - find the brass key in the guard office.");
+            context.blackboard().set("escape_notice", "LOCKED - " + prompt);
             context.blackboard().set("escape_notice_until", context.time() + 3.0);
             context.emit("gate_locked", entity().id(), actor.id());
             return;
@@ -187,7 +192,11 @@ void Interactor::onFixedUpdate(GameContext &context, float) {
                 nearest = gap;
             }
         }
-    context.blackboard().set("interaction_prompt", closest ? closest->prompt : "");
+    std::string prompt = closest ? closest->prompt : "";
+    if (closest)
+        if (auto *gate = closest->entity().get<StateGate>(); gate && !gate->locked(context))
+            prompt = std::string("E - ") + (gate->open() ? "CLOSE " : "OPEN ") + closest->entity().name();
+    context.blackboard().set("interaction_prompt", prompt);
     if (closest && input->button(context, action).pressed)
         closest->activate(context, entity());
 }
@@ -211,18 +220,29 @@ void StateGate::describe(TypeBuilder<StateGate> &type) {
     type.field("unlockFlag", &StateGate::unlockFlag);
     type.field("persistFlag", &StateGate::persistFlag);
     type.field("animationSeconds", &StateGate::animationSeconds).range(0, 10, 0.05);
+    type.field("openOffset", &StateGate::openOffset)
+        .tooltip("Distance the visible door slides; zero uses its collider's long axis.");
+    type.field("stopWhenBlocked", &StateGate::stopWhenBlocked);
     type.field("logic", &StateGate::logic).options(signalLogicNames());
     type.field("invert", &StateGate::invert);
 }
 void StateGate::onStart(GameContext &context) {
-    open_ = startsOpen || (!persistFlag.empty() && context.blackboard().number(persistFlag) != 0);
+    open_ = !persistFlag.empty() && context.blackboard().has(persistFlag)
+                ? context.blackboard().number(persistFlag) != 0 : startsOpen;
     amount_ = open_ ? 1.0F : 0.0F;
     for (Collider *collider : entity().getAll<Collider>())
         if (!collider->isTrigger)
             collider->enabled = !open_;
     if (auto *sprite = entity().get<SpriteRenderer>()) {
-        baseAlpha_ = sprite->color.a;
-        sprite->visible = !open_;
+        baseOffset_ = sprite->offset;
+        slide_ = openOffset;
+        if (slide_ == Vec2{}) {
+            const auto *collider = entity().get<Collider>();
+            const Vec2 size = collider ? collider->size : sprite->size;
+            slide_ = size.x >= size.y ? Vec2{size.x + .15F, 0} : Vec2{0, -size.y - .15F};
+        }
+        sprite->offset = baseOffset_ + slide_ * amount_;
+        sprite->visible = true;
     }
 }
 bool StateGate::locked(GameContext &context) const {
@@ -239,13 +259,34 @@ void StateGate::toggle(GameContext &context) {
     context.emit(open_ ? "gate_opened" : "gate_closed", entity().id());
 }
 void StateGate::onFixedUpdate(GameContext &context, float seconds) {
-    if (signalActive() && !locked(context) && !open_) {
+    const bool signal = signalActive() && !locked(context);
+    if (signal && !signalWasActive_ && !open_) {
         open_ = true;
         if (!persistFlag.empty()) {
             context.blackboard().set(persistFlag, 1.0);
             context.blackboard().keep(persistFlag);
         }
         context.emit("gate_opened", entity().id());
+    }
+    signalWasActive_ = signal;
+    // Never materialize closed collision over someone in the doorway.
+    if (!open_ && amount_ > 0 && stopWhenBlocked) {
+        for (const auto *collider : entity().getAll<Collider>()) {
+            if (collider->isTrigger) continue;
+            const auto transform = entity().worldTransform();
+            const Vec2 size = hadamard(collider->size, {std::abs(transform.scale.x), std::abs(transform.scale.y)});
+            const float angle = degreesToRadians(transform.rotationDegrees);
+            const Vec2 extent{std::abs(std::cos(angle)) * size.x + std::abs(std::sin(angle)) * size.y,
+                              std::abs(std::sin(angle)) * size.x + std::abs(std::cos(angle)) * size.y};
+            physics::QueryFilter filter;
+            filter.categoryBits = UINT64_MAX;
+            filter.maskBits = context.layers().categoryBits("Player") | context.layers().categoryBits("Prop");
+            auto hits = context.physics().queryAabb({transformPoint(transform, collider->offset) - extent * .5F, extent}, filter);
+            if (hits)
+                for (auto shape : hits.value())
+                    if (auto *occupant = context.entityOfShape(shape); occupant && occupant != &entity())
+                        return;
+        }
     }
     const float target = open_ ? 1.0F : 0.0F;
     const float step = animationSeconds > 0 ? seconds / animationSeconds : 1.0F;
@@ -256,9 +297,9 @@ void StateGate::onFixedUpdate(GameContext &context, float seconds) {
     if (auto *animation = entity().get<AnimatedSprite>())
         animation->setBool("open", open_);
     if (auto *sprite = entity().get<SpriteRenderer>()) {
-        sprite->visible = amount_ < 0.99F;
-        sprite->color.a =
-            static_cast<std::uint8_t>(static_cast<float>(baseAlpha_) * (1.0F - amount_));
+        const float eased = amount_ * amount_ * (3.0F - 2.0F * amount_);
+        sprite->visible = true;
+        sprite->offset = baseOffset_ + slide_ * eased;
     }
     for (Collider *collider : entity().getAll<Collider>())
         if (!collider->isTrigger)
@@ -312,8 +353,12 @@ void CharacterMotion::describe(TypeBuilder<CharacterMotion> &type) {
         .dependsOn("SpriteRenderer")
         .description("Breathing, step bounce and facing for single-pose pixel characters.");
     type.field("stepHeight", &CharacterMotion::stepHeight).range(0, 0.3, 0.01);
+    type.field("idleHeight", &CharacterMotion::idleHeight).range(0, 0.2, 0.005);
+    type.field("animateSteps", &CharacterMotion::animateSteps);
+    type.field("flipWithMovement", &CharacterMotion::flipWithMovement);
 }
 void CharacterMotion::onStart(GameContext &) {
+    phase_ = entity().worldPosition().x * 1.7F + entity().worldPosition().y * .9F;
     if (const auto *sprite = entity().get<SpriteRenderer>()) {
         offset_ = sprite->offset;
         size_ = sprite->size;
@@ -330,12 +375,25 @@ void CharacterMotion::onFixedUpdate(GameContext &context, float seconds) {
     const bool walking = lengthSquared(velocity) > 0.04F;
     phase_ += seconds * (walking ? 14.0F : 2.5F);
     const float bounce =
-        walking ? std::abs(std::sin(phase_)) * stepHeight : (std::sin(phase_) + 1.0F) * 0.008F;
+        walking ? std::abs(std::sin(phase_)) * stepHeight : (std::sin(phase_) + 1.0F) * idleHeight * .5F;
     sprite->offset = offset_ + Vec2{walking ? std::sin(phase_) * 0.012F : 0.0F, -bounce};
     sprite->size = {size_.x, size_.y + bounce * 0.3F};
-    sprite->stepSwing = walking ? std::sin(phase_) * stepHeight * 0.75F : 0.0F;
-    if (std::abs(velocity.x) > 0.1F)
+    sprite->stepSwing = walking && animateSteps ? std::sin(phase_) * stepHeight * 0.75F : 0.0F;
+    if (flipWithMovement && std::abs(velocity.x) > 0.1F)
         sprite->flipX = velocity.x < 0;
+}
+
+void LocationArea::describe(TypeBuilder<LocationArea> &type) {
+    type.category("Exploration").description("Publishes the current room name inside authored bounds.");
+    type.field("actor", &LocationArea::actor);
+    type.field("title", &LocationArea::title);
+    type.field("boundsMin", &LocationArea::boundsMin);
+    type.field("boundsMax", &LocationArea::boundsMax);
+}
+void LocationArea::onFixedUpdate(GameContext &context, float) {
+    if (const auto *person = context.scene().find(actor);
+        person && contains({boundsMin, boundsMax - boundsMin}, person->worldPosition()))
+        context.blackboard().set("current_room", title);
 }
 
 void ObjectiveList::describe(TypeBuilder<ObjectiveList> &type) {
@@ -513,6 +571,7 @@ void PatrolWatch::describe(TypeBuilder<PatrolWatch> &type) {
     type.field("catchSeconds", &PatrolWatch::catchSeconds).range(0.1, 20, 0.1);
 }
 void PatrolWatch::onFixedUpdate(GameContext &context, float seconds) {
+    if (context.blackboard().number("dialogue_active") != 0) return;
     Entity *person = context.scene().find(actor);
     if (!person || context.blackboard().text("level_state") == "complete") return;
     cooldown_ = std::max(0.0F, cooldown_ - seconds);
@@ -556,6 +615,11 @@ void WirePuzzle::begin(GameContext &context, EntityId actor) {
     context.blackboard().set("wire_ui_target", 0.0);
     context.blackboard().set("wire_ui_connected", 0.0);
     context.lockInput("wires:" + toString(entity().id()), true);
+    if (auto *person = context.scene().find(actor)) {
+        const Vec2 delta = entity().worldPosition() - person->worldPosition();
+        const std::string facing = std::abs(delta.x) > std::abs(delta.y) ? (delta.x < 0 ? "left" : "right") : (delta.y < 0 ? "up" : "down");
+        if (auto *animation = person->get<AnimatedSprite>()) animation->play("search_" + facing);
+    }
     context.emit("wire_puzzle_started", entity().id(), actor);
 }
 void WirePuzzle::close(GameContext &context) {
@@ -615,6 +679,7 @@ void WirePuzzle::onDestroy(GameContext &context) {
 }
 
 void registerExplorationComponents(ComponentRegistry &registry) {
+    registry.add<LocationArea>("LocationArea");
     registry.add<SearchAction>("SearchAction");
     registry.add<EscapePresentation>("EscapePresentation");
     registry.add<PatrolWatch>("PatrolWatch");

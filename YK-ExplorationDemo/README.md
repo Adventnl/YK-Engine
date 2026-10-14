@@ -4,6 +4,11 @@ The project now starts in **Level 2: The Inner Keep**, a furnished thirteen-area
 with freshly generated art, a character-following camera, crafting, guard patrols, a utility
 wire puzzle and a green exit gate. See [LEVEL2.md](LEVEL2.md) for its route and editable assets.
 
+Residents now walk local routines and breathe while idle. Room names appear on larger plaques
+and in the header. E opens and closes room doors with visible sliding motion; unlocked gates
+can be closed and reopened. Conversations show detailed close-up character portraits, and
+Escape dismisses them while keeping the game running.
+
 The original chapter described below remains playable with
 `--scene scenes/courtyard.ykscene`; completing it leads into level two.
 

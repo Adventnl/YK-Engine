@@ -2,7 +2,7 @@
   "format": "yk.animation",
   "version": 2,
   "texture": "assets/level2/companion.png",
-  "columns": 4,
+  "columns": 12,
   "rows": 1,
   "clips": [
     {
@@ -13,25 +13,65 @@
       "fps": 4
     },
     {
+      "name": "walk_down",
+      "frames": [
+        1,
+        0,
+        2,
+        0
+      ],
+      "fps": 8
+    },
+    {
       "name": "idle_left",
-      "frames": [
-        1
-      ],
-      "fps": 4
-    },
-    {
-      "name": "idle_right",
-      "frames": [
-        2
-      ],
-      "fps": 4
-    },
-    {
-      "name": "idle_up",
       "frames": [
         3
       ],
       "fps": 4
+    },
+    {
+      "name": "walk_left",
+      "frames": [
+        4,
+        3,
+        5,
+        3
+      ],
+      "fps": 8
+    },
+    {
+      "name": "idle_right",
+      "frames": [
+        6
+      ],
+      "fps": 4
+    },
+    {
+      "name": "walk_right",
+      "frames": [
+        7,
+        6,
+        8,
+        6
+      ],
+      "fps": 8
+    },
+    {
+      "name": "idle_up",
+      "frames": [
+        9
+      ],
+      "fps": 4
+    },
+    {
+      "name": "walk_up",
+      "frames": [
+        10,
+        9,
+        11,
+        9
+      ],
+      "fps": 8
     }
   ]
 }

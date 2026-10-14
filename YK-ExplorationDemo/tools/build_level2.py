@@ -24,7 +24,11 @@ def png(image, name, source):
     if prompts.exists():
         metadata.add_text('Generation prompts', prompts.read_text())
         master = next((j for j in json.loads(prompts.read_text()) if source.startswith('Generated ' + j['name'])), None)
-        if master:
+        extra_prompt = (SOURCE / 'dialogue_portraits.prompt.txt' if source.startswith('Generated dialogue_portraits')
+                        else SOURCE / 'residents_walk.prompt.txt' if 'residents_walk' in source else None)
+        if extra_prompt and extra_prompt.exists():
+            metadata.add_text('impeccable:prompt', extra_prompt.read_text())
+        elif master:
             metadata.add_text('impeccable:prompt', master['prompt'])
         else:
             metadata.add_text('impeccable:prompt', 'Origin: ' + source + '; authored with Pillow bitmap text in tools/build_level2.py.')
@@ -40,13 +44,13 @@ def silhouette(image):
         raise ValueError('Empty generated object')
     return image.crop(bounds)
 
-def generated_objects(sheet, columns, rows):
+def generated_objects(sheet, columns, rows, alpha_threshold=80):
     """Find complete objects in the generated sheet's transparent gutters.
 
     Generators don't always honor mathematical cell boundaries. Empty alpha bands
     define the actual rows/columns, preventing clipped hair, banners and furniture.
     """
-    alpha = sheet.getchannel('A').point(lambda a: 255 if a >= 80 else 0)
+    alpha = sheet.getchannel('A').point(lambda a: 255 if a >= alpha_threshold else 0)
     def bands(values):
         found, start = [], None
         for i, occupied in enumerate(values + [False]):
@@ -130,15 +134,31 @@ def export_art():
         save(ART / (role + '.ykanim'), dict(format='yk.animation', version=2, texture=texture(role), columns=8, rows=4, clips=clips))
     residents = Image.open(SOURCE / 'residents.png').convert('RGBA')
     frames = generated_objects(residents, 4, 6)
+    # Ignore the stride master's translucent ground shadows when finding its gutters.
+    strides = generated_objects(Image.open(SOURCE / 'residents_walk.png').convert('RGBA'), 8, 6, alpha_threshold=160)
     for r, role in enumerate(['companion', 'cook', 'laundry_worker', 'craftsperson', 'nurse', 'yard_worker']):
-        sheet = Image.new('RGBA', (128, 44))
+        sheet = Image.new('RGBA', (384, 44))
+        walk = [silhouette(f) for f in strides[r * 8:(r + 1) * 8]]
+        scale = min(28 / max(f.width for f in walk), 40 / max(f.height for f in walk))
         for col in range(4):
-            sheet.alpha_composite(fit(frames[r * 4 + col], (32, 44)), (col * 32, 0))
-        png(sheet, role, 'Generated residents atlas row ' + str(r))
-        save(ART / (role + '.ykanim'), dict(format='yk.animation', version=2, texture=texture(role), columns=4, rows=1,
-             clips=[dict(name='idle_' + d, frames=[i], fps=4) for i, d in enumerate(['down', 'left', 'right', 'up'])]))
+            sheet.alpha_composite(fit(frames[r * 4 + col], (32, 44)), (col * 96, 0))
+            for step in range(2):
+                frame = walk[col * 2 + step]
+                frame = frame.resize((max(1, round(frame.width * scale)), max(1, round(frame.height * scale))), NEAREST)
+                sheet.alpha_composite(frame, (col * 96 + (step + 1) * 32 + (32 - frame.width) // 2, 42 - frame.height))
+        png(sheet, role, 'Generated residents and residents_walk atlases, row ' + str(r))
+        clips = []
+        for i, direction in enumerate(['down', 'left', 'right', 'up']):
+            clips.append(dict(name='idle_' + direction, frames=[i * 3], fps=4))
+            clips.append(dict(name='walk_' + direction, frames=[i * 3 + 1, i * 3, i * 3 + 2, i * 3], fps=8))
+        save(ART / (role + '.ykanim'), dict(format='yk.animation', version=2, texture=texture(role), columns=12, rows=1, clips=clips))
+    # Detailed generated busts, independent of the small directional world sprites.
+    portraits = Image.open(SOURCE / 'dialogue_portraits.png').convert('RGBA')
+    for i, role in enumerate(['companion', 'cook', 'laundry_worker', 'craftsperson', 'nurse', 'yard_worker', 'guard']):
+        png(fit(cell(portraits, i % 4, i // 4, 4, 2), (240, 280)),
+            'portrait_' + role, 'Generated dialogue_portraits atlas, cell ' + str(i))
     # Exact room text is deliberately native pixel UI, not generated lettering.
-    for name in ['NORTH CELLS', 'COMMON ROOM', 'SOUTH CELLS', 'CANTEEN', 'LAUNDRY', 'CONTROL', 'STORES',
+    for name in ['NORTH CELLS', 'COMMON ROOM', 'SOUTH CELLS', 'CANTEEN', 'LAUNDRY', 'CONTROL', 'STORES', 'MAIN CORRIDOR',
                  'WORKSHOP', 'INFIRMARY', 'EXERCISE YARD', 'UTILITY', 'EXIT']:
         font = ImageFont.load_default()
         width = font.getbbox(name)[2] + 12
@@ -216,9 +236,13 @@ def build_scene():
     add('Blue corridor runner', 21, 14, sprite('runner', 3, 7, layer=-20))
     hero = add('Explorer', 3, 5.8, sprite('hero', 1, 1.375, offset=[0, -.4375], ySort=True),
                c('AnimatedSprite', animation='assets/level2/hero.ykanim', clip='idle_down', flipParameter=''),
+               c('CharacterMotion', idleHeight=.035, stepHeight=.025, animateSteps=False, flipWithMovement=False),
                c('TopDownController', speed=4, acceleration=60), c('PlayerInput', actionSet='Player1'), c('Interactor'),
                c('RigidBody', type='Dynamic', gravityScale=0, linearDamping=0, fixedRotation=True, bullet=True),
                c('Collider', size=[.5, .35], layer='Player', friction=0), c('Inventory', slots=6), c('Crafter'), tags=['player'])
+    for name, x, y, w, h, _ in rooms:
+        add(name + ' location', 0, 0, c('LocationArea', actor=hero, title=name.upper(),
+            boundsMin=[x - .5, y - .5], boundsMax=[x + w + .5, y + h + .5]))
     add('Player follow camera', 3, 5.8, c('Camera', mode='Follow', targets=[hero], orthographicHeight=12.083333,
          viewportInset=[0, 140], smoothTime=.08, clampToBounds=True, boundsMin=[0, 0], boundsMax=[48, 28]))
     def prop(name, art, x, y, w=1, h=1.5, parts=(), foot=.65):
@@ -284,7 +308,18 @@ def build_scene():
         c('SearchAction', title='CUT THE EXIT CHAIN', verb='CUTTING THE LAST LINK', duration=3,
           requiredItems=['l2_cutters'], lockedText='Find wire cutters in the workshop tool chest.',
           successFlag='l2_exit_open', successText='Gate open. Walk south through the green exit.', emptyText='The exit is open.'),
-        c('StateGate', startsLocked=True, unlockFlag='l2_exit_open', persistFlag='l2_gate_open'))
+        c('StateGate', startsLocked=True, unlockFlag='l2_exit_open', persistFlag='l2_gate_open', openOffset=[-2.25, 0], animationSeconds=.45))
+    # Unlocked everyday doors retain their artwork beside the jamb while open.
+    # Start open to preserve free circulation; E closes and reopens them at any time.
+    for name, x, y in [('North cell door', 5, 8.5), ('South cell door', 5, 19.5),
+                       ('Canteen door', 17, 9.5), ('Laundry door', 28, 9.5), ('Control door', 38, 9.5),
+                       ('Stores door', 45, 9.5), ('Workshop door', 17, 18.5), ('Infirmary door', 28, 18.5),
+                       ('Utility door', 38, 18.5), ('Exit anteroom door', 45, 18.5)]:
+        add(name, x, y, c('SpriteRenderer', texture='assets/keep/gate.png', size=[2, 2],
+            offset=[0, -.55], ySort=True, layer=9), solid(2, .6),
+            c('StateGate', startsOpen=True, persistFlag='l2_' + name.lower().replace(' ', '_') + '_open',
+              openOffset=[-2.2, 0], animationSeconds=.35),
+            c('Interactable', prompt='E - USE ' + name.upper(), range=1.8), tags=['room_door'])
     prop('Emergency exit switch', 'exit_switch', 43, 25, parts=[c('Interactable', prompt='E - READ EXIT STATUS', range=1.5),
          c('Dialogue', speaker='Exit status', pages=['The green gate needs power from utility. Then cut the chain with wire cutters and walk south.'], charactersPerSecond=0)])
     for x, y in [(2, 10.8), (8.5, 10.8), (12, 17), (31.5, 17), (25, 26), (46, 21)]:
@@ -294,32 +329,50 @@ def build_scene():
     for x, y in [(3, 1.5), (17, 1.5), (28, 1.5), (37, 1.5), (17, 19.5), (29, 19.5), (44, 19.5)]:
         add('Royal banner', x, y, sprite('banner', .8, 1.6, layer=8))
     for x, y in [(1.5, 8), (9.5, 8), (11.5, 9), (23.5, 9), (33.5, 9), (41.5, 9), (11.5, 18), (23.5, 18), (33.5, 18), (41.5, 18)]:
-        add('Fixed wall torch', x, y - .4, sprite('torch', .75, 1.125, layer=8))
-    for label, x, y in [('NORTH CELLS', 3, 8.5), ('COMMON ROOM', 5, 10), ('SOUTH CELLS', 3, 19.5),
-                         ('CANTEEN', 19.6, 9.4), ('LAUNDRY', 30.5, 9.4), ('CONTROL', 39, 9.4), ('STORES', 44.5, 9.4),
-                         ('WORKSHOP', 20.5, 18.4), ('INFIRMARY', 30.5, 18.4), ('EXERCISE YARD', 40, 10),
-                         ('UTILITY', 39, 18.4), ('EXIT', 44.5, 18.4)]:
-        add(label + ' plaque', x, y, sprite('sign_' + label.lower().replace(' ', '_'), max(1.5, len(label) * .16), .5, layer=7))
-    def npc(name, role, x, y, pages, flag='', facing='down'):
+        add('Fixed wall torch', x, y - .4, c('SpriteRenderer', texture='assets/keep/torch.png', size=[.75, 1.125], layer=8),
+            c('AnimatedSprite', animation='assets/keep/torch.ykanim', clip='burn', flipParameter=''))
+    for label, x, y in [('NORTH CELLS', 7.8, 8.5), ('COMMON ROOM', 5, 10), ('SOUTH CELLS', 7.8, 19.5),
+                         ('CANTEEN', 19.6, 9.4), ('LAUNDRY', 30.5, 9.4), ('CONTROL', 40.35, 9.4), ('STORES', 45.2, 7.65),
+                         ('WORKSHOP', 20.5, 18.4), ('INFIRMARY', 30.5, 18.4), ('EXERCISE YARD', 42, 10.8),
+                         ('UTILITY', 40.2, 18.4), ('EXIT', 45, 16.65), ('MAIN CORRIDOR', 24, 11)]:
+        plaque = Image.open(ART / ('sign_' + label.lower().replace(' ', '_') + '.png'))
+        add(label + ' plaque', x, y - .12, sprite('sign_' + label.lower().replace(' ', '_'),
+            plaque.width / 24, .75, layer=18))
+    def npc(name, role, x, y, pages, flag='', facing='down', route=(), wait=2.0):
+        points = [add(name + ' routine ' + str(i), px, py) for i, (px, py) in enumerate(route)]
         add(name, x, y, sprite(role, 1, 1.375, offset=[0, -.4375], ySort=True),
-            c('AnimatedSprite', animation='assets/level2/' + role + '.ykanim', clip='idle_' + facing, flipParameter=''), solid(.5, .35),
+            c('AnimatedSprite', animation='assets/level2/' + role + '.ykanim', clip='idle_' + facing, flipParameter=''),
+            c('CharacterMotion', idleHeight=.035, stepHeight=.025, animateSteps=False, flipWithMovement=False),
+            c('RigidBody', type='Dynamic', gravityScale=0, fixedRotation=True, linearDamping=0, allowSleep=False),
+            c('Collider', size=[.5, .35], layer='Prop', friction=0),
+            c('NpcPath', waypoints=points, speed=.85, waitSeconds=wait),
             c('Interactable', prompt='E - TALK TO ' + name.upper(), range=1.5, setFlag=flag),
-            c('Dialogue', speaker=name, pages=pages, charactersPerSecond=0))
+            c('Dialogue', speaker=name, pages=pages, portrait=texture('portrait_' + role), charactersPerSecond=0))
     npc('Mara', 'companion', 7.5, 15.5, ['Welcome to the inner keep. The green exit is south of the east yard. Its power is cut, and a chain holds it shut.',
         'Find a screwdriver and wire cutters in the workshop. Pry open the stores for a fuse and take linen from the laundry. Wrap them at the repair bench.',
-        'Steal the security card from control while the guard is away. Match the utility terminal wires, cut the exit chain, then walk south.'], 'l2_met_mara', 'left')
-    npc('Cook Bram', 'cook', 21, 8, ['Workshop supplies are south of the long corridor. The control guard cannot see through the walls.'])
-    npc('Ada', 'laundry_worker', 27, 7, ['Take clean linen from the folding table. Wrapped around the spare fuse, it will protect your hands.'])
-    npc('Tomas', 'craftsperson', 17, 25.2, ['Search both tool containers. The repair bench needs a spare fuse and clean linen.'])
-    npc('Nurse Iona', 'nurse', 28.5, 24.5, ['If the guard catches you, you return to your cell. Hidden tools stay with you. Step out of control before the warning fills.'])
-    npc('Rowan', 'yard_worker', 37.5, 15, ['Utility is south of this yard. On the terminal, W/S chooses a source and A/D chooses a destination. Match the letter and press E.'])
+        'Steal the security card from control while the guard is away. Match the utility terminal wires, cut the exit chain, then walk south.'], 'l2_met_mara', 'left',
+        route=[(7.5, 15.5), (7.5, 17), (5.5, 17), (7.5, 17)], wait=2.6)
+    npc('Cook Bram', 'cook', 21, 8, ['Workshop supplies are south of the long corridor. The control guard cannot see through the walls.'],
+        route=[(21, 8), (19, 8), (19, 7.5), (21, 7.5)], wait=3.1)
+    npc('Ada', 'laundry_worker', 27, 7, ['Take clean linen from the folding table. Wrapped around the spare fuse, it will protect your hands.'],
+        route=[(27, 7), (28, 7), (28, 5.5), (27, 5.5)], wait=2.2)
+    npc('Tomas', 'craftsperson', 17, 25.2, ['Search both tool containers. The repair bench needs a spare fuse and clean linen.'],
+        route=[(17, 25.2), (17, 23.5), (18, 23.5), (17, 23.5)], wait=3.5)
+    npc('Nurse Iona', 'nurse', 28.5, 24.5, ['If the guard catches you, you return to your cell. Hidden tools stay with you. Step out of control before the warning fills.'],
+        route=[(28.5, 24.5), (29.3, 24.5), (29.3, 23.5), (29.3, 24.5)], wait=2.8)
+    npc('Rowan', 'yard_worker', 37.5, 15, ['Utility is south of this yard. On the terminal, W/S chooses a source and A/D chooses a destination. Match the letter and press E.'],
+        route=[(37.5, 15), (40, 15), (40, 16), (40, 15)], wait=2.4)
     points = [add('Patrol marker ' + str(i), x, y) for i, (x, y) in enumerate([(35.5, 6), (39.5, 6), (37.5, 7.5), (37.5, 12), (35.5, 12), (37.5, 12), (37.5, 7.5)])]
     add('Control guard', 35.5, 6, sprite('guard', 1, 1.375, offset=[0, -.4375], ySort=True),
         c('AnimatedSprite', animation='assets/level2/guard.ykanim', clip='idle_down', flipParameter=''),
+        c('CharacterMotion', idleHeight=.035, stepHeight=.025, animateSteps=False, flipWithMovement=False),
         c('NpcPath', waypoints=points, speed=1.6, waitSeconds=1), c('RigidBody', type='Kinematic', gravityScale=0, fixedRotation=True),
-        solid(.5, .35), c('PatrolWatch', actor=hero, restrictedMin=[34, 1], restrictedMax=[41, 9], returnPosition=[3, 5.8], range=3.2, catchSeconds=3.5))
+        solid(.5, .35), c('PatrolWatch', actor=hero, restrictedMin=[34, 1], restrictedMax=[41, 9], returnPosition=[3, 5.8], range=3.2, catchSeconds=3.5),
+        c('Interactable', prompt='E - TALK TO CONTROL GUARD', range=1.5),
+        c('Dialogue', speaker='Control guard', portrait=texture('portrait_guard'), charactersPerSecond=0,
+          pages=['Free time ends at dusk. Keep clear of the control desk. You can close unlocked room doors with E.']))
     goal = add('South escape passage', 45, 27.6, c('Collider', size=[1.7, .65], isTrigger=True, layer='Sensor'),
-               c('Goal', requiredTag='player', requiredFlag='l2_exit_open', enterOnComplete=True))
+               c('Goal', requiredTag='player', requiredFlag='l2_gate_open', enterOnComplete=True))
     add('Level two story', 0, 0, c('ObjectiveList',
         flags=['l2_met_mara', 'l2_tool_found', 'l2_cutters_found', 'l2_linen_found', 'l2_fuse_found', 'l2_fuse_made', 'l2_card_found', 'l2_power_restored', 'l2_exit_open'],
         instructions=['Talk to Mara in the west common room.', 'Search the tool bench in the south workshop.', 'Search the workshop tool chest for wire cutters.',
@@ -341,7 +394,7 @@ def build_scene():
     project['startScene'] = 'scenes/level2.ykscene'
     project['window']['title'] = 'Blackthorn Keep - Level 2: The Inner Keep'
     project['build']['exclude'] = list(dict.fromkeys(project['build'].get('exclude', []) +
-        ['assets/level2/source', 'assets/keep/source', 'tools', '.impeccable', 'reference-style-preview.png']))
+        ['assets/level2/source', 'assets/keep/source', 'tools', '.impeccable', 'reference-style-preview.png', 'level2-dialogue-preview.png']))
     save(ROOT / 'project.ykproj', project)
     print('Level 2:', len(entities), 'editable entities;', len(rooms), 'rooms;', len(list(ART.glob('*.png'))), 'regenerated textures.')
 

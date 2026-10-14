@@ -200,6 +200,17 @@ Destroys the entity after a while (for effect prefabs).
 
 ## Exploration
 
+### LocationArea
+
+Publishes the current room name inside authored bounds.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `actor` | entity | none |  |
+| `title` | string | "" |  |
+| `boundsMin` | vec2 | [0,0] |  |
+| `boundsMax` | vec2 | [1,1] |  |
+
 ### SearchAction
 
 Timed, cancellable container search or recipe crafting with a result popup.
@@ -249,6 +260,9 @@ Requires: `SpriteRenderer`
 | Property | Type | Default | Notes |
 |---|---|---|---|
 | `stepHeight` | float | 0.06 | (range 0 to 0.3) |
+| `idleHeight` | float | 0.025 | (range 0 to 0.2) |
+| `animateSteps` | bool | true |  |
+| `flipWithMovement` | bool | true |  |
 
 ### ObjectiveList
 
@@ -337,6 +351,8 @@ Requires: `Collider`
 | `unlockFlag` | string | "" |  |
 | `persistFlag` | string | "" |  |
 | `animationSeconds` | float | 0.35 | (range 0 to 10) |
+| `openOffset` | vec2 | [0,0] | Distance the visible door slides; zero uses its collider's long axis. |
+| `stopWhenBlocked` | bool | true |  |
 | `logic` | enum | "Any" | Options: Any All |
 | `invert` | bool | false |  |
 

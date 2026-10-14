@@ -163,6 +163,27 @@ walk cells and four reaching/searching cells, with a direction-specific idle. Wa
 at 9 fps, searching at 6 fps, and the four-cell torch flame at 7 fps. Torch cells are 32 × 48 pixels; every frame
 uses the same mounting pixels, with the upper flame region supplying the animation.
 
+Level-two residents use 12-column sheets: an idle pose and two alternating strides for each
+of four directions. Walking plays stride, neutral, opposite stride, neutral at 8 fps. Their
+room routines have different waits; breathing and gentle sway continue while standing. During
+conversation only the speaker stops; background residents keep moving.
+
+Ten ordinary room doors begin open and slide beside the wall. E closes or reopens them,
+with collision held until the opening motion finishes and closing deferred while the threshold
+is occupied. Unlocking the green exit and opening it are separate states; cutting the chain
+happens once, and subsequent E presses toggle the visible gate.
+
+All thirteen level-two areas publish their room name to the HUD header. Plaques use their
+authored aspect ratio at a .75-world-unit height and render above doors and furniture.
+
+### Conversation popup
+
+The dialogue panel is 1040 by at least 300 reference pixels, centered above the footer.
+A 232-pixel-wide portrait well holds a newly generated detailed bust. The speaker uses scale
+2.5, word-wrapped body copy scale 1.8, and dismissal hints scale 1.4; all follow the shared
+viewport unit. A restrained 180 ms arrival and darkened backdrop focus attention on the
+character. E continues or confirms a choice; Escape closes the conversation without quitting.
+
 ### Search and result panels
 
 Search progress

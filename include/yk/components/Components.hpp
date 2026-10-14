@@ -170,6 +170,7 @@ class Dialogue final : public Component {
         return selected_;
     }
     bool choosing() const;
+    float presentationTime() const { return presentationTime_; }
     void onFixedUpdate(GameContext &context, float seconds) override;
     void onDestroy(GameContext &context) override;
 
@@ -187,6 +188,7 @@ class Dialogue final : public Component {
     float visibleCharacters_{};
     std::uint64_t startedTick_{};
     bool active_{};
+    float presentationTime_{};
 };
 
 // ----- Physics -----------------------------------------------------------------------------

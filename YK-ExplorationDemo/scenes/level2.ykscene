@@ -13806,6 +13806,15 @@
           }
         },
         {
+          "type": "CharacterMotion",
+          "properties": {
+            "idleHeight": 0.035,
+            "stepHeight": 0.025,
+            "animateSteps": false,
+            "flipWithMovement": false
+          }
+        },
+        {
           "type": "TopDownController",
           "properties": {
             "speed": 4,
@@ -13860,6 +13869,422 @@
     },
     {
       "id": "0000000000000149",
+      "name": "North cells location",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "LocationArea",
+          "properties": {
+            "actor": "0000000000000148",
+            "title": "NORTH CELLS",
+            "boundsMin": [
+              0.5,
+              0.5
+            ],
+            "boundsMax": [
+              10.5,
+              8.5
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "000000000000014a",
+      "name": "Common room location",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "LocationArea",
+          "properties": {
+            "actor": "0000000000000148",
+            "title": "COMMON ROOM",
+            "boundsMin": [
+              0.5,
+              8.5
+            ],
+            "boundsMax": [
+              10.5,
+              19.5
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "000000000000014b",
+      "name": "South cells location",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "LocationArea",
+          "properties": {
+            "actor": "0000000000000148",
+            "title": "SOUTH CELLS",
+            "boundsMin": [
+              0.5,
+              19.5
+            ],
+            "boundsMax": [
+              10.5,
+              27.5
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "000000000000014c",
+      "name": "Canteen location",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "LocationArea",
+          "properties": {
+            "actor": "0000000000000148",
+            "title": "CANTEEN",
+            "boundsMin": [
+              10.5,
+              0.5
+            ],
+            "boundsMax": [
+              23.5,
+              9.5
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "000000000000014d",
+      "name": "Laundry location",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "LocationArea",
+          "properties": {
+            "actor": "0000000000000148",
+            "title": "LAUNDRY",
+            "boundsMin": [
+              23.5,
+              0.5
+            ],
+            "boundsMax": [
+              33.5,
+              9.5
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "000000000000014e",
+      "name": "Control location",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "LocationArea",
+          "properties": {
+            "actor": "0000000000000148",
+            "title": "CONTROL",
+            "boundsMin": [
+              33.5,
+              0.5
+            ],
+            "boundsMax": [
+              41.5,
+              9.5
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "000000000000014f",
+      "name": "Stores location",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "LocationArea",
+          "properties": {
+            "actor": "0000000000000148",
+            "title": "STORES",
+            "boundsMin": [
+              41.5,
+              0.5
+            ],
+            "boundsMax": [
+              47.5,
+              9.5
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000150",
+      "name": "Main corridor location",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "LocationArea",
+          "properties": {
+            "actor": "0000000000000148",
+            "title": "MAIN CORRIDOR",
+            "boundsMin": [
+              10.5,
+              9.5
+            ],
+            "boundsMax": [
+              33.5,
+              18.5
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000151",
+      "name": "Workshop location",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "LocationArea",
+          "properties": {
+            "actor": "0000000000000148",
+            "title": "WORKSHOP",
+            "boundsMin": [
+              10.5,
+              18.5
+            ],
+            "boundsMax": [
+              23.5,
+              27.5
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000152",
+      "name": "Infirmary location",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "LocationArea",
+          "properties": {
+            "actor": "0000000000000148",
+            "title": "INFIRMARY",
+            "boundsMin": [
+              23.5,
+              18.5
+            ],
+            "boundsMax": [
+              33.5,
+              27.5
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000153",
+      "name": "Exercise yard location",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "LocationArea",
+          "properties": {
+            "actor": "0000000000000148",
+            "title": "EXERCISE YARD",
+            "boundsMin": [
+              33.5,
+              9.5
+            ],
+            "boundsMax": [
+              47.5,
+              18.5
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000154",
+      "name": "Utility location",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "LocationArea",
+          "properties": {
+            "actor": "0000000000000148",
+            "title": "UTILITY",
+            "boundsMin": [
+              33.5,
+              18.5
+            ],
+            "boundsMax": [
+              41.5,
+              27.5
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000155",
+      "name": "Exit location",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "LocationArea",
+          "properties": {
+            "actor": "0000000000000148",
+            "title": "EXIT",
+            "boundsMin": [
+              41.5,
+              18.5
+            ],
+            "boundsMax": [
+              47.5,
+              27.5
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000156",
       "name": "Player follow camera",
       "transform": {
         "position": [
@@ -13900,7 +14325,7 @@
       ]
     },
     {
-      "id": "000000000000014a",
+      "id": "0000000000000157",
       "name": "Dormitory bed",
       "transform": {
         "position": [
@@ -13948,7 +14373,7 @@
       ]
     },
     {
-      "id": "000000000000014b",
+      "id": "0000000000000158",
       "name": "Dormitory chair",
       "transform": {
         "position": [
@@ -13996,7 +14421,7 @@
       ]
     },
     {
-      "id": "000000000000014c",
+      "id": "0000000000000159",
       "name": "Dormitory bed",
       "transform": {
         "position": [
@@ -14044,7 +14469,7 @@
       ]
     },
     {
-      "id": "000000000000014d",
+      "id": "000000000000015a",
       "name": "Dormitory chair",
       "transform": {
         "position": [
@@ -14092,7 +14517,7 @@
       ]
     },
     {
-      "id": "000000000000014e",
+      "id": "000000000000015b",
       "name": "Dormitory bed",
       "transform": {
         "position": [
@@ -14140,7 +14565,7 @@
       ]
     },
     {
-      "id": "000000000000014f",
+      "id": "000000000000015c",
       "name": "Dormitory chair",
       "transform": {
         "position": [
@@ -14188,7 +14613,7 @@
       ]
     },
     {
-      "id": "0000000000000150",
+      "id": "000000000000015d",
       "name": "Dormitory bed",
       "transform": {
         "position": [
@@ -14236,7 +14661,7 @@
       ]
     },
     {
-      "id": "0000000000000151",
+      "id": "000000000000015e",
       "name": "Dormitory chair",
       "transform": {
         "position": [
@@ -14284,7 +14709,7 @@
       ]
     },
     {
-      "id": "0000000000000152",
+      "id": "000000000000015f",
       "name": "Common room dining table",
       "transform": {
         "position": [
@@ -14332,7 +14757,7 @@
       ]
     },
     {
-      "id": "0000000000000153",
+      "id": "0000000000000160",
       "name": "Common room chest",
       "transform": {
         "position": [
@@ -14380,7 +14805,7 @@
       ]
     },
     {
-      "id": "0000000000000154",
+      "id": "0000000000000161",
       "name": "Common room barrel",
       "transform": {
         "position": [
@@ -14428,7 +14853,7 @@
       ]
     },
     {
-      "id": "0000000000000155",
+      "id": "0000000000000162",
       "name": "Canteen dining set",
       "transform": {
         "position": [
@@ -14476,7 +14901,7 @@
       ]
     },
     {
-      "id": "0000000000000156",
+      "id": "0000000000000163",
       "name": "Canteen dining set",
       "transform": {
         "position": [
@@ -14524,7 +14949,7 @@
       ]
     },
     {
-      "id": "0000000000000157",
+      "id": "0000000000000164",
       "name": "Kitchen hearth",
       "transform": {
         "position": [
@@ -14572,7 +14997,7 @@
       ]
     },
     {
-      "id": "0000000000000158",
+      "id": "0000000000000165",
       "name": "Kitchen shelves",
       "transform": {
         "position": [
@@ -14620,7 +15045,7 @@
       ]
     },
     {
-      "id": "0000000000000159",
+      "id": "0000000000000166",
       "name": "Kitchen preparation table",
       "transform": {
         "position": [
@@ -14668,7 +15093,7 @@
       ]
     },
     {
-      "id": "000000000000015a",
+      "id": "0000000000000167",
       "name": "Kitchen barrel",
       "transform": {
         "position": [
@@ -14716,7 +15141,7 @@
       ]
     },
     {
-      "id": "000000000000015b",
+      "id": "0000000000000168",
       "name": "Laundry wash basin",
       "transform": {
         "position": [
@@ -14764,7 +15189,7 @@
       ]
     },
     {
-      "id": "000000000000015c",
+      "id": "0000000000000169",
       "name": "Laundry wash basin",
       "transform": {
         "position": [
@@ -14812,7 +15237,7 @@
       ]
     },
     {
-      "id": "000000000000015d",
+      "id": "000000000000016a",
       "name": "Laundry wash basin",
       "transform": {
         "position": [
@@ -14860,7 +15285,7 @@
       ]
     },
     {
-      "id": "000000000000015e",
+      "id": "000000000000016b",
       "name": "Drying linen",
       "transform": {
         "position": [
@@ -14908,7 +15333,7 @@
       ]
     },
     {
-      "id": "000000000000015f",
+      "id": "000000000000016c",
       "name": "Laundry basket",
       "transform": {
         "position": [
@@ -14956,7 +15381,7 @@
       ]
     },
     {
-      "id": "0000000000000160",
+      "id": "000000000000016d",
       "name": "Linen table",
       "transform": {
         "position": [
@@ -15042,7 +15467,7 @@
       ]
     },
     {
-      "id": "0000000000000161",
+      "id": "000000000000016e",
       "name": "Security desk",
       "transform": {
         "position": [
@@ -15128,7 +15553,7 @@
       ]
     },
     {
-      "id": "0000000000000162",
+      "id": "000000000000016f",
       "name": "Security tower",
       "transform": {
         "position": [
@@ -15176,7 +15601,7 @@
       ]
     },
     {
-      "id": "0000000000000163",
+      "id": "0000000000000170",
       "name": "Control chair",
       "transform": {
         "position": [
@@ -15224,7 +15649,7 @@
       ]
     },
     {
-      "id": "0000000000000164",
+      "id": "0000000000000171",
       "name": "Control terminal",
       "transform": {
         "position": [
@@ -15272,7 +15697,7 @@
       ]
     },
     {
-      "id": "0000000000000165",
+      "id": "0000000000000172",
       "name": "Store crates",
       "transform": {
         "position": [
@@ -15320,7 +15745,7 @@
       ]
     },
     {
-      "id": "0000000000000166",
+      "id": "0000000000000173",
       "name": "Store crates",
       "transform": {
         "position": [
@@ -15368,7 +15793,7 @@
       ]
     },
     {
-      "id": "0000000000000167",
+      "id": "0000000000000174",
       "name": "Fuse cabinet",
       "transform": {
         "position": [
@@ -15456,7 +15881,7 @@
       ]
     },
     {
-      "id": "0000000000000168",
+      "id": "0000000000000175",
       "name": "Tool bench",
       "transform": {
         "position": [
@@ -15542,7 +15967,7 @@
       ]
     },
     {
-      "id": "0000000000000169",
+      "id": "0000000000000176",
       "name": "Tool chest",
       "transform": {
         "position": [
@@ -15628,7 +16053,7 @@
       ]
     },
     {
-      "id": "000000000000016a",
+      "id": "0000000000000177",
       "name": "Repair workbench",
       "transform": {
         "position": [
@@ -15702,7 +16127,7 @@
       ]
     },
     {
-      "id": "000000000000016b",
+      "id": "0000000000000178",
       "name": "Workshop tools rack",
       "transform": {
         "position": [
@@ -15750,7 +16175,7 @@
       ]
     },
     {
-      "id": "000000000000016c",
+      "id": "0000000000000179",
       "name": "Workshop copper pipe",
       "transform": {
         "position": [
@@ -15798,7 +16223,7 @@
       ]
     },
     {
-      "id": "000000000000016d",
+      "id": "000000000000017a",
       "name": "Workshop crates",
       "transform": {
         "position": [
@@ -15846,7 +16271,7 @@
       ]
     },
     {
-      "id": "000000000000016e",
+      "id": "000000000000017b",
       "name": "Infirmary bed",
       "transform": {
         "position": [
@@ -15894,7 +16319,7 @@
       ]
     },
     {
-      "id": "000000000000016f",
+      "id": "000000000000017c",
       "name": "Bedside candle",
       "transform": {
         "position": [
@@ -15942,7 +16367,7 @@
       ]
     },
     {
-      "id": "0000000000000170",
+      "id": "000000000000017d",
       "name": "Infirmary bed",
       "transform": {
         "position": [
@@ -15990,7 +16415,7 @@
       ]
     },
     {
-      "id": "0000000000000171",
+      "id": "000000000000017e",
       "name": "Bedside candle",
       "transform": {
         "position": [
@@ -16038,7 +16463,7 @@
       ]
     },
     {
-      "id": "0000000000000172",
+      "id": "000000000000017f",
       "name": "Medical cart",
       "transform": {
         "position": [
@@ -16086,7 +16511,7 @@
       ]
     },
     {
-      "id": "0000000000000173",
+      "id": "0000000000000180",
       "name": "Privacy screen",
       "transform": {
         "position": [
@@ -16134,7 +16559,7 @@
       ]
     },
     {
-      "id": "0000000000000174",
+      "id": "0000000000000181",
       "name": "Yard bench",
       "transform": {
         "position": [
@@ -16182,7 +16607,7 @@
       ]
     },
     {
-      "id": "0000000000000175",
+      "id": "0000000000000182",
       "name": "Yard bench",
       "transform": {
         "position": [
@@ -16230,7 +16655,7 @@
       ]
     },
     {
-      "id": "0000000000000176",
+      "id": "0000000000000183",
       "name": "Yard stone planter",
       "transform": {
         "position": [
@@ -16278,7 +16703,7 @@
       ]
     },
     {
-      "id": "0000000000000177",
+      "id": "0000000000000184",
       "name": "Utility power generator",
       "transform": {
         "position": [
@@ -16326,7 +16751,7 @@
       ]
     },
     {
-      "id": "0000000000000178",
+      "id": "0000000000000185",
       "name": "Utility copper pipe",
       "transform": {
         "position": [
@@ -16374,7 +16799,7 @@
       ]
     },
     {
-      "id": "0000000000000179",
+      "id": "0000000000000186",
       "name": "Utility cabinet",
       "transform": {
         "position": [
@@ -16422,7 +16847,7 @@
       ]
     },
     {
-      "id": "000000000000017a",
+      "id": "0000000000000187",
       "name": "Power terminal",
       "transform": {
         "position": [
@@ -16488,7 +16913,7 @@
       ]
     },
     {
-      "id": "000000000000017b",
+      "id": "0000000000000188",
       "name": "Green exit gate",
       "transform": {
         "position": [
@@ -16561,13 +16986,718 @@
           "properties": {
             "startsLocked": true,
             "unlockFlag": "l2_exit_open",
-            "persistFlag": "l2_gate_open"
+            "persistFlag": "l2_gate_open",
+            "openOffset": [
+              -2.25,
+              0
+            ],
+            "animationSeconds": 0.45
           }
         }
       ]
     },
     {
-      "id": "000000000000017c",
+      "id": "0000000000000189",
+      "name": "North cell door",
+      "transform": {
+        "position": [
+          5,
+          8.5
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/keep/gate.png",
+            "size": [
+              2,
+              2
+            ],
+            "offset": [
+              0,
+              -0.55
+            ],
+            "ySort": true,
+            "layer": 9
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              2,
+              0.6
+            ],
+            "offset": [
+              0,
+              0
+            ],
+            "layer": "Solid",
+            "friction": 0
+          }
+        },
+        {
+          "type": "StateGate",
+          "properties": {
+            "startsOpen": true,
+            "persistFlag": "l2_north_cell_door_open",
+            "openOffset": [
+              -2.2,
+              0
+            ],
+            "animationSeconds": 0.35
+          }
+        },
+        {
+          "type": "Interactable",
+          "properties": {
+            "prompt": "E - USE NORTH CELL DOOR",
+            "range": 1.8
+          }
+        }
+      ],
+      "tags": [
+        "room_door"
+      ]
+    },
+    {
+      "id": "000000000000018a",
+      "name": "South cell door",
+      "transform": {
+        "position": [
+          5,
+          19.5
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/keep/gate.png",
+            "size": [
+              2,
+              2
+            ],
+            "offset": [
+              0,
+              -0.55
+            ],
+            "ySort": true,
+            "layer": 9
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              2,
+              0.6
+            ],
+            "offset": [
+              0,
+              0
+            ],
+            "layer": "Solid",
+            "friction": 0
+          }
+        },
+        {
+          "type": "StateGate",
+          "properties": {
+            "startsOpen": true,
+            "persistFlag": "l2_south_cell_door_open",
+            "openOffset": [
+              -2.2,
+              0
+            ],
+            "animationSeconds": 0.35
+          }
+        },
+        {
+          "type": "Interactable",
+          "properties": {
+            "prompt": "E - USE SOUTH CELL DOOR",
+            "range": 1.8
+          }
+        }
+      ],
+      "tags": [
+        "room_door"
+      ]
+    },
+    {
+      "id": "000000000000018b",
+      "name": "Canteen door",
+      "transform": {
+        "position": [
+          17,
+          9.5
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/keep/gate.png",
+            "size": [
+              2,
+              2
+            ],
+            "offset": [
+              0,
+              -0.55
+            ],
+            "ySort": true,
+            "layer": 9
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              2,
+              0.6
+            ],
+            "offset": [
+              0,
+              0
+            ],
+            "layer": "Solid",
+            "friction": 0
+          }
+        },
+        {
+          "type": "StateGate",
+          "properties": {
+            "startsOpen": true,
+            "persistFlag": "l2_canteen_door_open",
+            "openOffset": [
+              -2.2,
+              0
+            ],
+            "animationSeconds": 0.35
+          }
+        },
+        {
+          "type": "Interactable",
+          "properties": {
+            "prompt": "E - USE CANTEEN DOOR",
+            "range": 1.8
+          }
+        }
+      ],
+      "tags": [
+        "room_door"
+      ]
+    },
+    {
+      "id": "000000000000018c",
+      "name": "Laundry door",
+      "transform": {
+        "position": [
+          28,
+          9.5
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/keep/gate.png",
+            "size": [
+              2,
+              2
+            ],
+            "offset": [
+              0,
+              -0.55
+            ],
+            "ySort": true,
+            "layer": 9
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              2,
+              0.6
+            ],
+            "offset": [
+              0,
+              0
+            ],
+            "layer": "Solid",
+            "friction": 0
+          }
+        },
+        {
+          "type": "StateGate",
+          "properties": {
+            "startsOpen": true,
+            "persistFlag": "l2_laundry_door_open",
+            "openOffset": [
+              -2.2,
+              0
+            ],
+            "animationSeconds": 0.35
+          }
+        },
+        {
+          "type": "Interactable",
+          "properties": {
+            "prompt": "E - USE LAUNDRY DOOR",
+            "range": 1.8
+          }
+        }
+      ],
+      "tags": [
+        "room_door"
+      ]
+    },
+    {
+      "id": "000000000000018d",
+      "name": "Control door",
+      "transform": {
+        "position": [
+          38,
+          9.5
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/keep/gate.png",
+            "size": [
+              2,
+              2
+            ],
+            "offset": [
+              0,
+              -0.55
+            ],
+            "ySort": true,
+            "layer": 9
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              2,
+              0.6
+            ],
+            "offset": [
+              0,
+              0
+            ],
+            "layer": "Solid",
+            "friction": 0
+          }
+        },
+        {
+          "type": "StateGate",
+          "properties": {
+            "startsOpen": true,
+            "persistFlag": "l2_control_door_open",
+            "openOffset": [
+              -2.2,
+              0
+            ],
+            "animationSeconds": 0.35
+          }
+        },
+        {
+          "type": "Interactable",
+          "properties": {
+            "prompt": "E - USE CONTROL DOOR",
+            "range": 1.8
+          }
+        }
+      ],
+      "tags": [
+        "room_door"
+      ]
+    },
+    {
+      "id": "000000000000018e",
+      "name": "Stores door",
+      "transform": {
+        "position": [
+          45,
+          9.5
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/keep/gate.png",
+            "size": [
+              2,
+              2
+            ],
+            "offset": [
+              0,
+              -0.55
+            ],
+            "ySort": true,
+            "layer": 9
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              2,
+              0.6
+            ],
+            "offset": [
+              0,
+              0
+            ],
+            "layer": "Solid",
+            "friction": 0
+          }
+        },
+        {
+          "type": "StateGate",
+          "properties": {
+            "startsOpen": true,
+            "persistFlag": "l2_stores_door_open",
+            "openOffset": [
+              -2.2,
+              0
+            ],
+            "animationSeconds": 0.35
+          }
+        },
+        {
+          "type": "Interactable",
+          "properties": {
+            "prompt": "E - USE STORES DOOR",
+            "range": 1.8
+          }
+        }
+      ],
+      "tags": [
+        "room_door"
+      ]
+    },
+    {
+      "id": "000000000000018f",
+      "name": "Workshop door",
+      "transform": {
+        "position": [
+          17,
+          18.5
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/keep/gate.png",
+            "size": [
+              2,
+              2
+            ],
+            "offset": [
+              0,
+              -0.55
+            ],
+            "ySort": true,
+            "layer": 9
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              2,
+              0.6
+            ],
+            "offset": [
+              0,
+              0
+            ],
+            "layer": "Solid",
+            "friction": 0
+          }
+        },
+        {
+          "type": "StateGate",
+          "properties": {
+            "startsOpen": true,
+            "persistFlag": "l2_workshop_door_open",
+            "openOffset": [
+              -2.2,
+              0
+            ],
+            "animationSeconds": 0.35
+          }
+        },
+        {
+          "type": "Interactable",
+          "properties": {
+            "prompt": "E - USE WORKSHOP DOOR",
+            "range": 1.8
+          }
+        }
+      ],
+      "tags": [
+        "room_door"
+      ]
+    },
+    {
+      "id": "0000000000000190",
+      "name": "Infirmary door",
+      "transform": {
+        "position": [
+          28,
+          18.5
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/keep/gate.png",
+            "size": [
+              2,
+              2
+            ],
+            "offset": [
+              0,
+              -0.55
+            ],
+            "ySort": true,
+            "layer": 9
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              2,
+              0.6
+            ],
+            "offset": [
+              0,
+              0
+            ],
+            "layer": "Solid",
+            "friction": 0
+          }
+        },
+        {
+          "type": "StateGate",
+          "properties": {
+            "startsOpen": true,
+            "persistFlag": "l2_infirmary_door_open",
+            "openOffset": [
+              -2.2,
+              0
+            ],
+            "animationSeconds": 0.35
+          }
+        },
+        {
+          "type": "Interactable",
+          "properties": {
+            "prompt": "E - USE INFIRMARY DOOR",
+            "range": 1.8
+          }
+        }
+      ],
+      "tags": [
+        "room_door"
+      ]
+    },
+    {
+      "id": "0000000000000191",
+      "name": "Utility door",
+      "transform": {
+        "position": [
+          38,
+          18.5
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/keep/gate.png",
+            "size": [
+              2,
+              2
+            ],
+            "offset": [
+              0,
+              -0.55
+            ],
+            "ySort": true,
+            "layer": 9
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              2,
+              0.6
+            ],
+            "offset": [
+              0,
+              0
+            ],
+            "layer": "Solid",
+            "friction": 0
+          }
+        },
+        {
+          "type": "StateGate",
+          "properties": {
+            "startsOpen": true,
+            "persistFlag": "l2_utility_door_open",
+            "openOffset": [
+              -2.2,
+              0
+            ],
+            "animationSeconds": 0.35
+          }
+        },
+        {
+          "type": "Interactable",
+          "properties": {
+            "prompt": "E - USE UTILITY DOOR",
+            "range": 1.8
+          }
+        }
+      ],
+      "tags": [
+        "room_door"
+      ]
+    },
+    {
+      "id": "0000000000000192",
+      "name": "Exit anteroom door",
+      "transform": {
+        "position": [
+          45,
+          18.5
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/keep/gate.png",
+            "size": [
+              2,
+              2
+            ],
+            "offset": [
+              0,
+              -0.55
+            ],
+            "ySort": true,
+            "layer": 9
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              2,
+              0.6
+            ],
+            "offset": [
+              0,
+              0
+            ],
+            "layer": "Solid",
+            "friction": 0
+          }
+        },
+        {
+          "type": "StateGate",
+          "properties": {
+            "startsOpen": true,
+            "persistFlag": "l2_exit_anteroom_door_open",
+            "openOffset": [
+              -2.2,
+              0
+            ],
+            "animationSeconds": 0.35
+          }
+        },
+        {
+          "type": "Interactable",
+          "properties": {
+            "prompt": "E - USE EXIT ANTEROOM DOOR",
+            "range": 1.8
+          }
+        }
+      ],
+      "tags": [
+        "room_door"
+      ]
+    },
+    {
+      "id": "0000000000000193",
       "name": "Emergency exit switch",
       "transform": {
         "position": [
@@ -16632,7 +17762,7 @@
       ]
     },
     {
-      "id": "000000000000017d",
+      "id": "0000000000000194",
       "name": "Terracotta fern",
       "transform": {
         "position": [
@@ -16680,7 +17810,7 @@
       ]
     },
     {
-      "id": "000000000000017e",
+      "id": "0000000000000195",
       "name": "Terracotta fern",
       "transform": {
         "position": [
@@ -16728,7 +17858,7 @@
       ]
     },
     {
-      "id": "000000000000017f",
+      "id": "0000000000000196",
       "name": "Terracotta fern",
       "transform": {
         "position": [
@@ -16776,7 +17906,7 @@
       ]
     },
     {
-      "id": "0000000000000180",
+      "id": "0000000000000197",
       "name": "Terracotta fern",
       "transform": {
         "position": [
@@ -16824,7 +17954,7 @@
       ]
     },
     {
-      "id": "0000000000000181",
+      "id": "0000000000000198",
       "name": "Terracotta fern",
       "transform": {
         "position": [
@@ -16872,7 +18002,7 @@
       ]
     },
     {
-      "id": "0000000000000182",
+      "id": "0000000000000199",
       "name": "Terracotta fern",
       "transform": {
         "position": [
@@ -16920,7 +18050,7 @@
       ]
     },
     {
-      "id": "0000000000000183",
+      "id": "000000000000019a",
       "name": "Corridor weapon rack",
       "transform": {
         "position": [
@@ -16968,7 +18098,7 @@
       ]
     },
     {
-      "id": "0000000000000184",
+      "id": "000000000000019b",
       "name": "Corridor weapon rack",
       "transform": {
         "position": [
@@ -17016,7 +18146,7 @@
       ]
     },
     {
-      "id": "0000000000000185",
+      "id": "000000000000019c",
       "name": "Royal banner",
       "transform": {
         "position": [
@@ -17044,7 +18174,7 @@
       ]
     },
     {
-      "id": "0000000000000186",
+      "id": "000000000000019d",
       "name": "Royal banner",
       "transform": {
         "position": [
@@ -17072,7 +18202,7 @@
       ]
     },
     {
-      "id": "0000000000000187",
+      "id": "000000000000019e",
       "name": "Royal banner",
       "transform": {
         "position": [
@@ -17100,7 +18230,7 @@
       ]
     },
     {
-      "id": "0000000000000188",
+      "id": "000000000000019f",
       "name": "Royal banner",
       "transform": {
         "position": [
@@ -17128,7 +18258,7 @@
       ]
     },
     {
-      "id": "0000000000000189",
+      "id": "00000000000001a0",
       "name": "Royal banner",
       "transform": {
         "position": [
@@ -17156,7 +18286,7 @@
       ]
     },
     {
-      "id": "000000000000018a",
+      "id": "00000000000001a1",
       "name": "Royal banner",
       "transform": {
         "position": [
@@ -17184,7 +18314,7 @@
       ]
     },
     {
-      "id": "000000000000018b",
+      "id": "00000000000001a2",
       "name": "Royal banner",
       "transform": {
         "position": [
@@ -17212,7 +18342,7 @@
       ]
     },
     {
-      "id": "000000000000018c",
+      "id": "00000000000001a3",
       "name": "Fixed wall torch",
       "transform": {
         "position": [
@@ -17229,18 +18359,26 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/level2/torch.png",
+            "texture": "assets/keep/torch.png",
             "size": [
               0.75,
               1.125
             ],
             "layer": 8
           }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/keep/torch.ykanim",
+            "clip": "burn",
+            "flipParameter": ""
+          }
         }
       ]
     },
     {
-      "id": "000000000000018d",
+      "id": "00000000000001a4",
       "name": "Fixed wall torch",
       "transform": {
         "position": [
@@ -17257,18 +18395,26 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/level2/torch.png",
+            "texture": "assets/keep/torch.png",
             "size": [
               0.75,
               1.125
             ],
             "layer": 8
           }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/keep/torch.ykanim",
+            "clip": "burn",
+            "flipParameter": ""
+          }
         }
       ]
     },
     {
-      "id": "000000000000018e",
+      "id": "00000000000001a5",
       "name": "Fixed wall torch",
       "transform": {
         "position": [
@@ -17285,18 +18431,26 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/level2/torch.png",
+            "texture": "assets/keep/torch.png",
             "size": [
               0.75,
               1.125
             ],
             "layer": 8
           }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/keep/torch.ykanim",
+            "clip": "burn",
+            "flipParameter": ""
+          }
         }
       ]
     },
     {
-      "id": "000000000000018f",
+      "id": "00000000000001a6",
       "name": "Fixed wall torch",
       "transform": {
         "position": [
@@ -17313,18 +18467,26 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/level2/torch.png",
+            "texture": "assets/keep/torch.png",
             "size": [
               0.75,
               1.125
             ],
             "layer": 8
           }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/keep/torch.ykanim",
+            "clip": "burn",
+            "flipParameter": ""
+          }
         }
       ]
     },
     {
-      "id": "0000000000000190",
+      "id": "00000000000001a7",
       "name": "Fixed wall torch",
       "transform": {
         "position": [
@@ -17341,18 +18503,26 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/level2/torch.png",
+            "texture": "assets/keep/torch.png",
             "size": [
               0.75,
               1.125
             ],
             "layer": 8
           }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/keep/torch.ykanim",
+            "clip": "burn",
+            "flipParameter": ""
+          }
         }
       ]
     },
     {
-      "id": "0000000000000191",
+      "id": "00000000000001a8",
       "name": "Fixed wall torch",
       "transform": {
         "position": [
@@ -17369,18 +18539,26 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/level2/torch.png",
+            "texture": "assets/keep/torch.png",
             "size": [
               0.75,
               1.125
             ],
             "layer": 8
           }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/keep/torch.ykanim",
+            "clip": "burn",
+            "flipParameter": ""
+          }
         }
       ]
     },
     {
-      "id": "0000000000000192",
+      "id": "00000000000001a9",
       "name": "Fixed wall torch",
       "transform": {
         "position": [
@@ -17397,18 +18575,26 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/level2/torch.png",
+            "texture": "assets/keep/torch.png",
             "size": [
               0.75,
               1.125
             ],
             "layer": 8
           }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/keep/torch.ykanim",
+            "clip": "burn",
+            "flipParameter": ""
+          }
         }
       ]
     },
     {
-      "id": "0000000000000193",
+      "id": "00000000000001aa",
       "name": "Fixed wall torch",
       "transform": {
         "position": [
@@ -17425,18 +18611,26 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/level2/torch.png",
+            "texture": "assets/keep/torch.png",
             "size": [
               0.75,
               1.125
             ],
             "layer": 8
           }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/keep/torch.ykanim",
+            "clip": "burn",
+            "flipParameter": ""
+          }
         }
       ]
     },
     {
-      "id": "0000000000000194",
+      "id": "00000000000001ab",
       "name": "Fixed wall torch",
       "transform": {
         "position": [
@@ -17453,18 +18647,26 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/level2/torch.png",
+            "texture": "assets/keep/torch.png",
             "size": [
               0.75,
               1.125
             ],
             "layer": 8
           }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/keep/torch.ykanim",
+            "clip": "burn",
+            "flipParameter": ""
+          }
         }
       ]
     },
     {
-      "id": "0000000000000195",
+      "id": "00000000000001ac",
       "name": "Fixed wall torch",
       "transform": {
         "position": [
@@ -17481,23 +18683,31 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/level2/torch.png",
+            "texture": "assets/keep/torch.png",
             "size": [
               0.75,
               1.125
             ],
             "layer": 8
           }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/keep/torch.ykanim",
+            "clip": "burn",
+            "flipParameter": ""
+          }
         }
       ]
     },
     {
-      "id": "0000000000000196",
+      "id": "00000000000001ad",
       "name": "NORTH CELLS plaque",
       "transform": {
         "position": [
-          3,
-          8.5
+          7.8,
+          8.38
         ],
         "rotation": 0,
         "scale": [
@@ -17511,21 +18721,21 @@
           "properties": {
             "texture": "assets/level2/sign_north_cells.png",
             "size": [
-              1.76,
-              0.5
+              3.3333333333333335,
+              0.75
             ],
-            "layer": 7
+            "layer": 18
           }
         }
       ]
     },
     {
-      "id": "0000000000000197",
+      "id": "00000000000001ae",
       "name": "COMMON ROOM plaque",
       "transform": {
         "position": [
           5,
-          10
+          9.88
         ],
         "rotation": 0,
         "scale": [
@@ -17539,21 +18749,21 @@
           "properties": {
             "texture": "assets/level2/sign_common_room.png",
             "size": [
-              1.76,
-              0.5
+              3.75,
+              0.75
             ],
-            "layer": 7
+            "layer": 18
           }
         }
       ]
     },
     {
-      "id": "0000000000000198",
+      "id": "00000000000001af",
       "name": "SOUTH CELLS plaque",
       "transform": {
         "position": [
-          3,
-          19.5
+          7.8,
+          19.38
         ],
         "rotation": 0,
         "scale": [
@@ -17567,21 +18777,21 @@
           "properties": {
             "texture": "assets/level2/sign_south_cells.png",
             "size": [
-              1.76,
-              0.5
+              3.2916666666666665,
+              0.75
             ],
-            "layer": 7
+            "layer": 18
           }
         }
       ]
     },
     {
-      "id": "0000000000000199",
+      "id": "00000000000001b0",
       "name": "CANTEEN plaque",
       "transform": {
         "position": [
           19.6,
-          9.4
+          9.280000000000001
         ],
         "rotation": 0,
         "scale": [
@@ -17595,21 +18805,21 @@
           "properties": {
             "texture": "assets/level2/sign_canteen.png",
             "size": [
-              1.5,
-              0.5
+              2.4583333333333335,
+              0.75
             ],
-            "layer": 7
+            "layer": 18
           }
         }
       ]
     },
     {
-      "id": "000000000000019a",
+      "id": "00000000000001b1",
       "name": "LAUNDRY plaque",
       "transform": {
         "position": [
           30.5,
-          9.4
+          9.280000000000001
         ],
         "rotation": 0,
         "scale": [
@@ -17623,21 +18833,21 @@
           "properties": {
             "texture": "assets/level2/sign_laundry.png",
             "size": [
-              1.5,
-              0.5
+              2.4583333333333335,
+              0.75
             ],
-            "layer": 7
+            "layer": 18
           }
         }
       ]
     },
     {
-      "id": "000000000000019b",
+      "id": "00000000000001b2",
       "name": "CONTROL plaque",
       "transform": {
         "position": [
-          39,
-          9.4
+          40.35,
+          9.280000000000001
         ],
         "rotation": 0,
         "scale": [
@@ -17651,21 +18861,21 @@
           "properties": {
             "texture": "assets/level2/sign_control.png",
             "size": [
-              1.5,
-              0.5
+              2.4583333333333335,
+              0.75
             ],
-            "layer": 7
+            "layer": 18
           }
         }
       ]
     },
     {
-      "id": "000000000000019c",
+      "id": "00000000000001b3",
       "name": "STORES plaque",
       "transform": {
         "position": [
-          44.5,
-          9.4
+          45.2,
+          7.53
         ],
         "rotation": 0,
         "scale": [
@@ -17679,21 +18889,21 @@
           "properties": {
             "texture": "assets/level2/sign_stores.png",
             "size": [
-              1.5,
-              0.5
+              2.0416666666666665,
+              0.75
             ],
-            "layer": 7
+            "layer": 18
           }
         }
       ]
     },
     {
-      "id": "000000000000019d",
+      "id": "00000000000001b4",
       "name": "WORKSHOP plaque",
       "transform": {
         "position": [
           20.5,
-          18.4
+          18.279999999999998
         ],
         "rotation": 0,
         "scale": [
@@ -17707,21 +18917,21 @@
           "properties": {
             "texture": "assets/level2/sign_workshop.png",
             "size": [
-              1.5,
-              0.5
+              2.8333333333333335,
+              0.75
             ],
-            "layer": 7
+            "layer": 18
           }
         }
       ]
     },
     {
-      "id": "000000000000019e",
+      "id": "00000000000001b5",
       "name": "INFIRMARY plaque",
       "transform": {
         "position": [
           30.5,
-          18.4
+          18.279999999999998
         ],
         "rotation": 0,
         "scale": [
@@ -17735,21 +18945,21 @@
           "properties": {
             "texture": "assets/level2/sign_infirmary.png",
             "size": [
-              1.5,
-              0.5
+              2.75,
+              0.75
             ],
-            "layer": 7
+            "layer": 18
           }
         }
       ]
     },
     {
-      "id": "000000000000019f",
+      "id": "00000000000001b6",
       "name": "EXERCISE YARD plaque",
       "transform": {
         "position": [
-          40,
-          10
+          42,
+          10.680000000000001
         ],
         "rotation": 0,
         "scale": [
@@ -17763,21 +18973,21 @@
           "properties": {
             "texture": "assets/level2/sign_exercise_yard.png",
             "size": [
-              2.08,
-              0.5
+              3.5416666666666665,
+              0.75
             ],
-            "layer": 7
+            "layer": 18
           }
         }
       ]
     },
     {
-      "id": "00000000000001a0",
+      "id": "00000000000001b7",
       "name": "UTILITY plaque",
       "transform": {
         "position": [
-          39,
-          18.4
+          40.2,
+          18.279999999999998
         ],
         "rotation": 0,
         "scale": [
@@ -17791,21 +19001,21 @@
           "properties": {
             "texture": "assets/level2/sign_utility.png",
             "size": [
-              1.5,
-              0.5
+              2.0833333333333335,
+              0.75
             ],
-            "layer": 7
+            "layer": 18
           }
         }
       ]
     },
     {
-      "id": "00000000000001a1",
+      "id": "00000000000001b8",
       "name": "EXIT plaque",
       "transform": {
         "position": [
-          44.5,
-          18.4
+          45,
+          16.529999999999998
         ],
         "rotation": 0,
         "scale": [
@@ -17819,16 +19029,108 @@
           "properties": {
             "texture": "assets/level2/sign_exit.png",
             "size": [
-              1.5,
-              0.5
+              1.4166666666666667,
+              0.75
             ],
-            "layer": 7
+            "layer": 18
           }
         }
       ]
     },
     {
-      "id": "00000000000001a2",
+      "id": "00000000000001b9",
+      "name": "MAIN CORRIDOR plaque",
+      "transform": {
+        "position": [
+          24,
+          10.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/level2/sign_main_corridor.png",
+            "size": [
+              3.75,
+              0.75
+            ],
+            "layer": 18
+          }
+        }
+      ]
+    },
+    {
+      "id": "00000000000001ba",
+      "name": "Mara routine 0",
+      "transform": {
+        "position": [
+          7.5,
+          15.5
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001bb",
+      "name": "Mara routine 1",
+      "transform": {
+        "position": [
+          7.5,
+          17
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001bc",
+      "name": "Mara routine 2",
+      "transform": {
+        "position": [
+          5.5,
+          17
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001bd",
+      "name": "Mara routine 3",
+      "transform": {
+        "position": [
+          7.5,
+          17
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001be",
       "name": "Mara",
       "transform": {
         "position": [
@@ -17867,18 +19169,46 @@
           }
         },
         {
+          "type": "CharacterMotion",
+          "properties": {
+            "idleHeight": 0.035,
+            "stepHeight": 0.025,
+            "animateSteps": false,
+            "flipWithMovement": false
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Dynamic",
+            "gravityScale": 0,
+            "fixedRotation": true,
+            "linearDamping": 0,
+            "allowSleep": false
+          }
+        },
+        {
           "type": "Collider",
           "properties": {
             "size": [
               0.5,
               0.35
             ],
-            "offset": [
-              0,
-              0
-            ],
-            "layer": "Solid",
+            "layer": "Prop",
             "friction": 0
+          }
+        },
+        {
+          "type": "NpcPath",
+          "properties": {
+            "waypoints": [
+              "00000000000001ba",
+              "00000000000001bb",
+              "00000000000001bc",
+              "00000000000001bd"
+            ],
+            "speed": 0.85,
+            "waitSeconds": 2.6
           }
         },
         {
@@ -17898,13 +19228,78 @@
               "Find a screwdriver and wire cutters in the workshop. Pry open the stores for a fuse and take linen from the laundry. Wrap them at the repair bench.",
               "Steal the security card from control while the guard is away. Match the utility terminal wires, cut the exit chain, then walk south."
             ],
+            "portrait": "assets/level2/portrait_companion.png",
             "charactersPerSecond": 0
           }
         }
       ]
     },
     {
-      "id": "00000000000001a3",
+      "id": "00000000000001bf",
+      "name": "Cook Bram routine 0",
+      "transform": {
+        "position": [
+          21,
+          8
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001c0",
+      "name": "Cook Bram routine 1",
+      "transform": {
+        "position": [
+          19,
+          8
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001c1",
+      "name": "Cook Bram routine 2",
+      "transform": {
+        "position": [
+          19,
+          7.5
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001c2",
+      "name": "Cook Bram routine 3",
+      "transform": {
+        "position": [
+          21,
+          7.5
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001c3",
       "name": "Cook Bram",
       "transform": {
         "position": [
@@ -17943,18 +19338,46 @@
           }
         },
         {
+          "type": "CharacterMotion",
+          "properties": {
+            "idleHeight": 0.035,
+            "stepHeight": 0.025,
+            "animateSteps": false,
+            "flipWithMovement": false
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Dynamic",
+            "gravityScale": 0,
+            "fixedRotation": true,
+            "linearDamping": 0,
+            "allowSleep": false
+          }
+        },
+        {
           "type": "Collider",
           "properties": {
             "size": [
               0.5,
               0.35
             ],
-            "offset": [
-              0,
-              0
-            ],
-            "layer": "Solid",
+            "layer": "Prop",
             "friction": 0
+          }
+        },
+        {
+          "type": "NpcPath",
+          "properties": {
+            "waypoints": [
+              "00000000000001bf",
+              "00000000000001c0",
+              "00000000000001c1",
+              "00000000000001c2"
+            ],
+            "speed": 0.85,
+            "waitSeconds": 3.1
           }
         },
         {
@@ -17972,13 +19395,78 @@
             "pages": [
               "Workshop supplies are south of the long corridor. The control guard cannot see through the walls."
             ],
+            "portrait": "assets/level2/portrait_cook.png",
             "charactersPerSecond": 0
           }
         }
       ]
     },
     {
-      "id": "00000000000001a4",
+      "id": "00000000000001c4",
+      "name": "Ada routine 0",
+      "transform": {
+        "position": [
+          27,
+          7
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001c5",
+      "name": "Ada routine 1",
+      "transform": {
+        "position": [
+          28,
+          7
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001c6",
+      "name": "Ada routine 2",
+      "transform": {
+        "position": [
+          28,
+          5.5
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001c7",
+      "name": "Ada routine 3",
+      "transform": {
+        "position": [
+          27,
+          5.5
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001c8",
       "name": "Ada",
       "transform": {
         "position": [
@@ -18017,18 +19505,46 @@
           }
         },
         {
+          "type": "CharacterMotion",
+          "properties": {
+            "idleHeight": 0.035,
+            "stepHeight": 0.025,
+            "animateSteps": false,
+            "flipWithMovement": false
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Dynamic",
+            "gravityScale": 0,
+            "fixedRotation": true,
+            "linearDamping": 0,
+            "allowSleep": false
+          }
+        },
+        {
           "type": "Collider",
           "properties": {
             "size": [
               0.5,
               0.35
             ],
-            "offset": [
-              0,
-              0
-            ],
-            "layer": "Solid",
+            "layer": "Prop",
             "friction": 0
+          }
+        },
+        {
+          "type": "NpcPath",
+          "properties": {
+            "waypoints": [
+              "00000000000001c4",
+              "00000000000001c5",
+              "00000000000001c6",
+              "00000000000001c7"
+            ],
+            "speed": 0.85,
+            "waitSeconds": 2.2
           }
         },
         {
@@ -18046,13 +19562,78 @@
             "pages": [
               "Take clean linen from the folding table. Wrapped around the spare fuse, it will protect your hands."
             ],
+            "portrait": "assets/level2/portrait_laundry_worker.png",
             "charactersPerSecond": 0
           }
         }
       ]
     },
     {
-      "id": "00000000000001a5",
+      "id": "00000000000001c9",
+      "name": "Tomas routine 0",
+      "transform": {
+        "position": [
+          17,
+          25.2
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001ca",
+      "name": "Tomas routine 1",
+      "transform": {
+        "position": [
+          17,
+          23.5
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001cb",
+      "name": "Tomas routine 2",
+      "transform": {
+        "position": [
+          18,
+          23.5
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001cc",
+      "name": "Tomas routine 3",
+      "transform": {
+        "position": [
+          17,
+          23.5
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001cd",
       "name": "Tomas",
       "transform": {
         "position": [
@@ -18091,18 +19672,46 @@
           }
         },
         {
+          "type": "CharacterMotion",
+          "properties": {
+            "idleHeight": 0.035,
+            "stepHeight": 0.025,
+            "animateSteps": false,
+            "flipWithMovement": false
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Dynamic",
+            "gravityScale": 0,
+            "fixedRotation": true,
+            "linearDamping": 0,
+            "allowSleep": false
+          }
+        },
+        {
           "type": "Collider",
           "properties": {
             "size": [
               0.5,
               0.35
             ],
-            "offset": [
-              0,
-              0
-            ],
-            "layer": "Solid",
+            "layer": "Prop",
             "friction": 0
+          }
+        },
+        {
+          "type": "NpcPath",
+          "properties": {
+            "waypoints": [
+              "00000000000001c9",
+              "00000000000001ca",
+              "00000000000001cb",
+              "00000000000001cc"
+            ],
+            "speed": 0.85,
+            "waitSeconds": 3.5
           }
         },
         {
@@ -18120,13 +19729,78 @@
             "pages": [
               "Search both tool containers. The repair bench needs a spare fuse and clean linen."
             ],
+            "portrait": "assets/level2/portrait_craftsperson.png",
             "charactersPerSecond": 0
           }
         }
       ]
     },
     {
-      "id": "00000000000001a6",
+      "id": "00000000000001ce",
+      "name": "Nurse Iona routine 0",
+      "transform": {
+        "position": [
+          28.5,
+          24.5
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001cf",
+      "name": "Nurse Iona routine 1",
+      "transform": {
+        "position": [
+          29.3,
+          24.5
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001d0",
+      "name": "Nurse Iona routine 2",
+      "transform": {
+        "position": [
+          29.3,
+          23.5
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001d1",
+      "name": "Nurse Iona routine 3",
+      "transform": {
+        "position": [
+          29.3,
+          24.5
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001d2",
       "name": "Nurse Iona",
       "transform": {
         "position": [
@@ -18165,18 +19839,46 @@
           }
         },
         {
+          "type": "CharacterMotion",
+          "properties": {
+            "idleHeight": 0.035,
+            "stepHeight": 0.025,
+            "animateSteps": false,
+            "flipWithMovement": false
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Dynamic",
+            "gravityScale": 0,
+            "fixedRotation": true,
+            "linearDamping": 0,
+            "allowSleep": false
+          }
+        },
+        {
           "type": "Collider",
           "properties": {
             "size": [
               0.5,
               0.35
             ],
-            "offset": [
-              0,
-              0
-            ],
-            "layer": "Solid",
+            "layer": "Prop",
             "friction": 0
+          }
+        },
+        {
+          "type": "NpcPath",
+          "properties": {
+            "waypoints": [
+              "00000000000001ce",
+              "00000000000001cf",
+              "00000000000001d0",
+              "00000000000001d1"
+            ],
+            "speed": 0.85,
+            "waitSeconds": 2.8
           }
         },
         {
@@ -18194,13 +19896,78 @@
             "pages": [
               "If the guard catches you, you return to your cell. Hidden tools stay with you. Step out of control before the warning fills."
             ],
+            "portrait": "assets/level2/portrait_nurse.png",
             "charactersPerSecond": 0
           }
         }
       ]
     },
     {
-      "id": "00000000000001a7",
+      "id": "00000000000001d3",
+      "name": "Rowan routine 0",
+      "transform": {
+        "position": [
+          37.5,
+          15
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001d4",
+      "name": "Rowan routine 1",
+      "transform": {
+        "position": [
+          40,
+          15
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001d5",
+      "name": "Rowan routine 2",
+      "transform": {
+        "position": [
+          40,
+          16
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001d6",
+      "name": "Rowan routine 3",
+      "transform": {
+        "position": [
+          40,
+          15
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "00000000000001d7",
       "name": "Rowan",
       "transform": {
         "position": [
@@ -18239,18 +20006,46 @@
           }
         },
         {
+          "type": "CharacterMotion",
+          "properties": {
+            "idleHeight": 0.035,
+            "stepHeight": 0.025,
+            "animateSteps": false,
+            "flipWithMovement": false
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Dynamic",
+            "gravityScale": 0,
+            "fixedRotation": true,
+            "linearDamping": 0,
+            "allowSleep": false
+          }
+        },
+        {
           "type": "Collider",
           "properties": {
             "size": [
               0.5,
               0.35
             ],
-            "offset": [
-              0,
-              0
-            ],
-            "layer": "Solid",
+            "layer": "Prop",
             "friction": 0
+          }
+        },
+        {
+          "type": "NpcPath",
+          "properties": {
+            "waypoints": [
+              "00000000000001d3",
+              "00000000000001d4",
+              "00000000000001d5",
+              "00000000000001d6"
+            ],
+            "speed": 0.85,
+            "waitSeconds": 2.4
           }
         },
         {
@@ -18268,13 +20063,14 @@
             "pages": [
               "Utility is south of this yard. On the terminal, W/S chooses a source and A/D chooses a destination. Match the letter and press E."
             ],
+            "portrait": "assets/level2/portrait_yard_worker.png",
             "charactersPerSecond": 0
           }
         }
       ]
     },
     {
-      "id": "00000000000001a8",
+      "id": "00000000000001d8",
       "name": "Patrol marker 0",
       "transform": {
         "position": [
@@ -18290,7 +20086,7 @@
       "components": []
     },
     {
-      "id": "00000000000001a9",
+      "id": "00000000000001d9",
       "name": "Patrol marker 1",
       "transform": {
         "position": [
@@ -18306,7 +20102,7 @@
       "components": []
     },
     {
-      "id": "00000000000001aa",
+      "id": "00000000000001da",
       "name": "Patrol marker 2",
       "transform": {
         "position": [
@@ -18322,7 +20118,7 @@
       "components": []
     },
     {
-      "id": "00000000000001ab",
+      "id": "00000000000001db",
       "name": "Patrol marker 3",
       "transform": {
         "position": [
@@ -18338,7 +20134,7 @@
       "components": []
     },
     {
-      "id": "00000000000001ac",
+      "id": "00000000000001dc",
       "name": "Patrol marker 4",
       "transform": {
         "position": [
@@ -18354,7 +20150,7 @@
       "components": []
     },
     {
-      "id": "00000000000001ad",
+      "id": "00000000000001dd",
       "name": "Patrol marker 5",
       "transform": {
         "position": [
@@ -18370,7 +20166,7 @@
       "components": []
     },
     {
-      "id": "00000000000001ae",
+      "id": "00000000000001de",
       "name": "Patrol marker 6",
       "transform": {
         "position": [
@@ -18386,7 +20182,7 @@
       "components": []
     },
     {
-      "id": "00000000000001af",
+      "id": "00000000000001df",
       "name": "Control guard",
       "transform": {
         "position": [
@@ -18425,16 +20221,25 @@
           }
         },
         {
+          "type": "CharacterMotion",
+          "properties": {
+            "idleHeight": 0.035,
+            "stepHeight": 0.025,
+            "animateSteps": false,
+            "flipWithMovement": false
+          }
+        },
+        {
           "type": "NpcPath",
           "properties": {
             "waypoints": [
-              "00000000000001a8",
-              "00000000000001a9",
-              "00000000000001aa",
-              "00000000000001ab",
-              "00000000000001ac",
-              "00000000000001ad",
-              "00000000000001ae"
+              "00000000000001d8",
+              "00000000000001d9",
+              "00000000000001da",
+              "00000000000001db",
+              "00000000000001dc",
+              "00000000000001dd",
+              "00000000000001de"
             ],
             "speed": 1.6,
             "waitSeconds": 1
@@ -18482,11 +20287,29 @@
             "range": 3.2,
             "catchSeconds": 3.5
           }
+        },
+        {
+          "type": "Interactable",
+          "properties": {
+            "prompt": "E - TALK TO CONTROL GUARD",
+            "range": 1.5
+          }
+        },
+        {
+          "type": "Dialogue",
+          "properties": {
+            "speaker": "Control guard",
+            "portrait": "assets/level2/portrait_guard.png",
+            "charactersPerSecond": 0,
+            "pages": [
+              "Free time ends at dusk. Keep clear of the control desk. You can close unlocked room doors with E."
+            ]
+          }
         }
       ]
     },
     {
-      "id": "00000000000001b0",
+      "id": "00000000000001e0",
       "name": "South escape passage",
       "transform": {
         "position": [
@@ -18515,14 +20338,14 @@
           "type": "Goal",
           "properties": {
             "requiredTag": "player",
-            "requiredFlag": "l2_exit_open",
+            "requiredFlag": "l2_gate_open",
             "enterOnComplete": true
           }
         }
       ]
     },
     {
-      "id": "00000000000001b1",
+      "id": "00000000000001e1",
       "name": "Level two story",
       "transform": {
         "position": [
@@ -18577,7 +20400,7 @@
           "type": "LevelFlow",
           "properties": {
             "goals": [
-              "00000000000001b0"
+              "00000000000001e0"
             ],
             "introDuration": 0,
             "restartOnDeath": false,

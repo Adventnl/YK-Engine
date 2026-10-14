@@ -115,7 +115,9 @@ void Dialogue::begin(GameContext &context, EntityId actor) {
             charactersPerSecond > 0 ? 0.0F : static_cast<float>(loaded_[0].text.size());
     }
     startedTick_ = context.tick();
+    presentationTime_ = 0;
     active_ = true;
+    context.blackboard().add("dialogue_active", 1.0);
     if (lockInput)
         context.lockInput("dialogue:" + toString(entity().id()), true);
     context.emit("conversation_started", entity().id(), actor_);
@@ -132,6 +134,7 @@ void Dialogue::end(GameContext &context) {
     if (!active_)
         return;
     active_ = false;
+    context.blackboard().add("dialogue_active", -1.0);
     session_.reset();
     choices_.clear();
     if (lockInput)
@@ -146,12 +149,17 @@ void Dialogue::close(GameContext &context) {
 void Dialogue::onFixedUpdate(GameContext &context, float seconds) {
     if (!active_)
         return;
+    presentationTime_ += seconds;
     const std::string &text = session_ ? graphPage_.text : loaded_[page_].text;
     visibleCharacters_ =
         std::min(static_cast<float>(text.size()),
                  visibleCharacters_ + std::max(0.0F, charactersPerSecond) * seconds);
     if (context.tick() == startedTick_)
         return;
+    if (context.input().state("Global", "Cancel").pressed) {
+        end(context);
+        return;
+    }
     const bool shown = visibleCharacters_ >= static_cast<float>(text.size());
     if (choosing() && !choices_.empty()) {
         const int count = static_cast<int>(choices_.size());

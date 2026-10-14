@@ -38,13 +38,13 @@ escape now leads into level two; **Enter** skips the completion wait.
 
 ## Editable data and artwork
 
-`scenes/level2.ykscene` contains 433 individually editable entities. All movement,
+`scenes/level2.ykscene` contains 481 individually editable entities. All movement,
 searches, inventory, crafting, dialogue, patrols, puzzle and exit behavior are configured
 with reusable engine components. There is no game-specific runtime code.
 
 All shipping raster artwork for this chapter was generated anew with the built-in
 image-generation tool. The supplied atlas, extracted props and reconstructed floor
-layers are references only. No source-reference pixels are shipped. Eight original masters,
+layers are references only. No source-reference pixels are shipped. Ten original masters,
 their exact prompts, and prompt metadata are preserved in `assets/level2/source/`:
 
 - `furniture.png`: sixteen complete furnishing designs.
@@ -53,12 +53,15 @@ their exact prompts, and prompt metadata are preserved in `assets/level2/source/
 - `tiles.png`: sixteen regenerated floor/wall materials.
 - `hero.png` and `guard.png`: four directions, with walk and reaching cycles.
 - `residents.png`: six NPCs, each with four directional poses.
+- `residents_walk.png`: two alternating strides in each direction for all six residents.
+- `dialogue_portraits.png`: seven detailed character busts for conversations.
 - `safe_fuse.png`: a complete cloth-wrapped fuse icon.
 
 The exporter finds transparent gutters around complete newly generated objects rather
 than truncating them at idealized grid coordinates. Character frames share one scale and
 registered feet. Textures retain generated alpha and use nearest-neighbor sampling.
-Exact room plaques are code-authored bitmap text. Floor tiles preserve one slab per world
+Exact room plaques are code-authored bitmap text, enlarged for readability. A current-room
+label in the header follows the player through all thirteen areas. Floor tiles preserve one slab per world
 unit; walls, furniture and actors have authored solid footprints and connected openings.
 
 Rebuild the assets and scene without calling an image service:
@@ -72,7 +75,34 @@ python3 YK-ExplorationDemo/tools/build_level2.py
 Generate the first chapter with `tools/complete_level.py` before running the level-two
 builder when rebuilding both chapters. The latter selects level two as the start scene.
 
-Gameplay checks cover camera following and bounds at three viewport sizes, physical
+## Motion and interaction
+
+All six residents follow short, staggered routines within their own rooms. Their directional
+sprites combine the original idle poses with newly generated alternating strides in four-frame
+walking cycles. Procedural breathing and gentle body sway supplement the artwork. The player and guard retain
+their generated four-frame walking and reaching cycles, with gentle breathing while idle.
+Wall torches animate with fixed mounts.
+
+Ten ordinary room doors start open for free circulation. Press E beside a doorway to close
+or reopen it. Doors slide along the wall, retain their artwork while open, and hold if someone
+occupies the threshold during closing. The green exit gate slides aside after its chain is cut;
+E then closes and reopens it without repeating the cutting task or losing the unlocked state.
+The exit requires the gate to be open.
+
+Conversations show a detailed close-up bust of the speaker in an animated popup, with word-wrapped
+text and explicit E / Escape controls. Seven portraits were generated using the built-in ImageGen
+tool with the existing resident and guard art as identity references. The new source atlas and
+exact prompt are saved as `assets/level2/source/dialogue_portraits.png` and
+`dialogue_portraits.prompt.txt`; the level builder exports individual `portrait_*.png` textures.
+The resident walking atlas and prompt are preserved as `residents_walk.png` and
+`residents_walk.prompt.txt` in the same source directory. Other residents keep walking during
+a conversation; its speaker stops, and guards do not capture the player while dialogue is open.
+The utility wire puzzle uses the player's directional reaching cycle while the controls are open.
+
+![Live dialogue portrait](level2-dialogue-preview.png)
+
+Gameplay checks cover idle motion and NPC routines, door closing/reopening and occupied thresholds,
+portrait binding and conversation dismissal, camera following and bounds at three viewport sizes, physical
 travel through the rooms, cancelled searches, unique rewards, crafting consumption,
 patrol capture during a search, puzzle prerequisites and incorrect matches, the solid
 exit chain, complete escape, and restart. Native renderer captures include the starting

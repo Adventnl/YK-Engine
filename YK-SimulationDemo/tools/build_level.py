@@ -125,7 +125,7 @@ rect("Locker", 6.3, 12.5, 1.2, 1.55, "#566d79ff", 4, solid=True)
 rect("Locker handle", 6.65, 12.45, 0.09, 0.42, "#f3c77cff", 5)
 rect("Cell light", 4.4, 1.5, 3.7, 0.24, "#d4cb95aa", 2)
 
-object_with_action("Keycard", 6.4, 11.75, 0.58, 0.38, "#f0d67aff",
+object_with_action("Keycard", 6.4, 11.6, 0.58, 0.38, "#f0d67aff",
                    "E  Take guard keycard", "keycard", hide=True)
 object_with_action("Wire", 4.65, 6.4, 0.58, 0.42, "#ed9c65ff",
                    "E  Take loose wire", "wire", hide=True)

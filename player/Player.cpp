@@ -143,7 +143,8 @@ class PlayerLayer final : public ApplicationLayer {
         // An active gameplay popup owns Cancel; Escape must close it before quitting.
         if (frame.input.keyboard.state(Key::Escape).pressed &&
             session_->runtime().blackboard().number("wire_ui_active") == 0.0 &&
-            session_->runtime().blackboard().number("search_ui_active") == 0.0)
+            session_->runtime().blackboard().number("search_ui_active") == 0.0 &&
+            session_->runtime().blackboard().number("dialogue_active") == 0.0)
             return false;
         InputFrame input = frame.input;
         if (!script_.empty())
