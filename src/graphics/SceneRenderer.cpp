@@ -286,6 +286,22 @@ Status SceneRenderer::drawSprite(Renderer &renderer, const Entity &entity, const
         }
     }
 
+    if (sprite.shadowSize.x > 0.0F && sprite.shadowSize.y > 0.0F && sprite.shadowColor.a > 0) {
+        auto glow = renderer.builtinTexture(BuiltinTexture::Glow);
+        if (!glow)
+            return Error{glow.error()};
+        Sprite shadow;
+        shadow.texture = glow.value();
+        shadow.transform.position = transformPoint(world, sprite.shadowOffset);
+        shadow.size = hadamard(sprite.shadowSize, scale);
+        shadow.tint = sprite.shadowColor;
+        shadow.tint.a = static_cast<std::uint8_t>(static_cast<float>(shadow.tint.a) * strength);
+        shadow.layer = sprite.layer - 1;
+        shadow.depth = sprite.ySort ? world.position.y + sprite.sortOffset : sprite.order;
+        if (auto drawn = renderer.submit(shadow); !drawn)
+            return drawn;
+        ++stats_.quads;
+    }
     QuadSink sink{renderer,
                   {},
                   center,
@@ -357,9 +373,11 @@ Status SceneRenderer::drawSprite(Renderer &renderer, const Entity &entity, const
             for (int side = 0; side < 2 && done; ++side) {
                 const float swing = sprite.stepSwing * scale.y * (side == 0 ? 1.0F : -1.0F);
                 done = sink.emit(
-                    {whole.position + Vec2{size.x * 0.5F * side, size.y * torso},
+                    {whole.position +
+                         Vec2{size.x * 0.5F * static_cast<float>(side), size.y * torso},
                      {size.x * 0.5F, std::max(0.001F, size.y * (1.0F - torso) + swing)}},
-                    Rect{cell.position + Vec2{cell.size.x * 0.5F * side, cell.size.y * torso},
+                    Rect{cell.position + Vec2{cell.size.x * 0.5F * static_cast<float>(side),
+                                              cell.size.y * torso},
                          {cell.size.x * 0.5F, cell.size.y * (1.0F - torso)}});
             }
         } else {
@@ -935,8 +953,6 @@ Status SceneRenderer::drawUi(Renderer &renderer, const Scene &scene, Vec2 viewpo
         if (auto status = rectangle({0, bottom}, {viewport.x, 100 * unit}, {22, 25, 31, 255}); !status) return status;
         if (auto status = rectangle({0, bottom}, {viewport.x, unit}, {84, 78, 63, 255}); !status) return status;
         if (auto status = text(variables->text("escape_title"), {20 * unit, 13 * unit}, 2, gold); !status) return status;
-        const auto room = variables->text("current_room");
-        if (auto status = text(room, {viewport.x * .5F - static_cast<float>(room.size()) * 5.1F * unit, 14 * unit}, 1.7F, ink); !status) return status;
         const float suspicion = static_cast<float>(variables->number("escape_suspicion"));
         const std::string routine = suspicion > 0.02F ? "GUARD IS WATCHING" : "DAY 1 / EVENING FREE TIME";
         if (auto status = text(routine, {viewport.x - 360 * unit, 14 * unit}, 1.7F, suspicion > 0.02F ? Color{245, 125, 101, 255} : ink); !status) return status;
@@ -946,20 +962,31 @@ Status SceneRenderer::drawUi(Renderer &renderer, const Scene &scene, Vec2 viewpo
         if (auto status = text(notice.empty() ? variables->text("objective") : notice, {20 * unit, bottom + 12 * unit}, 1.6F, gold); !status) return status;
         if (auto status = text(variables->text("interaction_prompt"), {20 * unit, bottom + 37 * unit}, 1.8F, ink); !status) return status;
         if (auto status = text("WASD / ARROWS MOVE    E USE    ESC CLOSE    R RESTART", {20 * unit, bottom + 76 * unit}, 1.2F, {167, 167, 149, 255}); !status) return status;
-        const float first = viewport.x - 570 * unit;
+        const float first = viewport.x - 364 * unit;
         for (int i = 0; i < 6; ++i) {
-            const Vec2 at{first + i * 92 * unit, bottom + 33 * unit};
-            if (auto status = rectangle(at, {52 * unit, 48 * unit}, {46, 49, 53, 255}); !status) return status;
+            const Vec2 at{first + static_cast<float>(i) * 58 * unit, bottom + 29 * unit};
             const std::string prefix = "escape_slot_" + std::to_string(i);
             const auto path = variables->text(prefix + "_icon");
+            const Color border = path.empty() ? Color{54, 69, 85, 255} : Color{147, 117, 60, 255};
+            if (auto status = rectangle(at, {48 * unit, 48 * unit}, border); !status)
+                return status;
+            if (auto status =
+                    rectangle(at + Vec2{unit, unit}, {46 * unit, 46 * unit}, {18, 29, 42, 255});
+                !status)
+                return status;
             if (!path.empty()) {
                 const auto &info = textureFor(renderer, path);
                 if (info.handle) {
                     Sprite icon; icon.texture = *info.handle; icon.anchor = {0, 0};
-                    icon.transform.position = at + Vec2{8 * unit, 6 * unit}; icon.size = {36 * unit, 36 * unit}; icon.layer = 6001;
+                    icon.transform.position = at + Vec2{6 * unit, 6 * unit};
+                    icon.size = {36 * unit, 36 * unit};
+                    icon.layer = 6001;
                     if (auto status = renderer.submit(icon); !status) return status;
                 }
-                if (auto status = text(variables->text(prefix + "_name"), at + Vec2{-10 * unit, 51 * unit}, 1, ink); !status) return status;
+                if (auto status = text(variables->text(prefix + "_name"),
+                                       at + Vec2{-3 * unit, 52 * unit}, .8F, ink);
+                    !status)
+                    return status;
             }
         }
         if (variables->text("level_state") == "complete") {

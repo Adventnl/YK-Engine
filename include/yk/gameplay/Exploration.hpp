@@ -62,6 +62,9 @@ class Interactor final : public Component {
     std::string action{"Interact"};
     static void describe(TypeBuilder<Interactor> &type);
     void onFixedUpdate(GameContext &context, float seconds) override;
+
+  private:
+    bool inputWasLocked_{};
 };
 
 // A solid openable barrier. It may start locked and be unlocked by a kept world flag.
@@ -75,6 +78,9 @@ class StateGate final : public Component, public SignalReceiver {
     float animationSeconds{0.35F};
     Vec2 openOffset{}; // Visual slide; zero chooses the barrier's long axis automatically.
     bool stopWhenBlocked{true};
+    float proximityRange{0.0F}; // Zero keeps manual operation; positive opens for nearby actors.
+    float closeDelay{0.8F};
+    int openFrames{0}; // Optional closed-to-open sprite strip, synchronized with collision.
     static void describe(TypeBuilder<StateGate> &type);
     void onStart(GameContext &context) override;
     void onFixedUpdate(GameContext &context, float seconds) override;
@@ -89,6 +95,9 @@ class StateGate final : public Component, public SignalReceiver {
     float amount_{};
     Vec2 baseOffset_{}, slide_{};
     bool signalWasActive_{};
+    float closeTimer_{};
+    void setOpen(GameContext &context, bool value);
+    void updateVisual();
 };
 
 class MapPortal final : public Component {

@@ -353,6 +353,9 @@ Requires: `Collider`
 | `animationSeconds` | float | 0.35 | (range 0 to 10) |
 | `openOffset` | vec2 | [0,0] | Distance the visible door slides; zero uses its collider's long axis. |
 | `stopWhenBlocked` | bool | true |  |
+| `proximityRange` | float | 0 | Zero uses manual operation. Positive opens for nearby players and NPC paths. (range 0 to 20) |
+| `closeDelay` | float | 0.8 | Seconds an automatic door stays open after the last actor leaves. (range 0 to 30) |
+| `openFrames` | int | 0 | Optional horizontal strip from closed to open; frames follow the collision animation and reverse when closing. (range 0 to 256) |
 | `logic` | enum | "Any" | Options: Any All |
 | `invert` | bool | false |  |
 
@@ -897,6 +900,9 @@ Draws a texture or a colored placeholder shape.
 | `sortOffset` | float | 0 | (range -1000 to 1000) |
 | `flipX` | bool | false |  |
 | `visible` | bool | true |  |
+| `shadowSize` | vec2 | [0,0] | Soft ground shadow at the entity origin; zero disables it. Independent of animated sprite offsets. (range 0 to 100) |
+| `shadowOffset` | vec2 | [0.06,0.04] |  |
+| `shadowColor` | color | "#080c1896" |  |
 | `columns` | int | 1 | Sprite sheet columns. (range 1 to 256) |
 | `rows` | int | 1 | Sprite sheet rows. (range 1 to 256) |
 | `frame` | int | 0 | Sprite sheet cell to draw. (range 0 to 65535) |

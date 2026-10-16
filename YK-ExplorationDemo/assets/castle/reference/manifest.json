@@ -1,0 +1,3129 @@
+{
+  "project": "Invisible Castle / Level 2",
+  "source_scene": "image(20261012-001406).png",
+  "source_characters": "image(20261012-001412).png",
+  "canvas_px": [
+    1670,
+    941
+  ],
+  "units": "source-image pixels; top-left origin; right +x, down +y",
+  "source_cell_px": 35,
+  "filter": "nearest",
+  "alpha": "straight RGBA, 8-bit",
+  "floor_construction": "Full room planes rebuilt from unobstructed source floor cells; obscured floors are not original hidden pixels.",
+  "wall_construction": "Visual source wall footprints retained. Obscured facade textures completed from source stone samples.",
+  "limitations": [
+    "Flattened source does not contain hidden geometry. Completed floor/wall surfaces are documented reconstructions.",
+    "NPC source contains eight single front-facing poses, not movement animations.",
+    "Some props are assemblies (dining sets, computer desk, exercise fence, energy pipes); their components share one sprite.",
+    "No authoritative GM was supplied in this extraction request. Source visual coordinates are preserved; collision shapes are not inferred.",
+    "Wall images include cap and front elevation; use engine sorting/occlusion as described in README."
+  ],
+  "category_counts": {
+    "floors": 13,
+    "floor_tiles": 13,
+    "props": 101,
+    "walls": 36,
+    "wall_tiles": 10,
+    "npc_original": 8,
+    "npc_map": 8
+  },
+  "assets": [
+    {
+      "id": "floor_dormitory_north",
+      "category": "floors",
+      "file": "png/floors/floor_dormitory_north.png",
+      "width": 321,
+      "height": 193,
+      "origin_px": [
+        74,
+        96
+      ],
+      "pivot_px": [
+        160.5,
+        193
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Pale blue dormitory floor"
+    },
+    {
+      "id": "tile_dormitory_north",
+      "category": "floor_tiles",
+      "file": "png/floor_tiles/tile_dormitory_north.png",
+      "width": 35,
+      "height": 35,
+      "origin_px": null,
+      "pivot_px": [
+        17.5,
+        35
+      ],
+      "method": "source_sample",
+      "note": "35px source cell; edges adapted by repeat when rebuilding planes."
+    },
+    {
+      "id": "floor_west_common_room",
+      "category": "floors",
+      "file": "png/floors/floor_west_common_room.png",
+      "width": 321,
+      "height": 340,
+      "origin_px": [
+        74,
+        289
+      ],
+      "pivot_px": [
+        160.5,
+        340
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Dark blue common-room floor"
+    },
+    {
+      "id": "tile_west_common_room",
+      "category": "floor_tiles",
+      "file": "png/floor_tiles/tile_west_common_room.png",
+      "width": 35,
+      "height": 35,
+      "origin_px": null,
+      "pivot_px": [
+        17.5,
+        35
+      ],
+      "method": "source_sample",
+      "note": "35px source cell; edges adapted by repeat when rebuilding planes."
+    },
+    {
+      "id": "floor_dormitory_south",
+      "category": "floors",
+      "file": "png/floors/floor_dormitory_south.png",
+      "width": 321,
+      "height": 196,
+      "origin_px": [
+        74,
+        629
+      ],
+      "pivot_px": [
+        160.5,
+        196
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Pale blue south dormitory floor"
+    },
+    {
+      "id": "tile_dormitory_south",
+      "category": "floor_tiles",
+      "file": "png/floor_tiles/tile_dormitory_south.png",
+      "width": 35,
+      "height": 35,
+      "origin_px": null,
+      "pivot_px": [
+        17.5,
+        35
+      ],
+      "method": "source_sample",
+      "note": "35px source cell; edges adapted by repeat when rebuilding planes."
+    },
+    {
+      "id": "floor_canteen",
+      "category": "floors",
+      "file": "png/floors/floor_canteen.png",
+      "width": 367,
+      "height": 241,
+      "origin_px": [
+        425,
+        96
+      ],
+      "pivot_px": [
+        183.5,
+        241
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Warm canteen stone floor"
+    },
+    {
+      "id": "tile_canteen",
+      "category": "floor_tiles",
+      "file": "png/floor_tiles/tile_canteen.png",
+      "width": 35,
+      "height": 35,
+      "origin_px": null,
+      "pivot_px": [
+        17.5,
+        35
+      ],
+      "method": "source_sample",
+      "note": "35px source cell; edges adapted by repeat when rebuilding planes."
+    },
+    {
+      "id": "floor_laundry",
+      "category": "floors",
+      "file": "png/floors/floor_laundry.png",
+      "width": 308,
+      "height": 241,
+      "origin_px": [
+        824,
+        96
+      ],
+      "pivot_px": [
+        154.0,
+        241
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Pale blue laundry floor"
+    },
+    {
+      "id": "tile_laundry",
+      "category": "floor_tiles",
+      "file": "png/floor_tiles/tile_laundry.png",
+      "width": 35,
+      "height": 35,
+      "origin_px": null,
+      "pivot_px": [
+        17.5,
+        35
+      ],
+      "method": "source_sample",
+      "note": "35px source cell; edges adapted by repeat when rebuilding planes."
+    },
+    {
+      "id": "floor_control_room",
+      "category": "floors",
+      "file": "png/floors/floor_control_room.png",
+      "width": 254,
+      "height": 241,
+      "origin_px": [
+        1161,
+        96
+      ],
+      "pivot_px": [
+        127.0,
+        241
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Dark blue control-room floor"
+    },
+    {
+      "id": "tile_control_room",
+      "category": "floor_tiles",
+      "file": "png/floor_tiles/tile_control_room.png",
+      "width": 35,
+      "height": 35,
+      "origin_px": null,
+      "pivot_px": [
+        17.5,
+        35
+      ],
+      "method": "source_sample",
+      "note": "35px source cell; edges adapted by repeat when rebuilding planes."
+    },
+    {
+      "id": "floor_store_room",
+      "category": "floors",
+      "file": "png/floors/floor_store_room.png",
+      "width": 154,
+      "height": 241,
+      "origin_px": [
+        1446,
+        96
+      ],
+      "pivot_px": [
+        77.0,
+        241
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Grey store-room floor"
+    },
+    {
+      "id": "tile_store_room",
+      "category": "floor_tiles",
+      "file": "png/floor_tiles/tile_store_room.png",
+      "width": 35,
+      "height": 35,
+      "origin_px": null,
+      "pivot_px": [
+        17.5,
+        35
+      ],
+      "method": "source_sample",
+      "note": "35px source cell; edges adapted by repeat when rebuilding planes."
+    },
+    {
+      "id": "floor_main_corridor",
+      "category": "floors",
+      "file": "png/floors/floor_main_corridor.png",
+      "width": 707,
+      "height": 263,
+      "origin_px": [
+        425,
+        337
+      ],
+      "pivot_px": [
+        353.5,
+        263
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Stone corridor floor, continuous through wall openings"
+    },
+    {
+      "id": "tile_main_corridor",
+      "category": "floor_tiles",
+      "file": "png/floor_tiles/tile_main_corridor.png",
+      "width": 35,
+      "height": 35,
+      "origin_px": null,
+      "pivot_px": [
+        17.5,
+        35
+      ],
+      "method": "source_sample",
+      "note": "35px source cell; edges adapted by repeat when rebuilding planes."
+    },
+    {
+      "id": "floor_workshop",
+      "category": "floors",
+      "file": "png/floors/floor_workshop.png",
+      "width": 367,
+      "height": 225,
+      "origin_px": [
+        425,
+        600
+      ],
+      "pivot_px": [
+        183.5,
+        225
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Warm workshop floor"
+    },
+    {
+      "id": "tile_workshop",
+      "category": "floor_tiles",
+      "file": "png/floor_tiles/tile_workshop.png",
+      "width": 35,
+      "height": 35,
+      "origin_px": null,
+      "pivot_px": [
+        17.5,
+        35
+      ],
+      "method": "source_sample",
+      "note": "35px source cell; edges adapted by repeat when rebuilding planes."
+    },
+    {
+      "id": "floor_infirmary",
+      "category": "floors",
+      "file": "png/floors/floor_infirmary.png",
+      "width": 308,
+      "height": 225,
+      "origin_px": [
+        824,
+        600
+      ],
+      "pivot_px": [
+        154.0,
+        225
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Green infirmary floor"
+    },
+    {
+      "id": "tile_infirmary",
+      "category": "floor_tiles",
+      "file": "png/floor_tiles/tile_infirmary.png",
+      "width": 35,
+      "height": 35,
+      "origin_px": null,
+      "pivot_px": [
+        17.5,
+        35
+      ],
+      "method": "source_sample",
+      "note": "35px source cell; edges adapted by repeat when rebuilding planes."
+    },
+    {
+      "id": "floor_exercise_yard",
+      "category": "floors",
+      "file": "png/floors/floor_exercise_yard.png",
+      "width": 254,
+      "height": 404,
+      "origin_px": [
+        1161,
+        421
+      ],
+      "pivot_px": [
+        127.0,
+        404
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Earth and grass yard floor"
+    },
+    {
+      "id": "tile_exercise_yard",
+      "category": "floor_tiles",
+      "file": "png/floor_tiles/tile_exercise_yard.png",
+      "width": 35,
+      "height": 35,
+      "origin_px": null,
+      "pivot_px": [
+        17.5,
+        35
+      ],
+      "method": "source_sample",
+      "note": "35px source cell; edges adapted by repeat when rebuilding planes."
+    },
+    {
+      "id": "floor_utility_room",
+      "category": "floors",
+      "file": "png/floors/floor_utility_room.png",
+      "width": 154,
+      "height": 404,
+      "origin_px": [
+        1446,
+        421
+      ],
+      "pivot_px": [
+        77.0,
+        404
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Grey utility floor"
+    },
+    {
+      "id": "tile_utility_room",
+      "category": "floor_tiles",
+      "file": "png/floor_tiles/tile_utility_room.png",
+      "width": 35,
+      "height": 35,
+      "origin_px": null,
+      "pivot_px": [
+        17.5,
+        35
+      ],
+      "method": "source_sample",
+      "note": "35px source cell; edges adapted by repeat when rebuilding planes."
+    },
+    {
+      "id": "floor_exercise_arena",
+      "category": "floors",
+      "file": "png/floors/floor_exercise_arena.png",
+      "width": 182,
+      "height": 157,
+      "origin_px": [
+        1198,
+        621
+      ],
+      "pivot_px": [
+        91.0,
+        157
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Earth arena including original court markings"
+    },
+    {
+      "id": "tile_exercise_arena",
+      "category": "floor_tiles",
+      "file": "png/floor_tiles/tile_exercise_arena.png",
+      "width": 35,
+      "height": 35,
+      "origin_px": null,
+      "pivot_px": [
+        17.5,
+        35
+      ],
+      "method": "source_sample",
+      "note": "35px source cell; edges adapted by repeat when rebuilding planes."
+    },
+    {
+      "id": "corridor_runner",
+      "category": "props",
+      "file": "png/props/corridor_runner.png",
+      "width": 660,
+      "height": 45,
+      "origin_px": [
+        448,
+        457
+      ],
+      "pivot_px": [
+        330.0,
+        45
+      ],
+      "method": "occlusion_reconstruction",
+      "note": "Small guard-covered strip copied from the matching carpet repeat."
+    },
+    {
+      "id": "arena_court_markings",
+      "category": "props",
+      "file": "png/props/arena_court_markings.png",
+      "width": 176,
+      "height": 155,
+      "origin_px": [
+        1204,
+        623
+      ],
+      "pivot_px": [
+        88.0,
+        155
+      ],
+      "method": "visible_line_reconstruction",
+      "note": "Separate chalk markings traced at visible original coordinates."
+    },
+    {
+      "id": "wall_outer_west",
+      "category": "walls",
+      "file": "png/walls/wall_outer_west.png",
+      "width": 36,
+      "height": 883,
+      "origin_px": [
+        40,
+        25
+      ],
+      "pivot_px": [
+        18.0,
+        883
+      ],
+      "method": "source_extract",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_outer_east",
+      "category": "walls",
+      "file": "png/walls/wall_outer_east.png",
+      "width": 34,
+      "height": 883,
+      "origin_px": [
+        1597,
+        25
+      ],
+      "pivot_px": [
+        17.0,
+        883
+      ],
+      "method": "source_extract",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_divider_west_upper",
+      "category": "walls",
+      "file": "png/walls/wall_divider_west_upper.png",
+      "width": 30,
+      "height": 441,
+      "origin_px": [
+        395,
+        25
+      ],
+      "pivot_px": [
+        15.0,
+        441
+      ],
+      "method": "source_extract",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_divider_west_lower",
+      "category": "walls",
+      "file": "png/walls/wall_divider_west_lower.png",
+      "width": 30,
+      "height": 440,
+      "origin_px": [
+        395,
+        468
+      ],
+      "pivot_px": [
+        15.0,
+        440
+      ],
+      "method": "source_extract",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_divider_middle",
+      "category": "walls",
+      "file": "png/walls/wall_divider_middle.png",
+      "width": 32,
+      "height": 883,
+      "origin_px": [
+        792,
+        25
+      ],
+      "pivot_px": [
+        16.0,
+        883
+      ],
+      "method": "occlusion_reconstruction",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_divider_east_upper",
+      "category": "walls",
+      "file": "png/walls/wall_divider_east_upper.png",
+      "width": 31,
+      "height": 227,
+      "origin_px": [
+        1131,
+        25
+      ],
+      "pivot_px": [
+        15.5,
+        227
+      ],
+      "method": "source_extract",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_divider_east_middle",
+      "category": "walls",
+      "file": "png/walls/wall_divider_east_middle.png",
+      "width": 31,
+      "height": 214,
+      "origin_px": [
+        1131,
+        254
+      ],
+      "pivot_px": [
+        15.5,
+        214
+      ],
+      "method": "source_extract",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_divider_east_lower",
+      "category": "walls",
+      "file": "png/walls/wall_divider_east_lower.png",
+      "width": 31,
+      "height": 438,
+      "origin_px": [
+        1131,
+        470
+      ],
+      "pivot_px": [
+        15.5,
+        438
+      ],
+      "method": "source_extract",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_divider_yard_upper",
+      "category": "walls",
+      "file": "png/walls/wall_divider_yard_upper.png",
+      "width": 32,
+      "height": 444,
+      "origin_px": [
+        1414,
+        25
+      ],
+      "pivot_px": [
+        16.0,
+        444
+      ],
+      "method": "source_extract",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_divider_yard_lower",
+      "category": "walls",
+      "file": "png/walls/wall_divider_yard_lower.png",
+      "width": 32,
+      "height": 434,
+      "origin_px": [
+        1414,
+        474
+      ],
+      "pivot_px": [
+        16.0,
+        434
+      ],
+      "method": "source_extract",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_control_room_pier",
+      "category": "walls",
+      "file": "png/walls/wall_control_room_pier.png",
+      "width": 30,
+      "height": 74,
+      "origin_px": [
+        1340,
+        25
+      ],
+      "pivot_px": [
+        15.0,
+        74
+      ],
+      "method": "occlusion_reconstruction",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_dorm_north_partition_upper",
+      "category": "walls",
+      "file": "png/walls/wall_dorm_north_partition_upper.png",
+      "width": 31,
+      "height": 149,
+      "origin_px": [
+        231,
+        25
+      ],
+      "pivot_px": [
+        15.5,
+        149
+      ],
+      "method": "source_extract",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_dorm_north_partition_lower",
+      "category": "walls",
+      "file": "png/walls/wall_dorm_north_partition_lower.png",
+      "width": 31,
+      "height": 107,
+      "origin_px": [
+        231,
+        181
+      ],
+      "pivot_px": [
+        15.5,
+        107
+      ],
+      "method": "source_extract",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_dorm_south_partition_upper",
+      "category": "walls",
+      "file": "png/walls/wall_dorm_south_partition_upper.png",
+      "width": 31,
+      "height": 119,
+      "origin_px": [
+        223,
+        629
+      ],
+      "pivot_px": [
+        15.5,
+        119
+      ],
+      "method": "source_extract",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_dorm_south_partition_lower",
+      "category": "walls",
+      "file": "png/walls/wall_dorm_south_partition_lower.png",
+      "width": 31,
+      "height": 67,
+      "origin_px": [
+        223,
+        759
+      ],
+      "pivot_px": [
+        15.5,
+        67
+      ],
+      "method": "source_extract",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_dorm_north_wall_west",
+      "category": "walls",
+      "file": "png/walls/wall_dorm_north_wall_west.png",
+      "width": 39,
+      "height": 60,
+      "origin_px": [
+        75,
+        229
+      ],
+      "pivot_px": [
+        19.5,
+        60
+      ],
+      "method": "source_extract",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_dorm_north_wall_middle",
+      "category": "walls",
+      "file": "png/walls/wall_dorm_north_wall_middle.png",
+      "width": 107,
+      "height": 60,
+      "origin_px": [
+        183,
+        229
+      ],
+      "pivot_px": [
+        53.5,
+        60
+      ],
+      "method": "occlusion_reconstruction",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_dorm_north_wall_east",
+      "category": "walls",
+      "file": "png/walls/wall_dorm_north_wall_east.png",
+      "width": 42,
+      "height": 60,
+      "origin_px": [
+        353,
+        229
+      ],
+      "pivot_px": [
+        21.0,
+        60
+      ],
+      "method": "source_extract",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_dorm_south_wall_west",
+      "category": "walls",
+      "file": "png/walls/wall_dorm_south_wall_west.png",
+      "width": 39,
+      "height": 57,
+      "origin_px": [
+        75,
+        628
+      ],
+      "pivot_px": [
+        19.5,
+        57
+      ],
+      "method": "source_extract",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_dorm_south_wall_middle",
+      "category": "walls",
+      "file": "png/walls/wall_dorm_south_wall_middle.png",
+      "width": 114,
+      "height": 57,
+      "origin_px": [
+        175,
+        628
+      ],
+      "pivot_px": [
+        57.0,
+        57
+      ],
+      "method": "source_extract",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_dorm_south_wall_east",
+      "category": "walls",
+      "file": "png/walls/wall_dorm_south_wall_east.png",
+      "width": 45,
+      "height": 57,
+      "origin_px": [
+        350,
+        628
+      ],
+      "pivot_px": [
+        22.5,
+        57
+      ],
+      "method": "source_extract",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_middle_north_wall_west",
+      "category": "walls",
+      "file": "png/walls/wall_middle_north_wall_west.png",
+      "width": 160,
+      "height": 86,
+      "origin_px": [
+        425,
+        337
+      ],
+      "pivot_px": [
+        80.0,
+        86
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_middle_north_wall_middle",
+      "category": "walls",
+      "file": "png/walls/wall_middle_north_wall_middle.png",
+      "width": 292,
+      "height": 86,
+      "origin_px": [
+        643,
+        337
+      ],
+      "pivot_px": [
+        146.0,
+        86
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_middle_north_wall_east",
+      "category": "walls",
+      "file": "png/walls/wall_middle_north_wall_east.png",
+      "width": 145,
+      "height": 86,
+      "origin_px": [
+        987,
+        337
+      ],
+      "pivot_px": [
+        72.5,
+        86
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_middle_south_wall_west",
+      "category": "walls",
+      "file": "png/walls/wall_middle_south_wall_west.png",
+      "width": 160,
+      "height": 90,
+      "origin_px": [
+        425,
+        511
+      ],
+      "pivot_px": [
+        80.0,
+        90
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_middle_south_wall_middle",
+      "category": "walls",
+      "file": "png/walls/wall_middle_south_wall_middle.png",
+      "width": 292,
+      "height": 90,
+      "origin_px": [
+        643,
+        511
+      ],
+      "pivot_px": [
+        146.0,
+        90
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_middle_south_wall_east",
+      "category": "walls",
+      "file": "png/walls/wall_middle_south_wall_east.png",
+      "width": 145,
+      "height": 90,
+      "origin_px": [
+        987,
+        511
+      ],
+      "pivot_px": [
+        72.5,
+        90
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_yard_north_wall",
+      "category": "walls",
+      "file": "png/walls/wall_yard_north_wall.png",
+      "width": 252,
+      "height": 92,
+      "origin_px": [
+        1162,
+        337
+      ],
+      "pivot_px": [
+        126.0,
+        92
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_utility_north_wall",
+      "category": "walls",
+      "file": "png/walls/wall_utility_north_wall.png",
+      "width": 151,
+      "height": 91,
+      "origin_px": [
+        1446,
+        337
+      ],
+      "pivot_px": [
+        75.5,
+        91
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_utility_south_wall_west",
+      "category": "walls",
+      "file": "png/walls/wall_utility_south_wall_west.png",
+      "width": 48,
+      "height": 35,
+      "origin_px": [
+        1446,
+        625
+      ],
+      "pivot_px": [
+        24.0,
+        35
+      ],
+      "method": "source_extract",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_utility_south_wall_east",
+      "category": "walls",
+      "file": "png/walls/wall_utility_south_wall_east.png",
+      "width": 46,
+      "height": 35,
+      "origin_px": [
+        1551,
+        625
+      ],
+      "pivot_px": [
+        23.0,
+        35
+      ],
+      "method": "source_extract",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_exit_anteroom_wall_west",
+      "category": "walls",
+      "file": "png/walls/wall_exit_anteroom_wall_west.png",
+      "width": 49,
+      "height": 48,
+      "origin_px": [
+        1446,
+        714
+      ],
+      "pivot_px": [
+        24.5,
+        48
+      ],
+      "method": "source_extract",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_exit_anteroom_wall_east",
+      "category": "walls",
+      "file": "png/walls/wall_exit_anteroom_wall_east.png",
+      "width": 47,
+      "height": 48,
+      "origin_px": [
+        1550,
+        714
+      ],
+      "pivot_px": [
+        23.5,
+        48
+      ],
+      "method": "source_extract",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_outer_south_west",
+      "category": "walls",
+      "file": "png/walls/wall_outer_south_west.png",
+      "width": 1442,
+      "height": 85,
+      "origin_px": [
+        40,
+        823
+      ],
+      "pivot_px": [
+        721.0,
+        85
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_outer_south_east",
+      "category": "walls",
+      "file": "png/walls/wall_outer_south_east.png",
+      "width": 75,
+      "height": 85,
+      "origin_px": [
+        1556,
+        823
+      ],
+      "pivot_px": [
+        37.5,
+        85
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "wall_outer_north",
+      "category": "walls",
+      "file": "png/walls/wall_outer_north.png",
+      "width": 1591,
+      "height": 74,
+      "origin_px": [
+        40,
+        25
+      ],
+      "pivot_px": [
+        795.5,
+        74
+      ],
+      "method": "source_texture_reconstruction",
+      "note": "Fixed source footprint. Texture behind props completed when necessary."
+    },
+    {
+      "id": "module_north_cap",
+      "category": "wall_tiles",
+      "file": "png/wall_tiles/module_north_cap.png",
+      "width": 35,
+      "height": 28,
+      "origin_px": null,
+      "pivot_px": [
+        17.5,
+        28
+      ],
+      "method": "source_sample",
+      "note": "Native source pixels; no geometry change."
+    },
+    {
+      "id": "module_north_face",
+      "category": "wall_tiles",
+      "file": "png/wall_tiles/module_north_face.png",
+      "width": 35,
+      "height": 44,
+      "origin_px": null,
+      "pivot_px": [
+        17.5,
+        44
+      ],
+      "method": "source_sample",
+      "note": "Native source pixels; no geometry change."
+    },
+    {
+      "id": "module_inner_cap",
+      "category": "wall_tiles",
+      "file": "png/wall_tiles/module_inner_cap.png",
+      "width": 35,
+      "height": 26,
+      "origin_px": null,
+      "pivot_px": [
+        17.5,
+        26
+      ],
+      "method": "source_sample",
+      "note": "Native source pixels; no geometry change."
+    },
+    {
+      "id": "module_inner_face",
+      "category": "wall_tiles",
+      "file": "png/wall_tiles/module_inner_face.png",
+      "width": 35,
+      "height": 58,
+      "origin_px": null,
+      "pivot_px": [
+        17.5,
+        58
+      ],
+      "method": "source_sample",
+      "note": "Native source pixels; no geometry change."
+    },
+    {
+      "id": "module_vertical_light",
+      "category": "wall_tiles",
+      "file": "png/wall_tiles/module_vertical_light.png",
+      "width": 28,
+      "height": 35,
+      "origin_px": null,
+      "pivot_px": [
+        14.0,
+        35
+      ],
+      "method": "source_sample",
+      "note": "Native source pixels; no geometry change."
+    },
+    {
+      "id": "module_vertical_shadow",
+      "category": "wall_tiles",
+      "file": "png/wall_tiles/module_vertical_shadow.png",
+      "width": 28,
+      "height": 30,
+      "origin_px": null,
+      "pivot_px": [
+        14.0,
+        30
+      ],
+      "method": "source_sample",
+      "note": "Native source pixels; no geometry change."
+    },
+    {
+      "id": "module_outer_south_face",
+      "category": "wall_tiles",
+      "file": "png/wall_tiles/module_outer_south_face.png",
+      "width": 35,
+      "height": 57,
+      "origin_px": null,
+      "pivot_px": [
+        17.5,
+        57
+      ],
+      "method": "source_sample",
+      "note": "Native source pixels; no geometry change."
+    },
+    {
+      "id": "module_outer_corner",
+      "category": "wall_tiles",
+      "file": "png/wall_tiles/module_outer_corner.png",
+      "width": 36,
+      "height": 85,
+      "origin_px": null,
+      "pivot_px": [
+        18.0,
+        85
+      ],
+      "method": "source_sample",
+      "note": "Native source pixels; no geometry change."
+    },
+    {
+      "id": "module_wall_end_pier",
+      "category": "wall_tiles",
+      "file": "png/wall_tiles/module_wall_end_pier.png",
+      "width": 27,
+      "height": 85,
+      "origin_px": null,
+      "pivot_px": [
+        13.5,
+        85
+      ],
+      "method": "source_sample",
+      "note": "Native source pixels; no geometry change."
+    },
+    {
+      "id": "module_dormitory_short_pier",
+      "category": "wall_tiles",
+      "file": "png/wall_tiles/module_dormitory_short_pier.png",
+      "width": 39,
+      "height": 60,
+      "origin_px": null,
+      "pivot_px": [
+        19.5,
+        60
+      ],
+      "method": "source_sample",
+      "note": "Native source pixels; no geometry change."
+    },
+    {
+      "id": "dorm_bed_nw",
+      "category": "props",
+      "file": "png/props/dorm_bed_nw.png",
+      "width": 82,
+      "height": 68,
+      "origin_px": [
+        78,
+        93
+      ],
+      "pivot_px": [
+        41.0,
+        66
+      ],
+      "method": "matching_visible_asset_completion",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "dorm_bed_ne",
+      "category": "props",
+      "file": "png/props/dorm_bed_ne.png",
+      "width": 83,
+      "height": 67,
+      "origin_px": [
+        286,
+        93
+      ],
+      "pivot_px": [
+        41.5,
+        65
+      ],
+      "method": "matching_visible_asset_completion",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "dorm_chair_nw",
+      "category": "props",
+      "file": "png/props/dorm_chair_nw.png",
+      "width": 36,
+      "height": 48,
+      "origin_px": [
+        74,
+        141
+      ],
+      "pivot_px": [
+        18.0,
+        46
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "dorm_chair_ne_top",
+      "category": "props",
+      "file": "png/props/dorm_chair_ne_top.png",
+      "width": 29,
+      "height": 52,
+      "origin_px": [
+        363,
+        84
+      ],
+      "pivot_px": [
+        14.5,
+        50
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "dorm_chair_nw_inner",
+      "category": "props",
+      "file": "png/props/dorm_chair_nw_inner.png",
+      "width": 31,
+      "height": 39,
+      "origin_px": [
+        196,
+        186
+      ],
+      "pivot_px": [
+        15.5,
+        37
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "dorm_chair_ne_inner",
+      "category": "props",
+      "file": "png/props/dorm_chair_ne_inner.png",
+      "width": 34,
+      "height": 47,
+      "origin_px": [
+        357,
+        178
+      ],
+      "pivot_px": [
+        17.0,
+        45
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "west_plant",
+      "category": "props",
+      "file": "png/props/west_plant.png",
+      "width": 43,
+      "height": 68,
+      "origin_px": [
+        352,
+        285
+      ],
+      "pivot_px": [
+        21.5,
+        66
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "west_common_table",
+      "category": "props",
+      "file": "png/props/west_common_table.png",
+      "width": 98,
+      "height": 64,
+      "origin_px": [
+        115,
+        344
+      ],
+      "pivot_px": [
+        49.0,
+        62
+      ],
+      "method": "matching_visible_asset_completion",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "west_common_chair_left",
+      "category": "props",
+      "file": "png/props/west_common_chair_left.png",
+      "width": 41,
+      "height": 39,
+      "origin_px": [
+        117,
+        380
+      ],
+      "pivot_px": [
+        20.5,
+        37
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "west_common_chair_right",
+      "category": "props",
+      "file": "png/props/west_common_chair_right.png",
+      "width": 42,
+      "height": 40,
+      "origin_px": [
+        169,
+        380
+      ],
+      "pivot_px": [
+        21.0,
+        38
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "west_vertical_bed_upper",
+      "category": "props",
+      "file": "png/props/west_vertical_bed_upper.png",
+      "width": 51,
+      "height": 80,
+      "origin_px": [
+        87,
+        439
+      ],
+      "pivot_px": [
+        25.5,
+        78
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "west_vertical_bed_lower",
+      "category": "props",
+      "file": "png/props/west_vertical_bed_lower.png",
+      "width": 51,
+      "height": 81,
+      "origin_px": [
+        87,
+        520
+      ],
+      "pivot_px": [
+        25.5,
+        79
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "west_storage_chest",
+      "category": "props",
+      "file": "png/props/west_storage_chest.png",
+      "width": 46,
+      "height": 58,
+      "origin_px": [
+        350,
+        545
+      ],
+      "pivot_px": [
+        23.0,
+        56
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "west_barrel",
+      "category": "props",
+      "file": "png/props/west_barrel.png",
+      "width": 46,
+      "height": 55,
+      "origin_px": [
+        350,
+        593
+      ],
+      "pivot_px": [
+        23.0,
+        53
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "south_dorm_bed_west",
+      "category": "props",
+      "file": "png/props/south_dorm_bed_west.png",
+      "width": 86,
+      "height": 68,
+      "origin_px": [
+        81,
+        699
+      ],
+      "pivot_px": [
+        43.0,
+        66
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "south_dorm_bed_east",
+      "category": "props",
+      "file": "png/props/south_dorm_bed_east.png",
+      "width": 84,
+      "height": 69,
+      "origin_px": [
+        286,
+        699
+      ],
+      "pivot_px": [
+        42.0,
+        67
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "south_dorm_candle_stool",
+      "category": "props",
+      "file": "png/props/south_dorm_candle_stool.png",
+      "width": 36,
+      "height": 57,
+      "origin_px": [
+        170,
+        753
+      ],
+      "pivot_px": [
+        18.0,
+        55
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "south_dorm_chair",
+      "category": "props",
+      "file": "png/props/south_dorm_chair.png",
+      "width": 35,
+      "height": 57,
+      "origin_px": [
+        353,
+        762
+      ],
+      "pivot_px": [
+        17.5,
+        55
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "kitchen_barrel_north",
+      "category": "props",
+      "file": "png/props/kitchen_barrel_north.png",
+      "width": 35,
+      "height": 58,
+      "origin_px": [
+        423,
+        76
+      ],
+      "pivot_px": [
+        17.5,
+        56
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "kitchen_shelf_utensils",
+      "category": "props",
+      "file": "png/props/kitchen_shelf_utensils.png",
+      "width": 79,
+      "height": 74,
+      "origin_px": [
+        449,
+        61
+      ],
+      "pivot_px": [
+        39.5,
+        72
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "kitchen_small_cabinet",
+      "category": "props",
+      "file": "png/props/kitchen_small_cabinet.png",
+      "width": 41,
+      "height": 72,
+      "origin_px": [
+        521,
+        64
+      ],
+      "pivot_px": [
+        20.5,
+        70
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "kitchen_jug_shelf",
+      "category": "props",
+      "file": "png/props/kitchen_jug_shelf.png",
+      "width": 56,
+      "height": 69,
+      "origin_px": [
+        554,
+        64
+      ],
+      "pivot_px": [
+        28.0,
+        67
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "kitchen_chair",
+      "category": "props",
+      "file": "png/props/kitchen_chair.png",
+      "width": 40,
+      "height": 52,
+      "origin_px": [
+        605,
+        84
+      ],
+      "pivot_px": [
+        20.0,
+        50
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "kitchen_shelf_east",
+      "category": "props",
+      "file": "png/props/kitchen_shelf_east.png",
+      "width": 91,
+      "height": 74,
+      "origin_px": [
+        642,
+        60
+      ],
+      "pivot_px": [
+        45.5,
+        72
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "kitchen_fireplace",
+      "category": "props",
+      "file": "png/props/kitchen_fireplace.png",
+      "width": 69,
+      "height": 92,
+      "origin_px": [
+        729,
+        56
+      ],
+      "pivot_px": [
+        34.5,
+        90
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "kitchen_preparation_table",
+      "category": "props",
+      "file": "png/props/kitchen_preparation_table.png",
+      "width": 274,
+      "height": 77,
+      "origin_px": [
+        482,
+        118
+      ],
+      "pivot_px": [
+        137.0,
+        75
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "kitchen_side_cabinet",
+      "category": "props",
+      "file": "png/props/kitchen_side_cabinet.png",
+      "width": 41,
+      "height": 104,
+      "origin_px": [
+        756,
+        122
+      ],
+      "pivot_px": [
+        20.5,
+        102
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "kitchen_barrel_south",
+      "category": "props",
+      "file": "png/props/kitchen_barrel_south.png",
+      "width": 36,
+      "height": 62,
+      "origin_px": [
+        424,
+        134
+      ],
+      "pivot_px": [
+        18.0,
+        60
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "canteen_dining_set_west",
+      "category": "props",
+      "file": "png/props/canteen_dining_set_west.png",
+      "width": 126,
+      "height": 103,
+      "origin_px": [
+        471,
+        221
+      ],
+      "pivot_px": [
+        63.0,
+        101
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "canteen_dining_set_east",
+      "category": "props",
+      "file": "png/props/canteen_dining_set_east.png",
+      "width": 125,
+      "height": 103,
+      "origin_px": [
+        635,
+        221
+      ],
+      "pivot_px": [
+        62.5,
+        101
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "laundry_linen_rail",
+      "category": "props",
+      "file": "png/props/laundry_linen_rail.png",
+      "width": 111,
+      "height": 64,
+      "origin_px": [
+        911,
+        54
+      ],
+      "pivot_px": [
+        55.5,
+        62
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "laundry_basin_1",
+      "category": "props",
+      "file": "png/props/laundry_basin_1.png",
+      "width": 65,
+      "height": 87,
+      "origin_px": [
+        836,
+        110
+      ],
+      "pivot_px": [
+        32.5,
+        85
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "laundry_basin_2",
+      "category": "props",
+      "file": "png/props/laundry_basin_2.png",
+      "width": 66,
+      "height": 86,
+      "origin_px": [
+        910,
+        105
+      ],
+      "pivot_px": [
+        33.0,
+        84
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "laundry_basin_3",
+      "category": "props",
+      "file": "png/props/laundry_basin_3.png",
+      "width": 65,
+      "height": 86,
+      "origin_px": [
+        984,
+        105
+      ],
+      "pivot_px": [
+        32.5,
+        84
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "laundry_basin_4",
+      "category": "props",
+      "file": "png/props/laundry_basin_4.png",
+      "width": 65,
+      "height": 82,
+      "origin_px": [
+        1058,
+        109
+      ],
+      "pivot_px": [
+        32.5,
+        80
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "laundry_basket",
+      "category": "props",
+      "file": "png/props/laundry_basket.png",
+      "width": 47,
+      "height": 63,
+      "origin_px": [
+        822,
+        185
+      ],
+      "pivot_px": [
+        23.5,
+        61
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "laundry_folding_table",
+      "category": "props",
+      "file": "png/props/laundry_folding_table.png",
+      "width": 116,
+      "height": 73,
+      "origin_px": [
+        832,
+        238
+      ],
+      "pivot_px": [
+        58.0,
+        71
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "laundry_switch",
+      "category": "props",
+      "file": "png/props/laundry_switch.png",
+      "width": 34,
+      "height": 46,
+      "origin_px": [
+        1081,
+        288
+      ],
+      "pivot_px": [
+        17.0,
+        44
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "control_banner",
+      "category": "props",
+      "file": "png/props/control_banner.png",
+      "width": 59,
+      "height": 78,
+      "origin_px": [
+        1159,
+        49
+      ],
+      "pivot_px": [
+        29.5,
+        76
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "control_chair",
+      "category": "props",
+      "file": "png/props/control_chair.png",
+      "width": 45,
+      "height": 65,
+      "origin_px": [
+        1158,
+        113
+      ],
+      "pivot_px": [
+        22.5,
+        63
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "control_computer_desk",
+      "category": "props",
+      "file": "png/props/control_computer_desk.png",
+      "width": 172,
+      "height": 87,
+      "origin_px": [
+        1202,
+        85
+      ],
+      "pivot_px": [
+        86.0,
+        85
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "control_tower",
+      "category": "props",
+      "file": "png/props/control_tower.png",
+      "width": 33,
+      "height": 65,
+      "origin_px": [
+        1367,
+        101
+      ],
+      "pivot_px": [
+        16.5,
+        63
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "control_console_1",
+      "category": "props",
+      "file": "png/props/control_console_1.png",
+      "width": 47,
+      "height": 71,
+      "origin_px": [
+        1270,
+        155
+      ],
+      "pivot_px": [
+        23.5,
+        69
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "control_console_2",
+      "category": "props",
+      "file": "png/props/control_console_2.png",
+      "width": 38,
+      "height": 66,
+      "origin_px": [
+        1360,
+        267
+      ],
+      "pivot_px": [
+        19.0,
+        64
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "control_plant",
+      "category": "props",
+      "file": "png/props/control_plant.png",
+      "width": 41,
+      "height": 63,
+      "origin_px": [
+        1161,
+        226
+      ],
+      "pivot_px": [
+        20.5,
+        61
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "store_upper_crates",
+      "category": "props",
+      "file": "png/props/store_upper_crates.png",
+      "width": 113,
+      "height": 80,
+      "origin_px": [
+        1481,
+        87
+      ],
+      "pivot_px": [
+        56.5,
+        78
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "store_middle_crates",
+      "category": "props",
+      "file": "png/props/store_middle_crates.png",
+      "width": 70,
+      "height": 65,
+      "origin_px": [
+        1482,
+        165
+      ],
+      "pivot_px": [
+        35.0,
+        63
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "store_lower_crate",
+      "category": "props",
+      "file": "png/props/store_lower_crate.png",
+      "width": 71,
+      "height": 73,
+      "origin_px": [
+        1482,
+        239
+      ],
+      "pivot_px": [
+        35.5,
+        71
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "store_barrel",
+      "category": "props",
+      "file": "png/props/store_barrel.png",
+      "width": 42,
+      "height": 60,
+      "origin_px": [
+        1557,
+        275
+      ],
+      "pivot_px": [
+        21.0,
+        58
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "corridor_crate_west",
+      "category": "props",
+      "file": "png/props/corridor_crate_west.png",
+      "width": 41,
+      "height": 50,
+      "origin_px": [
+        432,
+        393
+      ],
+      "pivot_px": [
+        20.5,
+        48
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "corridor_weapon_rack_west",
+      "category": "props",
+      "file": "png/props/corridor_weapon_rack_west.png",
+      "width": 63,
+      "height": 67,
+      "origin_px": [
+        470,
+        375
+      ],
+      "pivot_px": [
+        31.5,
+        65
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "corridor_chair_west",
+      "category": "props",
+      "file": "png/props/corridor_chair_west.png",
+      "width": 33,
+      "height": 45,
+      "origin_px": [
+        524,
+        397
+      ],
+      "pivot_px": [
+        16.5,
+        43
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "corridor_banner",
+      "category": "props",
+      "file": "png/props/corridor_banner.png",
+      "width": 48,
+      "height": 73,
+      "origin_px": [
+        775,
+        360
+      ],
+      "pivot_px": [
+        24.0,
+        71
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "corridor_weapon_rack_east",
+      "category": "props",
+      "file": "png/props/corridor_weapon_rack_east.png",
+      "width": 54,
+      "height": 57,
+      "origin_px": [
+        1010,
+        387
+      ],
+      "pivot_px": [
+        27.0,
+        55
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "corridor_chair_east",
+      "category": "props",
+      "file": "png/props/corridor_chair_east.png",
+      "width": 30,
+      "height": 47,
+      "origin_px": [
+        1055,
+        398
+      ],
+      "pivot_px": [
+        15.0,
+        45
+      ],
+      "method": "matching_visible_asset_completion",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "corridor_plant",
+      "category": "props",
+      "file": "png/props/corridor_plant.png",
+      "width": 42,
+      "height": 65,
+      "origin_px": [
+        1088,
+        380
+      ],
+      "pivot_px": [
+        21.0,
+        63
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "yard_small_stool",
+      "category": "props",
+      "file": "png/props/yard_small_stool.png",
+      "width": 38,
+      "height": 40,
+      "origin_px": [
+        1167,
+        393
+      ],
+      "pivot_px": [
+        19.0,
+        38
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "yard_banner",
+      "category": "props",
+      "file": "png/props/yard_banner.png",
+      "width": 50,
+      "height": 73,
+      "origin_px": [
+        1264,
+        360
+      ],
+      "pivot_px": [
+        25.0,
+        71
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "yard_stone_planter",
+      "category": "props",
+      "file": "png/props/yard_stone_planter.png",
+      "width": 64,
+      "height": 89,
+      "origin_px": [
+        1360,
+        391
+      ],
+      "pivot_px": [
+        32.0,
+        87
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "yard_bench_north",
+      "category": "props",
+      "file": "png/props/yard_bench_north.png",
+      "width": 94,
+      "height": 46,
+      "origin_px": [
+        1201,
+        454
+      ],
+      "pivot_px": [
+        47.0,
+        44
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "yard_bench_south",
+      "category": "props",
+      "file": "png/props/yard_bench_south.png",
+      "width": 94,
+      "height": 45,
+      "origin_px": [
+        1201,
+        519
+      ],
+      "pivot_px": [
+        47.0,
+        43
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "yard_exercise_fence",
+      "category": "props",
+      "file": "png/props/yard_exercise_fence.png",
+      "width": 220,
+      "height": 226,
+      "origin_px": [
+        1178,
+        589
+      ],
+      "pivot_px": [
+        110.0,
+        224
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "utility_chair",
+      "category": "props",
+      "file": "png/props/utility_chair.png",
+      "width": 33,
+      "height": 46,
+      "origin_px": [
+        1446,
+        393
+      ],
+      "pivot_px": [
+        16.5,
+        44
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "utility_crate",
+      "category": "props",
+      "file": "png/props/utility_crate.png",
+      "width": 47,
+      "height": 64,
+      "origin_px": [
+        1441,
+        511
+      ],
+      "pivot_px": [
+        23.5,
+        62
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "utility_small_stool",
+      "category": "props",
+      "file": "png/props/utility_small_stool.png",
+      "width": 31,
+      "height": 43,
+      "origin_px": [
+        1443,
+        579
+      ],
+      "pivot_px": [
+        15.5,
+        41
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "utility_energy_device_pipes",
+      "category": "props",
+      "file": "png/props/utility_energy_device_pipes.png",
+      "width": 93,
+      "height": 286,
+      "origin_px": [
+        1508,
+        366
+      ],
+      "pivot_px": [
+        46.5,
+        284
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "utility_green_console",
+      "category": "props",
+      "file": "png/props/utility_green_console.png",
+      "width": 44,
+      "height": 55,
+      "origin_px": [
+        1453,
+        667
+      ],
+      "pivot_px": [
+        22.0,
+        53
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "utility_box",
+      "category": "props",
+      "file": "png/props/utility_box.png",
+      "width": 48,
+      "height": 47,
+      "origin_px": [
+        1540,
+        674
+      ],
+      "pivot_px": [
+        24.0,
+        45
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "exit_banner_west",
+      "category": "props",
+      "file": "png/props/exit_banner_west.png",
+      "width": 49,
+      "height": 65,
+      "origin_px": [
+        1442,
+        752
+      ],
+      "pivot_px": [
+        24.5,
+        63
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "exit_banner_east",
+      "category": "props",
+      "file": "png/props/exit_banner_east.png",
+      "width": 48,
+      "height": 65,
+      "origin_px": [
+        1550,
+        752
+      ],
+      "pivot_px": [
+        24.0,
+        63
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "green_exit_gate",
+      "category": "props",
+      "file": "png/props/green_exit_gate.png",
+      "width": 119,
+      "height": 102,
+      "origin_px": [
+        1461,
+        808
+      ],
+      "pivot_px": [
+        59.5,
+        100
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "workshop_tools_rack_west",
+      "category": "props",
+      "file": "png/props/workshop_tools_rack_west.png",
+      "width": 78,
+      "height": 137,
+      "origin_px": [
+        443,
+        552
+      ],
+      "pivot_px": [
+        39.0,
+        135
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "workshop_pipe_west",
+      "category": "props",
+      "file": "png/props/workshop_pipe_west.png",
+      "width": 29,
+      "height": 155,
+      "origin_px": [
+        424,
+        545
+      ],
+      "pivot_px": [
+        14.5,
+        153
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "workshop_banner",
+      "category": "props",
+      "file": "png/props/workshop_banner.png",
+      "width": 48,
+      "height": 75,
+      "origin_px": [
+        517,
+        536
+      ],
+      "pivot_px": [
+        24.0,
+        73
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "workshop_crate_by_rack",
+      "category": "props",
+      "file": "png/props/workshop_crate_by_rack.png",
+      "width": 41,
+      "height": 53,
+      "origin_px": [
+        512,
+        600
+      ],
+      "pivot_px": [
+        20.5,
+        51
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "workshop_small_barrel",
+      "category": "props",
+      "file": "png/props/workshop_small_barrel.png",
+      "width": 33,
+      "height": 46,
+      "origin_px": [
+        509,
+        639
+      ],
+      "pivot_px": [
+        16.5,
+        44
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "workshop_middle_crate",
+      "category": "props",
+      "file": "png/props/workshop_middle_crate.png",
+      "width": 41,
+      "height": 47,
+      "origin_px": [
+        665,
+        571
+      ],
+      "pivot_px": [
+        20.5,
+        45
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "workshop_tools_rack_east",
+      "category": "props",
+      "file": "png/props/workshop_tools_rack_east.png",
+      "width": 85,
+      "height": 85,
+      "origin_px": [
+        706,
+        606
+      ],
+      "pivot_px": [
+        42.5,
+        83
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "workshop_rack_top_crate",
+      "category": "props",
+      "file": "png/props/workshop_rack_top_crate.png",
+      "width": 60,
+      "height": 52,
+      "origin_px": [
+        729,
+        559
+      ],
+      "pivot_px": [
+        30.0,
+        50
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "workshop_barrel_west",
+      "category": "props",
+      "file": "png/props/workshop_barrel_west.png",
+      "width": 43,
+      "height": 69,
+      "origin_px": [
+        424,
+        680
+      ],
+      "pivot_px": [
+        21.5,
+        67
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "workshop_barrel_east",
+      "category": "props",
+      "file": "png/props/workshop_barrel_east.png",
+      "width": 51,
+      "height": 70,
+      "origin_px": [
+        745,
+        672
+      ],
+      "pivot_px": [
+        25.5,
+        68
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "workshop_crate_southwest",
+      "category": "props",
+      "file": "png/props/workshop_crate_southwest.png",
+      "width": 43,
+      "height": 52,
+      "origin_px": [
+        425,
+        770
+      ],
+      "pivot_px": [
+        21.5,
+        50
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "workshop_chest_southeast",
+      "category": "props",
+      "file": "png/props/workshop_chest_southeast.png",
+      "width": 35,
+      "height": 93,
+      "origin_px": [
+        761,
+        729
+      ],
+      "pivot_px": [
+        17.5,
+        91
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "workshop_workbench",
+      "category": "props",
+      "file": "png/props/workshop_workbench.png",
+      "width": 210,
+      "height": 97,
+      "origin_px": [
+        514,
+        701
+      ],
+      "pivot_px": [
+        105.0,
+        95
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "workshop_stool",
+      "category": "props",
+      "file": "png/props/workshop_stool.png",
+      "width": 34,
+      "height": 37,
+      "origin_px": [
+        565,
+        777
+      ],
+      "pivot_px": [
+        17.0,
+        35
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "workshop_candle_stool",
+      "category": "props",
+      "file": "png/props/workshop_candle_stool.png",
+      "width": 42,
+      "height": 47,
+      "origin_px": [
+        665,
+        775
+      ],
+      "pivot_px": [
+        21.0,
+        45
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "infirmary_plant_west",
+      "category": "props",
+      "file": "png/props/infirmary_plant_west.png",
+      "width": 48,
+      "height": 66,
+      "origin_px": [
+        822,
+        576
+      ],
+      "pivot_px": [
+        24.0,
+        64
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "infirmary_bed_west",
+      "category": "props",
+      "file": "png/props/infirmary_bed_west.png",
+      "width": 63,
+      "height": 117,
+      "origin_px": [
+        857,
+        605
+      ],
+      "pivot_px": [
+        31.5,
+        115
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "infirmary_nightstand_west",
+      "category": "props",
+      "file": "png/props/infirmary_nightstand_west.png",
+      "width": 28,
+      "height": 53,
+      "origin_px": [
+        915,
+        599
+      ],
+      "pivot_px": [
+        14.0,
+        51
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "infirmary_bed_east",
+      "category": "props",
+      "file": "png/props/infirmary_bed_east.png",
+      "width": 66,
+      "height": 120,
+      "origin_px": [
+        1035,
+        605
+      ],
+      "pivot_px": [
+        33.0,
+        118
+      ],
+      "method": "matching_visible_asset_completion",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "infirmary_nightstand_east",
+      "category": "props",
+      "file": "png/props/infirmary_nightstand_east.png",
+      "width": 30,
+      "height": 54,
+      "origin_px": [
+        1013,
+        598
+      ],
+      "pivot_px": [
+        15.0,
+        52
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "infirmary_privacy_screen",
+      "category": "props",
+      "file": "png/props/infirmary_privacy_screen.png",
+      "width": 46,
+      "height": 116,
+      "origin_px": [
+        975,
+        626
+      ],
+      "pivot_px": [
+        23.0,
+        114
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "infirmary_plant_east",
+      "category": "props",
+      "file": "png/props/infirmary_plant_east.png",
+      "width": 50,
+      "height": 71,
+      "origin_px": [
+        1080,
+        680
+      ],
+      "pivot_px": [
+        25.0,
+        69
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "infirmary_terminal",
+      "category": "props",
+      "file": "png/props/infirmary_terminal.png",
+      "width": 42,
+      "height": 67,
+      "origin_px": [
+        822,
+        755
+      ],
+      "pivot_px": [
+        21.0,
+        65
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "infirmary_stool",
+      "category": "props",
+      "file": "png/props/infirmary_stool.png",
+      "width": 30,
+      "height": 35,
+      "origin_px": [
+        862,
+        787
+      ],
+      "pivot_px": [
+        15.0,
+        33
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "infirmary_candle_stool",
+      "category": "props",
+      "file": "png/props/infirmary_candle_stool.png",
+      "width": 30,
+      "height": 53,
+      "origin_px": [
+        1031,
+        748
+      ],
+      "pivot_px": [
+        15.0,
+        51
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "infirmary_medical_cart",
+      "category": "props",
+      "file": "png/props/infirmary_medical_cart.png",
+      "width": 76,
+      "height": 65,
+      "origin_px": [
+        1046,
+        757
+      ],
+      "pivot_px": [
+        38.0,
+        63
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "infirmary_banner",
+      "category": "props",
+      "file": "png/props/infirmary_banner.png",
+      "width": 59,
+      "height": 76,
+      "origin_px": [
+        1048,
+        536
+      ],
+      "pivot_px": [
+        29.5,
+        74
+      ],
+      "method": "alpha_extraction_refined",
+      "note": "Object alpha extracted and cleaned; tiny hidden contours may be completed."
+    },
+    {
+      "id": "dormitory_wall_banner",
+      "category": "props",
+      "file": "png/props/dormitory_wall_banner.png",
+      "width": 30,
+      "height": 43,
+      "origin_px": [
+        209,
+        245
+      ],
+      "pivot_px": [
+        15.0,
+        41
+      ],
+      "method": "source_extract",
+      "note": "Original source pixels inside exact flag silhouette."
+    },
+    {
+      "id": "protagonist_white_hair",
+      "category": "npc_original",
+      "file": "png/npc_original/protagonist_white_hair.png",
+      "width": 139,
+      "height": 223,
+      "origin_px": null,
+      "pivot_px": [
+        69.5,
+        221
+      ],
+      "method": "character_sheet_source_extract",
+      "note": "Exact source colours; labels, card and ground shadow removed."
+    },
+    {
+      "id": "protagonist_white_hair_map",
+      "category": "npc_map",
+      "file": "png/npc_map/protagonist_white_hair_map.png",
+      "width": 41,
+      "height": 64,
+      "origin_px": null,
+      "pivot_px": [
+        20.5,
+        62
+      ],
+      "method": "nearest_source_scale",
+      "note": "Single front-facing pose. 60px body height plus transparent padding."
+    },
+    {
+      "id": "companion_blue_shirt",
+      "category": "npc_original",
+      "file": "png/npc_original/companion_blue_shirt.png",
+      "width": 146,
+      "height": 224,
+      "origin_px": null,
+      "pivot_px": [
+        73.0,
+        222
+      ],
+      "method": "character_sheet_source_extract",
+      "note": "Exact source colours; labels, card and ground shadow removed."
+    },
+    {
+      "id": "companion_blue_shirt_map",
+      "category": "npc_map",
+      "file": "png/npc_map/companion_blue_shirt_map.png",
+      "width": 43,
+      "height": 64,
+      "origin_px": null,
+      "pivot_px": [
+        21.5,
+        62
+      ],
+      "method": "nearest_source_scale",
+      "note": "Single front-facing pose. 60px body height plus transparent padding."
+    },
+    {
+      "id": "canteen_cook",
+      "category": "npc_original",
+      "file": "png/npc_original/canteen_cook.png",
+      "width": 148,
+      "height": 229,
+      "origin_px": null,
+      "pivot_px": [
+        74.0,
+        227
+      ],
+      "method": "character_sheet_source_extract",
+      "note": "Exact source colours; labels, card and ground shadow removed."
+    },
+    {
+      "id": "canteen_cook_map",
+      "category": "npc_map",
+      "file": "png/npc_map/canteen_cook_map.png",
+      "width": 42,
+      "height": 64,
+      "origin_px": null,
+      "pivot_px": [
+        21.0,
+        62
+      ],
+      "method": "nearest_source_scale",
+      "note": "Single front-facing pose. 60px body height plus transparent padding."
+    },
+    {
+      "id": "laundry_worker",
+      "category": "npc_original",
+      "file": "png/npc_original/laundry_worker.png",
+      "width": 143,
+      "height": 223,
+      "origin_px": null,
+      "pivot_px": [
+        71.5,
+        221
+      ],
+      "method": "character_sheet_source_extract",
+      "note": "Exact source colours; labels, card and ground shadow removed."
+    },
+    {
+      "id": "laundry_worker_map",
+      "category": "npc_map",
+      "file": "png/npc_map/laundry_worker_map.png",
+      "width": 42,
+      "height": 64,
+      "origin_px": null,
+      "pivot_px": [
+        21.0,
+        62
+      ],
+      "method": "nearest_source_scale",
+      "note": "Single front-facing pose. 60px body height plus transparent padding."
+    },
+    {
+      "id": "security_officer",
+      "category": "npc_original",
+      "file": "png/npc_original/security_officer.png",
+      "width": 147,
+      "height": 226,
+      "origin_px": null,
+      "pivot_px": [
+        73.5,
+        224
+      ],
+      "method": "character_sheet_source_extract",
+      "note": "Exact source colours; labels, card and ground shadow removed."
+    },
+    {
+      "id": "security_officer_map",
+      "category": "npc_map",
+      "file": "png/npc_map/security_officer_map.png",
+      "width": 43,
+      "height": 64,
+      "origin_px": null,
+      "pivot_px": [
+        21.5,
+        62
+      ],
+      "method": "nearest_source_scale",
+      "note": "Single front-facing pose. 60px body height plus transparent padding."
+    },
+    {
+      "id": "workshop_craftsperson",
+      "category": "npc_original",
+      "file": "png/npc_original/workshop_craftsperson.png",
+      "width": 152,
+      "height": 233,
+      "origin_px": null,
+      "pivot_px": [
+        76.0,
+        231
+      ],
+      "method": "character_sheet_source_extract",
+      "note": "Exact source colours; labels, card and ground shadow removed."
+    },
+    {
+      "id": "workshop_craftsperson_map",
+      "category": "npc_map",
+      "file": "png/npc_map/workshop_craftsperson_map.png",
+      "width": 43,
+      "height": 64,
+      "origin_px": null,
+      "pivot_px": [
+        21.5,
+        62
+      ],
+      "method": "nearest_source_scale",
+      "note": "Single front-facing pose. 60px body height plus transparent padding."
+    },
+    {
+      "id": "infirmary_staff",
+      "category": "npc_original",
+      "file": "png/npc_original/infirmary_staff.png",
+      "width": 142,
+      "height": 225,
+      "origin_px": null,
+      "pivot_px": [
+        71.0,
+        223
+      ],
+      "method": "character_sheet_source_extract",
+      "note": "Exact source colours; labels, card and ground shadow removed."
+    },
+    {
+      "id": "infirmary_staff_map",
+      "category": "npc_map",
+      "file": "png/npc_map/infirmary_staff_map.png",
+      "width": 41,
+      "height": 64,
+      "origin_px": null,
+      "pivot_px": [
+        20.5,
+        62
+      ],
+      "method": "nearest_source_scale",
+      "note": "Single front-facing pose. 60px body height plus transparent padding."
+    },
+    {
+      "id": "yard_worker",
+      "category": "npc_original",
+      "file": "png/npc_original/yard_worker.png",
+      "width": 149,
+      "height": 230,
+      "origin_px": null,
+      "pivot_px": [
+        74.5,
+        228
+      ],
+      "method": "character_sheet_source_extract",
+      "note": "Exact source colours; labels, card and ground shadow removed."
+    },
+    {
+      "id": "yard_worker_map",
+      "category": "npc_map",
+      "file": "png/npc_map/yard_worker_map.png",
+      "width": 42,
+      "height": 64,
+      "origin_px": null,
+      "pivot_px": [
+        21.0,
+        62
+      ],
+      "method": "nearest_source_scale",
+      "note": "Single front-facing pose. 60px body height plus transparent padding."
+    }
+  ]
+}

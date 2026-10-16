@@ -48,7 +48,7 @@
     }
   ],
   "textures": {
-    "pixelsPerUnit": 32,
+    "pixelsPerUnit": 35,
     "filter": "nearest"
   },
   "input": {
@@ -188,7 +188,11 @@
       "tools",
       ".impeccable",
       "reference-style-preview.png",
-      "level2-dialogue-preview.png"
+      "level2-dialogue-preview.png",
+      "assets/castle/source",
+      "level1-preview.png",
+      "level2-preview.png",
+      "level2-overview.png"
     ]
   }
 }

@@ -105,6 +105,11 @@ class RenderTestLayer final : public ApplicationLayer {
         lower.get<SpriteRenderer>()->ySort = true;
         auto &upper = sprite("Upper foot", {5, 2.8F}, {1, 1}, {60, 220, 255, 255}, 5);
         upper.get<SpriteRenderer>()->ySort = true; // Submitted later, but drawn behind lower.
+        auto *grounded = sprite("Contact shadow", {-3, 3}, {.6F, .6F}, {255, 80, 40, 255}, 5)
+                             .get<SpriteRenderer>();
+        grounded->offset = {0, -1}; // Animated artwork can move independently of its feet.
+        grounded->shadowSize = {2, .8F};
+        grounded->shadowOffset = {};
         Entity &panel = scene_->createEntity("Panel");
         auto &ui = panel.add<UiPanel>();
         ui.anchor = UiAnchor::BottomRight;
@@ -206,6 +211,10 @@ int main(int argc, char **argv) {
         CHECK(pixelIs(image, 316, 124, leftClear));        // Ellipse corner is empty: it is round.
         CHECK(pixelIs(image, 148, 150, {0, 255, 0, 255})); // Rotated square reaches 38 px sideways.
         CHECK(pixelIs(image, 200, 240, leftClear)); // Invisible sprite at world y=+3 is not drawn.
+        CHECK(pixelIs(image, 110, 210, {255, 80, 40, 255}));
+        Uint8 shadowR{}, shadowG{}, shadowB{}, shadowA{};
+        CHECK(SDL_ReadSurfacePixel(image, 110, 240, &shadowR, &shadowG, &shadowB, &shadowA));
+        CHECK(shadowR < leftClear.r && shadowG < leftClear.g && shadowB < leftClear.b);
         CHECK(pixelIs(image, 200, 60, leftClear));  // Inactive entity at world y=-3 is not drawn.
         CHECK(pixelIs(image, 20, 150,
                       {255, 128, 0, 255})); // Mirrored (negative scale) sprite still draws.

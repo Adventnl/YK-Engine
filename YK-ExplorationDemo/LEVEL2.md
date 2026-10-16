@@ -1,110 +1,79 @@
 # Level 2: The Inner Keep
 
-The project opens directly into the second chapter. It is a 48 by 28 tile castle prison,
-adapted from the supplied `invisible_castle_level2_editable.zip`: north and south cells,
-common room, canteen, laundry, control, stores, central corridor, workshop, infirmary,
-exercise yard, utility, and the green exit anteroom.
-
-Play with **WASD / arrow keys**, **E** to interact, **Escape** to cancel or close,
-**P** to pause, and **R** to restart. The camera follows your character smoothly and
-clamps to the castle bounds. Its 12.0833-unit view gives 48 pixels per world unit in the
-1280 by 720 window; HUD bands reserve 40 pixels above and 100 below the world.
+A furnished castle prison assembled from `invisible_castle_level2_editable.zip` in YK Engine.
+The supplied five-layer composition guides the floor plan, wall elevations, prop positions,
+room colors and relative furnishing scale. The previous enlarged corridor is restored to the
+reference proportions. Native artwork is kept at 35 pixels per world unit.
 
 ```sh
 ./build/dev/yk_player YK-ExplorationDemo
 ```
 
-To start the first chapter, pass `--scene scenes/courtyard.ykscene`. Its completed
-escape now leads into level two; **Enter** skips the completion wait.
+Move with **WASD / arrows**, interact with **E**, dismiss or cancel with **Escape**,
+pause with **P**, and restart with **R**. Passage doors open automatically on approach.
+The camera follows the player with an 8.4-unit view and clamps to the keep boundaries.
+At 1280 by 720, the world has 580 vertical pixels, or about 69 pixels per world unit.
 
 ## Escape route
 
-1. Leave the north cell through the gold threshold and talk to Mara in the west common room.
-2. Search the **tool bench** and **tool chest** in the southwest workshop for a screwdriver
-   and wire cutters. Search progress is cancellable and never grants duplicate rewards.
-3. Take clean **linen** from the folding table in the north laundry.
-4. Use the screwdriver to search the **fuse cabinet** in the northeast stores.
-5. At the workshop **repair workbench**, wrap the fuse with linen. Crafting consumes both
-   ingredients and creates an insulated fuse with its own newly generated inventory icon.
-6. Search the **security desk** in the north control room for the security card. A guard
-   patrols between control and the yard. Walls block his sight; leave control before the
-   warning fills. Capture returns you to your cell, cancels remote searching, and preserves
-   hidden inventory. All six other NPCs provide local hints.
-7. Use the **power terminal** in the southeast utility room. **W/S** chooses the left wire,
-   **A/D** the right terminal, and **E** connects them. Match both the letter and color.
-   Incorrect pairs can be retried; **Escape** closes the puzzle.
-8. With power restored, use the wire cutters at the **green gate**, then walk south through
-   the opening. Restart clears all collected supplies, repairs, and gate state.
+1. Leave the north cell and talk to Mara in the west common room.
+2. Search the southwest workshop's tool bench and tool chest for a screwdriver and wire cutters.
+3. Take clean linen from the folding table in the north laundry.
+4. Pry open the northeast stores' fuse cabinet with the screwdriver.
+5. Wrap the fuse with linen at the workshop repair workbench.
+6. Search the security desk for a security card while the guard is away. Leave control before
+   the warning fills; walls and furniture block sight. Capture cancels the search and returns
+   you to the cell without taking hidden tools.
+7. Use the southeast utility terminal. **W/S** selects the left wire, **A/D** the right terminal,
+   and **E** connects them. Match both letter and color. Incorrect pairs can be retried.
+8. With power restored, cut the green exit's chain using the wire cutters, open the gate,
+   and walk south. Restart clears supplies, repairs and gate state.
 
-## Editable data and artwork
+Every search is cancellable and grants its contents once. Crafting consumes ingredients.
+NPC conversations use detailed portraits and give local hints.
 
-`scenes/level2.ykscene` contains 481 individually editable entities. All movement,
-searches, inventory, crafting, dialogue, patrols, puzzle and exit behavior are configured
-with reusable engine components. There is no game-specific runtime code.
+## Shared visual and collision rules
 
-All shipping raster artwork for this chapter was generated anew with the built-in
-image-generation tool. The supplied atlas, extracted props and reconstructed floor
-layers are references only. No source-reference pixels are shipped. Ten original masters,
-their exact prompts, and prompt metadata are preserved in `assets/level2/source/`:
+Both chapters use `assets/level2/` directional character sheets and the supplied castle
+materials in `assets/castle/reference/`. Room name plaques and the HUD's room label are gone.
+Residents and guards use kinematic bodies with solid feet colliders: they follow their
+routines and cannot be shoved out of place by walking into them. A speaker pauses while
+others continue their routines.
 
-- `furniture.png`: sixteen complete furnishing designs.
-- `equipment.png`: sixteen control, workshop, medical and courtyard designs.
-- `details.png`: sixteen decorations and item designs.
-- `tiles.png`: sixteen regenerated floor/wall materials.
-- `hero.png` and `guard.png`: four directions, with walk and reaching cycles.
-- `residents.png`: six NPCs, each with four directional poses.
-- `residents_walk.png`: two alternating strides in each direction for all six residents.
-- `dialogue_portraits.png`: seven detailed character busts for conversations.
-- `safe_fuse.png`: a complete cloth-wrapped fuse icon.
+`SpriteRenderer` contact shadows stay anchored to the feet while sprites walk, reach or
+breathe. The source wall/furniture artwork retains its authored shadowing. Warm candle and
+hearth glows use `Light2D`. Banners and wall-mounted controls render over their wall faces.
 
-The exporter finds transparent gutters around complete newly generated objects rather
-than truncating them at idealized grid coordinates. Character frames share one scale and
-registered feet. Textures retain generated alpha and use nearest-neighbor sampling.
-Exact room plaques are code-authored bitmap text, enlarged for readability. A current-room
-label in the header follows the player through all thirteen areas. Floor tiles preserve one slab per world
-unit; walls, furniture and actors have authored solid footprints and connected openings.
+The new double doors use an original ImageGen master preserved in
+`assets/castle/source/double-door.png`, plus an eight-frame hinged strip. `StateGate`
+opens for nearby players or NPCs, waits after departure, and holds while the threshold is
+occupied. Locked gates use the same new artwork and animation after their task is completed.
 
-Rebuild the assets and scene without calling an image service:
+## Editable assets and rebuild
+
+The supplied manifest records source origins and pivots. Scenery stays individually editable;
+it is not a flattened background. `tools/castle_reference.py` imports its placements, authors
+physical footprints, and opens connecting passages in the extracted wall sections. Scene
+logic still uses reusable engine components for inventories, crafting, patrols, dialogue,
+wire matching and level flow.
 
 ```sh
+python3 YK-ExplorationDemo/tools/complete_level.py
 python3 YK-ExplorationDemo/tools/build_level2.py
 ./build/dev/yk validate YK-ExplorationDemo
 ./build/dev/yk_castle_level2_tests
 ```
 
-Generate the first chapter with `tools/complete_level.py` before running the level-two
-builder when rebuilding both chapters. The latter selects level two as the start scene.
+Normal rebuilds preserve existing generated character atlases; `--regenerate-art` opts into
+re-exporting them. The source door master and original prompts are excluded from game exports.
 
-## Motion and interaction
+Gameplay checks physically traverse the rooms and cover door approach from both sides,
+intermediate/reversed frames, safe thresholds, NPC push resistance and motion, modal dismissal,
+three camera viewport sizes, searches, crafting, guard capture, the wire puzzle, the sealed
+exit, completion and restart. The renderer test checks actual contact-shadow pixels.
 
-All six residents follow short, staggered routines within their own rooms. Their directional
-sprites combine the original idle poses with newly generated alternating strides in four-frame
-walking cycles. Procedural breathing and gentle body sway supplement the artwork. The player and guard retain
-their generated four-frame walking and reaching cycles, with gentle breathing while idle.
-Wall torches animate with fixed mounts.
+The overview below uses a temporary fixed camera for layout review. Shipping scenes follow
+the character at the close zoom shown in the player preview.
 
-Ten ordinary room doors start open for free circulation. Press E beside a doorway to close
-or reopen it. Doors slide along the wall, retain their artwork while open, and hold if someone
-occupies the threshold during closing. The green exit gate slides aside after its chain is cut;
-E then closes and reopens it without repeating the cutting task or losing the unlocked state.
-The exit requires the gate to be open.
-
-Conversations show a detailed close-up bust of the speaker in an animated popup, with word-wrapped
-text and explicit E / Escape controls. Seven portraits were generated using the built-in ImageGen
-tool with the existing resident and guard art as identity references. The new source atlas and
-exact prompt are saved as `assets/level2/source/dialogue_portraits.png` and
-`dialogue_portraits.prompt.txt`; the level builder exports individual `portrait_*.png` textures.
-The resident walking atlas and prompt are preserved as `residents_walk.png` and
-`residents_walk.prompt.txt` in the same source directory. Other residents keep walking during
-a conversation; its speaker stops, and guards do not capture the player while dialogue is open.
-The utility wire puzzle uses the player's directional reaching cycle while the controls are open.
-
-![Live dialogue portrait](level2-dialogue-preview.png)
-
-Gameplay checks cover idle motion and NPC routines, door closing/reopening and occupied thresholds,
-portrait binding and conversation dismissal, camera following and bounds at three viewport sizes, physical
-travel through the rooms, cancelled searches, unique rewards, crafting consumption,
-patrol capture during a search, puzzle prerequisites and incorrect matches, the solid
-exit chain, complete escape, and restart. Native renderer captures include the starting
-cell, workshop, east wing, compact window, and an overview. The overview uses a temporary
-fixed camera for inspection; the shipping scene always follows the player.
+![Player view](level2-preview.png)
+![Reference layout in the engine](level2-overview.png)

@@ -88,7 +88,11 @@ int main() {
     const Vec2 cabinetAt = object("Locked cabinet")->worldPosition();
     near("Locked cabinet", {0,1.5F}); keyboard.set(Key::W,true); tick(80); keyboard.set(Key::W,false); tick(4);
     CHECK(object("Locked cabinet")->worldPosition() == cabinetAt);
-    CHECK(actor()->worldPosition().y > cabinetAt.y+.35F);
+    const auto *cabinetFoot = object("Locked cabinet")->get<Collider>();
+    CHECK(actor()->getAll<Collider>().size() == 1);
+    CHECK(actor()->worldPosition().y > cabinetAt.y + cabinetFoot->offset.y +
+                                           cabinetFoot->size.y * .5F +
+                                           actor()->get<Collider>()->size.y * .5F - .04F);
     for (float y : {8.8F,9.3F,10.0F,10.7F,11.2F}) {
         session->runtime().teleport(*actor(), {19.4F,y}); keyboard.set(Key::D,true); tick(50); keyboard.set(Key::D,false); tick(3);
         CHECK(actor()->worldPosition().x < 19.8F);

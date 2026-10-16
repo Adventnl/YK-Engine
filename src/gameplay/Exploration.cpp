@@ -173,6 +173,11 @@ void Interactor::describe(TypeBuilder<Interactor> &type) {
     type.field("action", &Interactor::action).inputAction();
 }
 void Interactor::onFixedUpdate(GameContext &context, float) {
+    // A popup may release input before this actor updates. Its closing key belongs to the
+    // popup, even when the interactive object's entity precedes the actor in scene order.
+    const bool locked = context.inputLocked();
+    const bool justUnlocked = inputWasLocked_ && !locked;
+    inputWasLocked_ = locked;
     const auto *input = entity().get<PlayerInput>();
     if (!input)
         return;
@@ -197,7 +202,7 @@ void Interactor::onFixedUpdate(GameContext &context, float) {
         if (auto *gate = closest->entity().get<StateGate>(); gate && !gate->locked(context))
             prompt = std::string("E - ") + (gate->open() ? "CLOSE " : "OPEN ") + closest->entity().name();
     context.blackboard().set("interaction_prompt", prompt);
-    if (closest && input->button(context, action).pressed)
+    if (closest && !justUnlocked && input->button(context, action).pressed)
         closest->activate(context, entity());
 }
 
@@ -223,6 +228,16 @@ void StateGate::describe(TypeBuilder<StateGate> &type) {
     type.field("openOffset", &StateGate::openOffset)
         .tooltip("Distance the visible door slides; zero uses its collider's long axis.");
     type.field("stopWhenBlocked", &StateGate::stopWhenBlocked);
+    type.field("proximityRange", &StateGate::proximityRange)
+        .range(0, 20, 0.1)
+        .tooltip("Zero uses manual operation. Positive opens for nearby players and NPC paths.");
+    type.field("closeDelay", &StateGate::closeDelay)
+        .range(0, 30, 0.1)
+        .tooltip("Seconds an automatic door stays open after the last actor leaves.");
+    type.field("openFrames", &StateGate::openFrames)
+        .range(0, 256)
+        .tooltip("Optional horizontal strip from closed to open; frames follow the collision "
+                 "animation and reverse when closing.");
     type.field("logic", &StateGate::logic).options(signalLogicNames());
     type.field("invert", &StateGate::invert);
 }
@@ -244,6 +259,7 @@ void StateGate::onStart(GameContext &context) {
         sprite->offset = baseOffset_ + slide_ * amount_;
         sprite->visible = true;
     }
+    updateVisual();
 }
 bool StateGate::locked(GameContext &context) const {
     return startsLocked && (unlockFlag.empty() || context.blackboard().number(unlockFlag) == 0.0);
@@ -251,7 +267,12 @@ bool StateGate::locked(GameContext &context) const {
 void StateGate::toggle(GameContext &context) {
     if (locked(context))
         return;
-    open_ = !open_;
+    setOpen(context, !open_);
+}
+void StateGate::setOpen(GameContext &context, bool value) {
+    if (open_ == value)
+        return;
+    open_ = value;
     if (!persistFlag.empty()) {
         context.blackboard().set(persistFlag, open_ ? 1.0 : 0.0);
         context.blackboard().keep(persistFlag);
@@ -259,6 +280,26 @@ void StateGate::toggle(GameContext &context) {
     context.emit(open_ ? "gate_opened" : "gate_closed", entity().id());
 }
 void StateGate::onFixedUpdate(GameContext &context, float seconds) {
+    if (proximityRange > 0.0F && !locked(context)) {
+        bool nearby = false;
+        for (EntityId id : context.scene().orderedIds()) {
+            const auto *actor = context.scene().find(id);
+            if (actor && actor->activeInHierarchy() &&
+                (actor->has<PlayerInput>() || actor->has<NpcPath>()) &&
+                distance(actor->worldPosition(), entity().worldPosition()) <= proximityRange) {
+                nearby = true;
+                break;
+            }
+        }
+        if (nearby) {
+            closeTimer_ = std::max(0.0F, closeDelay);
+            setOpen(context, true);
+        } else {
+            closeTimer_ = std::max(0.0F, closeTimer_ - seconds);
+            if (closeTimer_ <= 0.0F)
+                setOpen(context, false);
+        }
+    }
     const bool signal = signalActive() && !locked(context);
     if (signal && !signalWasActive_ && !open_) {
         open_ = true;
@@ -296,14 +337,24 @@ void StateGate::onFixedUpdate(GameContext &context, float seconds) {
         amount_ = std::max(target, amount_ - step);
     if (auto *animation = entity().get<AnimatedSprite>())
         animation->setBool("open", open_);
-    if (auto *sprite = entity().get<SpriteRenderer>()) {
-        const float eased = amount_ * amount_ * (3.0F - 2.0F * amount_);
-        sprite->visible = true;
-        sprite->offset = baseOffset_ + slide_ * eased;
-    }
+    updateVisual();
     for (Collider *collider : entity().getAll<Collider>())
         if (!collider->isTrigger)
             collider->enabled = amount_ < 0.95F;
+}
+void StateGate::updateVisual() {
+    if (auto *sprite = entity().get<SpriteRenderer>()) {
+        const float eased = amount_ * amount_ * (3.0F - 2.0F * amount_);
+        sprite->visible = true;
+        if (openFrames > 1) {
+            sprite->offset = baseOffset_;
+            sprite->columns = openFrames;
+            sprite->rows = 1;
+            sprite->frame =
+                static_cast<int>(std::lround(eased * static_cast<float>(openFrames - 1)));
+        } else
+            sprite->offset = baseOffset_ + slide_ * eased;
+    }
 }
 
 void MapPortal::describe(TypeBuilder<MapPortal> &type) {

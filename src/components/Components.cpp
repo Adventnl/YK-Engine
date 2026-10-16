@@ -68,6 +68,13 @@ void SpriteRenderer::describe(TypeBuilder<SpriteRenderer> &type) {
     type.field("sortOffset", &SpriteRenderer::sortOffset).range(-1000, 1000, 0.05);
     type.field("flipX", &SpriteRenderer::flipX);
     type.field("visible", &SpriteRenderer::visible);
+    type.field("shadowSize", &SpriteRenderer::shadowSize)
+        .size()
+        .range(0, 100, 0.01)
+        .tooltip("Soft ground shadow at the entity origin; zero disables it. Independent of "
+                 "animated sprite offsets.");
+    type.field("shadowOffset", &SpriteRenderer::shadowOffset).offset();
+    type.field("shadowColor", &SpriteRenderer::shadowColor);
     type.field("columns", &SpriteRenderer::columns).range(1, 256).tooltip("Sprite sheet columns.");
     type.field("rows", &SpriteRenderer::rows).range(1, 256).tooltip("Sprite sheet rows.");
     type.field("frame", &SpriteRenderer::frame)

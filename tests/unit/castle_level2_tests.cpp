@@ -50,7 +50,23 @@ int main() {
     auto inventory = [&]() { return actor()->get<Inventory>(); };
     auto &board = session->runtime().blackboard();
     auto teleport = [&](Vec2 at) { session->runtime().teleport(*actor(), at); tick(3); };
-    auto near = [&](const char *name, Vec2 offset = {0, .9F}) { teleport(object(name)->worldPosition() + offset); };
+    const auto at = [](float x, float y) { return Vec2{(x - 40) / 35, (y - 25) / 35}; };
+    auto near = [&](const char *name, Vec2 offset = {0, .9F}) {
+        const std::string target{name};
+        if (offset == Vec2{0, .9F}) {
+            if (target == "Linen table")
+                offset = {.6F, .55F};
+            if (target == "Repair workbench")
+                offset = {0, .5F};
+            if (target == "Fuse cabinet")
+                offset = {-1.4F, 0};
+            if (target == "Security desk")
+                offset = {1.5F, .75F};
+            if (target == "Power terminal")
+                offset = {1.2F, -.45F};
+        }
+        teleport(object(name)->worldPosition() + offset);
+    };
     auto walk = [&](Vec2 destination) {
         for (int i = 0; i < 700 && distance(actor()->worldPosition(), destination) > .12F; ++i) {
             const Vec2 delta = destination - actor()->worldPosition();
@@ -80,7 +96,9 @@ int main() {
     CHECK(project.startScene == "scenes/level2.ykscene");
     CHECK(board.text("escape_title") == "BLACKTHORN KEEP / LEVEL 2");
     CHECK(inventory()->freeSlots() == 6);
-    CHECK(board.text("current_room") == "NORTH CELLS");
+    CHECK(board.text("current_room") == "DORMITORY NORTH");
+    CHECK(actor()->get<SpriteRenderer>()->shadowSize.x > .5F);
+    CHECK(actor()->getAll<Collider>().size() == 1);
     const Vec2 idleOffset = actor()->get<SpriteRenderer>()->offset;
     bool breathed = false;
     for (int i = 0; i < 5; ++i) { tick(15); breathed = breathed || distance(idleOffset, actor()->get<SpriteRenderer>()->offset) > .003F; }
@@ -91,6 +109,8 @@ int main() {
         CHECK(resident->has<CharacterMotion>() && resident->has<NpcPath>());
         CHECK(!resident->get<NpcPath>()->waypoints.empty());
         CHECK(!resident->get<Dialogue>()->portrait.path.empty());
+        CHECK(resident->get<RigidBody>()->type == RigidBodyType::Kinematic);
+        CHECK(resident->get<Collider>()->layer == "Solid");
         const Vec2 start = resident->worldPosition();
         bool moved = false, animatedWalk = false;
         for (int i = 0; i < 80; ++i) {
@@ -102,64 +122,77 @@ int main() {
         }
         CHECK(moved && animatedWalk);
     }
-    // A normal unlocked door closes, blocks walking, slides open, and waits for an occupied threshold.
-    teleport({5, 7.3F});
+    // Walking into a waiting resident cannot move it away from its authored routine.
+    auto *mara = object("Mara");
+    mara->get<NpcPath>()->enabled = false;
+    session->runtime().teleport(*mara, at(313, 488));
+    const Vec2 anchored = mara->worldPosition();
+    teleport(anchored + Vec2{0, .8F});
+    keyboard.set(Key::W, true);
+    tick(90);
+    keyboard.set(Key::W, false);
+    tick(3);
+    CHECK(distance(mara->worldPosition(), anchored) < .001F);
+    CHECK(actor()->worldPosition().y > anchored.y + .3F);
+    mara->get<NpcPath>()->enabled = true;
+    // Doors open from either side, animate through intermediate frames, and close only after
+    // departure.
+    teleport(at(300, 310));
+    tick(90);
     auto *cellDoor = object("North cell door");
     auto *cellGate = cellDoor->get<StateGate>();
     auto *cellSprite = cellDoor->get<SpriteRenderer>();
-    CHECK(cellGate->open());
-    const Vec2 openOffset = cellSprite->offset;
-    press(Key::E); tick(8);
-    CHECK(!cellGate->open() && cellSprite->visible && cellSprite->color.a == 255);
-    CHECK(distance(openOffset, cellSprite->offset) > .1F);
-    tick(25);
+    CHECK(!cellGate->open() && cellSprite->frame == 0 && cellDoor->get<Collider>()->enabled);
+    const Vec2 doorAt = cellDoor->worldPosition();
+    teleport(doorAt + Vec2{0, -2});
+    tick(5);
+    CHECK(cellGate->open() && cellSprite->frame > 0 && cellSprite->frame < 7);
     CHECK(cellDoor->get<Collider>()->enabled);
-    keyboard.set(Key::S, true); tick(30); keyboard.set(Key::S, false); tick(3);
-    CHECK(actor()->worldPosition().y < 8.1F);
-    CHECK(board.text("interaction_prompt").find("OPEN") != std::string::npos);
-    press(Key::E); tick(8);
-    CHECK(cellGate->open() && cellDoor->get<Collider>()->enabled);
     tick(25);
-    CHECK(!cellDoor->get<Collider>()->enabled && cellSprite->visible);
-    CHECK(distance(openOffset, cellSprite->offset) < .01F);
-    teleport({5, 8.5F}); press(Key::E); tick(30);
-    CHECK(!cellGate->open() && !cellDoor->get<Collider>()->enabled);
-    teleport({5, 7.3F}); tick(30);
-    CHECK(cellDoor->get<Collider>()->enabled);
-    press(Key::E); tick(30);
-    CHECK(cellGate->open());
-    // A sustained unlock signal must not force a manually closed door open each tick.
-    cellGate->setSignal(actor()->id(), true); tick(); press(Key::E); tick(30);
-    CHECK(!cellGate->open() && cellDoor->get<Collider>()->enabled);
-    cellGate->setSignal(actor()->id(), false); tick();
-    cellGate->setSignal(actor()->id(), true); tick(30); CHECK(cellGate->open());
-    cellGate->setSignal(actor()->id(), false);
-    teleport({17, 23.5F}); CHECK(board.text("current_room") == "WORKSHOP");
-    teleport({28, 23.5F}); CHECK(board.text("current_room") == "INFIRMARY");
+    CHECK(cellSprite->frame == 7 && !cellDoor->get<Collider>()->enabled);
+    walk(doorAt + Vec2{0, 2});
+    walk(doorAt + Vec2{0, 3.2F});
+    tick(90);
+    CHECK(!cellGate->open() && cellSprite->frame == 0 && cellDoor->get<Collider>()->enabled);
+    teleport(doorAt + Vec2{0, 1.8F});
+    tick(25);
+    walk(doorAt);
+    tick(90);
+    CHECK(cellGate->open() && !cellDoor->get<Collider>()->enabled);
+    teleport(at(620, 675));
+    CHECK(board.text("current_room") == "WORKSHOP");
+    teleport(at(960, 780));
+    CHECK(board.text("current_room") == "INFIRMARY");
     auto *camera = object("Player follow camera")->get<Camera>();
     CHECK(camera->mode == CameraMode::Follow && camera->targets.size() == 1);
-    CHECK(camera->orthographicHeight < 13);
+    CHECK(camera->orthographicHeight <= 8.5F);
     CHECK(camera->viewportInset == Vec2(0, 140));
     // Camera follows actual movement, then clamps against the rendered world aspect.
-    teleport({24, 14}); tick(90);
-    CHECK(distance(camera->view().position, {24, 14}) < .02F);
+    teleport(at(700, 475));
+    tick(90);
+    CHECK(distance(camera->view().position, actor()->worldPosition()) < .02F);
     keyboard.set(Key::D, true); tick(50); keyboard.set(Key::D, false); tick(50);
     CHECK(distance(camera->view().position, actor()->worldPosition()) < .03F);
     for (Vec2 size : {Vec2{1280, 720}, Vec2{1920, 1080}, Vec2{1024, 768}}) {
         session->runtime().setViewportSize(size);
-        teleport({46, 25}); tick(90);
+        teleport(at(1519, 805));
+        tick(90);
         const float scale = std::min(size.x / 1280, size.y / 720);
         const float halfWidth = camera->orthographicHeight * size.x / (size.y - 140 * scale) / 2;
-        CHECK(std::abs(camera->view().position.x - (48 - halfWidth)) < .03F);
-        CHECK(std::abs(camera->view().position.y - (28 - camera->orthographicHeight / 2)) < .03F);
+        CHECK(std::abs(camera->view().position.x - (camera->boundsMax.x - halfWidth)) < .03F);
+        CHECK(std::abs(camera->view().position.y -
+                       (camera->boundsMax.y - camera->orthographicHeight / 2)) < .03F);
     }
     session->runtime().setViewportSize({1280, 720});
     auto *guard = object("Control guard");
     guard->get<NpcPath>()->enabled = false;
     guard->get<PatrolWatch>()->enabled = false;
     // Physically walk from the starting cell through the common-room and workshop openings.
-    teleport({3, 5.8F});
-    walk({4.5F, 6.5F}); walk({4.5F, 10.5F}); walk({7, 10.5F}); walk({7, 12}); walk({8.5F, 12}); walk({8.5F, 14.5F});
+    teleport(at(172, 196));
+    walk(at(148, 202));
+    walk(at(148, 320));
+    walk(at(275, 320));
+    walk(at(275, 475));
     near("Mara"); press(Key::E);
     auto *dialogue = object("Mara")->get<Dialogue>();
     CHECK(dialogue->active());
@@ -173,7 +206,12 @@ int main() {
     press(Key::E); CHECK(dialogue->active());
     for (int i = 0; i < 6 && dialogue->active(); ++i) press(Key::E);
     CHECK(board.number("l2_met_mara") == 1);
-    teleport({8.5F, 14.5F}); walk({16.5F, 14.5F}); walk({16.5F, 20}); walk({16.5F, 23.5F}); walk({14, 23.5F}); walk({14, 22.9F});
+    teleport(at(313, 475));
+    walk(at(560, 475));
+    walk(at(614, 475));
+    walk(at(614, 650));
+    walk(at(560, 718));
+    walk(at(482, 718));
     press(Key::E); tick(30);
     CHECK(board.number("search_ui_busy") == 1);
     CHECK(actor()->get<AnimatedSprite>()->state() == "search_up");
@@ -185,14 +223,29 @@ int main() {
     CHECK(board.text("search_ui_icon") == "assets/level2/screwdriver.png");
     near("Tool bench"); press(Key::E); tick(190); press(Key::E);
     CHECK(inventory()->count(ItemId("l2_screwdriver")) == 1);
-    walk({14.8F, 24}); walk({14.8F, 26.5F}); walk({13, 26.5F}); search("Tool chest", false);
+    walk(at(550, 718));
+    walk(at(600, 665));
+    walk(at(685, 648));
+    search("Tool chest", false);
     CHECK(inventory()->count(ItemId("l2_cutters")) == 1);
     // Workshop -> laundry and stores: all room entrances must really pass the feet collider.
-    walk({16.5F, 25}); walk({16.5F, 20}); walk({16.5F, 14.5F}); walk({27.5F, 14.5F});
-    walk({27.5F, 10.5F}); walk({27.5F, 7.8F}); walk({30.5F, 7.4F}); search("Linen table", false);
+    walk(at(614, 650));
+    walk(at(614, 475));
+    walk(at(961, 475));
+    walk(at(961, 328));
+    walk(at(911, 328));
+    search("Linen table", false);
     CHECK(inventory()->count(ItemId("l2_linen")) == 1);
-    walk({27.5F, 8}); walk({27.5F, 11}); walk({32, 14.5F}); walk({44.5F, 14.5F});
-    walk({44.5F, 10.5F}); walk({44.5F, 7.9F}); walk({43.3F, 7.9F}); search("Fuse cabinet", false);
+    walk(at(961, 328));
+    walk(at(961, 475));
+    walk(at(1330, 475));
+    walk(at(1330, 495));
+    walk(at(1469, 495));
+    walk(at(1469, 475));
+    walk(at(1523, 475));
+    walk(at(1523, 335));
+    walk(at(1469, 310));
+    search("Fuse cabinet", false);
     CHECK(inventory()->count(ItemId("l2_fuse")) == 1);
     near("Power terminal"); press(Key::E);
     CHECK(object("Power terminal")->get<WirePuzzle>()->active());
@@ -204,10 +257,10 @@ int main() {
     CHECK(inventory()->count(ItemId("l2_fuse")) == 0 && inventory()->count(ItemId("l2_linen")) == 0);
     // Captured searches cancel after teleport; no remote reward, hidden tools remain.
     guard->get<PatrolWatch>()->enabled = true;
-    session->runtime().teleport(*guard, {38.9F, 5});
+    session->runtime().teleport(*guard, at(1390, 240));
     object("Security desk")->get<SearchAction>()->duration = 8;
     near("Security desk"); press(Key::E); tick(225);
-    CHECK(distance(actor()->worldPosition(), {3, 5.8F}) < .1F);
+    CHECK(distance(actor()->worldPosition(), at(172, 196)) < .1F);
     CHECK(!session->runtime().inputLocked());
     CHECK(inventory()->count(ItemId("l2_keycard")) == 0);
     CHECK(inventory()->count(ItemId("l2_insulated_fuse")) == 1);
@@ -226,14 +279,15 @@ int main() {
     CHECK(!puzzle->active() && board.number("l2_power_restored") == 1);
     CHECK(!session->runtime().inputLocked());
     // Real walk through utility into the exit anteroom; gate stays solid until chain work ends.
-    walk({39.5F, 23}); walk({44.5F, 23}); walk({45, 24.5F});
+    walk(at(1520, 705));
+    walk(at(1520, 795));
     keyboard.set(Key::S, true); tick(45); keyboard.set(Key::S, false); tick(4);
-    CHECK(actor()->worldPosition().y < 26.9F);
+    CHECK(actor()->worldPosition().y < at(1519, 845).y);
     // The barrier seals the two-tile perimeter opening, including both frame edges.
-    for (float x : {44.1F, 45.0F, 45.9F}) {
-        teleport({x, 26.2F});
+    for (float x : {1492.0F, 1519.0F, 1546.0F}) {
+        teleport(at(x, 802));
         keyboard.set(Key::S, true); tick(45); keyboard.set(Key::S, false); tick(4);
-        CHECK(actor()->worldPosition().y < 26.9F);
+        CHECK(actor()->worldPosition().y < at(1519, 845).y);
         CHECK(board.text("level_state") == "playing");
     }
     near("Green exit gate", {0, -1.1F}); search("Green exit gate", false); tick(30);
@@ -243,14 +297,17 @@ int main() {
     auto *exitSprite = object("Green exit gate")->get<SpriteRenderer>();
     const Vec2 openedOffset = exitSprite->offset;
     CHECK(exitSprite->visible && exitSprite->color.a == 255);
+    CHECK(exitSprite->frame == 7);
     press(Key::E); tick(30);
     CHECK(!exitGate->open() && object("Green exit gate")->get<Collider>()->enabled);
+    CHECK(exitSprite->frame == 0);
     CHECK(board.number("l2_exit_open") == 1 && board.number("l2_gate_open") == 0);
     CHECK(board.number("search_ui_active") == 0); // Cutting the chain is not repeated.
     press(Key::E); tick(30);
     CHECK(exitGate->open() && !object("Green exit gate")->get<Collider>()->enabled);
     CHECK(distance(exitSprite->offset, openedOffset) < .01F);
-    walk({45, 27.6F}); tick(3);
+    walk(at(1519, 884));
+    tick(3);
     CHECK(board.text("level_state") == "complete");
     CHECK(board.text("escape_completion_title") == "THE INNER KEEP IS BEHIND YOU");
     press(Key::R); tick(3);

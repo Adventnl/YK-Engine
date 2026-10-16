@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
-"""Build the editable second castle chapter from newly generated source atlases.
-
-The supplied ZIP is a visual/layout reference, never a source of shipping pixels.
-Run after the seven original generated masters have been saved in assets/level2/source.
-"""
+"""Build chapter two with the supplied castle scenery and shared directional actors."""
 import json
+import sys
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont, PngImagePlugin
+from castle_reference import style_level_two
 
 ROOT = Path(__file__).resolve().parents[1]
 ART = ROOT / 'assets/level2'
@@ -382,8 +380,10 @@ def build_scene():
         c('EscapePresentation', actor=hero, title='BLACKTHORN KEEP / LEVEL 2', completionTitle='THE INNER KEEP IS BEHIND YOU',
           completionText='The green gate opens. Your friends follow you out.'),
         c('LevelFlow', goals=[goal], introDuration=0, restartOnDeath=False, completeDelay=30, completeMessage='LEVEL 2 ESCAPED'))
-    save(ROOT / 'scenes/level2.ykscene', dict(format='yk.scene', version=1,
-         settings=dict(name='Blackthorn Keep - Level 2: The Inner Keep', gravity=[0, 0], background='#16191fff'), entities=entities))
+    scene = dict(format='yk.scene', version=1,
+         settings=dict(name='Blackthorn Keep - Level 2: The Inner Keep', gravity=[0, 0], background='#16191fff'), entities=entities)
+    style_level_two(scene)
+    save(ROOT / 'scenes/level2.ykscene', scene)
     items = [('l2_screwdriver', 'Screwdriver', 'screwdriver'), ('l2_cutters', 'Cutters', 'cutters'), ('l2_linen', 'Linen', 'linen'),
              ('l2_fuse', 'Spare fuse', 'fuse'), ('l2_keycard', 'Keycard', 'keycard'), ('l2_insulated_fuse', 'Safe fuse', 'safe_fuse')]
     save(ROOT / 'data/level2.ykdata', dict(format='yk.data', version=1,
@@ -392,12 +392,16 @@ def build_scene():
                        ingredients=[dict(item='l2_fuse'), dict(item='l2_linen')], output=dict(item='l2_insulated_fuse'))]))
     project = json.loads((ROOT / 'project.ykproj').read_text())
     project['startScene'] = 'scenes/level2.ykscene'
+    project['textures']['pixelsPerUnit'] = 35
     project['window']['title'] = 'Blackthorn Keep - Level 2: The Inner Keep'
     project['build']['exclude'] = list(dict.fromkeys(project['build'].get('exclude', []) +
-        ['assets/level2/source', 'assets/keep/source', 'tools', '.impeccable', 'reference-style-preview.png', 'level2-dialogue-preview.png']))
+        ['assets/level2/source', 'assets/keep/source', 'assets/castle/source', 'tools', '.impeccable',
+         'reference-style-preview.png', 'level2-dialogue-preview.png', 'level1-preview.png',
+         'level2-preview.png', 'level2-overview.png']))
     save(ROOT / 'project.ykproj', project)
-    print('Level 2:', len(entities), 'editable entities;', len(rooms), 'rooms;', len(list(ART.glob('*.png'))), 'regenerated textures.')
+    print('Level 2:', len(scene['entities']), 'editable entities;', len(rooms), 'areas; shared castle scenery and actors.')
 
 if __name__ == '__main__':
-    export_art()
+    if '--regenerate-art' in sys.argv:
+        export_art()
     build_scene()

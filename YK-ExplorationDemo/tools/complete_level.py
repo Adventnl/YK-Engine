@@ -3,6 +3,7 @@
 Generated source atlases are imported reproducibly, independent of reference scenery.
 """
 import json
+import sys
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 ROOT = Path(__file__).resolve().parents[1]
@@ -17,9 +18,10 @@ def asset(name, size, paint):
     im=Image.new('RGBA', size, (0,0,0,0)); paint(ImageDraw.Draw(im)); im.save(ART/(name+'.png'))
     return 'assets/keep/'+name+'.png'
 
-# Import independently generated art; never sample the user's reference screenshots.
+# Retain the original atlas exporter as an explicit authoring operation.
 from import_reference_style import build_art
-build_art(ART)
+if '--regenerate-art' in sys.argv:
+    build_art(ART)
 OUT='#202b45'; WOOD='#946035'; GOLD='#e7b34d'; LIGHT='#f5deab'
 for role in ['prisoner','mara','guard','old_prisoner']:
     clips=[]
@@ -29,9 +31,10 @@ for role in ['prisoner','mara','guard','old_prisoner']:
     save(ART/(role+'.ykanim'),dict(format='yk.animation',version=2,texture='assets/keep/'+role+'.png',columns=8,rows=4,clips=clips))
 save(ART/'torch.ykanim',dict(format='yk.animation',version=2,texture='assets/keep/torch.png',columns=4,rows=1,clips=[dict(name='burn',frames=[0,1,0,2],fps=7)]))
 # Room plaques are the only code-authored art: labels must be exact and legible.
-for label in ['CELLS','LOCKED STORES','GUARD OFFICE','WORKSHOP','LAUNDRY','DRAINAGE']:
-    font=ImageFont.load_default(); box=font.getbbox(label); width=box[2]+12
-    asset('sign_'+label.lower().replace(' ','_'),(width,18),lambda d,t=label,w=width:(d.rectangle((0,0,w-1,17),fill=OUT),d.rectangle((1,1,w-2,16),fill='#80512f'),d.text((6,3),t,font=font,fill=LIGHT)))
+if '--regenerate-art' in sys.argv:
+    for label in ['CELLS','LOCKED STORES','GUARD OFFICE','WORKSHOP','LAUNDRY','DRAINAGE']:
+        font=ImageFont.load_default(); box=font.getbbox(label); width=box[2]+12
+        asset('sign_'+label.lower().replace(' ','_'),(width,18),lambda d,t=label,w=width:(d.rectangle((0,0,w-1,17),fill=OUT),d.rectangle((1,1,w-2,16),fill='#80512f'),d.text((6,3),t,font=font,fill=LIGHT)))
 
 # Scene: a single readable keep, complete perimeter and two-tile doorways.
 def c(kind,**p):return dict(type=kind,properties=p)
@@ -131,9 +134,11 @@ for e in entities:
     if e['name']=='Drain grate':
         e['components'].append(c('StateGate',startsLocked=True,unlockFlag='drain_open',persistFlag='grate_open'))
 scene=dict(format='yk.scene',version=1,settings=dict(name='Blackthorn Keep - A Castle Escape',gravity=[0,0],background='#16191fff'),entities=entities)
+from castle_reference import style_level_one
+style_level_one(scene)
 save(ROOT/'scenes/courtyard.ykscene',scene)
 items=[dict(id=i,displayName=n,icon='assets/keep/'+i+'.png',tags=['escape']) for i,n in [('screwdriver','Screwdriver'),('rope','Rope'),('iron_hook','Iron hook'),('brass_key','Brass key'),('grappling_line','Grapple')]]
 save(ROOT/'data/keep.ykdata',dict(format='yk.data',version=1,items=items,recipes=[dict(id='grappling_line',displayName='Grappling line',station='workbench',ingredients=[dict(item='rope'),dict(item='iron_hook')],output=dict(item='grappling_line'))]))
-p=ROOT/'project.ykproj';project=json.loads(p.read_text());project['name']='Blackthorn Keep';project['window']['title']='Blackthorn Keep - A Castle Escape';project['build']['productName']='Blackthorn Keep';project['textures']['pixelsPerUnit']=32
+p=ROOT/'project.ykproj';project=json.loads(p.read_text());project['name']='Blackthorn Keep';project['window']['title']='Blackthorn Keep - A Castle Escape';project['build']['productName']='Blackthorn Keep';project['textures']['pixelsPerUnit']=35
 save(p,project)
 print('Authored',len(entities),'entities and',len(list(ART.glob('*.png'))),'pixel art assets.')
