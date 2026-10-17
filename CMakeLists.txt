@@ -171,6 +171,8 @@ if(BUILD_TESTING)
     yk_add_test(perception tests/unit/perception_tests.cpp LIBS yk::gameplay TIMEOUT 300)
     yk_add_test(mechanisms tests/unit/mechanisms_tests.cpp LIBS yk::gameplay TIMEOUT 120)
     yk_add_test(level_flow tests/unit/level_flow_tests.cpp LIBS yk::gameplay TIMEOUT 120)
+    yk_add_test(fireboy_demo tests/unit/fireboy_demo_tests.cpp LIBS yk::gameplay TIMEOUT 120
+        DEFINITIONS YK_FIREBOY_PROJECT_DIR="${CMAKE_CURRENT_SOURCE_DIR}/Fireboy-Watergirl-Demo")
     yk_add_test(export tests/unit/export_tests.cpp LIBS yk::gameplay TIMEOUT 60)
     # The demo game is a separate project (YK-DemoGame) that only consumes the engine; this plays it.
     if(YK_HAVE_DEMO)

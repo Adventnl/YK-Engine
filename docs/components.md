@@ -619,6 +619,9 @@ Several instances may be added to one entity.
 |---|---|---|---|
 | `onEvent` | string | "" | The event that starts it: plate_pressed, lever_toggled, collected, goal_reached, level_completed, scene_started, or any event another component raises. Empty with an interval: a repeating timer. |
 | `from` | entity | none | Only events raised by this entity count. Empty: any. |
+| `inputSet` | string | "Global" |  |
+| `inputAction` | string | "" | A press of this named action starts the reaction, with the same delay and once rules. |
+| `waitForRelease` | bool | false | Wait until the input action is released before accepting a press; prevents a held menu key from skipping the next scene. |
 | `delay` | float | 0 | Seconds between the event and the actions. (range 0 to 3600) |
 | `every` | float | 0 | With no onEvent: runs the actions every this many seconds. (range 0 to 3600) |
 | `once` | bool | false | Stop after running once. |

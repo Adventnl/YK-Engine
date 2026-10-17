@@ -511,10 +511,13 @@ const std::vector<std::string> &variableChangeNames();
 class EventAction final : public Component {
   public:
     std::string onEvent;
-    EntityRef from;    // Only events raised by this entity count. Empty: any.
-    float delay{0.0F}; // Seconds from the event to the actions.
-    float every{0.0F}; // With no onEvent: run the actions every this many seconds.
-    bool once{false};  // Stop after running once.
+    std::string inputSet{"Global"};
+    std::string inputAction;    // A named action can also start the reaction (menus, shortcuts).
+    bool waitForRelease{false}; // Menus ignore a key held over from the previous scene.
+    EntityRef from;             // Only events raised by this entity count. Empty: any.
+    float delay{0.0F};          // Seconds from the event to the actions.
+    float every{0.0F};          // With no onEvent: run the actions every this many seconds.
+    bool once{false};           // Stop after running once.
     SignalChange signal{SignalChange::None};
     std::vector<EntityRef> targets; // Receivers that follow the signal this component holds.
     std::string raiseEvent;
@@ -551,6 +554,7 @@ class EventAction final : public Component {
     EventBus::Subscription subscription_{};
     bool signal_{};
     bool finished_{};
+    bool inputReady_{};
     float timer_{};
     int runs_{};
 };

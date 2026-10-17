@@ -1,45 +1,50 @@
-# Fireboy and Watergirl: Two Levels
+# Fireboy and Watergirl
 
-A single-screen, two-player puzzle platformer for YK Engine. Open this folder as a
-project in `yk_editor`, or run `yk_player Fireboy-Watergirl-Demo` from the repository
-root. The game starts in `scenes/reference_level.ykscene` and moves to
-`scenes/level02.ykscene` after both players reach their doors.
+A two-player puzzle platformer with two levels built from the original coloured
+block, striped platform, switch, gem and door kit. Both levels use the furnished
+room background. Terrain has separate, aligned collision surfaces; buttons have
+a fixed housing and a solid moving cap that carries the player down.
+
+Open this folder in `yk_editor`, or run `yk_player Fireboy-Watergirl-Demo`.
+Exported games open the same title screen. Press **Enter** to play, then **1**
+(or Enter) for **Level 1**, or **2** for **Level 2**. Controller equivalents are
+East to play, South for Level 1 and North for Level 2.
 
 | Player | Move | Jump | Use lever |
 | --- | --- | --- | --- |
-| Fireboy (orange) | A / D | W | S or E |
-| Watergirl (blue) | Left / Right | Up | Down or Right Ctrl |
+| Fireboy | A / D | W | S or E |
+| Watergirl | Left / Right | Up | Down or Right Ctrl |
 
-R restarts, P pauses. Red liquid hurts Watergirl, blue liquid hurts Fireboy, and
-green liquid hurts both. Fireboy can hold the left red button to run the striped
-platform while Watergirl rides across. The central lever and two upper buttons
-run the platform over the green channel. Both players must stand in their own
-doors to finish.
+**R** retries, **P** pauses and **M** returns to the menu. Players collide with
+each other. Red liquid hurts Watergirl, blue hurts Fireboy, and green hurts both.
+Collect the matching gems along each route. Both players must reach their own
+doors to finish; gems are optional. Press Enter to skip the completion delay.
 
-Level Two, **Classroom**, recreates the supplied classroom image with its desk
-platforms, bookcase column, colored liquid basins, glowing gems, and two exit
-doors. Fireboy can press the left red button to carry Watergirl across the orange
-basin. The middle lever opens the striped bookcase panel; the yellow button calls
-the orange elevator to the upper desk. The upper yellow button moves the cyan
-platform across the blue basin. Purple liquid hurts both players. Completing
-Level Two leaves the completion screen visible.
+**Level 1** introduces the two coloured pools. Step on each floor button to
+start its shuttle. Climb the ledges on the right, use the upper lever to start
+the green crossing, then climb left to the exit deck. The small left ledge holds
+an optional Watergirl gem. Completion advances to Level 2.
 
-The room backdrop comes from `Image_20261002095859_162_30.png`; the second root
-image was the composition reference. All 30 cutouts in `game_assets_level1` are
-placed in the scene. The sixteen `character_sprites` poses are assembled into
-animated sheets. Sprite pixels use nearest-neighbour filtering; the colliders
-are separate shapes matched to playable surfaces, since the cutouts include
-decorative borders and transparent margins.
+**Level 2** has a long green channel. The starting button starts a shuttle wide
+enough for both players. Ride to the far bank, use the lever, then board the lift
+when it returns to its lower stop. The lift has a clear shaft beside the upper
+landing. Cross the upper pools from right to left, starting the shuttles with
+the buttons, to reach the exits. Completion returns to the title screen.
 
-The project contains its own copied textures, sounds, prefabs, and scenes so it
-can be opened or exported without referring to the source folders. The classroom
-cutouts came from `classroom_level_assets.zip`; their manifest and imported PNGs
-are stored in `assets/classroom`. To rebuild the scenes:
+The floor buttons latch after a full press so either player can catch up. No
+mechanism requires a player to stay behind permanently. Shuttle endpoints pause
+to give riders time to board. Hold jump for full height on the taller ledges.
+
+To regenerate the scenes and extracted modular pieces from the imported art:
 
 ```sh
-python Fireboy-Watergirl-Demo/tools/build_level.py
-python Fireboy-Watergirl-Demo/tools/build_level2.py
+python Fireboy-Watergirl-Demo/tools/build_game.py
 ```
 
-The Level One authoring script requires Pillow. Both generated scenes and their
-assets are included; Python is not required to play the game.
+`build_level.py` also reimports the original art and character poses, then rebuilds
+the whole game. `build_level2.py` rebuilds only Level 2. These scripts require
+Pillow; playing and exporting require no Python or source asset folders.
+
+The `fireboy_demo` test plays both routes through real physics, checks the
+title/selection flow, presses the two-part buttons and checks every platform's
+full travel against the static terrain.

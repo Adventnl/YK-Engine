@@ -20,7 +20,7 @@ void EventAction::describe(TypeBuilder<EventAction> &type) {
         .allowMultiple()
         .check([](const Entity &, const EventAction &action, const CheckContext &,
                   std::vector<std::string> &problems) {
-            if (action.onEvent.empty() && action.every <= 0.0F)
+            if (action.onEvent.empty() && action.inputAction.empty() && action.every <= 0.0F)
                 problems.push_back("waits for no event and has no interval, so it never runs");
             if (action.signal != SignalChange::None && action.targets.empty())
                 problems.push_back("changes a signal but has no targets to follow it");
@@ -43,6 +43,14 @@ void EventAction::describe(TypeBuilder<EventAction> &type) {
                  "with an interval: a repeating timer.");
     type.field("from", &EventAction::from)
         .tooltip("Only events raised by this entity count. Empty: any.");
+    type.field("inputSet", &EventAction::inputSet).inputSet();
+    type.field("inputAction", &EventAction::inputAction)
+        .inputAction()
+        .tooltip("A press of this named action starts the reaction, with the same delay and once "
+                 "rules.");
+    type.field("waitForRelease", &EventAction::waitForRelease)
+        .tooltip("Wait until the input action is released before accepting a press; prevents a "
+                 "held menu key from skipping the next scene.");
     type.field("delay", &EventAction::delay)
         .range(0, 3600, 0.05)
         .tooltip("Seconds between the event and the actions.");
@@ -80,6 +88,7 @@ void EventAction::onStart(GameContext &context) {
     pending_.clear();
     signal_ = false;
     finished_ = false;
+    inputReady_ = !waitForRelease;
     timer_ = 0.0F;
     runs_ = 0;
     if (onEvent.empty())
@@ -101,13 +110,19 @@ void EventAction::onFixedUpdate(GameContext &context, float seconds) {
         sendSignal(context.scene(), entity().id(), targets, signal_);
     if (finished_)
         return;
+    if (!inputAction.empty()) {
+        const auto input = context.input().state(inputSet, inputAction);
+        if (!input.held)
+            inputReady_ = true;
+        if (inputReady_ && input.pressed)
+            pending_.push_back({context.time() + static_cast<double>(std::max(delay, 0.0F)), {}});
+    }
     if (onEvent.empty() && every > 0.0F) {
         timer_ += seconds;
         if (timer_ >= every) {
             timer_ -= every;
             run(context, {});
         }
-        return;
     }
     // Run what has come due (in the order it was asked for); running may raise events, and those
     // are delivered later, so nothing is added to the list meanwhile.

@@ -2,9 +2,9 @@
   "format": "yk.project",
   "version": 1,
   "name": "Fireboy and Watergirl",
-  "startScene": "scenes/reference_level.ykscene",
+  "startScene": "scenes/menu.ykscene",
   "window": {
-    "title": "Fireboy and Watergirl - Level One",
+    "title": "Fireboy and Watergirl",
     "width": 1280,
     "height": 720
   },
@@ -27,7 +27,8 @@
       "interactsWith": [
         "Solid",
         "Sensor",
-        "Prop"
+        "Prop",
+        "Player"
       ]
     },
     {
@@ -151,16 +152,37 @@
               "Key:Enter",
               "Pad:East"
             ]
+          },
+          {
+            "name": "Menu",
+            "bindings": [
+              "Key:M",
+              "Pad:Back"
+            ]
+          },
+          {
+            "name": "Level1",
+            "bindings": [
+              "Key:Num1",
+              "Pad:South"
+            ]
+          },
+          {
+            "name": "Level2",
+            "bindings": [
+              "Key:Num2",
+              "Pad:North"
+            ]
           }
         ]
       }
     ]
   },
   "build": {
-    "productName": "",
-    "executable": "",
+    "productName": "Fireboy and Watergirl",
+    "executable": "FireboyWatergirl",
     "version": "1.0.0",
-    "identifier": "",
+    "identifier": "com.ykengine.fireboywatergirl",
     "icon": "assets/icon.png",
     "copyright": "Demo game made with YK Engine",
     "exclude": []

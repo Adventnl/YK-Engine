@@ -66,7 +66,7 @@ ctest --preset dev --output-on-failure
 ./build/dev/yk_editor                       # welcome screen: projects and both demos
 ./build/dev/yk_editor YK-DemoGame           # open the demo game in the editor
 ./build/dev/yk_player YK-DemoGame           # play it without the editor
-./build/dev/yk_player Fireboy-Watergirl-Demo  # play the new reference-art level
+./build/dev/yk_player Fireboy-Watergirl-Demo  # title screen, level selector and two co-op levels
 ./build/dev/yk_player YK-ExplorationDemo     # play the top-down exploration test
 ./build/dev/yk_player YK-SimulationDemo      # play Blackwater; the original scene is preserved
 ./build/dev/yk export YK-DemoGame --target linux --out dist --zip     # package it

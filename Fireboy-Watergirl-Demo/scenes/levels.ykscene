@@ -1,0 +1,772 @@
+{
+  "format": "yk.scene",
+  "version": 1,
+  "settings": {
+    "name": "Level Select",
+    "gravity": [
+      0,
+      9.81
+    ],
+    "background": "#17283bff"
+  },
+  "entities": [
+    {
+      "id": "158ebaf9a3a1cd55",
+      "name": "Camera",
+      "transform": {
+        "position": [
+          16.72,
+          9.41
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Camera",
+          "properties": {
+            "mode": "Fixed",
+            "orthographicHeight": 18.82
+          }
+        }
+      ]
+    },
+    {
+      "id": "537f1912e8cdcb4b",
+      "name": "Room Background",
+      "transform": {
+        "position": [
+          16.72,
+          9.41
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/room.png",
+            "size": [
+              33.44,
+              18.82
+            ],
+            "layer": -100
+          }
+        }
+      ]
+    },
+    {
+      "id": "14c642df7c803be8",
+      "name": "Background Shade",
+      "transform": {
+        "position": [
+          16.72,
+          9.41
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "size": [
+              33.44,
+              18.82
+            ],
+            "color": "#08131f55",
+            "layer": -90
+          }
+        }
+      ]
+    },
+    {
+      "id": "422070267490c753",
+      "name": "Terrain",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "0d9767a4f1e43d3a",
+      "name": "Hazards",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "f4a6865fd1a699ed",
+      "name": "Mechanisms",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "6696ef0d61ada6ab",
+      "name": "Collectibles",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "48a88e27e974e31f",
+      "name": "Characters",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "400166a8ad67af9c",
+      "name": "Menu Scrim",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "fillScreen": true,
+            "color": "#091422b8",
+            "layer": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "2bbf0e09d5177aab",
+      "name": "Title",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "FIREBOY & WATERGIRL",
+            "anchor": "Center",
+            "offset": [
+              0,
+              -205
+            ],
+            "scale": 5,
+            "color": "#fff0c9ff",
+            "layer": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "374aa5c2aa5ef590",
+      "name": "Subtitle",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "A TWO-PLAYER CO-OP ADVENTURE",
+            "anchor": "Center",
+            "offset": [
+              0,
+              -147
+            ],
+            "scale": 2,
+            "color": "#d6e4edff",
+            "layer": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "29e23bfa4d53ca76",
+      "name": "orange Hero",
+      "transform": {
+        "position": [
+          10.32,
+          8.98
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/orange_motion.png",
+            "size": [
+              2.24,
+              3.36
+            ],
+            "layer": 15,
+            "columns": 8,
+            "rows": 4,
+            "frame": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "137a0e85f57ab14b",
+      "name": "blue Hero",
+      "transform": {
+        "position": [
+          23.12,
+          8.98
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/blue_motion.png",
+            "size": [
+              2.24,
+              3.36
+            ],
+            "layer": 15,
+            "columns": 8,
+            "rows": 4,
+            "frame": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "322401de9c0851be",
+      "name": "Prompt",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "CHOOSE YOUR LEVEL",
+            "anchor": "Center",
+            "offset": [
+              0,
+              -70
+            ],
+            "scale": 3,
+            "color": "#d6e4edff",
+            "layer": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "a2d8798e5ed50184",
+      "name": "Level 1 Card",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "size": [
+              460,
+              76
+            ],
+            "offset": [
+              0,
+              0
+            ],
+            "color": "#152e42f0",
+            "layer": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "7923c144748b40d0",
+      "name": "Level 1 Label",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "[1]  LEVEL 1",
+            "anchor": "Center",
+            "offset": [
+              0,
+              -14
+            ],
+            "scale": 3,
+            "color": "#efad75ff",
+            "layer": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "c1ab5744c16bdb84",
+      "name": "Level 1 Detail",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "CROSSINGS & CLIMB",
+            "anchor": "Center",
+            "offset": [
+              0,
+              16
+            ],
+            "scale": 1.5,
+            "color": "#d6e4edff",
+            "layer": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "7f6d9c47f6c07ae3",
+      "name": "Select Level 1",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "EventAction",
+          "properties": {
+            "inputAction": "Level1",
+            "waitForRelease": true,
+            "once": true,
+            "changeScene": "scenes/level01.ykscene"
+          }
+        }
+      ]
+    },
+    {
+      "id": "e08f0862b330dc5a",
+      "name": "Level 2 Card",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "size": [
+              460,
+              76
+            ],
+            "offset": [
+              0,
+              92
+            ],
+            "color": "#152e42f0",
+            "layer": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "308ced1fc3196e77",
+      "name": "Level 2 Label",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "[2]  LEVEL 2",
+            "anchor": "Center",
+            "offset": [
+              0,
+              78
+            ],
+            "scale": 3,
+            "color": "#71d9ffff",
+            "layer": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "b627d57bbd7a8b48",
+      "name": "Level 2 Detail",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "SHUTTLE & LIFT",
+            "anchor": "Center",
+            "offset": [
+              0,
+              108
+            ],
+            "scale": 1.5,
+            "color": "#d6e4edff",
+            "layer": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "fd81ae68eb89c517",
+      "name": "Select Level 2",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "EventAction",
+          "properties": {
+            "inputAction": "Level2",
+            "waitForRelease": true,
+            "once": true,
+            "changeScene": "scenes/level02.ykscene"
+          }
+        }
+      ]
+    },
+    {
+      "id": "42f3016f2f3b9103",
+      "name": "Default Level",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "EventAction",
+          "properties": {
+            "inputAction": "Continue",
+            "waitForRelease": true,
+            "once": true,
+            "changeScene": "scenes/level01.ykscene"
+          }
+        }
+      ]
+    },
+    {
+      "id": "29ba4a1bb70309ac",
+      "name": "Back",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "EventAction",
+          "properties": {
+            "inputAction": "Menu",
+            "waitForRelease": true,
+            "once": true,
+            "changeScene": "scenes/menu.ykscene"
+          }
+        }
+      ]
+    },
+    {
+      "id": "11698bc5e9c53bd8",
+      "name": "Menu Hint",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "1 / ENTER: LEVEL 1    2: LEVEL 2    M: BACK",
+            "anchor": "Center",
+            "offset": [
+              0,
+              180
+            ],
+            "scale": 2,
+            "color": "#d6e4edff",
+            "layer": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "017f383f1dc4d81b",
+      "name": "Fireboy Controls",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "FIREBOY: A D MOVE / W JUMP / S USE",
+            "anchor": "Bottom",
+            "offset": [
+              0,
+              100
+            ],
+            "scale": 2,
+            "color": "#efad75ff",
+            "layer": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "5634f4be945271a0",
+      "name": "Watergirl Controls",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "WATERGIRL: ARROWS MOVE / UP JUMP / DOWN USE",
+            "anchor": "Bottom",
+            "offset": [
+              0,
+              70
+            ],
+            "scale": 2,
+            "color": "#71d9ffff",
+            "layer": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "8450b5fc023e135c",
+      "name": "Coop Hint",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "REACH BOTH MATCHING DOORS TOGETHER",
+            "anchor": "Bottom",
+            "offset": [
+              0,
+              32
+            ],
+            "scale": 1.5,
+            "color": "#d6e4edff",
+            "layer": 4
+          }
+        }
+      ]
+    }
+  ]
+}

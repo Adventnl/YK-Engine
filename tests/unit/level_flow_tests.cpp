@@ -559,6 +559,26 @@ void eventActionsReact() {
 }
 } // namespace
 
+void inputActionsReact() {
+    World w;
+    auto &action = w.scene->createEntity("Play").add<EventAction>();
+    action.inputAction = "Continue";
+    action.delay = 0.1F;
+    action.once = true;
+    action.changeScene = AssetRef{"scenes/level01.ykscene"};
+    w.start();
+    w.tick(10);
+    CHECK(w.runtime->sceneChangeRequested().empty());
+    w.down(Key::Enter);
+    w.tick();
+    CHECK(w.runtime->sceneChangeRequested().empty());
+    w.tick(10);
+    CHECK(w.runtime->sceneChangeRequested() == "scenes/level01.ykscene");
+    CHECK(w.at("Play").get<EventAction>()->runCount() == 1);
+    w.tick(30);
+    CHECK(w.at("Play").get<EventAction>()->runCount() == 1);
+}
+
 int main() {
     completionSequence();
     completionWithoutNextSceneAndContinue();
@@ -570,5 +590,6 @@ int main() {
     sessionKeepsPauseAndViewport();
     pauseAction();
     eventActionsReact();
+    inputActionsReact();
     return yk::test::finish("level_flow");
 }
