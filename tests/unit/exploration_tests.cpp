@@ -66,15 +66,20 @@ int main() {
         }
         for (Key key : {Key::A,Key::D,Key::W,Key::S}) keyboard.set(key,false);
         tick(3);
+        if (distance(actor()->worldPosition(), destination) >= .3F && board.text("level_state") != "complete")
+            std::fprintf(stderr, "Walk blocked: at %.2f %.2f, goal %.2f %.2f\n", actor()->worldPosition().x, actor()->worldPosition().y, destination.x, destination.y);
         CHECK(distance(actor()->worldPosition(), destination) < .3F || board.text("level_state") == "complete");
     };
     tick(2);
+    for (const char *name : {"Cell door", "Stores door", "Office door", "Workshop door",
+                             "Laundry door", "Archive door"})
+        CHECK(!object(name));
     CHECK(inventory()->freeSlots() == 6);
     CHECK(board.number("escape_hud") == 1);
     auto *animation = actor()->get<AnimatedSprite>();
     CHECK(animation);
     // Actual direction-specific sheets, and stationary facing after releasing movement.
-    session->runtime().teleport(*actor(), {8.5F,10});
+    session->runtime().teleport(*actor(), {14,10});
     for (auto [key,clip] : {std::pair{Key::W,"walk_up"}, {Key::S,"walk_down"}, {Key::A,"walk_left"}, {Key::D,"walk_right"}}) {
         keyboard.set(key,true); tick(5); CHECK(animation->state() == clip);
         const int frame = actor()->get<SpriteRenderer>()->frame;
@@ -121,7 +126,7 @@ int main() {
     CHECK(board.text("search_ui_icon") == "assets/keep/screwdriver.png");
     near("Tool bench"); press(Key::E); tick(190); press(Key::E);
     CHECK(inventory()->count(ItemId("screwdriver")) == 1); // No duplicate rewards.
-    walkTo({8,12}); walkTo({8,9.8F}); walkTo({9.5F,8.5F}); walkTo({9.5F,5.6F});
+    walkTo({8,12}); walkTo({8,9.8F}); walkTo({10,8.5F}); walkTo({10,6.2F}); walkTo({9.5F,5.6F});
     search("Locked cabinet"); CHECK(inventory()->count(ItemId("rope")) == 1);
     near("Rope workbench"); press(Key::E);
     CHECK(board.number("search_ui_busy") == 0); CHECK(board.text("search_ui_message").find("hook") != std::string::npos);

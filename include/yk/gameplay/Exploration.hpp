@@ -11,10 +11,12 @@ class TopDownController final : public Component {
     float speed{4.0F}, acceleration{30.0F};
     static void describe(TypeBuilder<TopDownController> &type);
     void onFixedUpdate(GameContext &context, float seconds) override;
+    void onUpdate(GameContext &context, float seconds) override;
 
   private:
     std::string animation_;
     std::string facing_{"down"};
+    Vec2 direction_{};
 };
 
 // Simple path following between waypoint entities. Empty waypoints means stand still.

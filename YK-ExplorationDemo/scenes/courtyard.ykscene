@@ -262,9 +262,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -305,9 +311,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -348,9 +360,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -391,9 +409,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -434,9 +458,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -477,9 +507,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -520,9 +556,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -563,9 +605,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -606,9 +654,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -649,9 +703,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -692,9 +752,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -735,9 +801,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -778,9 +850,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -821,9 +899,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -864,9 +948,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -907,9 +997,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -950,9 +1046,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -993,9 +1095,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -1036,9 +1144,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -1079,9 +1193,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -1122,9 +1242,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -1165,9 +1291,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -1208,9 +1340,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -1251,9 +1389,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -1294,9 +1438,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -1337,9 +1487,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -1380,9 +1536,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -1423,9 +1585,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -1466,9 +1634,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -1509,9 +1683,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -1552,9 +1732,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -1595,9 +1781,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -1638,9 +1830,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -1681,9 +1879,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -1724,9 +1928,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -1767,9 +1977,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -1810,9 +2026,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -1853,9 +2075,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -1896,9 +2124,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -1939,9 +2173,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -1982,9 +2222,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -2025,9 +2271,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -2068,9 +2320,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -2111,9 +2369,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -2154,9 +2418,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -2197,9 +2467,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -2240,9 +2516,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -2283,9 +2565,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -2326,9 +2614,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -2369,9 +2663,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -2412,9 +2712,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -2455,9 +2761,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -2498,9 +2810,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -2541,9 +2859,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -2584,9 +2908,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -2627,9 +2957,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -2670,9 +3006,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -2713,9 +3055,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -2756,9 +3104,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -2799,9 +3153,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -2842,9 +3202,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -2885,9 +3251,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -2928,9 +3300,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -2971,9 +3349,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -3014,9 +3398,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -3057,9 +3447,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -3100,9 +3496,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -3143,9 +3545,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -3186,9 +3594,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -3229,9 +3643,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -3272,9 +3692,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -3315,9 +3741,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -3358,9 +3790,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -3401,9 +3839,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -3444,9 +3888,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -3487,9 +3937,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -3530,9 +3986,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -3573,9 +4035,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -3616,9 +4084,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -3659,9 +4133,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -3702,9 +4182,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -3745,9 +4231,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -3788,9 +4280,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -3831,9 +4329,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -3874,9 +4378,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -3917,9 +4427,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -3960,9 +4476,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4003,9 +4525,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4046,9 +4574,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4089,9 +4623,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4132,9 +4672,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4175,9 +4721,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4218,9 +4770,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4261,9 +4819,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4304,9 +4868,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4347,9 +4917,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4390,9 +4966,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4433,9 +5015,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4476,9 +5064,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4519,9 +5113,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4562,9 +5162,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4605,9 +5211,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4648,9 +5260,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4691,9 +5309,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4734,9 +5358,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4777,9 +5407,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4820,9 +5456,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4863,9 +5505,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4906,9 +5554,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4949,9 +5603,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -4992,9 +5652,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -5035,9 +5701,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -5078,9 +5750,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -5121,9 +5799,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -5164,9 +5848,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -5207,9 +5897,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -5250,9 +5946,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -5293,9 +5995,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -5336,9 +6044,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -5379,9 +6093,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -5422,9 +6142,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -5465,9 +6191,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -5508,9 +6240,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -5551,9 +6289,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -5594,9 +6338,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -5637,9 +6387,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -5680,9 +6436,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -5723,9 +6485,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -5766,9 +6534,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -5809,9 +6583,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -5852,9 +6632,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -5895,9 +6681,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -5938,9 +6730,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -5981,9 +6779,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -6024,9 +6828,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -6067,9 +6877,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -6110,9 +6926,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -6153,9 +6975,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -6196,9 +7024,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -6239,9 +7073,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -6282,9 +7122,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -6325,9 +7171,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -6368,9 +7220,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -6411,9 +7269,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -6454,9 +7318,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -6497,9 +7367,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -6540,9 +7416,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -6583,9 +7465,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -6626,9 +7514,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -6669,9 +7563,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -6712,9 +7612,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -6755,9 +7661,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -6798,9 +7710,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -6841,9 +7759,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -6884,9 +7808,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -6927,9 +7857,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -6970,9 +7906,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_inner_face.png",
             "size": [
               1,
-              1
+              1.6571428571428573
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3285714285714286
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -7013,9 +7955,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -7056,9 +8004,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -7099,9 +8053,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -7142,9 +8102,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -7185,9 +8151,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_vertical_light.png",
             "size": [
               1,
-              1
+              1.0
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              0.0
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -7228,9 +8200,15 @@
             "texture": "assets/castle/reference/png/wall_tiles/module_outer_south_face.png",
             "size": [
               1,
-              1
+              1.6285714285714286
             ],
-            "layer": 4
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3142857142857143
+            ],
+            "ySort": true,
+            "sortOffset": 0.5
           }
         },
         {
@@ -7555,34 +8533,34 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/level2/hero.png",
+            "texture": "assets/level2/hero-polished.png",
             "size": [
-              1.3,
-              1.7875
+              0.9142857142857143,
+              1.2571428571428571
             ],
             "layer": 10,
             "offset": [
               0,
-              -0.75
+              -0.5714285714285714
             ],
             "ySort": true,
             "shadowSize": [
-              1.0,
-              0.42
+              0.65,
+              0.24
             ],
             "shadowOffset": [
-              0.08,
-              0.06
+              0.03,
+              0
             ],
-            "shadowColor": "#080e2496"
+            "shadowColor": "#080e2460"
           }
         },
         {
           "type": "Collider",
           "properties": {
             "size": [
-              0.5,
-              0.35
+              0.62,
+              0.32
             ],
             "offset": [
               0,
@@ -7621,7 +8599,7 @@
         {
           "type": "AnimatedSprite",
           "properties": {
-            "animation": "assets/level2/hero.ykanim",
+            "animation": "assets/level2/hero-polished.ykanim",
             "clip": "idle_down",
             "flipParameter": ""
           }
@@ -7629,8 +8607,8 @@
         {
           "type": "CharacterMotion",
           "properties": {
-            "idleHeight": 0.018,
-            "stepHeight": 0.02,
+            "idleHeight": 0.008,
+            "stepHeight": 0,
             "animateSteps": false,
             "flipWithMovement": false
           }
@@ -7638,7 +8616,7 @@
         {
           "type": "TopDownController",
           "properties": {
-            "speed": 4,
+            "speed": 3,
             "acceleration": 60
           }
         },
@@ -7673,7 +8651,7 @@
             "targets": [
               "00000000000000b4"
             ],
-            "orthographicHeight": 8.4,
+            "orthographicHeight": 11.6,
             "viewportInset": [
               0,
               140
@@ -9417,7 +10395,7 @@
       "transform": {
         "position": [
           3.5,
-          1.5
+          1
         ],
         "rotation": 0,
         "scale": [
@@ -9429,12 +10407,17 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/castle/reference/png/props/control_banner.png",
+            "texture": "assets/castle/fixtures/dormitory_wall_banner.png",
             "size": [
-              0.7,
-              1.3
+              0.8571428571428571,
+              1.2285714285714286
             ],
-            "layer": 8
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3642857142857143
+            ],
+            "ySort": true
           }
         }
       ]
@@ -9445,7 +10428,7 @@
       "transform": {
         "position": [
           9.5,
-          1.5
+          1
         ],
         "rotation": 0,
         "scale": [
@@ -9457,12 +10440,17 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/castle/reference/png/props/control_banner.png",
+            "texture": "assets/castle/fixtures/dormitory_wall_banner.png",
             "size": [
-              0.7,
-              1.3
+              0.8571428571428571,
+              1.2285714285714286
             ],
-            "layer": 8
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3642857142857143
+            ],
+            "ySort": true
           }
         }
       ]
@@ -9473,7 +10461,7 @@
       "transform": {
         "position": [
           16.5,
-          1.5
+          1
         ],
         "rotation": 0,
         "scale": [
@@ -9485,12 +10473,17 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/castle/reference/png/props/control_banner.png",
+            "texture": "assets/castle/fixtures/dormitory_wall_banner.png",
             "size": [
-              0.7,
-              1.3
+              0.8571428571428571,
+              1.2285714285714286
             ],
-            "layer": 8
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3642857142857143
+            ],
+            "ySort": true
           }
         }
       ]
@@ -9501,7 +10494,7 @@
       "transform": {
         "position": [
           25.5,
-          1.5
+          1
         ],
         "rotation": 0,
         "scale": [
@@ -9513,12 +10506,17 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/castle/reference/png/props/control_banner.png",
+            "texture": "assets/castle/fixtures/dormitory_wall_banner.png",
             "size": [
-              0.7,
-              1.3
+              0.8571428571428571,
+              1.2285714285714286
             ],
-            "layer": 8
+            "layer": 10,
+            "offset": [
+              0,
+              -0.3642857142857143
+            ],
+            "ySort": true
           }
         }
       ]
@@ -9943,32 +10941,32 @@
           "properties": {
             "texture": "assets/level2/companion.png",
             "size": [
-              1.3,
-              1.7875
+              0.9142857142857143,
+              1.2571428571428571
             ],
             "layer": 10,
             "offset": [
               0,
-              -0.75
+              -0.5714285714285714
             ],
             "ySort": true,
             "shadowSize": [
-              1.0,
-              0.42
+              0.65,
+              0.24
             ],
             "shadowOffset": [
-              0.08,
-              0.06
+              0.03,
+              0
             ],
-            "shadowColor": "#080e2496"
+            "shadowColor": "#080e2460"
           }
         },
         {
           "type": "Collider",
           "properties": {
             "size": [
-              0.5,
-              0.35
+              0.62,
+              0.32
             ],
             "offset": [
               0,
@@ -9989,8 +10987,8 @@
         {
           "type": "CharacterMotion",
           "properties": {
-            "idleHeight": 0.018,
-            "stepHeight": 0.02,
+            "idleHeight": 0.008,
+            "stepHeight": 0,
             "animateSteps": false,
             "flipWithMovement": false
           }
@@ -10038,32 +11036,32 @@
           "properties": {
             "texture": "assets/level2/yard_worker.png",
             "size": [
-              1.3,
-              1.7875
+              0.9142857142857143,
+              1.2571428571428571
             ],
             "layer": 10,
             "offset": [
               0,
-              -0.75
+              -0.5714285714285714
             ],
             "ySort": true,
             "shadowSize": [
-              1.0,
-              0.42
+              0.65,
+              0.24
             ],
             "shadowOffset": [
-              0.08,
-              0.06
+              0.03,
+              0
             ],
-            "shadowColor": "#080e2496"
+            "shadowColor": "#080e2460"
           }
         },
         {
           "type": "Collider",
           "properties": {
             "size": [
-              0.5,
-              0.35
+              0.62,
+              0.32
             ],
             "offset": [
               0,
@@ -10084,8 +11082,8 @@
         {
           "type": "CharacterMotion",
           "properties": {
-            "idleHeight": 0.018,
-            "stepHeight": 0.02,
+            "idleHeight": 0.008,
+            "stepHeight": 0,
             "animateSteps": false,
             "flipWithMovement": false
           }
@@ -10243,35 +11241,39 @@
           "properties": {
             "texture": "assets/level2/guard.png",
             "size": [
-              1.3,
-              1.7875
+              0.9142857142857143,
+              1.2571428571428571
             ],
             "layer": 10,
             "offset": [
               0,
-              -0.75
+              -0.5714285714285714
             ],
             "ySort": true,
             "shadowSize": [
-              1.0,
-              0.42
+              0.65,
+              0.24
             ],
             "shadowOffset": [
-              0.08,
-              0.06
+              0.03,
+              0
             ],
-            "shadowColor": "#080e2496"
+            "shadowColor": "#080e2460"
           }
         },
         {
           "type": "Collider",
           "properties": {
             "size": [
-              0.5,
-              0.35
+              0.62,
+              0.32
             ],
             "layer": "Solid",
-            "friction": 0
+            "friction": 0,
+            "offset": [
+              0,
+              0
+            ]
           }
         },
         {
@@ -10293,8 +11295,8 @@
         {
           "type": "CharacterMotion",
           "properties": {
-            "idleHeight": 0.018,
-            "stepHeight": 0.02,
+            "idleHeight": 0.008,
+            "stepHeight": 0,
             "animateSteps": false,
             "flipWithMovement": false
           }
@@ -10355,16 +11357,17 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/castle/double-door.png",
+            "texture": "assets/castle/doors/side-35x70.png",
             "size": [
-              1.32,
-              1.9
+              1.0,
+              1.4857142857142858
             ],
-            "layer": 11,
+            "layer": 10,
             "offset": [
               0,
-              -0.18
+              0
             ],
+            "sortOffset": 0,
             "columns": 8,
             "ySort": true
           }
@@ -10374,7 +11377,7 @@
           "properties": {
             "size": [
               1,
-              2
+              2.0
             ],
             "offset": [
               0,
@@ -10583,384 +11586,6 @@
             "continueAction": "Continue"
           }
         }
-      ]
-    },
-    {
-      "id": "00000000000000f6",
-      "name": "Cell door",
-      "transform": {
-        "position": [
-          4,
-          7.5
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/castle/double-door.png",
-            "size": [
-              2.32,
-              1.9
-            ],
-            "layer": 11,
-            "offset": [
-              0,
-              -0.18
-            ],
-            "columns": 8,
-            "ySort": true
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "size": [
-              2,
-              0.55
-            ],
-            "offset": [
-              0,
-              0
-            ],
-            "layer": "Solid",
-            "friction": 0
-          }
-        },
-        {
-          "type": "StateGate",
-          "properties": {
-            "openFrames": 8,
-            "animationSeconds": 0.32,
-            "stopWhenBlocked": true,
-            "startsOpen": false,
-            "proximityRange": 2.25,
-            "closeDelay": 0.7
-          }
-        }
-      ],
-      "tags": [
-        "room_door"
-      ]
-    },
-    {
-      "id": "00000000000000f7",
-      "name": "Stores door",
-      "transform": {
-        "position": [
-          10,
-          7.5
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/castle/double-door.png",
-            "size": [
-              2.32,
-              1.9
-            ],
-            "layer": 11,
-            "offset": [
-              0,
-              -0.18
-            ],
-            "columns": 8,
-            "ySort": true
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "size": [
-              2,
-              0.55
-            ],
-            "offset": [
-              0,
-              0
-            ],
-            "layer": "Solid",
-            "friction": 0
-          }
-        },
-        {
-          "type": "StateGate",
-          "properties": {
-            "openFrames": 8,
-            "animationSeconds": 0.32,
-            "stopWhenBlocked": true,
-            "startsOpen": false,
-            "proximityRange": 2.25,
-            "closeDelay": 0.7
-          }
-        }
-      ],
-      "tags": [
-        "room_door"
-      ]
-    },
-    {
-      "id": "00000000000000f8",
-      "name": "Office door",
-      "transform": {
-        "position": [
-          17,
-          7.5
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/castle/double-door.png",
-            "size": [
-              2.32,
-              1.9
-            ],
-            "layer": 11,
-            "offset": [
-              0,
-              -0.18
-            ],
-            "columns": 8,
-            "ySort": true
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "size": [
-              2,
-              0.55
-            ],
-            "offset": [
-              0,
-              0
-            ],
-            "layer": "Solid",
-            "friction": 0
-          }
-        },
-        {
-          "type": "StateGate",
-          "properties": {
-            "openFrames": 8,
-            "animationSeconds": 0.32,
-            "stopWhenBlocked": true,
-            "startsOpen": false,
-            "proximityRange": 2.25,
-            "closeDelay": 0.7
-          }
-        }
-      ],
-      "tags": [
-        "room_door"
-      ]
-    },
-    {
-      "id": "00000000000000f9",
-      "name": "Workshop door",
-      "transform": {
-        "position": [
-          8,
-          11.5
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/castle/double-door.png",
-            "size": [
-              2.32,
-              1.9
-            ],
-            "layer": 11,
-            "offset": [
-              0,
-              -0.18
-            ],
-            "columns": 8,
-            "ySort": true
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "size": [
-              2,
-              0.55
-            ],
-            "offset": [
-              0,
-              0
-            ],
-            "layer": "Solid",
-            "friction": 0
-          }
-        },
-        {
-          "type": "StateGate",
-          "properties": {
-            "openFrames": 8,
-            "animationSeconds": 0.32,
-            "stopWhenBlocked": true,
-            "startsOpen": false,
-            "proximityRange": 2.25,
-            "closeDelay": 0.7
-          }
-        }
-      ],
-      "tags": [
-        "room_door"
-      ]
-    },
-    {
-      "id": "00000000000000fa",
-      "name": "Laundry door",
-      "transform": {
-        "position": [
-          16,
-          11.5
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/castle/double-door.png",
-            "size": [
-              2.32,
-              1.9
-            ],
-            "layer": 11,
-            "offset": [
-              0,
-              -0.18
-            ],
-            "columns": 8,
-            "ySort": true
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "size": [
-              2,
-              0.55
-            ],
-            "offset": [
-              0,
-              0
-            ],
-            "layer": "Solid",
-            "friction": 0
-          }
-        },
-        {
-          "type": "StateGate",
-          "properties": {
-            "openFrames": 8,
-            "animationSeconds": 0.32,
-            "stopWhenBlocked": true,
-            "startsOpen": false,
-            "proximityRange": 2.25,
-            "closeDelay": 0.7
-          }
-        }
-      ],
-      "tags": [
-        "room_door"
-      ]
-    },
-    {
-      "id": "00000000000000fb",
-      "name": "Archive door",
-      "transform": {
-        "position": [
-          26,
-          7.5
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/castle/double-door.png",
-            "size": [
-              2.32,
-              1.9
-            ],
-            "layer": 11,
-            "offset": [
-              0,
-              -0.18
-            ],
-            "columns": 8,
-            "ySort": true
-          }
-        },
-        {
-          "type": "Collider",
-          "properties": {
-            "size": [
-              2,
-              0.55
-            ],
-            "offset": [
-              0,
-              0
-            ],
-            "layer": "Solid",
-            "friction": 0
-          }
-        },
-        {
-          "type": "StateGate",
-          "properties": {
-            "openFrames": 8,
-            "animationSeconds": 0.32,
-            "stopWhenBlocked": true,
-            "startsOpen": false,
-            "proximityRange": 2.25,
-            "closeDelay": 0.7
-          }
-        }
-      ],
-      "tags": [
-        "room_door"
       ]
     }
   ]

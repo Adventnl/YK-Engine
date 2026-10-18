@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont, PngImagePlugin
 from castle_reference import style_level_two
+from art_import import generated_objects, silhouette
 
 ROOT = Path(__file__).resolve().parents[1]
 ART = ROOT / 'assets/level2'
@@ -35,41 +36,6 @@ def png(image, name, source):
 def cell(sheet, col, row, cols=4, rows=4):
     return sheet.crop((round(col * sheet.width / cols), round(row * sheet.height / rows),
                        round((col + 1) * sheet.width / cols), round((row + 1) * sheet.height / rows)))
-
-def silhouette(image):
-    bounds = image.getchannel('A').point(lambda a: 255 if a >= 80 else 0).getbbox()
-    if not bounds:
-        raise ValueError('Empty generated object')
-    return image.crop(bounds)
-
-def generated_objects(sheet, columns, rows, alpha_threshold=80):
-    """Find complete objects in the generated sheet's transparent gutters.
-
-    Generators don't always honor mathematical cell boundaries. Empty alpha bands
-    define the actual rows/columns, preventing clipped hair, banners and furniture.
-    """
-    alpha = sheet.getchannel('A').point(lambda a: 255 if a >= alpha_threshold else 0)
-    def bands(values):
-        found, start = [], None
-        for i, occupied in enumerate(values + [False]):
-            if occupied and start is None:
-                start = i
-            elif not occupied and start is not None:
-                found.append((start, i))
-                start = None
-        return found
-    row_bands = bands([alpha.crop((0, y, sheet.width, y + 1)).getbbox() is not None for y in range(sheet.height)])
-    if len(row_bands) != rows:
-        raise ValueError(f'Expected {rows} complete generated rows, found {row_bands}')
-    result = []
-    for top, bottom in row_bands:
-        row_alpha = alpha.crop((0, top, sheet.width, bottom))
-        columns_found = bands([row_alpha.crop((x, 0, x + 1, bottom - top)).getbbox() is not None for x in range(sheet.width)])
-        if len(columns_found) != columns:
-            raise ValueError(f'Expected {columns} complete generated columns, found {columns_found}')
-        for left, right in columns_found:
-            result.append(sheet.crop((max(0, left - 1), max(0, top - 1), min(sheet.width, right + 1), min(sheet.height, bottom + 1))))
-    return result
 
 def fit(image, size):
     image = silhouette(image)
@@ -307,17 +273,6 @@ def build_scene():
           requiredItems=['l2_cutters'], lockedText='Find wire cutters in the workshop tool chest.',
           successFlag='l2_exit_open', successText='Gate open. Walk south through the green exit.', emptyText='The exit is open.'),
         c('StateGate', startsLocked=True, unlockFlag='l2_exit_open', persistFlag='l2_gate_open', openOffset=[-2.25, 0], animationSeconds=.45))
-    # Unlocked everyday doors retain their artwork beside the jamb while open.
-    # Start open to preserve free circulation; E closes and reopens them at any time.
-    for name, x, y in [('North cell door', 5, 8.5), ('South cell door', 5, 19.5),
-                       ('Canteen door', 17, 9.5), ('Laundry door', 28, 9.5), ('Control door', 38, 9.5),
-                       ('Stores door', 45, 9.5), ('Workshop door', 17, 18.5), ('Infirmary door', 28, 18.5),
-                       ('Utility door', 38, 18.5), ('Exit anteroom door', 45, 18.5)]:
-        add(name, x, y, c('SpriteRenderer', texture='assets/keep/gate.png', size=[2, 2],
-            offset=[0, -.55], ySort=True, layer=9), solid(2, .6),
-            c('StateGate', startsOpen=True, persistFlag='l2_' + name.lower().replace(' ', '_') + '_open',
-              openOffset=[-2.2, 0], animationSeconds=.35),
-            c('Interactable', prompt='E - USE ' + name.upper(), range=1.8), tags=['room_door'])
     prop('Emergency exit switch', 'exit_switch', 43, 25, parts=[c('Interactable', prompt='E - READ EXIT STATUS', range=1.5),
          c('Dialogue', speaker='Exit status', pages=['The green gate needs power from utility. Then cut the chain with wire cutters and walk south.'], charactersPerSecond=0)])
     for x, y in [(2, 10.8), (8.5, 10.8), (12, 17), (31.5, 17), (25, 26), (46, 21)]:
@@ -368,7 +323,7 @@ def build_scene():
         solid(.5, .35), c('PatrolWatch', actor=hero, restrictedMin=[34, 1], restrictedMax=[41, 9], returnPosition=[3, 5.8], range=3.2, catchSeconds=3.5),
         c('Interactable', prompt='E - TALK TO CONTROL GUARD', range=1.5),
         c('Dialogue', speaker='Control guard', portrait=texture('portrait_guard'), charactersPerSecond=0,
-          pages=['Free time ends at dusk. Keep clear of the control desk. You can close unlocked room doors with E.']))
+          pages=['Free time ends at dusk. Keep clear of the control desk. The room passages are clear.']))
     goal = add('South escape passage', 45, 27.6, c('Collider', size=[1.7, .65], isTrigger=True, layer='Sensor'),
                c('Goal', requiredTag='player', requiredFlag='l2_gate_open', enterOnComplete=True))
     add('Level two story', 0, 0, c('ObjectiveList',
@@ -397,7 +352,7 @@ def build_scene():
     project['build']['exclude'] = list(dict.fromkeys(project['build'].get('exclude', []) +
         ['assets/level2/source', 'assets/keep/source', 'assets/castle/source', 'tools', '.impeccable',
          'reference-style-preview.png', 'level2-dialogue-preview.png', 'level1-preview.png',
-         'level2-preview.png', 'level2-overview.png']))
+         'level2-preview.png', 'level2-overview.png', 'level2-corridor-preview.png']))
     save(ROOT / 'project.ykproj', project)
     print('Level 2:', len(scene['entities']), 'editable entities;', len(rooms), 'areas; shared castle scenery and actors.')
 

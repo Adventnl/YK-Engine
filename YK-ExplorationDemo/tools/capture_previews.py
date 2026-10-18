@@ -18,7 +18,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--build', type=Path, default=ROOT.parent / 'build/dev')
     options = parser.parse_args()
-    player = options.build.resolve() / 'yk_player'
+    player = options.build.resolve() / ('yk_player.exe' if os.name == 'nt' else 'yk_player')
     if not player.is_file():
         parser.error('Build yk_player first: cmake --build --preset dev')
     with tempfile.TemporaryDirectory(prefix='castle-preview-', dir=options.build) as work:
@@ -42,12 +42,17 @@ def main():
                     component['properties'].update(mode='Fixed', orthographicHeight=26.4,
                                                    viewportInset=[0, 0], clampToBounds=False)
                     entity['transform']['position'] = [1591 / 70, 883 / 70]
-        for name, scene in [('workshop', workshop), ('overview', overview)]:
+        corridor = copy.deepcopy(second)
+        for entity in corridor['entities']:
+            if entity['name'] in ('Explorer', 'Player follow camera'):
+                entity['transform']['position'] = [(700 - 40) / 35, (475 - 25) / 35]
+        for name, scene in [('workshop', workshop), ('overview', overview), ('corridor', corridor)]:
             (project / 'scenes' / (name + '.ykscene')).write_text(json.dumps(scene, indent=2))
         env = dict(os.environ, SDL_VIDEODRIVER='dummy', SDL_RENDER_DRIVER='software',
                    SDL_AUDIODRIVER='dummy', YK_NO_DIALOGS='1', YK_LOG_DIR=str(work / 'logs'))
         for scene, destination in [('courtyard', 'level1-preview.png'),
                                     ('workshop', 'level2-preview.png'),
+                                    ('corridor', 'level2-corridor-preview.png'),
                                     ('overview', 'level2-overview.png')]:
             capture = work / (scene + '.bmp')
             subprocess.run([str(player), str(project), '--scene', 'scenes/' + scene + '.ykscene',

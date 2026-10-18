@@ -168,9 +168,8 @@ of four directions. Walking plays stride, neutral, opposite stride, neutral at 8
 room routines have different waits; breathing and gentle sway continue while standing. During
 conversation only the speaker stops; background residents keep moving.
 
-Ten ordinary room doors begin open and slide beside the wall. E closes or reopens them,
-with collision held until the opening motion finishes and closing deferred while the threshold
-is occupied. Unlocking the green exit and opening it are separate states; cutting the chain
+Ordinary room and corridor passages have no doors; players walk straight through the openings.
+Unlocking the green exit and opening it are separate states; cutting the chain
 happens once, and subsequent E presses toggle the visible gate.
 
 All thirteen level-two areas publish their room name to the HUD header. Plaques use their

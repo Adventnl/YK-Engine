@@ -181,7 +181,7 @@ if(BUILD_TESTING)
     endif()
     yk_add_test(exploration tests/unit/exploration_tests.cpp LIBS yk::gameplay TIMEOUT 60
         DEFINITIONS YK_EXPLORATION_PROJECT_DIR="${CMAKE_CURRENT_SOURCE_DIR}/YK-ExplorationDemo")
-    yk_add_test(castle_level2 tests/unit/castle_level2_tests.cpp LIBS yk::gameplay TIMEOUT 60
+    yk_add_test(castle_level2 tests/unit/castle_level2_tests.cpp LIBS yk::gameplay TIMEOUT 120
         DEFINITIONS YK_EXPLORATION_PROJECT_DIR="${CMAKE_CURRENT_SOURCE_DIR}/YK-ExplorationDemo")
     yk_add_test(simulation_demo tests/unit/simulation_demo_tests.cpp LIBS yk::gameplay TIMEOUT 60
         DEFINITIONS YK_SIMULATION_PROJECT_DIR="${CMAKE_CURRENT_SOURCE_DIR}/YK-SimulationDemo")

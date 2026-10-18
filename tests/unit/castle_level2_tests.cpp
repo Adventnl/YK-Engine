@@ -135,37 +135,13 @@ int main() {
     CHECK(distance(mara->worldPosition(), anchored) < .001F);
     CHECK(actor()->worldPosition().y > anchored.y + .3F);
     mara->get<NpcPath>()->enabled = true;
-    // Doors open from either side, animate through intermediate frames, and close only after
-    // departure.
-    teleport(at(300, 310));
-    tick(90);
-    auto *cellDoor = object("North cell door");
-    auto *cellGate = cellDoor->get<StateGate>();
-    auto *cellSprite = cellDoor->get<SpriteRenderer>();
-    CHECK(!cellGate->open() && cellSprite->frame == 0 && cellDoor->get<Collider>()->enabled);
-    const Vec2 doorAt = cellDoor->worldPosition();
-    teleport(doorAt + Vec2{0, -2});
-    tick(5);
-    CHECK(cellGate->open() && cellSprite->frame > 0 && cellSprite->frame < 7);
-    CHECK(cellDoor->get<Collider>()->enabled);
-    tick(25);
-    CHECK(cellSprite->frame == 7 && !cellDoor->get<Collider>()->enabled);
-    walk(doorAt + Vec2{0, 2});
-    walk(doorAt + Vec2{0, 3.2F});
-    tick(90);
-    CHECK(!cellGate->open() && cellSprite->frame == 0 && cellDoor->get<Collider>()->enabled);
-    teleport(doorAt + Vec2{0, 1.8F});
-    tick(25);
-    walk(doorAt);
-    tick(90);
-    CHECK(cellGate->open() && !cellDoor->get<Collider>()->enabled);
     teleport(at(620, 675));
     CHECK(board.text("current_room") == "WORKSHOP");
     teleport(at(960, 780));
     CHECK(board.text("current_room") == "INFIRMARY");
     auto *camera = object("Player follow camera")->get<Camera>();
     CHECK(camera->mode == CameraMode::Follow && camera->targets.size() == 1);
-    CHECK(camera->orthographicHeight <= 8.5F);
+    CHECK(camera->orthographicHeight >= 11 && camera->orthographicHeight <= 12);
     CHECK(camera->viewportInset == Vec2(0, 140));
     // Camera follows actual movement, then clamps against the rendered world aspect.
     teleport(at(700, 475));
@@ -187,6 +163,46 @@ int main() {
     auto *guard = object("Control guard");
     guard->get<NpcPath>()->enabled = false;
     guard->get<PatrolWatch>()->enabled = false;
+    // Ordinary rooms have open passages: no door entity, interaction or wait to pass.
+    struct Passage { const char *removedDoor; Vec2 center; bool side = false; };
+    for (const auto &[name, center, side] : {
+             Passage{"North cell door", at(148, 260)},
+             Passage{"North east cell door", at(321, 260)},
+             Passage{"South cell door", at(144, 655)},
+             Passage{"South east cell door", at(320, 655)},
+             Passage{"Canteen door", at(614, 393)},
+             Passage{"Laundry door", at(961, 393)},
+             Passage{"Control door", at(1330, 399)},
+             Passage{"Stores door", at(1523, 399)},
+             Passage{"Workshop door", at(614, 571)},
+             Passage{"Infirmary door", at(961, 571)},
+             Passage{"Utility door", at(1523, 643)},
+             Passage{"Exit anteroom door", at(1523, 732)},
+             Passage{"Common corridor door", at(410, 467), true},
+             Passage{"Middle corridor door", at(808, 467), true},
+             Passage{"Yard corridor door", at(1146.5F, 467), true},
+             Passage{"Utility corridor door", at(1430, 467), true},
+             Passage{"North cell connecting door", at(246.5F, 187), true},
+             Passage{"South cell connecting door", at(238.5F, 764), true}}) {
+        CHECK(!object(name));
+        const Vec2 across = side ? Vec2{1.3F, 0} : Vec2{0, 1.5F};
+        teleport(center - across);
+        walk(center + across);
+        walk(center - across);
+    }
+    // Releasing movement stops translation, keeps facing and uses separate idle cells.
+    teleport(at(700, 475));
+    keyboard.set(Key::D, true); tick(15); keyboard.set(Key::D, false); tick(3);
+    const Vec2 stopped = actor()->worldPosition();
+    tick(20);
+    CHECK(distance(stopped, actor()->worldPosition()) < .005F);
+    CHECK(actor()->get<AnimatedSprite>()->state() == "idle_right");
+    CHECK(actor()->get<SpriteRenderer>()->frame % 10 >= 8);
+    // Animation follows resolved movement when holding a key against solid stone.
+    teleport(at(500, 443));
+    keyboard.set(Key::W, true); tick(90);
+    CHECK(actor()->get<AnimatedSprite>()->state() == "idle_up");
+    keyboard.set(Key::W, false); tick(3);
     // Physically walk from the starting cell through the common-room and workshop openings.
     teleport(at(172, 196));
     walk(at(148, 202));

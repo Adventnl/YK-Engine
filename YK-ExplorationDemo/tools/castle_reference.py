@@ -9,6 +9,7 @@ import math
 from pathlib import Path
 
 from PIL import Image, ImageDraw
+from art_import import generated_objects, silhouette
 
 ROOT = Path(__file__).resolve().parents[1]
 ART = ROOT / 'assets/castle'
@@ -16,9 +17,16 @@ REFERENCE = ART / 'reference'
 MANIFEST = json.loads((REFERENCE / 'manifest.json').read_text())
 ASSETS = {a['id']: a for a in MANIFEST['assets']}
 PPU = 35
-VIEW_HEIGHT = 8.4
+VIEW_HEIGHT = 11.6
 BOUNDS = [1591 / PPU, 883 / PPU]
 DOOR_FRAMES = 8
+FRONT_DOORS = [('North cell door', 148, 260, 69, 60), ('North east cell door', 321, 260, 63, 60),
+               ('South cell door', 144, 656, 61, 57), ('South east cell door', 320, 656, 61, 57),
+               ('Canteen door', 614, 380, 58, 86), ('Laundry door', 961, 380, 52, 86),
+               ('Control door', 1330, 383, 64, 92), ('Stores door', 1523, 383, 58, 91),
+               ('Workshop door', 614, 556, 58, 90), ('Infirmary door', 961, 556, 52, 90),
+               ('Utility door', 1523, 643, 57, 60), ('Exit anteroom door', 1523, 738, 55, 48)]
+DOOR_SIZE = (56, 60)
 
 
 def c(kind, **properties):
@@ -37,37 +45,119 @@ def texture(asset):
     return 'assets/castle/reference/' + ASSETS[asset]['file']
 
 
-def door_art():
-    """Slice the generated closed master and hinge its leaves into an eight-frame strip."""
-    master = Image.open(ART / 'source/double-door.png').convert('RGBA')
-    master = master.crop(master.getbbox()).resize((112, 84), Image.Resampling.NEAREST)
-    # Keep the masonry jamb fixed while two separate leaves rotate about the outside hinges.
-    interior = (16, 13, 96, 83)
-    jamb = master.copy()
-    ImageDraw.Draw(jamb).rectangle(interior, fill=(0, 0, 0, 0))
-    left = master.crop((16, 13, 56, 83))
-    right = master.crop((56, 13, 96, 83))
-    sheet = Image.new('RGBA', (112 * DOOR_FRAMES, 84))
+def door_art(width=64, height=72, side=False):
+    """Bake doors on the scenery's pixel grid, with fixed jambs and isolated leaves.
+
+    Each opening gets an integer-pixel atlas: the runtime never squashes a detailed
+    112px door into a narrow opening. Frame pixels cannot retain fragments of a leaf.
+    """
+    output = ART / 'doors'
+    output.mkdir(exist_ok=True)
+    path = output / f'{"side" if side else "front"}-{width}x{height}.png'
+    master = Image.open(ART / 'source/door-simple.png').convert('RGBA')
+    bounds = master.getchannel('A').point(lambda a: 255 if a >= 128 else 0).getbbox()
+    master = master.crop(bounds).resize((64, 64), Image.Resampling.NEAREST)
+    # The new master's jambs are eight pixels wide, with a nine-pixel lintel.
+    panel = master.crop((9, 10, 55, 63))
+    jamb = Image.new('RGBA', (width, height))
+    if side:
+        cap = Image.open(REFERENCE / ASSETS['module_inner_cap']['file']).convert('RGBA')
+        cap = cap.resize((width, 9), Image.Resampling.NEAREST)
+        jamb.alpha_composite(cap)
+        jamb.alpha_composite(cap, (0, height - 9))
+        interior = (0, 9, width, height - 9)
+    else:
+        jamb.alpha_composite(master.crop((0, 0, 64, 9)).resize((width, 9), Image.Resampling.NEAREST))
+        for left, x in [(True, 0), (False, width - 8)]:
+            strip = master.crop((0 if left else 56, 9, 8 if left else 64, 64))
+            jamb.alpha_composite(strip.resize((8, height - 9), Image.Resampling.NEAREST), (x, 9))
+        interior = (8, 9, width - 8, height)
+    x1, y1, x2, y2 = interior
+    iw, ih = x2 - x1, y2 - y1
+    closed = panel.resize((iw, ih), Image.Resampling.NEAREST)
+    # Side frames are separate scene pieces so the top jamb shares the supporting
+    # wall's depth instead of covering banners with a whole doorway-sized quad.
+    frame_height = ih if side else height
+    sheet = Image.new('RGBA', (width * DOOR_FRAMES, frame_height))
     for frame in range(DOOR_FRAMES):
         amount = frame / (DOOR_FRAMES - 1)
-        width = max(3, round(40 * math.cos(amount * math.pi / 2)))
-        face = Image.new('RGBA', (112, 84))
-        for leaf, x in [(left, 16), (right, 96 - width)]:
-            panel = leaf.resize((width, 70), Image.Resampling.NEAREST)
-            face.alpha_composite(panel, (x, 13 + round(2 * amount)))
-        face.alpha_composite(jamb)
-        sheet.alpha_composite(face, (frame * 112, 0))
-    sheet.save(ART / 'double-door.png')
+        face = Image.new('RGBA', (width, height))
+        if side:
+            extent = max(1, round(ih / 2 * math.cos(amount * math.pi / 2)))
+            for leaf, y in [(closed.crop((0, 0, iw, ih // 2)), y1),
+                            (closed.crop((0, ih // 2, iw, ih)), y2 - extent)]:
+                face.alpha_composite(leaf.resize((iw, extent), Image.Resampling.NEAREST), (x1, y))
+        else:
+            extent = max(1, round(iw / 2 * math.cos(amount * math.pi / 2)))
+            for leaf, x in [(closed.crop((0, 0, iw // 2, ih)), x1),
+                            (closed.crop((iw // 2, 0, iw, ih)), x2 - extent)]:
+                face.alpha_composite(leaf.resize((extent, ih), Image.Resampling.NEAREST), (x, y1))
+        if side:
+            face = face.crop((0, y1, width, y2))
+        else:
+            face.alpha_composite(jamb)
+        sheet.alpha_composite(face, (frame * width, 0))
+    sheet.save(path)
+    return path.relative_to(ROOT).as_posix()
+
+
+def character_art():
+    """Keep the existing strides/searches and give the hero separate standing cells."""
+    directory = ROOT / 'assets/level2'
+    source = Image.open(directory / 'source/hero_idle.png').convert('RGBA')
+    frames = [silhouette(f) for f in generated_objects(source, 2, 4, alpha_threshold=160)]
+    scale = min(28 / max(f.width for f in frames), 38 / max(f.height for f in frames))
+    sheet = Image.new('RGBA', (320, 176))
+    walk = Image.open(directory / 'hero.png').convert('RGBA')
+    for row in range(4):
+        sheet.alpha_composite(walk.crop((0, row * 44, 256, row * 44 + 44)), (0, row * 44))
+        for col in range(2):
+            frame = frames[row * 2 + col]
+            frame = frame.resize((round(frame.width * scale), round(frame.height * scale)), Image.Resampling.NEAREST)
+            sheet.alpha_composite(frame, (256 + col * 32 + (32 - frame.width) // 2,
+                                         row * 44 + 42 - frame.height))
+    sheet.save(directory / 'hero-polished.png')
+    animation = json.loads((directory / 'hero.ykanim').read_text())
+    animation.update(texture='assets/level2/hero-polished.png', columns=10)
+    for clip in animation['clips']:
+        row = ['down', 'left', 'right', 'up'].index(clip['name'].split('_')[1])
+        if clip['name'].startswith('idle_'):
+            clip.update(frames=[row * 10 + 8, row * 10 + 9], durations=[2.8, .16])
+        else:
+            clip['frames'] = [row * 10 + f % 8 for f in clip['frames']]
+            if clip['name'].startswith('walk_'):
+                clip['fps'] = 7
+    (directory / 'hero-polished.ykanim').write_text(json.dumps(animation, indent=2) + '\n')
+
+
+def banner_art():
+    """Export clean cloth silhouettes; source extractions contain attached floor pixels."""
+    directory = ART / 'fixtures'
+    directory.mkdir(exist_ok=True)
+    master = silhouette(Image.open(ART / 'source/banner-clean.png').convert('RGBA'))
+    for key, asset in ASSETS.items():
+        if 'banner' not in key:
+            continue
+        w, h = asset['width'], asset['height']
+        scale = min(min(w - 4, 44) / master.width, min(h - 4, 68) / master.height)
+        flag = master.resize((round(master.width * scale), round(master.height * scale)), Image.Resampling.NEAREST)
+        image = Image.new('RGBA', (w, h))
+        image.alpha_composite(flag, ((w - flag.width) // 2, 2))
+        image.save(directory / (key + '.png'))
+
+
+def banner_texture(key):
+    return 'assets/castle/fixtures/' + key + '.png'
 
 
 def set_character(entity, role):
     sprite = part(entity, 'SpriteRenderer')
-    sprite.update(texture='assets/level2/' + role + '.png', size=[1.3, 1.7875],
-                  offset=[0, -.75], layer=10, ySort=True,
-                  shadowSize=[1.0, .42], shadowOffset=[.08, .06], shadowColor='#080e2496')
+    sprite.update(texture='assets/level2/' + ('hero-polished' if role == 'hero' else role) + '.png', size=[32 / PPU, 44 / PPU],
+                  offset=[0, -20 / PPU], layer=10, ySort=True,
+                  shadowSize=[.65, .24], shadowOffset=[.03, 0], shadowColor='#080e2460')
     animation = part(entity, 'AnimatedSprite')
     if animation:
-        animation['animation'] = 'assets/level2/' + role + '.ykanim'
+        animation['animation'] = 'assets/level2/' + ('hero-polished' if role == 'hero' else role) + '.ykanim'
     if not part(entity, 'CharacterMotion'):
         entity['components'].append(c('CharacterMotion', idleHeight=.018, stepHeight=.02,
                                       animateSteps=False, flipWithMovement=False))
@@ -76,6 +166,11 @@ def set_character(entity, role):
         if body:
             body.update(type='Kinematic', gravityScale=0, fixedRotation=True)
         part(entity, 'Collider')['layer'] = 'Solid'
+    else:
+        part(entity, 'TopDownController')['speed'] = 3
+    part(entity, 'Collider').update(size=[.62, .32], offset=[0, 0])
+    motion = part(entity, 'CharacterMotion')
+    motion.update(idleHeight=.008, stepHeight=0, animateSteps=False, flipWithMovement=False)
     dialogue = part(entity, 'Dialogue')
     if dialogue:
         dialogue['portrait'] = 'assets/level2/portrait_' + role + '.png'
@@ -87,14 +182,16 @@ def set_character(entity, role):
     entity['components'].sort(key=lambda p: order.get(p['type'], 20))
 
 
-def set_door(entity, width, depth=.55, automatic=True, height=None):
+def set_door(entity, width, depth=.55, automatic=True, height=None, side=False):
     entity['components'] = [p for p in entity['components'] if p['type'] != 'AnimatedSprite']
     sprite = part(entity, 'SpriteRenderer')
     sprite.clear()
-    sprite.update(texture='assets/castle/double-door.png', size=[width + .32, height or 1.9],
-                  layer=11, offset=[0, -.18], columns=DOOR_FRAMES, ySort=True)
+    pixels = [round(width * PPU), round((height or 1.9) * PPU)]
+    sprite.update(texture=door_art(*pixels, side=side), size=[pixels[0] / PPU, (pixels[1] - 18 if side else pixels[1]) / PPU],
+                  layer=10, offset=[0, 0], sortOffset=0 if side else pixels[1] / PPU / 2,
+                  columns=DOOR_FRAMES, ySort=True)
     collider = part(entity, 'Collider')
-    collider.update(size=[width, depth], offset=[0, 0], layer='Solid', friction=0)
+    collider.update(size=[width, pixels[1] / PPU if side else depth], offset=[0, 0], layer='Solid', friction=0)
     gate = part(entity, 'StateGate')
     if gate is None:
         gate = c('StateGate')['properties']
@@ -135,7 +232,8 @@ def wall_rectangles(image, cell=4):
 
 
 def style_level_two(scene):
-    door_art()
+    character_art()
+    banner_art()
     old = {e['name']: e for e in scene['entities']}
     used = []
     next_id = max(int(e['id'], 16) for e in scene['entities']) + 1
@@ -150,16 +248,50 @@ def style_level_two(scene):
         return entity
 
     # Door cuts are explicit physical passages through the supplied reconstructed masonry.
-    cuts = [(394, 443, 426, 507), (791, 443, 825, 507),
-            (1130, 443, 1163, 507), (1413, 443, 1447, 507),
-            (1298, 336, 1362, 430), (1494, 336, 1552, 430)]
+    cuts = [(394, 423, 426, 511), (791, 423, 825, 511),
+            (1130, 423, 1163, 511), (1413, 423, 1447, 511),
+            (1298, 336, 1362, 430), (1494, 336, 1552, 430),
+            (231, 158, 262, 216), (223, 735, 254, 793)]
+    front_cuts = [(x - DOOR_SIZE[0] // 2, math.ceil(y + h / 2) - DOOR_SIZE[1],
+                   x + DOOR_SIZE[0] // 2, math.ceil(y + h / 2))
+                  for _, x, y, _, h in FRONT_DOORS]
     for i, (x1, y1, x2, y2) in enumerate(cuts):
         add('Stone passage ' + str(i), point((x1 + x2) / 2, (y1 + y2) / 2),
-            c('SpriteRenderer', texture=texture('tile_main_corridor'),
+            c('SpriteRenderer', texture=texture('tile_dormitory_north' if i == 6 else
+                                               'tile_dormitory_south' if i == 7 else
+                                               'tile_west_common_room' if i == 0 else 'tile_main_corridor'),
               size=[(x2 - x1) / PPU, (y2 - y1) / PPU], layer=-29,
               drawMode='Tiled', tileSize=[1, 1]))
     derived = ART / 'walls'
     derived.mkdir(exist_ok=True)
+
+    def wall_pieces(name, image, x, y, vertical=None, collidable=True):
+        # A vertical wall's depth changes along its length. Giving the whole column
+        # its bottom-most depth makes every section cover actors and wall fixtures.
+        w, h = image.size
+        is_vertical = h > w if vertical is None else vertical
+        cell_height = PPU if is_vertical else h
+        rows = math.ceil(h / cell_height)
+        atlas = Image.new('RGBA', (w, rows * cell_height))
+        atlas.alpha_composite(image)
+        path = derived / f'{name}.png'
+        atlas.save(path)
+        for top in range(0, atlas.height, cell_height):
+            bottom = top + cell_height
+            piece = atlas.crop((0, top, w, bottom))
+            if not piece.getchannel('A').getbbox():
+                continue
+            ph = bottom - top
+            parts = [c('SpriteRenderer', texture=path.relative_to(ROOT).as_posix(),
+                       size=[w / PPU, ph / PPU], offset=[0, -ph / PPU / 2],
+                       rows=rows, frame=top // cell_height, layer=10, ySort=True,
+                       sortOffset=(piece.getchannel('A').getbbox()[3] - ph) / PPU - .001 if is_vertical else 0)]
+            for rx, ry, rw, rh in wall_rectangles(piece) if collidable else []:
+                parts.append(c('Collider', layer='Solid', friction=0,
+                               size=[rw / PPU, rh / PPU],
+                               offset=[(rx + rw / 2 - w / 2) / PPU, (ry + rh / 2 - ph) / PPU]))
+            add(name.replace('_', ' ').title() + f' section {top}', point(x + w / 2, y + bottom), *parts)
+
     for asset in MANIFEST['assets']:
         if asset['category'] not in ('floors', 'walls'):
             continue
@@ -171,17 +303,52 @@ def style_level_two(scene):
         parts = [sprite]
         if asset['category'] == 'walls':
             image = Image.open(REFERENCE / asset['file']).convert('RGBA')
+            if h > w:
+                # Reconstructed columns contain opaque scraps of floor and runner
+                # in their old gaps. Build clean stone from the supplied module;
+                # passages are exclusively the authored cuts below.
+                tile = Image.open(REFERENCE / ASSETS['module_vertical_light']['file']).convert('RGBA')
+                tile = tile.resize((w, PPU), Image.Resampling.NEAREST)
+                image = Image.new('RGBA', (w, h))
+                for py in range(0, h, PPU):
+                    image.alpha_composite(tile.crop((0, 0, w, min(PPU, h - py))), (0, py))
             draw = ImageDraw.Draw(image)
-            for x1, y1, x2, y2 in cuts:
+            for x1, y1, x2, y2 in cuts + front_cuts:
                 if x1 < x + w and x2 > x and y1 < y + h and y2 > y:
                     draw.rectangle((x1 - x, y1 - y, x2 - x - 1, y2 - y - 1), fill=(0, 0, 0, 0))
-            image.save(derived / (asset['id'] + '.png'))
-            sprite['properties']['texture'] = 'assets/castle/walls/' + asset['id'] + '.png'
-            for rx, ry, rw, rh in wall_rectangles(image):
-                parts.append(c('Collider', layer='Solid', friction=0,
-                               size=[rw / PPU, rh / PPU],
-                               offset=[(rx + rw / 2 - w / 2) / PPU, (ry + rh / 2 - h) / PPU]))
-        add(asset['id'].replace('_', ' ').title(), point(x + w / 2, y + h), *parts)
+            wall_pieces(asset['id'], image, x, y)
+        else:
+            add(asset['id'].replace('_', ' ').title(), point(x + w / 2, y + h), *parts)
+    # All ordinary front doors share one silhouette and one native pixel scale.
+    # Complete the larger source apertures with stone surrounds. Their lintels
+    # are overhead artwork; only the side piers have ground collision.
+    for (name, x, y, w, h), hole in zip(FRONT_DOORS, front_cuts):
+        left = min(math.floor(x - w / 2), hole[0])
+        right = max(math.ceil(x + w / 2), hole[2])
+        top = math.ceil(y + h / 2) - h
+        samples = [a for a in MANIFEST['assets'] if a['category'] == 'walls'
+                   and a['height'] == h and a['width'] > h]
+        source = max(samples, key=lambda a: a['width'])
+        stone = Image.open(REFERENCE / source['file']).convert('RGBA')
+        strip = stone.crop((stone.width // 2 - 17, 0, stone.width // 2 + 18, h))
+        surround = Image.new('RGBA', (right - left, h))
+        for px in range(0, surround.width, PPU):
+            surround.alpha_composite(strip.crop((0, 0, min(PPU, surround.width - px), h)), (px, 0))
+        ImageDraw.Draw(surround).rectangle((hole[0] - left, hole[1] - top,
+                                           hole[2] - left - 1, hole[3] - top - 1), fill=(0, 0, 0, 0))
+        wall_pieces(name.lower().replace(' ', '_') + '_surround', surround, left, top,
+                    vertical=False, collidable=False)
+        for edge, start, end in [('west', left, hole[0]), ('east', hole[2], right)]:
+            if end > start:
+                add(name + ' ' + edge + ' pier', point((start + end) / 2, top + h / 2),
+                    c('Collider', size=[(end - start) / PPU, h / PPU], layer='Solid', friction=0))
+    # Extraction seams are stone joints, not tiny unwalkable floor slits.
+    for name, x, y, w, h in [('control_joint', 1131, 252, 31, 2)]:
+        tile = Image.open(REFERENCE / ASSETS['module_vertical_light']['file']).convert('RGBA')
+        seal = Image.new('RGBA', (w, h))
+        for px in range(0, w, tile.width):
+            seal.alpha_composite(tile.crop((0, 0, min(tile.width, w - px), h)), (px, 0))
+        wall_pieces(name, seal, x, y)
 
     bindings = {'laundry_folding_table': 'Linen table', 'control_computer_desk': 'Security desk',
                 'store_lower_crate': 'Fuse cabinet', 'workshop_tools_rack_west': 'Tool bench',
@@ -195,6 +362,9 @@ def style_level_two(scene):
             continue
         key = asset['id']
         x, y = asset['origin_px']
+        if key == 'yard_stone_planter':
+            x -= 14
+            y += 66
         w, h = asset['width'], asset['height']
         name = bindings.get(key)
         entity = old.get(name) if name else None
@@ -209,12 +379,23 @@ def style_level_two(scene):
         hanging = 'banner' in key or 'linen_rail' in key
         entity['components'].insert(0, c('SpriteRenderer', texture=texture(key), size=[w / PPU, h / PPU],
                                        offset=[0, (-h / 2 + 2) / PPU], ySort=not flat,
-                                       layer=-20 if flat else (12 if hanging else 10)))
+                                       layer=-20 if flat else 10))
+        if 'banner' in key:
+            part(entity, 'SpriteRenderer')['texture'] = banner_texture(key)
+            # A banner belongs to its supporting wall plane. Its hanging tip must
+            # never force it in front of a player already standing on the floor.
+            supports = [a for a in MANIFEST['assets'] if a['category'] == 'walls'
+                        and a['width'] > a['height']
+                        and a['origin_px'][0] <= x + w / 2 <= a['origin_px'][0] + a['width']
+                        and a['origin_px'][1] <= y <= a['origin_px'][1] + a['height']]
+            if supports:
+                base = max(a['origin_px'][1] + a['height'] for a in supports)
+                part(entity, 'SpriteRenderer')['sortOffset'] = (base - (y + h - 2) + .5) / PPU
         if key in ('utility_green_console', 'utility_box'):
             # Wall-mounted controls are reached in front of the facade, not through its body.
             entity['transform']['position'][1] -= 12 / PPU
             part(entity, 'SpriteRenderer')['offset'][1] += 12 / PPU
-            part(entity, 'SpriteRenderer')['layer'] = 12
+            part(entity, 'SpriteRenderer')['sortOffset'] = 12 / PPU
             hanging = True
         if not flat and not hanging:
             depth = min(32, h * (.68 if 'bed' in key or 'dining_set' in key else .33))
@@ -259,22 +440,21 @@ def style_level_two(scene):
     watch.update(restrictedMin=point(1162, 99), restrictedMax=point(1414, 337),
                  returnPosition=point(*positions['Explorer']))
     part(old['Control guard'], 'Dialogue')['pages'] = [
-        'Free time ends at dusk. Keep clear of the control desk. Passage doors open as you approach.']
+        'Free time ends at dusk. Keep clear of the control desk. The room passages are clear.']
 
-    doors = [('North cell door', 148, 260, 69, 60), ('North east cell door', 321, 260, 63, 60),
-             ('South cell door', 144, 656, 61, 57), ('South east cell door', 320, 656, 61, 57),
-             ('Canteen door', 614, 380, 58, 86), ('Laundry door', 961, 380, 52, 86),
-             ('Control door', 1330, 383, 64, 92), ('Stores door', 1523, 383, 58, 91),
-             ('Workshop door', 614, 556, 58, 90), ('Infirmary door', 961, 556, 52, 90),
-             ('Utility door', 1523, 643, 57, 60), ('Exit anteroom door', 1523, 738, 55, 48)]
-    for name, x, y, w, h in doors:
-        door = old.get(name)
-        if door is None:
-            door = add(name, point(x, y), c('SpriteRenderer'), c('Collider'), c('StateGate'))
-        else:
-            used.append(door)
-            door['transform']['position'] = point(x, y)
-        set_door(door, w / PPU, height=h / PPU)
+    # Ordinary passages stay open, with no door sprites, gates or hidden jamb colliders.
+    # Keep the stone caps at the ends of the east/west wall openings.
+    for name, x1, y1, x2, y2 in [
+            ('Common corridor door', *cuts[0]), ('Middle corridor door', *cuts[1]),
+            ('Yard corridor door', *cuts[2]), ('Utility corridor door', *cuts[3]),
+            ('North cell connecting door', *cuts[6]), ('South cell connecting door', *cuts[7])]:
+        w = x2 - x1
+        for suffix, top in [('north', y1 - 9), ('south', y2)]:
+            add(name + ' ' + suffix + ' cap', point((x1 + x2) / 2, top + 9),
+                c('SpriteRenderer', texture=texture('module_vertical_light'),
+                  size=[w / PPU, 9 / PPU], offset=[0, -4.5 / PPU],
+                  drawMode='Tiled', tileSize=[w / PPU, 1], layer=10, ySort=True,
+                  sortOffset=-9 / PPU if suffix == 'north' else 0))
     gate = old['Green exit gate']
     gate['transform']['position'] = point(1519, 850)
     set_door(gate, 74 / PPU, automatic=False, height=2.45)
@@ -303,9 +483,9 @@ def style_level_two(scene):
 
 
 def style_level_one(scene):
-    door_art()
+    character_art()
+    banner_art()
     entities = scene['entities']
-    next_id = max(int(e['id'], 16) for e in entities) + 1
     floor_map = {'floor': 'tile_dormitory_north', 'corridor_floor': 'tile_main_corridor',
                  'work_floor': 'tile_workshop', 'office_floor': 'tile_control_room'}
     prop_map = {'bed': 'dorm_bed_nw', 'shelf': 'kitchen_shelf_utensils', 'barrel': 'store_barrel',
@@ -328,7 +508,10 @@ def style_level_one(scene):
             if name in floor_map:
                 sprite.update(texture=texture(floor_map[name]), tileSize=[1, 1])
             elif name in wall_map:
-                sprite['texture'] = texture(wall_map[name])
+                source = ASSETS[wall_map[name]]
+                height = source['height'] / PPU
+                sprite.update(texture=texture(wall_map[name]), size=[1, height],
+                              offset=[0, .5 - height / 2], layer=10, ySort=True, sortOffset=.5)
             elif name in prop_map:
                 asset = prop_map[name]
                 source = ASSETS[asset]
@@ -337,6 +520,13 @@ def style_level_one(scene):
                     sprite['texture'] = texture(asset)
                     if name == 'rug':
                         sprite['size'][1] = .55
+                    else:
+                        asset = ASSETS['dormitory_wall_banner']
+                        height = asset['height'] / PPU
+                        sprite.update(texture=banner_texture(asset['id']),
+                                      size=[asset['width'] / PPU, height], offset=[0, .25 - height / 2],
+                                      layer=10, ySort=True)
+                        entity['transform']['position'][1] = 1
                 else:
                     # A consistent pixels-per-tile ratio avoids stretching every prop to 1 x 1.5.
                     sprite.update(texture=texture(asset), size=[width, height],
@@ -353,19 +543,13 @@ def style_level_one(scene):
             camera['orthographicHeight'] = VIEW_HEIGHT
         if part(entity, 'StateGate') and entity['name'] != 'Drain grate':
             collider = part(entity, 'Collider')
-            set_door(entity, collider['size'][0], collider['size'][1], automatic=False)
+            side = collider['size'][1] > collider['size'][0]
+            set_door(entity, collider['size'][0], collider['size'][1], automatic=False,
+                     height=collider['size'][1] if side else None, side=side)
         if entity['name'] == 'Fixed wall torch':
             entity['components'].append(c('Light2D', radius=1.25, color='#ffb24dff', intensity=.16,
                                           offset=[0, -.25], flicker=.18, layer=12))
         keep.append(entity)
-    # Doorways stay where the chapter's puzzles and patrols expect them.
-    for name, x, y in [('Cell door', 4, 7.5), ('Stores door', 10, 7.5), ('Office door', 17, 7.5),
-                       ('Workshop door', 8, 11.5), ('Laundry door', 16, 11.5), ('Archive door', 26, 7.5)]:
-        door = dict(id=f'{next_id:016x}', name=name,
-                    transform=dict(position=[x, y], rotation=0, scale=[1, 1]),
-                    components=[c('SpriteRenderer'), c('Collider'), c('StateGate')])
-        next_id += 1
-        set_door(door, 2)
-        keep.append(door)
+    # The existing wall openings remain clear for ordinary room travel.
     scene['entities'] = keep
     scene['settings']['background'] = '#101823ff'

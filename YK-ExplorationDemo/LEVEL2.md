@@ -10,9 +10,9 @@ reference proportions. Native artwork is kept at 35 pixels per world unit.
 ```
 
 Move with **WASD / arrows**, interact with **E**, dismiss or cancel with **Escape**,
-pause with **P**, and restart with **R**. Passage doors open automatically on approach.
-The camera follows the player with an 8.4-unit view and clamps to the keep boundaries.
-At 1280 by 720, the world has 580 vertical pixels, or about 69 pixels per world unit.
+pause with **P**, and restart with **R**. Room and corridor passages have no doors; walk straight through.
+The camera follows the player with an 11.6-unit view and clamps to the keep boundaries.
+At 1280 by 720, the world has 580 vertical pixels, or 50 pixels per world unit.
 
 ## Escape route
 
@@ -44,10 +44,17 @@ others continue their routines.
 breathe. The source wall/furniture artwork retains its authored shadowing. Warm candle and
 hearth glows use `Light2D`. Banners and wall-mounted controls render over their wall faces.
 
-The new double doors use an original ImageGen master preserved in
-`assets/castle/source/double-door.png`, plus an eight-frame hinged strip. `StateGate`
-opens for nearby players or NPCs, waits after departure, and holds while the threshold is
-occupied. Locked gates use the same new artwork and animation after their task is completed.
+Ordinary room and corridor openings have no door artwork, interaction or blocking door
+colliders. Locked escape gates retain their requirements and animated leaves.
+The ImageGen masters in `assets/castle/source/door-simple.png` and `banner-clean.png`
+and their adjacent `.prompt.txt` files remain available for authoring.
+
+Vertical walls are rebuilt from clean stone modules and split into short, locally sorted
+sections in shared atlases. This removes floor and runner fragments from the extracted columns.
+Banners sort at their wall's base and have clean transparent silhouettes. The yard planter is
+clear of the utility doorway. The hero's separate `hero-polished` atlas adds four standing and
+blinking directions without changing the existing walk and search cells. Movement stops on
+release, and resolved physics velocity selects walking versus idle when pushing against walls.
 
 ## Editable assets and rebuild
 
@@ -67,8 +74,8 @@ python3 YK-ExplorationDemo/tools/build_level2.py
 Normal rebuilds preserve existing generated character atlases; `--regenerate-art` opts into
 re-exporting them. The source door master and original prompts are excluded from game exports.
 
-Gameplay checks physically traverse the rooms and cover door approach from both sides,
-intermediate/reversed frames, safe thresholds, NPC push resistance and motion, modal dismissal,
+Gameplay checks verify all eighteen ordinary passages have no doors and physically traverse
+them in both directions. They also cover NPC push resistance and motion, modal dismissal,
 three camera viewport sizes, searches, crafting, guard capture, the wire puzzle, the sealed
 exit, completion and restart. The renderer test checks actual contact-shadow pixels.
 

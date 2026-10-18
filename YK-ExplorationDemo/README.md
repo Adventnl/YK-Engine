@@ -12,12 +12,14 @@ The project opens in **Level 2: The Inner Keep**. Chapter one remains available 
 
 Move with **WASD / arrows**. Press **E** near people, containers, workbenches or locked gates.
 **Escape** cancels a search or dismisses a conversation. **P** pauses; **R** restarts.
-Ordinary passage doors open automatically as you approach from either side, stay open while
-occupied, and close after you leave. Locked escape gates retain their key, tool or puzzle requirement.
+Ordinary room and corridor passages have no doors; walk straight through.
+Locked escape gates retain their key, tool or puzzle requirement.
 
-The 8.4-unit camera view is about 44% closer than the previous 12.0833-unit view.
+The 11.6-unit camera view shows more of the surrounding rooms and passages.
 Room plaques and the current-room header have been removed. Characters use the same
-level-two directional sheets in both chapters, with grounded contact shadows. Furniture is
+level-two directional sheets in both chapters, with grounded contact shadows. The hero has
+separate standing and blinking frames in every direction. Releasing movement stops immediately;
+holding movement against a wall keeps the character idle. Furniture is
 solid; residents and guards have kinematic bodies so the player cannot push them off their routines.
 
 ## Chapter one route
@@ -41,9 +43,21 @@ Chapter two uses their native placements at 35 pixels per world unit. Floors, wa
 remain separate editable entities. Doorways are cut into reconstructed wall sections to make
 all rooms reachable. Chapter one uses the same floor, wall and furnishing materials.
 
-The original door master in `assets/castle/source/double-door.png` was generated specifically
-for this pass with ImageGen. `tools/castle_reference.py` exports eight hinged frames, keeping
-the stone jamb still. `StateGate` reverses these frames and synchronizes them with collision.
+Ordinary passages are clear openings in the stone walls, with no door artwork or blocking
+components. Locked escape gates use animated `StateGate` leaves and synchronized collision.
+Vertical walls use short sections from shared atlases for local depth sorting;
+banners share their supporting wall's depth. Clean column tiles and banner silhouettes remove
+the floor scraps baked into the earlier extracted art.
+
+ImageGen masters and their exact prompts are preserved in `assets/castle/source/` and
+`assets/level2/source/hero_idle.*`. Runtime outputs are `assets/castle/doors/`,
+`assets/castle/fixtures/` and `assets/level2/hero-polished.*`.
+
+Generated with the built-in image_gen tool:
+
+- [Standing hero master](assets/level2/source/hero_idle.png) and [prompt](assets/level2/source/hero_idle.prompt.txt).
+- [Door master](assets/castle/source/door-simple.png) and [prompt](assets/castle/source/door-simple.prompt.txt).
+- [Clean banner master](assets/castle/source/banner-clean.png) and [prompt](assets/castle/source/banner-clean.prompt.txt).
 
 Rebuild both scenes and the door strip without regenerating existing character atlases:
 
@@ -62,3 +76,5 @@ from this two-chapter escape route.
 
 ![Chapter one player view](level1-preview.png)
 ![Chapter two player view](level2-preview.png)
+
+![Open corridor passages and banners](level2-corridor-preview.png)

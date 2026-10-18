@@ -41,6 +41,7 @@ void TopDownController::onFixedUpdate(GameContext &context, float seconds) {
     if (!input || !body)
         return;
     if (context.inputLocked()) {
+        direction_ = {};
         context.physics().setVelocity(*body, {});
         if (context.blackboard().number("search_ui_busy") == 0 && context.blackboard().number("wire_ui_active") == 0)
             detail::animateDirection(entity(), {}, facing_, animation_);
@@ -52,6 +53,12 @@ void TopDownController::onFixedUpdate(GameContext &context, float seconds) {
                    input->axis(context, upAction, downAction)};
     if (lengthSquared(direction) > 1.0F)
         direction = normalized(direction);
+    direction_ = direction;
+    // Facing follows intent even when a wall prevents translation.
+    if (lengthSquared(direction) > .001F)
+        facing_ = std::abs(direction.x) > std::abs(direction.y)
+                      ? (direction.x < 0 ? "left" : "right")
+                      : (direction.y < 0 ? "up" : "down");
     const auto state = context.physics().state(*body);
     if (!state)
         return;
@@ -60,8 +67,22 @@ void TopDownController::onFixedUpdate(GameContext &context, float seconds) {
     const float limit = std::max(0.0F, acceleration) * seconds;
     if (length(delta) > limit)
         delta = normalized(delta) * limit;
-    context.physics().setVelocity(*body, state.value().linearVelocity + delta);
-    detail::animateDirection(entity(), direction, facing_, animation_);
+    context.physics().setVelocity(*body, lengthSquared(direction) > .001F
+                                           ? state.value().linearVelocity + delta : Vec2{});
+}
+void TopDownController::onUpdate(GameContext &context, float) {
+    // Animation sees the resolved physics velocity. Holding a key into a wall
+    // must not play a running cycle; searches keep control of their own clips.
+    if (context.blackboard().number("search_ui_busy") != 0 ||
+        context.blackboard().number("wire_ui_active") != 0)
+        return;
+    Vec2 motion{};
+    if (!context.inputLocked() && lengthSquared(direction_) > .001F)
+        if (const auto body = context.bodyOf(entity().id()))
+            if (const auto state = context.physics().state(*body);
+                state && lengthSquared(state.value().linearVelocity) > .01F)
+                motion = state.value().linearVelocity;
+    detail::animateDirection(entity(), motion, facing_, animation_);
 }
 
 void NpcPath::describe(TypeBuilder<NpcPath> &type) {
@@ -427,7 +448,7 @@ void CharacterMotion::onFixedUpdate(GameContext &context, float seconds) {
     phase_ += seconds * (walking ? 14.0F : 2.5F);
     const float bounce =
         walking ? std::abs(std::sin(phase_)) * stepHeight : (std::sin(phase_) + 1.0F) * idleHeight * .5F;
-    sprite->offset = offset_ + Vec2{walking ? std::sin(phase_) * 0.012F : 0.0F, -bounce};
+    sprite->offset = offset_ + Vec2{walking && animateSteps ? std::sin(phase_) * 0.012F : 0.0F, -bounce};
     sprite->size = {size_.x, size_.y + bounce * 0.3F};
     sprite->stepSwing = walking && animateSteps ? std::sin(phase_) * stepHeight * 0.75F : 0.0F;
     if (flipWithMovement && std::abs(velocity.x) > 0.1F)
