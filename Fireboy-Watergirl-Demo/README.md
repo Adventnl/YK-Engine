@@ -2,11 +2,14 @@
 
 A two-player puzzle platformer with two levels built from the original coloured
 block, striped platform, switch, gem and door kit. Both levels use the furnished
-room background. Terrain has separate, aligned collision surfaces; buttons have
+room background. Every block and moving deck is solid on all sides. The floor
+reaches the screen edges and continues below the view. Buttons have
 a fixed housing and a solid moving cap that carries the player down.
 
 Open this folder in `yk_editor`, or run `yk_player Fireboy-Watergirl-Demo`.
-Exported games open the same title screen. Press **Enter** to play, then **1**
+Exported games open the same title screen. **Click Play Together**, then click
+either level card; hover and press feedback show which control is active.
+Keyboard shortcuts also work: press **Enter** to play, then **1**
 (or Enter) for **Level 1**, or **2** for **Level 2**. Controller equivalents are
 East to play, South for Level 1 and North for Level 2.
 
@@ -21,15 +24,20 @@ Collect the matching gems along each route. Both players must reach their own
 doors to finish; gems are optional. Press Enter to skip the completion delay.
 
 **Level 1** introduces the two coloured pools. Step on each floor button to
-start its shuttle. Climb the ledges on the right, use the upper lever to start
-the green crossing, then climb left to the exit deck. The small left ledge holds
+start its shuttle. Climb the three solid stair steps on the right, use the upper
+lever to start the green crossing, then take the left stair to the exit deck.
+Levers visibly throw from left to right when switched. The small left ledge holds
 an optional Watergirl gem. Completion advances to Level 2.
 
-**Level 2** has a long green channel. The starting button starts a shuttle wide
-enough for both players. Ride to the far bank, use the lever, then board the lift
-when it returns to its lower stop. The lift has a clear shaft beside the upper
-landing. Cross the upper pools from right to left, starting the shuttles with
-the buttons, to reach the exits. Completion returns to the title screen.
+**Level 2** follows three lanes through the same room as Level 1. The starting
+button starts a shuttle wide enough for both players to cross the green channel
+together. On the far bank, use the lever and board the lift at its lower stop.
+The first elevator boards at floor height and rises to the middle landing.
+Press its button to retract the security gate and start the blue crossing back
+left. On the left bank, press the return-lift button and ride the second elevator
+up to the final lane. Press the final button, then cross the shorter
+red pool to the exit deck on the right. Pressed button housings turn green and
+stay on. Completion returns to the title screen.
 
 The floor buttons latch after a full press so either player can catch up. No
 mechanism requires a player to stay behind permanently. Shuttle endpoints pause
@@ -45,6 +53,8 @@ python Fireboy-Watergirl-Demo/tools/build_game.py
 the whole game. `build_level2.py` rebuilds only Level 2. These scripts require
 Pillow; playing and exporting require no Python or source asset folders.
 
-The `fireboy_demo` test plays both routes through real physics, checks the
-title/selection flow, presses the two-part buttons and checks every platform's
-full travel against the static terrain.
+The `fireboy_demo` test plays both routes through real physics, checks mouse and
+keyboard title/selection flow, verifies head collisions and solid terrain,
+checks lever poses and the retracting gate, verifies buttons start platforms, and
+checks every platform's full travel with room for a standing rider. It also
+boards both characters on Level 2's starting shuttle and rides them together.

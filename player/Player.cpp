@@ -125,6 +125,7 @@ class PlayerLayer final : public ApplicationLayer {
         : project_(project), registry_(registry), options_(options), assets_(project) {}
 
     Status initialize(Renderer &renderer) override {
+        nativeRenderer_ = renderer.nativeRenderer();
         auto sceneRenderer = SceneRenderer::create(renderer, &assets_, project_.textures);
         if (!sceneRenderer)
             return Error{sceneRenderer.error()};
@@ -147,6 +148,13 @@ class PlayerLayer final : public ApplicationLayer {
             session_->runtime().blackboard().number("dialogue_active") == 0.0)
             return false;
         InputFrame input = frame.input;
+        // Match the letterboxed logical game view after resizing or changing display density.
+        Vec2 position;
+        if (SDL_RenderCoordinatesFromWindow(nativeRenderer_, input.pointer.position.x,
+                                            input.pointer.position.y, &position.x, &position.y))
+            input.pointer.position = position;
+        else
+            input.pointer.inside = false;
         if (!script_.empty())
             input.keyboard = script_.at(frameIndex_);
         if (input.keyboard.state(Key::F1).pressed)
@@ -216,6 +224,7 @@ class PlayerLayer final : public ApplicationLayer {
     const ComponentRegistry &registry_;
     Options options_;
     ProjectAssets assets_;
+    SDL_Renderer *nativeRenderer_{};
     std::unique_ptr<SceneRenderer> sceneRenderer_;
     std::unique_ptr<SdlAudio> audio_;
     std::unique_ptr<GameSession> session_;

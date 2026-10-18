@@ -26,6 +26,7 @@ class InputTracker {
     };
     std::array<bool, keyCount> held_{}, pressed_{}, released_{};
     std::array<PadTrack, maxGamepads> pads_{};
+    PointerState pointer_;
 };
 
 struct GameRuntime::Impl {

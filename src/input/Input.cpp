@@ -130,6 +130,7 @@ float Gamepad::axis(GamepadAxis axis) const {
 
 void InputFrame::beginFrame() {
     keyboard.beginFrame();
+    pointer.primary.pressed = pointer.primary.released = false;
     for (auto &pad : gamepads)
         pad.beginFrame();
 }

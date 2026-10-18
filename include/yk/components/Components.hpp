@@ -88,6 +88,7 @@ enum class UiAnchor {
     BottomRight
 };
 const std::vector<std::string> &uiAnchorNames();
+Vec2 uiTopLeft(UiAnchor anchor, Vec2 viewport, Vec2 size, Vec2 offset);
 
 // Screen-space text. `text` may contain {variable} placeholders resolved from the Blackboard.
 class UiText final : public Component {
@@ -128,6 +129,26 @@ class UiPanel final : public Component {
     Color color{0, 0, 0, 140};
     int layer{-1};
     static void describe(TypeBuilder<UiPanel> &type);
+};
+
+// Adds hover feedback and release-to-click navigation to a screen-space panel.
+class UiButton final : public Component {
+  public:
+    std::string changeScene;
+    Color hoverColor{49, 91, 112, 255};
+    Color pressedColor{28, 63, 83, 255};
+    static void describe(TypeBuilder<UiButton> &type);
+    void onFixedUpdate(GameContext &context, float seconds) override;
+    bool hovered() const {
+        return hovered_;
+    }
+    bool pressed() const {
+        return armed_;
+    }
+
+  private:
+    bool hovered_{};
+    bool armed_{};
 };
 
 // A conversation belongs to an entity but is presented in screen space by SceneRenderer.
@@ -174,7 +195,9 @@ class Dialogue final : public Component {
         return selected_;
     }
     bool choosing() const;
-    float presentationTime() const { return presentationTime_; }
+    float presentationTime() const {
+        return presentationTime_;
+    }
     void onFixedUpdate(GameContext &context, float seconds) override;
     void onDestroy(GameContext &context) override;
 

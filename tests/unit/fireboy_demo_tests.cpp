@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <source_location>
 
 using namespace yk;
 
@@ -98,13 +99,14 @@ struct Game {
                          at(actor).x, feet(actor));
         CHECK(std::abs(at(actor).x - x) < 12.0F);
     }
-    void jump(const Actor &actor, float x, float floor, const char *rider = nullptr) {
+    void jump(const Actor &actor, float x, float floor, const char *rider = nullptr,
+              float riderOffset = 0) {
         keys.set(actor.jump, true);
         bool airborne = false, landed = false;
         for (int i = 0; i < 240; ++i) {
             if (rider) {
                 const auto &platform = entity(rider);
-                x = platform.worldPosition().x * 50.0F;
+                x = platform.worldPosition().x * 50.0F + riderOffset;
                 floor = platform.worldPosition().y * 50.0F - 14.0F;
             }
             steer(actor, x);
@@ -127,9 +129,15 @@ struct Game {
                          x, floor, at(actor).x, feet(actor), grounded(actor) ? 1 : 0);
         CHECK(landed);
     }
-    template <class Condition> void until(Condition condition, int limit = 1500) {
+    template <class Condition>
+    void until(Condition condition, int limit = 1500,
+               std::source_location call = std::source_location::current()) {
         for (int i = 0; i < limit && !condition(); ++i)
             tick();
+        if (!condition())
+            std::fprintf(stderr,
+                         "Wait timed out at line %u; Fireboy %.0f,%.0f; Watergirl %.0f,%.0f\n",
+                         call.line(), at(fire).x, feet(fire), at(water).x, feet(water));
         CHECK(condition());
     }
 };
@@ -158,6 +166,79 @@ void menuFlow() {
     }
 }
 
+void mouseMenus() {
+    for (const Vec2 viewport : {Vec2{1280, 720}, Vec2{1600, 900}}) {
+        Game menu("scenes/menu.ykscene");
+        menu.runtime->setViewportSize(viewport);
+        auto *button = menu.entity("Play Button").get<UiButton>();
+        InputFrame input;
+        input.pointer = {viewport * 0.5F + Vec2{-238, 66}, {}, true};
+        menu.runtime->stepOnce(input);
+        CHECK(button->hovered());
+        CHECK(menu.runtime->sceneChangeRequested().empty());
+        input.pointer.primary = {true, true, false};
+        // A press during a render frame with no fixed tick must not be lost.
+        menu.runtime->update(0, input);
+        input.beginFrame();
+        menu.runtime->stepOnce(input);
+        CHECK(button->pressed());
+        CHECK(menu.runtime->sceneChangeRequested().empty());
+        input.pointer.primary = {false, false, true};
+        menu.runtime->stepOnce(input);
+        CHECK(menu.runtime->sceneChangeRequested() == "scenes/levels.ykscene");
+    }
+    for (const int number : {1, 2}) {
+        Game select("scenes/levels.ykscene");
+        InputFrame input;
+        input.pointer = {
+            {640.0F + (number == 1 ? -246.0F : 246.0F), 380}, {true, false, false}, true};
+        select.runtime->stepOnce(input); // Inherited hold must not activate a new scene.
+        input.pointer.primary = {false, false, true};
+        select.runtime->stepOnce(input);
+        CHECK(select.runtime->sceneChangeRequested().empty());
+        input.pointer.primary = {true, true, false};
+        select.runtime->stepOnce(input);
+        input.pointer.position = {0, 0}; // Drag off the card to cancel.
+        input.pointer.primary = {false, false, true};
+        select.runtime->stepOnce(input);
+        CHECK(select.runtime->sceneChangeRequested().empty());
+        input.pointer.position = {640.0F + (number == 1 ? -246.0F : 246.0F), 380};
+        input.pointer.primary = {true, true, false};
+        select.runtime->stepOnce(input);
+        input.pointer.primary = {false, false, true};
+        select.runtime->stepOnce(input);
+        CHECK(select.runtime->sceneChangeRequested() ==
+              (number == 1 ? "scenes/level01.ykscene" : "scenes/level02.ykscene"));
+    }
+}
+
+void solidTerrain() {
+    for (const char *file : {"scenes/level01.ykscene", "scenes/level02.ykscene"}) {
+        Game game(file);
+        for (const auto id : game.runtime->scene().orderedIds()) {
+            const auto *entity = game.runtime->scene().find(id);
+            for (const auto *collider : entity->getAll<Collider>())
+                if (!collider->isTrigger)
+                    CHECK(!collider->oneWay);
+        }
+        // The visible floor reaches both screen edges, and below the bottom of the view.
+        auto &left = game.entity("Left Corner");
+        auto &right = game.entity("Right Corner");
+        CHECK_NEAR(left.worldPosition().x - left.get<Collider>()->size.x / 2, 0, 0.001);
+        CHECK_NEAR(right.worldPosition().x + right.get<Collider>()->size.x / 2, 1672.0 / 50, 0.001);
+    }
+    Game game("scenes/level01.ykscene");
+    game.tick(30);
+    game.runtime->teleport(game.entity(water.name), {104.0F / 50, (824.0F - 48) / 50});
+    game.runtime->teleport(game.entity(fire.name), {200.0F / 50, (824.0F - 48) / 50});
+    game.keys.set(water.jump, true);
+    for (int i = 0; i < 90; ++i) {
+        game.tick();
+        CHECK(game.at(water).y - 48 >= 671.0F); // Head cannot enter the bonus ledge.
+    }
+    CHECK(game.deaths == 0);
+}
+
 void buttonsAndClearance() {
     for (const auto [file, button] : {std::pair{"scenes/level01.ykscene", "Red Crossing Button"},
                                       std::pair{"scenes/level02.ykscene", "Shuttle Button"}}) {
@@ -175,12 +256,18 @@ void buttonsAndClearance() {
         game.walk(water, housing.x * 50.0F);
         game.tick(60);
         CHECK(plate->pressed());
+        CHECK(plate->targets.size() == 1);
+        auto *target = game.runtime->scene().find(plate->targets.front());
+        CHECK(target && target->get<MovingPlatform>());
+        CHECK(target->get<MovingPlatform>()->signalActive());
+        const Vec2 before = target->worldPosition();
+        game.until([&] { return distance(target->worldPosition(), before) > 0.1F; }, 240);
         CHECK_NEAR(base.worldPosition().y, housing.y, 0.001);
         CHECK_NEAR(cap->worldPosition().y - rest.y, plate->pressDepth, 0.015);
         const auto *surface = cap->get<Collider>();
         CHECK_NEAR(game.feet(water),
                    (cap->worldPosition().y + surface->offset.y - surface->size.y / 2) * 50.0F, 2.0);
-        // Every complete swept platform rectangle must clear every static solid.
+        // The whole platform AND a standing rider must clear every static solid.
         for (const auto id : game.runtime->scene().orderedIds()) {
             const auto *moving = game.runtime->scene().find(id);
             const auto *mover = moving->get<MovingPlatform>();
@@ -190,8 +277,10 @@ void buttonsAndClearance() {
             // Current motion may already have started; recover its authored start.
             auto authored = loadScene(game.project.resolve(file).value(), game.registry);
             const Vec2 origin = authored.value()->findByName(moving->name())->worldPosition();
+            const float riderHeight = game.entity(water.name).get<Collider>()->size.y;
             const Vec2 lo{std::min(origin.x, origin.x + mover->travel.x) - collider->size.x / 2,
-                          std::min(origin.y, origin.y + mover->travel.y) - collider->size.y / 2};
+                          std::min(origin.y, origin.y + mover->travel.y) - collider->size.y / 2 -
+                              riderHeight};
             const Vec2 hi{std::max(origin.x, origin.x + mover->travel.x) + collider->size.x / 2,
                           std::max(origin.y, origin.y + mover->travel.y) + collider->size.y / 2};
             for (const auto otherId : game.runtime->scene().orderedIds()) {
@@ -221,17 +310,22 @@ void levelOneRoute() {
         game.jump(actor, 656, 824);
         game.walk(actor, 896);
         game.jump(actor, 1280, 824);
-        game.walk(actor, 1496);
-        game.jump(actor, 1496, 632);
-        game.walk(actor, 1400);
+        game.jump(actor, 1376, 728);
+        game.jump(actor, 1472, 632);
+        game.jump(actor, 1568, 536);
         game.jump(actor, 1208, 472);
         game.walk(actor, 1232);
+        const bool before = game.entity("Upper Crossing Lever").get<Lever>()->on();
         game.press(actor.use);
+        CHECK(game.entity("Upper Crossing Lever").get<Lever>()->on() != before);
+        CHECK(game.entity("Upper Crossing Lever").get<SpriteRenderer>()->flipX == !before);
         game.walk(actor, 1136);
         game.jump(actor, 752, 472);
-        game.walk(actor, 584);
-        game.jump(actor, 584, 280);
-        game.jump(actor, actor.name == water.name ? 424.0F : 280.0F, 280);
+        game.walk(actor, 656);
+        game.jump(actor, 560, 376);
+        game.jump(actor, actor.name == water.name ? 424.0F : 488.0F, 280);
+        if (actor.name == fire.name)
+            game.jump(actor, 280, 280); // Clear the waiting teammate on the exit deck.
     }
     game.tick(30);
     CHECK(game.entity("Level Flow").get<LevelFlow>()->completed());
@@ -249,23 +343,44 @@ void levelTwoRoute() {
         game.walk(actor, 480);
         game.until([&] { return game.entity("Long Shuttle").worldPosition().x * 50 < 640; });
         game.jump(actor, 0, 0, "Long Shuttle");
-        game.until([&] { return game.at(actor).x > 1008; });
+        game.until([&] { return game.at(actor).x > 936; });
         game.jump(actor, 1192, 824);
         game.walk(actor, 1232);
         if (!game.entity("Elevator").get<MovingPlatform>()->signalActive())
             game.press(actor.use);
-        game.walk(actor, 1472);
-        game.until([&] { return game.entity("Elevator").worldPosition().y * 50 > 685.5F; });
+        game.walk(actor, 1328);
+        game.until([&] { return game.entity("Elevator").worldPosition().y * 50 > 837.5F; });
         game.jump(actor, 0, 0, "Elevator");
-        game.until([&] { return game.feet(actor) < 412; });
-        game.jump(actor, 1240, 408);
+        game.until([&] { return std::abs(game.feet(actor) - 488) < 0.5F; });
+        game.tick(10); // Disembark at the stop, without the lift's upward jump boost.
+        game.jump(actor, 1240, 488);
         game.tick(45);
+        CHECK(game.entity("Blue Crossing Button").get<PressurePlate>()->pressed());
+        CHECK(game.entity("Blue Shuttle").get<MovingPlatform>()->signalActive());
+        game.until([&] { return game.entity("Landing Gate").get<Door>()->openAmount() > 0.99F; });
         game.walk(actor, 1176);
-        game.jump(actor, 824, 408);
-        game.walk(actor, 800);
+        game.until([&] { return game.entity("Blue Shuttle").worldPosition().x * 50 > 1008; });
+        game.jump(actor, 0, 0, "Blue Shuttle");
+        game.until([&] { return game.at(actor).x < 720; });
+        game.jump(actor, 440, 488);
+        game.walk(actor, 304);
         game.tick(45);
-        game.walk(actor, 656);
-        game.jump(actor, actor.name == water.name ? 296.0F : 184.0F, 408);
+        CHECK(game.entity("Return Lift Button").get<PressurePlate>()->pressed());
+        game.walk(actor, 256);
+        game.until([&] { return game.entity("Return Elevator").worldPosition().y * 50 > 495; });
+        game.jump(actor, 0, 0, "Return Elevator");
+        game.until([&] { return std::abs(game.feet(actor) - 248) < 0.5F; });
+        game.tick(10);
+        game.jump(actor, 368, 248);
+        game.walk(actor, 432);
+        game.tick(45);
+        CHECK(game.entity("Red Crossing Button").get<PressurePlate>()->pressed());
+        CHECK(game.entity("Red Shuttle").get<MovingPlatform>()->signalActive());
+        game.walk(actor, 472);
+        game.until([&] { return game.entity("Red Shuttle").worldPosition().x * 50 < 640; });
+        game.jump(actor, 0, 0, "Red Shuttle");
+        game.until([&] { return game.at(actor).x > 772; });
+        game.jump(actor, actor.name == water.name ? 1208.0F : 1016.0F, 248);
     }
     game.tick(30);
     CHECK(game.entity("Level Flow").get<LevelFlow>()->completed());
@@ -273,12 +388,39 @@ void levelTwoRoute() {
     game.tick(200);
     CHECK(game.runtime->sceneChangeRequested() == "scenes/menu.ykscene");
 }
+
+void levelTwoSharedRide() {
+    Game game("scenes/level02.ykscene");
+    game.tick(30);
+    const Vec2 parked = game.entity("Long Shuttle").worldPosition();
+    game.tick(120);
+    CHECK(game.entity("Long Shuttle").worldPosition() == parked);
+    game.walk(water, 400);
+    game.tick(45);
+    game.walk(water, 480);
+    game.until([&] { return game.entity("Long Shuttle").worldPosition().x * 50 < 640; });
+    game.jump(water, 0, 0, "Long Shuttle", 48);
+    game.walk(fire, 480);
+    game.until([&] { return game.entity("Long Shuttle").worldPosition().x * 50 < 640; });
+    game.jump(fire, 0, 0, "Long Shuttle", -48);
+    game.until([&] { return game.at(fire).x > 960; });
+    CHECK(game.entity("Shuttle Button").get<PressurePlate>()->pressed());
+    for (const Actor actor : {fire, water}) {
+        CHECK(game.grounded(actor));
+        CHECK_NEAR(game.feet(actor), 696, 2.0);
+    }
+    CHECK(std::abs(game.at(water).x - game.at(fire).x) > 56);
+    CHECK(game.deaths == 0);
+}
 } // namespace
 
 int main() {
     menuFlow();
+    mouseMenus();
+    solidTerrain();
     buttonsAndClearance();
     levelOneRoute();
     levelTwoRoute();
+    levelTwoSharedRide();
     return yk::test::finish("fireboy_demo");
 }

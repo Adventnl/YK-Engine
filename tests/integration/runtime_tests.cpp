@@ -25,6 +25,15 @@ void key(SDL_WindowID window, Uint32 type, SDL_Scancode scancode) {
     event.key.scancode = scancode;
     check(SDL_PushEvent(&event), "push key event");
 }
+void pointerButton(SDL_WindowID window, Uint32 type) {
+    SDL_Event event{};
+    event.type = type;
+    event.button.windowID = window;
+    event.button.button = SDL_BUTTON_LEFT;
+    event.button.x = 320;
+    event.button.y = 180;
+    check(SDL_PushEvent(&event), "push pointer button");
+}
 class TestApplicationLayer final : public yk::ApplicationLayer {
   public:
     yk::TextureHandle retained;
@@ -63,15 +72,21 @@ class TestApplicationLayer final : public yk::ApplicationLayer {
         SDL_free(windows);
         windowEvent(window_, SDL_EVENT_WINDOW_FOCUS_GAINED);
         key(window_, SDL_EVENT_KEY_DOWN, SDL_SCANCODE_D);
+        pointerButton(window_, SDL_EVENT_MOUSE_BUTTON_DOWN);
         return yk::success();
     }
     bool update(const yk::FrameContext &frame) override {
         const auto state = frame.input.keyboard.state(yk::Key::D);
         if (frames_ == 0) {
             check(state.held && state.pressed, "platform key mapping and first press");
+            check(frame.input.pointer.inside && frame.input.pointer.primary.pressed &&
+                      frame.input.pointer.primary.held && frame.input.pointer.position.x == 320,
+                  "platform pointer position and press");
             check(frame.delta.seconds == 0, "application first frame has zero delta");
             windowEvent(window_, SDL_EVENT_WINDOW_FOCUS_LOST);
         } else if (frames_ == 1) {
+            check(!frame.input.pointer.inside && !frame.input.pointer.primary.held,
+                  "focus loss cancels pointer press");
             check(!state.held && state.released && frame.delta.seconds == 0,
                   "focus loss releases and pauses simulation");
             key(window_, SDL_EVENT_KEY_DOWN, SDL_SCANCODE_D); // Ignored while unfocused.
@@ -80,11 +95,18 @@ class TestApplicationLayer final : public yk::ApplicationLayer {
             windowEvent(window_, SDL_EVENT_WINDOW_FOCUS_GAINED);
             key(window_, SDL_EVENT_KEY_DOWN, SDL_SCANCODE_D);
             key(window_, SDL_EVENT_KEY_UP, SDL_SCANCODE_D);
+            pointerButton(window_, SDL_EVENT_MOUSE_BUTTON_DOWN);
+            pointerButton(window_, SDL_EVENT_MOUSE_BUTTON_UP);
         } else if (frames_ == 3) {
+            check(frame.input.pointer.primary.pressed && frame.input.pointer.primary.released &&
+                      !frame.input.pointer.primary.held,
+                  "platform same-frame mouse click");
             check(!state.held && state.pressed && state.released, "platform same-frame tap");
             check(frame.delta.seconds == 0, "focus gain resets frame clock");
             windowEvent(window_, SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED);
         } else if (frames_ == 4) {
+            check(!frame.input.pointer.primary.pressed && !frame.input.pointer.primary.released,
+                  "pointer edges clear next frame");
             check(!state.held && !state.pressed && !state.released, "edges cleared next frame");
             key(window_, SDL_EVENT_KEY_DOWN, SDL_SCANCODE_D);
         } else if (frames_ == 5) {

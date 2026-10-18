@@ -105,6 +105,15 @@ bool EditorApp::update(const FrameContext &frame) {
         (state_.gameView.focused || state_.gameView.hovered) &&
         state_.dialog.kind == DialogKind::None)
         gameInput = frame.input;
+    if (state_.playing()) {
+        const auto &view = state_.gameView;
+        gameInput.pointer = frame.input.pointer;
+        const Vec2 local = frame.input.pointer.position - view.origin;
+        gameInput.pointer.position = local * view.scale;
+        gameInput.pointer.inside = frame.input.pointer.inside && view.visible && local.x >= 0 &&
+                                   local.y >= 0 && local.x < view.size.x && local.y < view.size.y &&
+                                   state_.dialog.kind == DialogKind::None;
+    }
     state_.tick(state_.options.fixedStep ? 1.0 / 60.0 : seconds, gameInput);
 
     ImGui_ImplSDLRenderer3_NewFrame();

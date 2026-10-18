@@ -18,6 +18,68 @@
 #include <cmath>
 
 namespace yk {
+Vec2 uiTopLeft(UiAnchor anchor, Vec2 viewport, Vec2 size, Vec2 offset) {
+    const int index = static_cast<int>(anchor);
+    const auto place = [](int slot, float extent, float item, float delta) {
+        if (slot == 0)
+            return delta;
+        if (slot == 1)
+            return (extent - item) * 0.5F + delta;
+        return extent - item - delta;
+    };
+    return {place(index % 3, viewport.x, size.x, offset.x),
+            place(index / 3, viewport.y, size.y, offset.y)};
+}
+
+void UiButton::describe(TypeBuilder<UiButton> &type) {
+    type.category("UI").screenSpace().dependsOn("UiPanel").description(
+        "Clickable panel with hover and press feedback; opens a scene on release.");
+    type.field("changeScene", &UiButton::changeScene).asset("scene");
+    type.field("hoverColor", &UiButton::hoverColor);
+    type.field("pressedColor", &UiButton::pressedColor);
+}
+void UiButton::onFixedUpdate(GameContext &context, float) {
+    const auto pointer = context.pointer();
+    const auto hit = [&](const UiPanel &panel) {
+        const Vec2 origin =
+            uiTopLeft(panel.anchor, context.viewportSize(), panel.size, panel.offset);
+        return pointer.position.x >= origin.x && pointer.position.y >= origin.y &&
+               pointer.position.x < origin.x + panel.size.x &&
+               pointer.position.y < origin.y + panel.size.y;
+    };
+    const auto *panel = entity().get<UiPanel>();
+    hovered_ = panel && panel->enabled && pointer.inside && !context.inputLocked() && hit(*panel);
+    // Match drawing order so overlapping buttons cannot both activate.
+    if (hovered_) {
+        bool afterSelf = false;
+        for (const auto id : context.scene().orderedIds()) {
+            const auto *other = context.scene().find(id);
+            if (other == &entity()) {
+                afterSelf = true;
+                continue;
+            }
+            const auto *button = other->get<UiButton>();
+            const auto *surface = other->get<UiPanel>();
+            if (other != &entity() && other->activeInHierarchy() && button && button->enabled &&
+                surface && surface->enabled && hit(*surface) &&
+                (surface->layer > panel->layer || (surface->layer == panel->layer && afterSelf))) {
+                hovered_ = false;
+                break;
+            }
+        }
+    }
+    if (!hovered_)
+        armed_ = false;
+    if (hovered_ && pointer.primary.pressed)
+        armed_ = true;
+    if (pointer.primary.released) {
+        if (armed_ && hovered_ && !changeScene.empty())
+            context.requestSceneChange(changeScene);
+        armed_ = false;
+    }
+    if (!pointer.primary.held)
+        armed_ = false;
+}
 const std::vector<std::string> &uiAnchorNames() {
     static const std::vector<std::string> names{"TopLeft",    "Top",    "TopRight",
                                                 "Left",       "Center", "Right",
@@ -286,7 +348,8 @@ void Camera::describe(TypeBuilder<Camera> &type) {
     type.field("orthographicHeight", &Camera::orthographicHeight)
         .range(1, 500, 0.5)
         .tooltip("World units visible vertically.");
-    type.field("viewportInset", &Camera::viewportInset).range(0, 2000)
+    type.field("viewportInset", &Camera::viewportInset)
+        .range(0, 2000)
         .tooltip("Screen width/height reserved by UI at 1280 x 720; excluded from bounds framing.");
     type.field("targets", &Camera::targets);
     type.field("padding", &Camera::padding).range(0, 100, 0.25);
@@ -472,6 +535,7 @@ void registerEngineComponents(ComponentRegistry &registry) {
     registry.add<SpriteRenderer>("SpriteRenderer");
     registry.add<UiText>("UiText");
     registry.add<UiPanel>("UiPanel");
+    registry.add<UiButton>("UiButton");
     registry.add<UiImage>("UiImage");
     registry.add<Dialogue>("Dialogue");
     registry.add<PlayerInput>("PlayerInput");

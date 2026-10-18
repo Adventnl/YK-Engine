@@ -7,6 +7,11 @@
 
 namespace yk {
 void InputTracker::feed(const InputFrame &frame) {
+    pointer_.position = frame.pointer.position;
+    pointer_.inside = frame.pointer.inside;
+    pointer_.primary.held = frame.pointer.primary.held;
+    pointer_.primary.pressed |= frame.pointer.primary.pressed;
+    pointer_.primary.released |= frame.pointer.primary.released;
     for (std::size_t i = 0; i < keyCount; ++i) {
         const ButtonState state = frame.keyboard.state(static_cast<Key>(i));
         held_[i] = state.held;
@@ -28,6 +33,8 @@ void InputTracker::feed(const InputFrame &frame) {
     }
 }
 void InputTracker::fill(InputFrame &tick) {
+    tick.pointer = pointer_;
+    pointer_.primary.pressed = pointer_.primary.released = false;
     for (std::size_t i = 0; i < keyCount; ++i) {
         tick.keyboard.assign(static_cast<Key>(i), {held_[i], pressed_[i], released_[i]});
         pressed_[i] = released_[i] = false;
@@ -378,6 +385,9 @@ const physics::World &GameRuntime::physics() const {
 }
 const Keyboard &GameRuntime::keyboard() const {
     return impl_->tickInput.keyboard;
+}
+PointerState GameRuntime::pointer() const {
+    return impl_->tickInput.pointer;
 }
 const ActionInput &GameRuntime::input() const {
     return impl_->actions;

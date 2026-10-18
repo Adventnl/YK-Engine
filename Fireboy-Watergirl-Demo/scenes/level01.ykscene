@@ -2064,7 +2064,7 @@
       "parent": "073dfc15d271f98c",
       "transform": {
         "position": [
-          5.44,
+          2.08,
           13.04
         ],
         "rotation": 0,
@@ -2078,12 +2078,12 @@
           "type": "Collider",
           "properties": {
             "size": [
-              3.84,
+              2.88,
               0.8
             ],
             "layer": "Solid",
             "friction": 0.8,
-            "oneWay": true
+            "oneWay": false
           }
         }
       ]
@@ -2094,7 +2094,7 @@
       "parent": "073dfc15d271f98c",
       "transform": {
         "position": [
-          4.0,
+          1.12,
           13.04
         ],
         "rotation": 0,
@@ -2123,7 +2123,7 @@
       "parent": "073dfc15d271f98c",
       "transform": {
         "position": [
-          4.96,
+          2.08,
           13.04
         ],
         "rotation": 0,
@@ -2152,7 +2152,7 @@
       "parent": "073dfc15d271f98c",
       "transform": {
         "position": [
-          5.92,
+          3.04,
           13.04
         ],
         "rotation": 0,
@@ -2176,13 +2176,43 @@
       ]
     },
     {
-      "id": "2ccf8ebb63e1e905",
-      "name": "Bonus Ledge Block 0-3",
+      "id": "4000829c2b517036",
+      "name": "Right Low Step",
       "parent": "073dfc15d271f98c",
       "transform": {
         "position": [
-          6.88,
-          13.04
+          27.52,
+          14.96
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              1.92,
+              0.8
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "daf344ee799b5607",
+      "name": "Right Low Step Block 0-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          27.04,
+          14.96
         ],
         "rotation": 0,
         "scale": [
@@ -2194,7 +2224,36 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_3.png",
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "fc676a3172b0b7ee",
+      "name": "Right Low Step Block 0-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          28.0,
+          14.96
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
             "size": [
               0.96,
               0.8
@@ -2210,7 +2269,7 @@
       "parent": "073dfc15d271f98c",
       "transform": {
         "position": [
-          29.92,
+          29.44,
           13.04
         ],
         "rotation": 0,
@@ -2224,12 +2283,12 @@
           "type": "Collider",
           "properties": {
             "size": [
-              4.8,
+              1.92,
               0.8
             ],
             "layer": "Solid",
             "friction": 0.8,
-            "oneWay": true
+            "oneWay": false
           }
         }
       ]
@@ -2240,7 +2299,7 @@
       "parent": "073dfc15d271f98c",
       "transform": {
         "position": [
-          28.0,
+          28.96,
           13.04
         ],
         "rotation": 0,
@@ -2269,7 +2328,7 @@
       "parent": "073dfc15d271f98c",
       "transform": {
         "position": [
-          28.96,
+          29.92,
           13.04
         ],
         "rotation": 0,
@@ -2293,13 +2352,13 @@
       ]
     },
     {
-      "id": "b767c13e0bcb39c3",
-      "name": "Right Step Block 0-2",
+      "id": "210109536a2ed351",
+      "name": "Right High Step",
       "parent": "073dfc15d271f98c",
       "transform": {
         "position": [
-          29.92,
-          13.04
+          31.36,
+          11.12
         ],
         "rotation": 0,
         "scale": [
@@ -2309,26 +2368,27 @@
       },
       "components": [
         {
-          "type": "SpriteRenderer",
+          "type": "Collider",
           "properties": {
-            "texture": "assets/reference/kit/block_2.png",
             "size": [
-              0.96,
+              1.92,
               0.8
             ],
-            "layer": 10
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
           }
         }
       ]
     },
     {
-      "id": "923076ca3888895c",
-      "name": "Right Step Block 0-3",
+      "id": "35f039916b54c237",
+      "name": "Right High Step Block 0-0",
       "parent": "073dfc15d271f98c",
       "transform": {
         "position": [
           30.88,
-          13.04
+          11.12
         ],
         "rotation": 0,
         "scale": [
@@ -2340,7 +2400,7 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_3.png",
+            "texture": "assets/reference/kit/block_0.png",
             "size": [
               0.96,
               0.8
@@ -2351,13 +2411,13 @@
       ]
     },
     {
-      "id": "371c5a1d2c8b39f7",
-      "name": "Right Step Block 0-4",
+      "id": "5b915819292f984e",
+      "name": "Right High Step Block 0-1",
       "parent": "073dfc15d271f98c",
       "transform": {
         "position": [
           31.84,
-          13.04
+          11.12
         ],
         "rotation": 0,
         "scale": [
@@ -2369,7 +2429,7 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_4.png",
+            "texture": "assets/reference/kit/block_1.png",
             "size": [
               0.96,
               0.8
@@ -2404,7 +2464,7 @@
             ],
             "layer": "Solid",
             "friction": 0.8,
-            "oneWay": true
+            "oneWay": false
           }
         }
       ]
@@ -2819,7 +2879,7 @@
       "parent": "073dfc15d271f98c",
       "transform": {
         "position": [
-          13.12,
+          14.08,
           9.84
         ],
         "rotation": 0,
@@ -2833,12 +2893,12 @@
           "type": "Collider",
           "properties": {
             "size": [
-              5.76,
+              3.84,
               0.8
             ],
             "layer": "Solid",
             "friction": 0.8,
-            "oneWay": true
+            "oneWay": false
           }
         }
       ]
@@ -2849,7 +2909,7 @@
       "parent": "073dfc15d271f98c",
       "transform": {
         "position": [
-          10.72,
+          12.64,
           9.84
         ],
         "rotation": 0,
@@ -2878,7 +2938,7 @@
       "parent": "073dfc15d271f98c",
       "transform": {
         "position": [
-          11.68,
+          13.6,
           9.84
         ],
         "rotation": 0,
@@ -2907,7 +2967,7 @@
       "parent": "073dfc15d271f98c",
       "transform": {
         "position": [
-          12.64,
+          14.56,
           9.84
         ],
         "rotation": 0,
@@ -2936,7 +2996,7 @@
       "parent": "073dfc15d271f98c",
       "transform": {
         "position": [
-          13.6,
+          15.52,
           9.84
         ],
         "rotation": 0,
@@ -2960,13 +3020,13 @@
       ]
     },
     {
-      "id": "b95c00aac56eb7bb",
-      "name": "Upper Left Landing Block 0-4",
+      "id": "814a95461f5723d9",
+      "name": "Exit Step",
       "parent": "073dfc15d271f98c",
       "transform": {
         "position": [
-          14.56,
-          9.84
+          11.2,
+          7.92
         ],
         "rotation": 0,
         "scale": [
@@ -2976,26 +3036,27 @@
       },
       "components": [
         {
-          "type": "SpriteRenderer",
+          "type": "Collider",
           "properties": {
-            "texture": "assets/reference/kit/block_4.png",
             "size": [
-              0.96,
+              1.92,
               0.8
             ],
-            "layer": 10
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
           }
         }
       ]
     },
     {
-      "id": "f351cdab408d7de2",
-      "name": "Upper Left Landing Block 0-5",
+      "id": "bed95b08e3b9418c",
+      "name": "Exit Step Block 0-0",
       "parent": "073dfc15d271f98c",
       "transform": {
         "position": [
-          15.52,
-          9.84
+          10.72,
+          7.92
         ],
         "rotation": 0,
         "scale": [
@@ -3018,12 +3079,41 @@
       ]
     },
     {
+      "id": "01ab96c6bd7e5631",
+      "name": "Exit Step Block 0-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          11.68,
+          7.92
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
       "id": "203120e0af2cb53f",
       "name": "Exit Deck",
       "parent": "073dfc15d271f98c",
       "transform": {
         "position": [
-          7.84,
+          6.88,
           6.0
         ],
         "rotation": 0,
@@ -3037,12 +3127,12 @@
           "type": "Collider",
           "properties": {
             "size": [
-              8.64,
+              6.72,
               0.8
             ],
             "layer": "Solid",
             "friction": 0.8,
-            "oneWay": true
+            "oneWay": false
           }
         }
       ]
@@ -3251,64 +3341,6 @@
       ]
     },
     {
-      "id": "2f6fc62c9d467487",
-      "name": "Exit Deck Block 0-7",
-      "parent": "073dfc15d271f98c",
-      "transform": {
-        "position": [
-          10.72,
-          6.0
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_2.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "5676f45a252fd9a4",
-      "name": "Exit Deck Block 0-8",
-      "parent": "073dfc15d271f98c",
-      "transform": {
-        "position": [
-          11.68,
-          6.0
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_3.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
       "id": "e921ae80922f94b7",
       "name": "Red Shuttle",
       "parent": "5f42ed0f0862bf81",
@@ -3350,7 +3382,7 @@
             ],
             "layer": "Solid",
             "friction": 1,
-            "oneWay": true
+            "oneWay": false
           }
         },
         {
@@ -3509,7 +3541,7 @@
             ],
             "layer": "Solid",
             "friction": 1,
-            "oneWay": true
+            "oneWay": false
           }
         },
         {
@@ -3668,7 +3700,7 @@
             ],
             "layer": "Solid",
             "friction": 1,
-            "oneWay": true
+            "oneWay": false
           }
         },
         {
@@ -3692,7 +3724,7 @@
       "transform": {
         "position": [
           24.64,
-          8.84
+          8.8
         ],
         "rotation": 0,
         "scale": [
@@ -3704,10 +3736,10 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/png/props/center_lever.png",
+            "texture": "assets/reference/kit/lever.png",
             "size": [
-              1.04,
-              1.2
+              1.28,
+              1.28
             ],
             "layer": 32
           }
@@ -3731,7 +3763,8 @@
               "0b1b191658414e20"
             ],
             "sound": "assets/audio/lever.wav",
-            "onColor": "#b6ffb9ff"
+            "onColor": "#ffffffff",
+            "flipSprite": true
           }
         }
       ]
@@ -3863,13 +3896,13 @@
       ]
     },
     {
-      "id": "8e03412a820686c9",
-      "name": "Ember Gem 1496 570",
+      "id": "d97cb6efaa662980",
+      "name": "Ember Gem 1568 474",
       "parent": "c2e6214bb51bcbf1",
       "transform": {
         "position": [
-          29.92,
-          11.4
+          31.36,
+          9.48
         ],
         "rotation": 0,
         "scale": [
@@ -3989,12 +4022,12 @@
       ]
     },
     {
-      "id": "b58644294443f19e",
-      "name": "Tide Gem 248 570",
+      "id": "3ec987e1bde36aa8",
+      "name": "Tide Gem 104 570",
       "parent": "c2e6214bb51bcbf1",
       "transform": {
         "position": [
-          4.96,
+          2.08,
           11.4
         ],
         "rotation": 0,
@@ -4178,12 +4211,12 @@
       ]
     },
     {
-      "id": "2cbb140b018f0634",
-      "name": "Tide Gem 520 218",
+      "id": "58e7e1da0b040e3a",
+      "name": "Tide Gem 472 218",
       "parent": "c2e6214bb51bcbf1",
       "transform": {
         "position": [
-          10.4,
+          9.44,
           4.36
         ],
         "rotation": 0,
@@ -4899,13 +4932,13 @@
       ]
     },
     {
-      "id": "f400710dd1b184ba",
-      "name": "Left Wall",
+      "id": "7352c716e8e6b08f",
+      "name": "Left Corner",
       "parent": "073dfc15d271f98c",
       "transform": {
         "position": [
-          0.48,
-          10.24
+          0.32,
+          17.68
         ],
         "rotation": 0,
         "scale": [
@@ -4918,8 +4951,1374 @@
           "type": "Collider",
           "properties": {
             "size": [
-              0.32,
-              15.68
+              0.64,
+              2.4
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "907a32e17373888c",
+      "name": "Left Corner Block 0-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          0.32,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.64,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "ccd29e83cc9841f2",
+      "name": "Left Corner Block 1-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          0.32,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.64,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "c5975e6d93bf0cf2",
+      "name": "Left Corner Block 2-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          0.32,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.64,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "08500e1ecefca49a",
+      "name": "Right Corner",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          32.88,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              1.12,
+              2.4
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "948198597189ddf8",
+      "name": "Right Corner Block 0-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          32.8,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "37b38e81178150eb",
+      "name": "Right Corner Block 0-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          33.36,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.16,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "bfe0057cbb062a7f",
+      "name": "Right Corner Block 1-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          32.8,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "041f8c6d85a3eefb",
+      "name": "Right Corner Block 1-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          33.36,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.16,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "0a0653778e19fe5c",
+      "name": "Right Corner Block 2-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          32.8,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "cad0f6940fc8ad27",
+      "name": "Right Corner Block 2-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          33.36,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.16,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "ea166aff70dd8160",
+      "name": "Foundation",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          16.72,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              33.44,
+              0.8
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "865354959de33f78",
+      "name": "Foundation Block 0-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          0.48,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "1f119897e82bd362",
+      "name": "Foundation Block 0-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          1.44,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "fd2f6f199b61f8a1",
+      "name": "Foundation Block 0-2",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          2.4,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "e18ff2c09403cf37",
+      "name": "Foundation Block 0-3",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          3.36,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "5b96ffd7909ba9a4",
+      "name": "Foundation Block 0-4",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          4.32,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "f78e377d59ddfa28",
+      "name": "Foundation Block 0-5",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          5.28,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "0b2e182875ffc64c",
+      "name": "Foundation Block 0-6",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          6.24,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "f28f86611e3d6bd6",
+      "name": "Foundation Block 0-7",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          7.2,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "692e7f741d899a52",
+      "name": "Foundation Block 0-8",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          8.16,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "42e6d2aceaddc092",
+      "name": "Foundation Block 0-9",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          9.12,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "33ae180619c0294a",
+      "name": "Foundation Block 0-10",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          10.08,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "5f7f4333c36f61d6",
+      "name": "Foundation Block 0-11",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          11.04,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "b44752b1ab87c10e",
+      "name": "Foundation Block 0-12",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          12.0,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "a3ab8d66fb9fd821",
+      "name": "Foundation Block 0-13",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          12.96,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "1b5d019e8971843d",
+      "name": "Foundation Block 0-14",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          13.92,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "0eddaa7f798cddc9",
+      "name": "Foundation Block 0-15",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          14.88,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "d21db9fa44eb8e3f",
+      "name": "Foundation Block 0-16",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          15.84,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "3037f658003a7e64",
+      "name": "Foundation Block 0-17",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          16.8,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "2a61abfc3412cca1",
+      "name": "Foundation Block 0-18",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          17.76,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "65dd69cfb2d8d1e4",
+      "name": "Foundation Block 0-19",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          18.72,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "05670a8efeb11447",
+      "name": "Foundation Block 0-20",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          19.68,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "7f8af7639db0e24c",
+      "name": "Foundation Block 0-21",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          20.64,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "a03a42e52fea6659",
+      "name": "Foundation Block 0-22",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          21.6,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "1fa3b56150f5f551",
+      "name": "Foundation Block 0-23",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          22.56,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "c14bf095d4c199d5",
+      "name": "Foundation Block 0-24",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          23.52,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "5810cae53f34d99a",
+      "name": "Foundation Block 0-25",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          24.48,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "ad3f75de2548101a",
+      "name": "Foundation Block 0-26",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          25.44,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "815038138828d47f",
+      "name": "Foundation Block 0-27",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          26.4,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "a8dd46c56c1ea8b4",
+      "name": "Foundation Block 0-28",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          27.36,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "44333aff6f508240",
+      "name": "Foundation Block 0-29",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          28.32,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "1fe8fd5fb54663b2",
+      "name": "Foundation Block 0-30",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          29.28,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "7f7d3bffea207414",
+      "name": "Foundation Block 0-31",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          30.24,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "f28c4be180cb0510",
+      "name": "Foundation Block 0-32",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          31.2,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "b3387c809f95dffd",
+      "name": "Foundation Block 0-33",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          32.16,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "e9b2386b17906e8a",
+      "name": "Foundation Block 0-34",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          33.04,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.8,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "f400710dd1b184ba",
+      "name": "Left Wall",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          -0.32,
+          9.41
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              0.64,
+              18.82
             ],
             "layer": "Solid",
             "friction": 0.8,
@@ -4934,8 +6333,8 @@
       "parent": "073dfc15d271f98c",
       "transform": {
         "position": [
-          32.48,
-          10.24
+          33.76,
+          9.41
         ],
         "rotation": 0,
         "scale": [
@@ -4948,8 +6347,8 @@
           "type": "Collider",
           "properties": {
             "size": [
-              0.32,
-              15.68
+              0.64,
+              18.82
             ],
             "layer": "Solid",
             "friction": 0.8,

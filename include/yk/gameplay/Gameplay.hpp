@@ -260,6 +260,7 @@ class Lever final : public Component {
     bool startsOn{false};
     float cooldown{0.4F};             // Seconds before it can be flipped again.
     Color onColor{90, 220, 110, 255}; // The sprite's own color is the off look.
+    bool flipSprite{false};           // Mirror the authored lever pose when on.
     AssetRef sound;
     static void describe(TypeBuilder<Lever> &type);
 
@@ -276,6 +277,7 @@ class Lever final : public Component {
     bool on_{};
     float cooldown_{};
     Color baseColor_{};
+    bool baseFlip_{};
 };
 
 // A gate: slides by `openOffset` and/or turns by `openRotation` about its origin while its combined

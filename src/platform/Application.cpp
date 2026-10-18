@@ -148,6 +148,7 @@ struct Application::Impl {
     }
     void releaseAll() {
         input.keyboard.releaseAll();
+        input.pointer = {};
         for (auto &pad : input.gamepads) {
             const bool connected = pad.connected();
             pad.setConnected(false); // Clears every button and axis.
@@ -287,6 +288,29 @@ Status Application::run(ApplicationLayer &layer, const RunOptions &options) {
                 event.key.windowID == SDL_GetWindowID(impl_->window.get())) {
                 if (auto key = mapKey(event.key.scancode))
                     impl_->input.keyboard.set(*key, event.type == SDL_EVENT_KEY_DOWN);
+            }
+            auto &pointer = impl_->input.pointer;
+            if (event.type == SDL_EVENT_WINDOW_MOUSE_LEAVE &&
+                event.window.windowID == SDL_GetWindowID(impl_->window.get()))
+                pointer.inside = false;
+            if (focused && !minimized && event.type == SDL_EVENT_MOUSE_MOTION &&
+                event.motion.windowID == SDL_GetWindowID(impl_->window.get())) {
+                pointer.position = {event.motion.x, event.motion.y};
+                pointer.inside = true;
+            }
+            if (focused && !minimized &&
+                (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN ||
+                 event.type == SDL_EVENT_MOUSE_BUTTON_UP) &&
+                event.button.windowID == SDL_GetWindowID(impl_->window.get()) &&
+                event.button.button == SDL_BUTTON_LEFT) {
+                pointer.position = {event.button.x, event.button.y};
+                pointer.inside = true;
+                const bool down = event.type == SDL_EVENT_MOUSE_BUTTON_DOWN;
+                pointer.primary.held = down;
+                if (down)
+                    pointer.primary.pressed = true;
+                else
+                    pointer.primary.released = true;
             }
             if (event.type == SDL_EVENT_GAMEPAD_ADDED) {
                 impl_->addPad(event.gdevice.which);

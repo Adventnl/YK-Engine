@@ -28,6 +28,9 @@ class GameContext {
     virtual physics::World &physics() = 0;
     // Input as seen by the current fixed tick: edges (pressed/released) appear on exactly one tick.
     virtual const Keyboard &keyboard() const = 0;
+    virtual PointerState pointer() const {
+        return {};
+    }
     // Named actions ("Player1/Jump") evaluated from the project's input map for the current tick.
     // Gameplay should ask for actions, never for keys.
     virtual const ActionInput &input() const = 0;

@@ -84,6 +84,7 @@ class GameRuntime final : public GameContext {
     Scene &scene() override;
     physics::World &physics() override;
     const Keyboard &keyboard() const override;
+    PointerState pointer() const override;
     const ActionInput &input() const override;
     AudioSink &audio() override;
     const AssetSource *assets() const override;

@@ -34,6 +34,9 @@ def prepare_kit():
     button.crop((13, 0, 51, 15)).save(target / "button_cap.png")
     platform = Image.open(ART / "png/platforms/left_moving_platform.png")
     platform.crop((2, 12, 145, 46)).save(target / "platform.png")
+    # The reference includes stray pixels and a large transparent right margin.
+    Image.open(ART / "png/props/center_lever.png").crop((3, 0, 60, 56)).save(
+        target / "lever.png")
     for color, filename in (("red", "red_pit"), ("blue", "blue_pit"),
                             ("green", "upper_green_pit")):
         source = Image.open(ART / f"png/terrain/{filename}.png")
@@ -85,14 +88,13 @@ class Level:
                  oneWay=one_way)
         self.scene.add(node, parent="Terrain")
 
-    def deck(self, name, x, y, w, rows=1, one_way=True):
-        assert w % 48 == 0
+    def deck(self, name, x, y, w, rows=1, one_way=False):
         self.solid(name, x, y, w, rows * 40, one_way)
         for row in range(rows):
-            for col in range(w // 48):
+            for col in range((w + 47) // 48):
                 self.scene.add(sprite(f"{name} Block {row}-{col}",
                     f"kit/block_{(col + row * 2) % 5}.png", x + col * 48,
-                    y + row * 40, 48, 40), parent="Terrain")
+                    y + row * 40, min(48, w - col * 48), 40), parent="Terrain")
 
     def pool(self, name, x, y, w, color):
         self.deck(name + " Basin", x, y + 48, w, one_way=False)
@@ -108,7 +110,7 @@ class Level:
         node = sprite(name, "kit/platform.png", x, y, w, 28, 25)
         node.add("RigidBody", type="Kinematic")
         node.add("Collider", size=xy(w, 28), layer="Solid", friction=1,
-                 oneWay=True)
+                 oneWay=False)
         node.add("MovingPlatform", travel=xy(*travel), speed=speed, pause=1.4,
                  requireSignal=True)
         self.scene.add(node, parent="Mechanisms")
@@ -117,7 +119,8 @@ class Level:
         root = sprite(name, "kit/button_housing.png", x - 29.5, floor - 15,
                       59, 15, 32)
         root.add("PressurePlate", pad=ref(name + " Cap"), sensing="Weight",
-                 targets=[ref(target)], latch=True, pressDepth=0.16,
+                 targets=[ref(t) for t in ([target] if isinstance(target, str) else target)],
+                 latch=True, pressDepth=0.16,
                  pressSpeed=0.8, acceleration=5, pressedColor="#ffffffff",
                  pressSound="assets/audio/plate_down.wav",
                  releaseSound="assets/audio/plate_up.wav")
@@ -132,11 +135,35 @@ class Level:
         self.scene.add(root, parent="Mechanisms")
 
     def lever(self, name, x, floor, target):
-        node = sprite(name, "png/props/center_lever.png", x - 26, floor - 60,
-                      52, 60, 32)
+        node = sprite(name, "kit/lever.png", x - 32, floor - 64,
+                      64, 64, 32)
         node.add("Collider", size=xy(100, 100), isTrigger=True, layer="Sensor")
         node.add("Lever", interactAction="Interact", targets=[ref(target)],
-                 sound="assets/audio/lever.wav", onColor="#b6ffb9ff")
+                 sound="assets/audio/lever.wav", onColor="#ffffffff", flipSprite=True)
+        self.scene.add(node, parent="Mechanisms")
+
+    def lift(self, name, x, y, travel):
+        """An elevator has a visible shaft, end stops, and a solid riding deck."""
+        top, bottom = y + travel, y + 28
+        for side in (x + 12, x + 176):
+            self.scene.add(Node(name + f" Rail {side}", xy(side, (top + bottom) / 2)).add(
+                "SpriteRenderer", size=xy(8, bottom - top + 48), color="#60788aff", layer=5),
+                parent="Mechanisms")
+            for stop in (top, y):
+                self.scene.add(Node(name + f" Stop {side} {stop}", xy(side, stop)).add(
+                    "SpriteRenderer", size=xy(20, 8), color="#73d9eaff", layer=6),
+                    parent="Mechanisms")
+        self.mover(name, x, y, 192, (0, travel), 1.8)
+
+    def gate(self, name, x, floor):
+        node = Node(name, xy(x, floor - 54))
+        node.add("SpriteRenderer", size=xy(24, 108), color="#8ea5b5ff", layer=24)
+        node.add("RigidBody", type="Kinematic")
+        node.add("Collider", size=xy(24, 108), layer="Solid")
+        node.add("Door", openOffset=xy(0, 140), speed=2.4)
+        for y in (-40, -20, 0, 20, 40):
+            node.child(Node(name + f" Stripe {y}", xy(0, y))).add(
+                "SpriteRenderer", size=xy(24, 6), color="#ffd16fff", layer=25)
         self.scene.add(node, parent="Mechanisms")
 
     def gem(self, tag, x, y):
@@ -173,8 +200,11 @@ class Level:
                     "PlatformerController": {"jumpHeight": 4.2, "moveSpeed": 5.8}})
             self.scene.place("prefabs/level/spawn_point.ykprefab", tag + " Spawn", at,
                 parent="Characters", overrides={"SpawnPoint": {"character": ref(tag)}})
-        self.solid("Left Wall", 16, 120, 16, 784)
-        self.solid("Right Wall", 1616, 120, 16, 784)
+        self.deck("Left Corner", 0, 824, 32, rows=3)
+        self.deck("Right Corner", 1616, 824, WIDTH - 1616, rows=3)
+        self.deck("Foundation", 0, 904, WIDTH)
+        self.solid("Left Wall", -32, 0, 32, HEIGHT)
+        self.solid("Right Wall", WIDTH, 0, 32, HEIGHT)
         self.scene.add(Node("Level Flow").add("LevelFlow",
             goals=[ref("Ember Exit"), ref("Tide Exit")], completeDelay=3,
             nextScene="scenes/level02.ykscene" if self.number == 1 else "scenes/menu.ykscene",
@@ -187,7 +217,10 @@ class Level:
             "Tide Gems": {"UiText": {"text": "WATERGIRL {tide_gems:0}/{tide_gems_total:0}"}},
             "Controls": {"UiText": {"text": "A/D/W + ARROWS  |  S/DOWN USE  |  R RETRY  P PAUSE  M MENU", "scale": 1.5}},
         })
-        text(self.scene, "Level Number", f"LEVEL {self.number}  /  2", "Top", [0, 76], 2)
+        caption = f"LEVEL {self.number}  /  2"
+        if self.number == 2:
+            caption += "  -  BUTTONS STAY ON"
+        text(self.scene, "Level Number", caption, "Top", [0, 76], 2)
         action(self.scene, "Return to Menu", "Menu", "scenes/menu.ykscene")
         self.scene.add(Node("Music").add("AudioSource", sound="assets/audio/music.wav",
                                         volume=0.22, loop=True, playOnStart=True))
@@ -201,88 +234,70 @@ def level_one():
     level.deck("Middle Floor", 608, 824, 384, rows=2, one_way=False)
     level.pool("Blue Pool", 992, 824, 240, "blue")
     level.deck("Right Floor", 1232, 824, 384, rows=2, one_way=False)
-    level.deck("Bonus Ledge", 176, 632, 192)
-    level.deck("Right Step", 1376, 632, 240)
+    level.deck("Bonus Ledge", 32, 632, 144)
+    level.deck("Right Low Step", 1328, 728, 96)
+    level.deck("Right Step", 1424, 632, 96)
+    level.deck("Right High Step", 1520, 536, 96)
     level.deck("Upper Right Landing", 1088, 472, 240)
     level.pool("Green Pool", 800, 472, 288, "green")
-    level.deck("Upper Left Landing", 512, 472, 288)
-    level.deck("Exit Deck", 176, 280, 432)
+    level.deck("Upper Left Landing", 608, 472, 192)
+    level.deck("Exit Step", 512, 376, 96)
+    level.deck("Exit Deck", 176, 280, 336)
     level.mover("Red Shuttle", 384, 716, 144, (64, 0))
     level.plate("Red Crossing Button", 272, 824, "Red Shuttle")
     level.mover("Blue Shuttle", 1008, 716, 144, (64, 0))
     level.plate("Blue Crossing Button", 896, 824, "Blue Shuttle")
     level.mover("Green Shuttle", 816, 392, 144, (112, 0))
     level.lever("Upper Crossing Lever", 1232, 472, "Green Shuttle")
-    for at in ((488, 790), (744, 762), (1496, 570), (200, 218)):
+    for at in ((488, 790), (744, 762), (1568, 474), (200, 218)):
         level.gem("Ember", *at)
-    for at in ((248, 570), (1112, 790), (1160, 410), (520, 218)):
+    for at in ((104, 570), (1112, 790), (1160, 410), (472, 218)):
         level.gem("Tide", *at)
     level.finish(((280, 424), 280), 824)
 
 
 def level_two():
     level = Level(2)
+    # Three distinct lanes: cross right, return left, then climb to the exits.
+    # The long crossings exceed a full running jump, so their controls matter.
     level.deck("Starting Floor", 32, 824, 480, rows=2, one_way=False)
     level.pool("Long Green Pool", 512, 824, 624, "green")
-    level.deck("Lift Landing", 1136, 824, 480, rows=2, one_way=False)
-    level.mover("Long Shuttle", 528, 696, 192, (400, 0), 2)
+    level.deck("Lift Landing", 1136, 824, 240, rows=2)
+    level.deck("Lift Far Bank", 1568, 824, 48, rows=2)
+    level.mover("Long Shuttle", 528, 696, 192, (400, 0), 2.6)
     level.plate("Shuttle Button", 400, 824, "Long Shuttle")
-    level.mover("Elevator", 1376, 672, 192, (0, -264), 1.8)
+
+    # The lift runs beside the landing, with 48 px of horizontal clearance.
+    level.lift("Elevator", 1376, 824, -336)
     level.lever("Elevator Lever", 1232, 824, "Elevator")
-    level.deck("Upper Right Landing", 1136, 408, 192)
-    level.pool("Upper Blue Pool", 896, 408, 240, "blue")
-    level.deck("Upper Middle Landing", 608, 408, 288)
-    level.pool("Upper Red Pool", 368, 408, 240, "red")
-    level.deck("Exit Deck", 80, 408, 288)
-    level.mover("Blue Shuttle", 912, 328, 144, (64, 0))
-    level.plate("Blue Crossing Button", 1240, 408, "Blue Shuttle")
-    level.mover("Red Shuttle", 384, 328, 144, (64, 0))
-    level.plate("Red Crossing Button", 800, 408, "Red Shuttle")
-    for at in ((304, 762), (792, 634), (1480, 346), (488, 374)):
+    level.deck("Upper Right Landing", 1136, 488, 192)
+    level.pool("Upper Blue Pool", 512, 488, 624, "blue")
+    level.deck("Upper Left Landing", 224, 488, 288)
+    level.mover("Blue Shuttle", 944, 448, 192, (-416, 0), 2.6)
+    level.gate("Landing Gate", 1152, 488)
+    level.plate("Blue Crossing Button", 1240, 488, ["Blue Shuttle", "Landing Gate"])
+
+    # Two readable 120 px steps lead out of the return lane. The shorter red
+    # crossing is the final jump/ride challenge, with a wide, clear exit deck.
+    level.lift("Return Elevator", 32, 488, -240)
+    level.plate("Return Lift Button", 304, 488, "Return Elevator")
+    level.deck("Final Approach", 272, 248, 240, one_way=False)
+    level.pool("Upper Red Pool", 512, 248, 384, "red")
+    level.deck("Exit Deck", 896, 248, 480, one_way=False)
+    level.mover("Red Shuttle", 528, 224, 144, (208, 0), 1.8)
+    level.plate("Red Crossing Button", 432, 248, "Red Shuttle")
+    for name in ("Shuttle Button", "Blue Crossing Button", "Red Crossing Button", "Return Lift Button"):
+        level.scene.set_property(name, "PressurePlate", pressedColor="#91ffc5ff")
+    for at in ((304, 762), (792, 634), (1200, 426), (704, 214)):
         level.gem("Ember", *at)
-    for at in ((640, 634), (1056, 634), (1016, 374), (680, 346)):
+    for at in ((640, 634), (1056, 634), (824, 454), (128, 266)):
         level.gem("Tide", *at)
-    level.finish(((184, 296), 408), 824)
+    level.finish(((1016, 1208), 248), 824)
 
 
 def menus():
-    for select in (False, True):
-        scene = room("Level Select" if select else "Main Menu")
-        # Deliberately screen-space: the title and controls remain centered
-        # when an exported game is resized.
-        scene.add(Node("Menu Scrim").add("UiImage", fillScreen=True,
-                   color="#091422b8", layer=0))
-        text(scene, "Title", "FIREBOY & WATERGIRL", "Center", [0, -205], 5,
-             "#fff0c9ff")
-        text(scene, "Subtitle", "A TWO-PLAYER CO-OP ADVENTURE", "Center", [0, -147], 2)
-        for color, x, frame in (("orange", 460, 0), ("blue", 1100, 0)):
-            scene.add(sprite(color + " Hero", f"{color}_motion.png", x, 365,
-                             112, 168, 15, columns=8, rows=4, frame=frame))
-        if select:
-            text(scene, "Prompt", "CHOOSE YOUR LEVEL", "Center", [0, -70], 3)
-            for n, y, caption, accent in ((1, 0, "CROSSINGS & CLIMB", "#efad75ff"),
-                                           (2, 92, "SHUTTLE & LIFT", "#71d9ffff")):
-                scene.add(Node(f"Level {n} Card").add("UiPanel", anchor="Center",
-                           size=[460, 76], offset=[0, y], color="#152e42f0", layer=2))
-                text(scene, f"Level {n} Label", f"[{n}]  LEVEL {n}", "Center", [0, y - 14],
-                     3, accent)
-                text(scene, f"Level {n} Detail", caption, "Center", [0, y + 16], 1.5)
-                action(scene, f"Select Level {n}", f"Level{n}", f"scenes/level0{n}.ykscene")
-            action(scene, "Default Level", "Continue", "scenes/level01.ykscene")
-            action(scene, "Back", "Menu", "scenes/menu.ykscene")
-            text(scene, "Menu Hint", "1 / ENTER: LEVEL 1    2: LEVEL 2    M: BACK", "Center", [0, 180], 2)
-        else:
-            scene.add(Node("Play Card").add("UiPanel", anchor="Center", size=[360, 80],
-                       offset=[0, 0], color="#23546aff", layer=2))
-            text(scene, "Play Label", "PLAY  [ENTER]", "Center", [0, 0], 3, "#fff0c9ff")
-            text(scene, "Play Hint", "TWO LEVELS  /  ONE KEYBOARD", "Center", [0, 80], 2)
-            action(scene, "Play", "Continue", "scenes/levels.ykscene")
-        text(scene, "Fireboy Controls", "FIREBOY: A D MOVE / W JUMP / S USE", "Bottom", [0, 100], 2,
-             "#efad75ff")
-        text(scene, "Watergirl Controls", "WATERGIRL: ARROWS MOVE / UP JUMP / DOWN USE", "Bottom", [0, 70], 2,
-             "#71d9ffff")
-        text(scene, "Coop Hint", "REACH BOTH MATCHING DOORS TOGETHER", "Bottom", [0, 32], 1.5)
-        scene.write("scenes/levels.ykscene" if select else "scenes/menu.ykscene")
+    from menus import build_menus
+    build_menus(PROJECT)
 
 
 def configure_project():

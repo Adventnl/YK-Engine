@@ -328,12 +328,15 @@ void Lever::describe(TypeBuilder<Lever> &type) {
         .range(0, 10, 0.05)
         .tooltip("Seconds before it can flip again.");
     type.field("onColor", &Lever::onColor);
+    type.field("flipSprite", &Lever::flipSprite);
     type.field("sound", &Lever::sound).asset("sound");
     type.field("on", &Lever::on_).readOnly();
 }
 void Lever::onStart(GameContext &context) {
-    if (const auto *sprite = entity().get<SpriteRenderer>())
+    if (const auto *sprite = entity().get<SpriteRenderer>()) {
         baseColor_ = sprite->color;
+        baseFlip_ = sprite->flipX;
+    }
     on_ = startsOn;
     cooldown_ = 0.0F;
     applyVisuals();
@@ -342,8 +345,10 @@ void Lever::onStart(GameContext &context) {
 void Lever::applyVisuals() {
     if (auto *animated = entity().get<AnimatedSprite>())
         animated->setBool("on", on_); // Art shows it through its controller.
-    else if (auto *sprite = entity().get<SpriteRenderer>())
+    else if (auto *sprite = entity().get<SpriteRenderer>()) {
         sprite->color = on_ ? onColor : baseColor_;
+        sprite->flipX = baseFlip_ != (flipSprite && on_);
+    }
 }
 void Lever::onFixedUpdate(GameContext &context, float seconds) {
     cooldown_ = std::max(0.0F, cooldown_ - seconds);

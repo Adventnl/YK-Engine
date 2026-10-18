@@ -167,16 +167,7 @@ const Camera *SceneRenderer::primaryCamera(const Scene &scene) {
 }
 
 Vec2 SceneRenderer::anchoredTopLeft(UiAnchor anchor, Vec2 viewport, Vec2 size, Vec2 offset) {
-    const int index = static_cast<int>(anchor);
-    const int column = index % 3, row = index / 3; // Left/center/right, top/middle/bottom.
-    const auto place = [](int slot, float extent, float item, float delta) {
-        if (slot == 0)
-            return delta;
-        if (slot == 1)
-            return (extent - item) * 0.5F + delta;
-        return extent - item - delta;
-    };
-    return {place(column, viewport.x, size.x, offset.x), place(row, viewport.y, size.y, offset.y)};
+    return uiTopLeft(anchor, viewport, size, offset);
 }
 
 const SceneRenderer::TextureInfo &SceneRenderer::textureFor(Renderer &renderer,
@@ -869,6 +860,9 @@ Status SceneRenderer::drawUi(Renderer &renderer, const Scene &scene, Vec2 viewpo
             sprite.transform.position =
                 anchoredTopLeft(panel->anchor, viewport, panel->size, panel->offset);
             sprite.tint = panel->color;
+            if (const auto *button = entity->get<UiButton>();
+                button && button->enabled && button->hovered())
+                sprite.tint = button->pressed() ? button->pressedColor : button->hoverColor;
             sprite.layer = panel->layer;
             if (auto submitted = renderer.submit(sprite); !submitted)
                 return submitted;

@@ -465,6 +465,7 @@ Requires: `Collider`
 | `startsOn` | bool | false |  |
 | `cooldown` | float | 0.4 | Seconds before it can flip again. (range 0 to 10) |
 | `onColor` | color | "#5adc6eff" |  |
+| `flipSprite` | bool | false |  |
 | `sound` | asset | "" |  |
 | `on` | bool | false | (runtime state, not saved) |
 
@@ -1112,6 +1113,20 @@ Screen space: placed in pixels on the screen, not in the world.
 | `offset` | vec2 | [8,8] | (range -4000 to 4000) |
 | `color` | color | "#0000008c" |  |
 | `layer` | int | -1 | (range -1000 to 1000) |
+
+### UiButton
+
+Clickable panel with hover and press feedback; opens a scene on release.
+
+Requires: `UiPanel`
+
+Screen space: placed in pixels on the screen, not in the world.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `changeScene` | string | "" |  |
+| `hoverColor` | color | "#315b70ff" |  |
+| `pressedColor` | color | "#1c3f53ff" |  |
 
 ### UiImage
 

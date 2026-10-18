@@ -1,4 +1,5 @@
 #pragma once
+#include "yk/core/Math.hpp"
 #include <array>
 #include <cstddef>
 #include <string_view>
@@ -124,8 +125,14 @@ class Gamepad {
 // Everything the player did during one frame (or one fixed tick): the keyboard and every gamepad.
 // The runtime turns this into named actions through the project's InputMap, so gameplay code never
 // sees a key or a button.
+struct PointerState {
+    Vec2 position{}; // Pixels relative to the game viewport.
+    ButtonState primary{};
+    bool inside{};
+};
 struct InputFrame {
     Keyboard keyboard;
+    PointerState pointer;
     std::array<Gamepad, maxGamepads> gamepads{};
     void beginFrame();
 };
