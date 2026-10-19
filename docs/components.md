@@ -604,6 +604,7 @@ Level rules: an optional intro, complete when every goal is satisfied, fail on a
 | `lockInputOnComplete` | bool | true | Ignore the players' input once the level is complete or has failed. |
 | `restartDelay` | float | 1.5 | (range 0 to 30) |
 | `completeDelay` | float | 2.5 | Seconds between completing the level and moving on to the next scene. (range 0 to 30) |
+| `waitForContinue` | bool | false | Keep the completion screen until continueAction is pressed. |
 | `nextScene` | asset | "" | The scene to load after completion (none: stay on this one). |
 | `restartSet` | string | "Global" |  |
 | `restartAction` | string | "Restart" |  |
@@ -1133,6 +1134,19 @@ Screen space: placed in pixels on the screen, not in the world.
 | `changeScene` | string | "" |  |
 | `hoverColor` | color | "#315b70ff" |  |
 | `pressedColor` | color | "#1c3f53ff" |  |
+
+### PauseMenu
+
+Pause menu with resume, retry and scene navigation.
+
+Screen space: placed in pixels on the screen, not in the world.
+
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `menuScene` | string | "" |  |
+| `levelSelectScene` | string | "" |  |
+| `title` | string | "PAUSED" |  |
+| `allowPause` | bool | true |  |
 
 ### UiImage
 

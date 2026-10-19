@@ -93,7 +93,7 @@ int main() {
         CHECK(!session->runtime().inputLocked());
     };
     tick(3);
-    CHECK(project.startScene == "scenes/level2.ykscene");
+    CHECK(project.startScene == "scenes/menu.ykscene");
     CHECK(board.text("inventory_title") == "BLACKTHORN KEEP / LEVEL 2");
     CHECK(inventory()->freeSlots() == 6);
     CHECK(board.text("current_room") == "DORMITORY NORTH");

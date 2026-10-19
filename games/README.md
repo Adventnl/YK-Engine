@@ -5,7 +5,8 @@ Each child folder is a complete engine project. The generic editor and player lo
 
 - [Fireboy and Watergirl](fireboy-watergirl/README.md): finished co-op game, including its title
   screen and level selector.
-- [Blackthorn Keep](blackthorn-keep/README.md): castle escape game, opening in Level 2: The Inner Keep.
+- [Blackthorn Keep](blackthorn-keep/README.md): castle escape game with a title screen, two-chapter selector,
+  controls screen and in-game pause menu.
 
 From the repository root:
 

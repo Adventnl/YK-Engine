@@ -10,7 +10,7 @@ The repository contains exactly two independent games:
 | Game | Project | Play |
 |---|---|---|
 | **Fireboy and Watergirl** | [games/fireboy-watergirl](games/fireboy-watergirl/README.md) | Title screen, level selection and two co-op platforming levels. |
-| **Blackthorn Keep** | [games/blackthorn-keep](games/blackthorn-keep/README.md) | Two castle escape chapters with NPCs, inventories, searches, crafting and patrols. Starts in The Inner Keep. |
+| **Blackthorn Keep** | [games/blackthorn-keep](games/blackthorn-keep/README.md) | Two castle escape chapters with NPCs, inventories, searches, crafting and patrols. Title screen, chapter selection, controls and pause menu. |
 
 All scenes, assets, dialogue, game text, original art imports, authoring scripts and game-specific
 checks belong under `games/`. Engine code in `src/` and `include/` supplies reusable systems;
@@ -33,8 +33,9 @@ ctest --preset dev --output-on-failure
 ```
 
 Open either project from the welcome screen and press **F5** to play in the editor.
-Blackthorn Keep uses **WASD / arrows** to move, **E** to interact, **Escape** to dismiss a popup,
-**P** to pause and **R** to restart. Fireboy uses **A/D/W** and Watergirl uses the **arrow keys**;
+Blackthorn Keep starts at its title screen. Choose either chapter with the mouse or **1 / 2**.
+Use **WASD / arrows** to move, **E** to interact, **Escape** to close a popup or pause,
+**P** to pause, **R** to restart, **M** for the main menu and **Tab** for chapter selection. Fireboy uses **A/D/W** and Watergirl uses the **arrow keys**;
 its existing title screen and level selection are preserved.
 
 For an engine build without bundled games or their checks:

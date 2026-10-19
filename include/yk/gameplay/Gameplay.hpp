@@ -463,6 +463,7 @@ class LevelFlow final : public Component {
     bool lockInputOnComplete{true};
     float restartDelay{1.5F};
     float completeDelay{2.5F};
+    bool waitForContinue{false}; // Keep the completion screen until continueAction is pressed.
     AssetRef nextScene; // The scene to load after completion (a picker in the editor); none stays.
     std::string restartSet{"Global"};
     std::string restartAction{"Restart"};

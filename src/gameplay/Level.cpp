@@ -25,6 +25,8 @@ void LevelFlow::describe(TypeBuilder<LevelFlow> &type) {
     type.field("completeDelay", &LevelFlow::completeDelay)
         .range(0, 30, 0.1)
         .tooltip("Seconds between completing the level and moving on to the next scene.");
+    type.field("waitForContinue", &LevelFlow::waitForContinue)
+        .tooltip("Keep the completion screen until continueAction is pressed.");
     type.field("nextScene", &LevelFlow::nextScene)
         .asset("scene")
         .tooltip("The scene to load after completion (none: stay on this one).");
@@ -139,7 +141,7 @@ void LevelFlow::onFixedUpdate(GameContext &context, float seconds) {
         timer_ -= seconds;
         const bool skip =
             !continueAction.empty() && context.input().state(restartSet, continueAction).pressed;
-        if (timer_ > 0.0F && !skip)
+        if (!skip && (timer_ > 0.0F || (state_ == State::Complete && waitForContinue)))
             return;
         timer_ = 1e9F; // Ask once; the runtime does the rest (and fades while it does it).
         if (state_ == State::Failed)

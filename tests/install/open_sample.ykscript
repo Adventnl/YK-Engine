@@ -5,7 +5,8 @@ expect widget "welcome/game/blackthorn-keep"
 click "welcome/game/blackthorn-keep"
 expect project "Blackthorn Keep"
 expect project-root "${SAMPLE_DIR}"
-expect scene scenes/level2.ykscene
+expect scene scenes/menu.ykscene
+expect entity "Play Button"
 
 key f5
 expect playing

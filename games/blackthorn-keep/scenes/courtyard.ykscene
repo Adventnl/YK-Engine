@@ -11571,13 +11571,13 @@
           "type": "InventoryHud",
           "properties": {
             "title": "BLACKTHORN KEEP",
-            "completionTitle": "YOU ESCAPED BLACKTHORN KEEP",
-            "completionText": "Mara follows your rope into the moonlit valley.",
+            "completionTitle": "THE OUTER HALL IS BEHIND YOU",
+            "completionText": "The drainage passage leads deeper into the keep.",
             "statusText": "DAY 1 / EVENING FREE TIME",
             "alertText": "GUARD IS WATCHING",
-            "controlsText": "WASD / ARROWS MOVE    E USE    ESC CLOSE    R RESTART",
-            "continueText": "ENTER - NEXT LEVEL     R - START AGAIN",
-            "restartText": "R - START AGAIN",
+            "controlsText": "WASD / ARROWS MOVE   E USE   ESC / P PAUSE   R RETRY   M MENU",
+            "continueText": "ENTER - INNER KEEP   R - RETRY   M - MENU",
+            "restartText": "R - RETRY   M - MENU",
             "actor": "00000000000000b4"
           }
         },
@@ -11592,7 +11592,82 @@
             "completeDelay": 30,
             "completeMessage": "YOU ESCAPED BLACKTHORN KEEP",
             "nextScene": "scenes/level2.ykscene",
-            "continueAction": "Continue"
+            "continueAction": "Continue",
+            "waitForContinue": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "c0ffd4bbdd94c4f5",
+      "name": "Game pause menu",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "PauseMenu",
+          "properties": {
+            "menuScene": "scenes/menu.ykscene",
+            "levelSelectScene": "scenes/levels.ykscene"
+          }
+        }
+      ]
+    },
+    {
+      "id": "829294242c61200a",
+      "name": "Return to main menu",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "EventAction",
+          "properties": {
+            "inputAction": "Menu",
+            "waitForRelease": true,
+            "changeScene": "scenes/menu.ykscene"
+          }
+        }
+      ]
+    },
+    {
+      "id": "e129f0ecd406eb02",
+      "name": "Choose a chapter",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "EventAction",
+          "properties": {
+            "inputAction": "LevelSelect",
+            "waitForRelease": true,
+            "changeScene": "scenes/levels.ykscene"
           }
         }
       ]

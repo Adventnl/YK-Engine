@@ -12,7 +12,7 @@ struct GameViewOptions {
     // How far to cover the picture with black, 0 (not at all) .. 1 (fully): a fade between scenes
     // (GameRuntime::screenFade). Drawn over the world and the UI.
     float fade{0.0F};
-    // Dim the picture and say PAUSED in the middle (a game the player has paused).
+    // Dim the picture and draw the scene's PauseMenu, or a PAUSED label without one.
     bool paused{false};
     // Draw into this render target (from Renderer::createRenderTarget) instead of the frame; the
     // viewport rectangle is then in texture pixels.

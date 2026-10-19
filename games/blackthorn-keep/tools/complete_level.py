@@ -6,7 +6,7 @@ import json
 import sys
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
-HUD_DEFAULTS = {'title': 'BLACKTHORN KEEP', 'completionTitle': 'YOU ESCAPED BLACKTHORN KEEP', 'completionText': 'Mara follows your rope into the moonlit valley.', 'statusText': 'DAY 1 / EVENING FREE TIME', 'alertText': 'GUARD IS WATCHING', 'controlsText': 'WASD / ARROWS MOVE    E USE    ESC CLOSE    R RESTART', 'continueText': 'ENTER - NEXT LEVEL     R - START AGAIN', 'restartText': 'R - START AGAIN'}
+from build_frontend import HUD_DEFAULTS, decorate_level
 
 ROOT = Path(__file__).resolve().parents[1]
 ART = ROOT/'assets/keep'
@@ -138,9 +138,10 @@ for e in entities:
 scene=dict(format='yk.scene',version=1,settings=dict(name='Blackthorn Keep - A Castle Escape',gravity=[0,0],background='#16191fff'),entities=entities)
 from castle_reference import style_level_one
 style_level_one(scene)
+decorate_level(scene, 1)
 save(ROOT/'scenes/courtyard.ykscene',scene)
 items=[dict(id=i,displayName=n,icon='assets/keep/'+i+'.png',tags=['escape']) for i,n in [('screwdriver','Screwdriver'),('rope','Rope'),('iron_hook','Iron hook'),('brass_key','Brass key'),('grappling_line','Grapple')]]
 save(ROOT/'data/keep.ykdata',dict(format='yk.data',version=1,items=items,recipes=[dict(id='grappling_line',displayName='Grappling line',station='workbench',ingredients=[dict(item='rope'),dict(item='iron_hook')],output=dict(item='grappling_line'))]))
-p=ROOT/'project.ykproj';project=json.loads(p.read_text());project['name']='Blackthorn Keep';project['window']['title']='Blackthorn Keep - A Castle Escape';project['build']['productName']='Blackthorn Keep';project['textures']['pixelsPerUnit']=35
+p=ROOT/'project.ykproj';project=json.loads(p.read_text());project['name']='Blackthorn Keep';project['startScene']='scenes/menu.ykscene';project['window']['title']='Blackthorn Keep';project['build']['productName']='Blackthorn Keep';project['textures']['pixelsPerUnit']=35
 save(p,project)
 print('Authored',len(entities),'entities and',len(list(ART.glob('*.png'))),'pixel art assets.')

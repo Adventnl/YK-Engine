@@ -4,7 +4,7 @@ expect widget "welcome/game/fireboy-watergirl"
 expect widget "welcome/game/blackthorn-keep"
 click "welcome/game/blackthorn-keep"
 expect project "Blackthorn Keep"
-expect scene scenes/level2.ykscene
-expect entity Mara
+expect scene scenes/menu.ykscene
+expect entity "Play Button"
 expect problems 0
 quit

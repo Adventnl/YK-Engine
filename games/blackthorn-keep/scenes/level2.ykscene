@@ -18683,9 +18683,9 @@
             "completionText": "The green gate opens. Your friends follow you out.",
             "statusText": "DAY 1 / EVENING FREE TIME",
             "alertText": "GUARD IS WATCHING",
-            "controlsText": "WASD / ARROWS MOVE    E USE    ESC CLOSE    R RESTART",
-            "continueText": "ENTER - NEXT LEVEL     R - START AGAIN",
-            "restartText": "R - START AGAIN",
+            "controlsText": "WASD / ARROWS MOVE   E USE   ESC / P PAUSE   R RETRY   M MENU",
+            "continueText": "ENTER - MAIN MENU   R - RETRY   M - MENU",
+            "restartText": "R - RETRY   M - MENU",
             "actor": "0000000000000148"
           }
         },
@@ -18698,7 +18698,10 @@
             "introDuration": 0,
             "restartOnDeath": false,
             "completeDelay": 30,
-            "completeMessage": "LEVEL 2 ESCAPED"
+            "completeMessage": "LEVEL 2 ESCAPED",
+            "nextScene": "scenes/menu.ykscene",
+            "continueAction": "Continue",
+            "waitForContinue": true
           }
         }
       ]
@@ -19083,6 +19086,80 @@
               44.57142857142857,
               22.857142857142858
             ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "c0ffd4bbdd94c4f5",
+      "name": "Game pause menu",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "PauseMenu",
+          "properties": {
+            "menuScene": "scenes/menu.ykscene",
+            "levelSelectScene": "scenes/levels.ykscene"
+          }
+        }
+      ]
+    },
+    {
+      "id": "829294242c61200a",
+      "name": "Return to main menu",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "EventAction",
+          "properties": {
+            "inputAction": "Menu",
+            "waitForRelease": true,
+            "changeScene": "scenes/menu.ykscene"
+          }
+        }
+      ]
+    },
+    {
+      "id": "e129f0ecd406eb02",
+      "name": "Choose a chapter",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "EventAction",
+          "properties": {
+            "inputAction": "LevelSelect",
+            "waitForRelease": true,
+            "changeScene": "scenes/levels.ykscene"
           }
         }
       ]

@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageFont, PngImagePlugin
 from castle_reference import style_level_two
 from art_import import generated_objects, silhouette
 
-HUD_DEFAULTS = {'title': 'BLACKTHORN KEEP', 'completionTitle': 'YOU ESCAPED BLACKTHORN KEEP', 'completionText': 'Mara follows your rope into the moonlit valley.', 'statusText': 'DAY 1 / EVENING FREE TIME', 'alertText': 'GUARD IS WATCHING', 'controlsText': 'WASD / ARROWS MOVE    E USE    ESC CLOSE    R RESTART', 'continueText': 'ENTER - NEXT LEVEL     R - START AGAIN', 'restartText': 'R - START AGAIN'}
+from build_frontend import HUD_DEFAULTS, decorate_level
 
 ROOT = Path(__file__).resolve().parents[1]
 ART = ROOT / 'assets/level2'
@@ -339,6 +339,7 @@ def build_scene():
     scene = dict(format='yk.scene', version=1,
          settings=dict(name='Blackthorn Keep - Level 2: The Inner Keep', gravity=[0, 0], background='#16191fff'), entities=entities)
     style_level_two(scene)
+    decorate_level(scene, 2)
     save(ROOT / 'scenes/level2.ykscene', scene)
     items = [('l2_screwdriver', 'Screwdriver', 'screwdriver'), ('l2_cutters', 'Cutters', 'cutters'), ('l2_linen', 'Linen', 'linen'),
              ('l2_fuse', 'Spare fuse', 'fuse'), ('l2_keycard', 'Keycard', 'keycard'), ('l2_insulated_fuse', 'Safe fuse', 'safe_fuse')]
@@ -347,9 +348,9 @@ def build_scene():
          recipes=[dict(id='l2_insulated_fuse', displayName='Insulated fuse', station='workbench',
                        ingredients=[dict(item='l2_fuse'), dict(item='l2_linen')], output=dict(item='l2_insulated_fuse'))]))
     project = json.loads((ROOT / 'project.ykproj').read_text())
-    project['startScene'] = 'scenes/level2.ykscene'
+    project['startScene'] = 'scenes/menu.ykscene'
     project['textures']['pixelsPerUnit'] = 35
-    project['window']['title'] = 'Blackthorn Keep - Level 2: The Inner Keep'
+    project['window']['title'] = 'Blackthorn Keep'
     project['build']['exclude'] = list(dict.fromkeys(project['build'].get('exclude', []) +
         ['assets/level2/source', 'assets/keep/source', 'assets/castle/source', 'tools', '.impeccable',
          'reference-style-preview.png', 'level2-dialogue-preview.png', 'level1-preview.png',

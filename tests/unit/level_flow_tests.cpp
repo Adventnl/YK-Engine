@@ -96,7 +96,8 @@ void completionWithoutNextSceneAndContinue() {
     {
         World w;
         LevelFlow &rules = twoCharacterLevel(w, -4.0F, 10.0F);
-        rules.completeDelay = 100.0F;
+        rules.completeDelay = 0.05F;
+        rules.waitForContinue = true;
         rules.nextScene = AssetRef{"scenes/next.ykscene"};
         rules.continueAction = "Continue";
         w.start();

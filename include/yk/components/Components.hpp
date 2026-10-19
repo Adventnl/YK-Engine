@@ -151,6 +151,20 @@ class UiButton final : public Component {
     bool armed_{};
 };
 
+// Optional in-game pause controls. GameSession handles input while simulation is stopped.
+class PauseMenu final : public Component {
+  public:
+    bool allowPause{true};
+    std::string menuScene;
+    std::string levelSelectScene;
+    std::string title{"PAUSED"};
+    int selected{};
+    int armed{-1};
+    Vec2 pointerPosition{-1, -1};
+    static void describe(TypeBuilder<PauseMenu> &type);
+    static Rect buttonRect(Vec2 viewport, int row);
+};
+
 // A conversation belongs to an entity but is presented in screen space by SceneRenderer.
 // Pages may be authored inline or loaded from a dialogue JSON asset. The runtime owns playback;
 // the renderer only reads the current page, so any interactive entity can reuse it.

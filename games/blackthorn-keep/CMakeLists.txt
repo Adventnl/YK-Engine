@@ -1,3 +1,5 @@
+yk_add_test(blackthorn_frontend tests/frontend_tests.cpp LIBS yk::gameplay TIMEOUT 60
+    DEFINITIONS YK_EXPLORATION_PROJECT_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 yk_add_test(blackthorn_chapter1 tests/exploration_tests.cpp LIBS yk::gameplay TIMEOUT 60
     DEFINITIONS YK_EXPLORATION_PROJECT_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 yk_add_test(blackthorn_chapter2 tests/castle_level2_tests.cpp LIBS yk::gameplay TIMEOUT 120

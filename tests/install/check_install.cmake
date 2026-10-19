@@ -38,6 +38,9 @@ set(docs "${prefix}/share/doc/YKEngine")
 foreach(required
         "${prefix}/bin/yk_editor${exe}" "${prefix}/bin/yk_player${exe}" "${prefix}/bin/yk${exe}"
         "${sample}/project.ykproj" "${sample}/scenes/level2.ykscene"
+        "${sample}/scenes/menu.ykscene" "${sample}/scenes/levels.ykscene"
+        "${sample}/scenes/controls.ykscene" "${sample}/assets/ui/keep-preview.png"
+        "${sample}/assets/ui/hall-preview.png"
         "${exploration_sample}/project.ykproj" "${exploration_sample}/scenes/courtyard.ykscene"
         "${fireboy_sample}/project.ykproj" "${fireboy_sample}/scenes/menu.ykscene"
         "${fireboy_sample}/scenes/levels.ykscene" "${fireboy_sample}/scenes/level01.ykscene"

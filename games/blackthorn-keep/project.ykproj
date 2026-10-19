@@ -2,9 +2,9 @@
   "format": "yk.project",
   "version": 1,
   "name": "Blackthorn Keep",
-  "startScene": "scenes/level2.ykscene",
+  "startScene": "scenes/menu.ykscene",
   "window": {
-    "title": "Blackthorn Keep - Level 2: The Inner Keep",
+    "title": "Blackthorn Keep",
     "width": 1280,
     "height": 720
   },
@@ -147,8 +147,7 @@
           {
             "name": "Restart",
             "bindings": [
-              "Key:R",
-              "Pad:Back"
+              "Key:R"
             ]
           },
           {
@@ -159,17 +158,66 @@
             ]
           },
           {
-            "name": "Continue",
-            "bindings": [
-              "Key:Enter",
-              "Pad:East"
-            ]
-          },
-          {
             "name": "Cancel",
             "bindings": [
               "Key:Escape",
               "Pad:East"
+            ]
+          },
+          {
+            "name": "Menu",
+            "bindings": [
+              "Key:M",
+              "Pad:Back"
+            ]
+          },
+          {
+            "name": "LevelSelect",
+            "bindings": [
+              "Key:Tab"
+            ]
+          },
+          {
+            "name": "Help",
+            "bindings": [
+              "Key:H"
+            ]
+          },
+          {
+            "name": "Continue",
+            "bindings": [
+              "Key:Enter",
+              "Pad:South"
+            ]
+          },
+          {
+            "name": "Level1",
+            "bindings": [
+              "Key:Num1",
+              "Pad:South"
+            ]
+          },
+          {
+            "name": "Level2",
+            "bindings": [
+              "Key:Num2",
+              "Pad:North"
+            ]
+          },
+          {
+            "name": "PauseUp",
+            "bindings": [
+              "Key:Up",
+              "Key:W",
+              "Pad:DPadUp"
+            ]
+          },
+          {
+            "name": "PauseDown",
+            "bindings": [
+              "Key:Down",
+              "Key:S",
+              "Pad:DPadDown"
             ]
           }
         ]

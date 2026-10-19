@@ -2,8 +2,11 @@
 
 Two connected castle escape chapters built in YK Engine. Both share the supplied castle's
 blue stone, timber furnishings, characters, and a close character-following camera.
-The project opens in **Level 2: The Inner Keep**. Chapter one remains available with
-`--scene scenes/courtyard.ykscene`; completing it leads into chapter two.
+The project opens at its title screen. Click **Play** (or press **Enter**) to choose either
+**Level 1: The Outer Hall**, the smaller introductory keep, or **Level 2: The Inner Keep**,
+the full castle. Both chapters are available immediately; completing the first leads to the second.
+Click **How to Play** for controls and escape tips. Keyboard chapter shortcuts are **1** and **2**;
+controller shortcuts are South and North. Enter starts chapter one from the selector.
 
 ```sh
 ./build/dev/yk_player games/blackthorn-keep
@@ -11,7 +14,12 @@ The project opens in **Level 2: The Inner Keep**. Chapter one remains available 
 ```
 
 Move with **WASD / arrows**. Press **E** near people, containers, workbenches or locked gates.
-**Escape** cancels a search or dismisses a conversation. **P** pauses; **R** restarts.
+**Escape** cancels a search or dismisses a conversation; otherwise **Escape / P** pauses.
+The pause menu freezes the world, patrols and search progress. Click **Resume**, **Restart Level**,
+**Level Select**, or **Main Menu**, or choose with **Up / Down + Enter** (D-pad + South on a controller).
+**R** restarts, **M** returns to the title, and **Tab** opens chapter selection.
+Completion screens wait for **Enter**: chapter one continues to the Inner Keep, and chapter two
+returns to the title. Restart and menu shortcuts also work on completion screens.
 Ordinary room and corridor passages have no doors; walk straight through.
 Locked escape gates retain their key, tool or puzzle requirement.
 
@@ -64,13 +72,16 @@ Rebuild both scenes and the door strip without regenerating existing character a
 ```sh
 python3 games/blackthorn-keep/tools/complete_level.py
 python3 games/blackthorn-keep/tools/build_level2.py
+python3 games/blackthorn-keep/tools/build_frontend.py
 ./build/dev/yk validate games/blackthorn-keep
-ctest --preset dev -R blackthorn_chapter1
-ctest --preset dev -R blackthorn_chapter2
+ctest --preset dev -R blackthorn
 python3 games/blackthorn-keep/tools/capture_previews.py
 ```
 
-Pillow is required for authoring. `--regenerate-art` explicitly re-exports the earlier generated
+The frontend builder writes ordinary editable scenes and packages its chapter previews under
+`assets/ui/`. Chapter builders preserve pause controls, completion flow and the title as the start scene.
+
+Pillow is required for chapter authoring. `--regenerate-art` explicitly re-exports the earlier generated
 atlases; normal scene rebuilds preserve them. 
 
 ![Chapter one player view](level1-preview.png)
