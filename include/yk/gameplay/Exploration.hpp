@@ -153,7 +153,7 @@ class LocationArea final : public Component {
 class ObjectiveList final : public Component {
   public:
     std::vector<std::string> flags, instructions;
-    std::string completeText{"Escape route ready."};
+    std::string completeText{"Objectives complete."};
     static void describe(TypeBuilder<ObjectiveList> &type);
     void onFixedUpdate(GameContext &context, float seconds) override;
 };
@@ -171,7 +171,10 @@ class SearchAction final : public Component {
     void begin(GameContext &context, Entity &actor);
     void onFixedUpdate(GameContext &context, float seconds) override;
     void onDestroy(GameContext &context) override;
-    bool active() const { return active_; }
+    bool active() const {
+        return active_;
+    }
+
   private:
     void close(GameContext &context);
     void result(GameContext &context, const std::string &message);
@@ -182,22 +185,26 @@ class SearchAction final : public Component {
 };
 
 // Project-authored HUD, inventory presentation and a patrol's restricted-area watch.
-class EscapePresentation final : public Component {
+class InventoryHud final : public Component {
   public:
     EntityRef actor;
-    std::string title{"BLACKTHORN KEEP"};
-    std::string completionTitle{"YOU ESCAPED BLACKTHORN KEEP"};
-    std::string completionText{"Mara follows your rope into the moonlit valley."};
-    static void describe(TypeBuilder<EscapePresentation> &type);
+    std::string title;
+    std::string completionTitle{"COMPLETE"}, completionText;
+    std::string statusText, alertText{"ALERT"}, controlsText;
+    std::string continueText{"ENTER - CONTINUE     R - RESTART"};
+    std::string restartText{"R - RESTART"};
+    static void describe(TypeBuilder<InventoryHud> &type);
     void onFixedUpdate(GameContext &context, float seconds) override;
 };
 class PatrolWatch final : public Component {
   public:
     EntityRef actor;
-    Vec2 restrictedMin{20, 1}, restrictedMax{30, 8}, returnPosition{3, 4};
+    Vec2 restrictedMin{}, restrictedMax{1, 1}, returnPosition{};
+    std::string caughtText{"Caught! Returned to the checkpoint."};
     float range{3.5F}, catchSeconds{3.0F};
     static void describe(TypeBuilder<PatrolWatch> &type);
     void onFixedUpdate(GameContext &context, float seconds) override;
+
   private:
     float suspicion_{}, cooldown_{};
 };

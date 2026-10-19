@@ -1,11 +1,11 @@
 # Run by check_install.cmake against the *installed* editor, from its welcome screen: the sample
 # project must be found in the installation's data folder, opened, and played.
 # ${SAMPLE_DIR} is the sample project inside the installation.
-expect widget "welcome/Open Sample"
-click "welcome/Open Sample"
-expect project "Cinder Vale"
+expect widget "welcome/game/blackthorn-keep"
+click "welcome/game/blackthorn-keep"
+expect project "Blackthorn Keep"
 expect project-root "${SAMPLE_DIR}"
-expect scene scenes/level01.ykscene
+expect scene scenes/level2.ykscene
 
 key f5
 expect playing

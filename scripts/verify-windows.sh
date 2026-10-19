@@ -49,7 +49,7 @@ done
 
 out="$build/export"
 rm -rf "$out"
-"$wine" "$build/yk.exe" export YK-DemoGame --target windows --out "$out" --zip
+"$wine" "$build/yk.exe" export games/blackthorn-keep --target windows --out "$out" --zip
 game=$(ls -d "$out"/*-windows)
 (cd "$game" && "$wine" ./*.exe --frames 120 --fixed --no-audio --capture "../shot.bmp")
 if [ -s "$out/shot.bmp" ]; then

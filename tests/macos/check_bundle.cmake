@@ -6,8 +6,8 @@
 # application (docs/BUILDING.md, macOS).
 #
 #   cmake -DEDITOR=<yk_editor> -DPLAYER=<yk_player> -DTOOL=<yk> -DSOURCE_DIR=<repo> -DVERSION=<x.y.z>
-#         -DDEMO=<a project folder> -DWORK=<scratch dir> -P check_bundle.cmake
-foreach(variable EDITOR PLAYER TOOL SOURCE_DIR VERSION DEMO WORK)
+#         -DPROJECT=<a project folder> -DWORK=<scratch dir> -P check_bundle.cmake
+foreach(variable EDITOR PLAYER TOOL SOURCE_DIR VERSION WORK)
     if(NOT ${variable})
         message(FATAL_ERROR "${variable} is required")
     endif()
@@ -30,7 +30,7 @@ endfunction()
 
 set(app "${WORK}/Some Folder/YK Engine.app")
 run("assembling the bundle" "${CMAKE_COMMAND}" "-DOUT=${app}" "-DEDITOR=${EDITOR}" "-DPLAYER=${PLAYER}"
-    "-DTOOL=${TOOL}" "-DSOURCE_DIR=${SOURCE_DIR}" "-DVERSION=${VERSION}" "-DDEMO=${DEMO}"
+    "-DTOOL=${TOOL}" "-DSOURCE_DIR=${SOURCE_DIR}" "-DVERSION=${VERSION}" "-DGAMES_DIR=${SOURCE_DIR}/games"
     -P "${SOURCE_DIR}/packaging/macos/assemble-app.cmake")
 
 get_filename_component(editor_name "${EDITOR}" NAME)
@@ -41,14 +41,14 @@ set(resources "${app}/Contents/Resources")
 foreach(required
         "${app}/Contents/Info.plist" "${macos}/${editor_name}" "${macos}/${player_name}"
         "${macos}/${tool_name}" "${resources}/AppIcon.icns" "${resources}/macos.sh"
-        "${resources}/YK-DemoGame/project.ykproj" "${resources}/YK-DemoGame/assets/icon.png"
+        "${resources}/games/blackthorn-keep/project.ykproj"
         "${resources}/licenses/SDL3.txt" "${resources}/licenses/Box2D-MIT.txt"
         "${resources}/docs/EDITOR.md" "${resources}/docs/THIRD_PARTY.md")
     if(NOT EXISTS "${required}")
         message(FATAL_ERROR "The bundle lacks ${required}")
     endif()
 endforeach()
-if(EXISTS "${resources}/YK-DemoGame/tools")
+if(EXISTS "${resources}/games/blackthorn-keep/tools")
     message(FATAL_ERROR "Development tools of the demo game ship in the bundle")
 endif()
 
@@ -81,30 +81,29 @@ string(FIND "${last_output}" "${resources}/licenses" found)
 if(found EQUAL -1)
     message(FATAL_ERROR "yk targets did not find the licenses in Resources:\n${last_output}")
 endif()
-run("yk validate" "${macos}/${tool_name}" validate "${resources}/YK-DemoGame")
-if(EXISTS "${SOURCE_DIR}/YK-ExplorationDemo/project.ykproj")
+run("yk validate" "${macos}/${tool_name}" validate "${resources}/games/blackthorn-keep")
+if(EXISTS "${SOURCE_DIR}/games/blackthorn-keep/project.ykproj")
     run("yk validate exploration" "${macos}/${tool_name}" validate
-        "${resources}/YK-ExplorationDemo")
+        "${resources}/games/blackthorn-keep")
 endif()
 
 # An export for macOS made by the bundle's own tool: an app with Info.plist, the icon, the data in
 # Resources/data and the notices. The player inside is this system's player (the only one there is
 # here), which finds its data from a bundle-shaped folder exactly as it will on a Mac.
-run("the bundle's yk export (macOS layout)" "${macos}/${tool_name}" export "${resources}/YK-DemoGame"
+run("the bundle's yk export (macOS layout)" "${macos}/${tool_name}" export "${resources}/games/blackthorn-keep"
     --target macos --player "${macos}/${player_name}" --out "${WORK}/exported" --zip)
-set(game "${WORK}/exported/Cinder Vale.app")
-foreach(required "${game}/Contents/MacOS/CinderVale" "${game}/Contents/Info.plist"
-        "${game}/Contents/Resources/AppIcon.icns" "${game}/Contents/Resources/data/project.ykproj"
-        "${game}/Contents/Resources/data/scenes/level01.ykscene"
+set(game "${WORK}/exported/Blackthorn Keep.app")
+foreach(required "${game}/Contents/MacOS/BlackthornKeep" "${game}/Contents/Info.plist"
+        "${game}/Contents/Resources/data/project.ykproj"
+        "${game}/Contents/Resources/data/scenes/level2.ykscene"
         "${game}/Contents/Resources/licenses/SDL3.txt" "${game}/Contents/Resources/README.txt"
-        "${WORK}/exported/Cinder Vale.app.zip")
+        "${WORK}/exported/Blackthorn Keep.app.zip")
     if(NOT EXISTS "${required}")
         message(FATAL_ERROR "The exported bundle lacks ${required}")
     endif()
 endforeach()
 file(READ "${game}/Contents/Info.plist" game_plist)
-foreach(expected "<string>CinderVale</string>" "<key>CFBundleIconFile</key>"
-        "Demo game made with YK Engine")
+foreach(expected "<string>BlackthornKeep</string>" "<string>Blackthorn Keep</string>")
     string(FIND "${game_plist}" "${expected}" found)
     if(found EQUAL -1)
         message(FATAL_ERROR "The game's Info.plist lacks ${expected}:\n${game_plist}")
@@ -116,10 +115,10 @@ list(LENGTH game_programs program_count)
 if(NOT program_count EQUAL 1)
     message(FATAL_ERROR "A game should carry one program, found: ${game_programs}")
 endif()
-run("the exported bundle" "${game}/Contents/MacOS/CinderVale" --frames 60 --fixed --no-audio)
+run("the exported bundle" "${game}/Contents/MacOS/BlackthornKeep" --frames 60 --fixed --no-audio)
 
 # The editor, from inside the bundle: its welcome screen finds the demo game in Resources.
-file(REAL_PATH "${resources}/YK-DemoGame" sample)
+file(REAL_PATH "${resources}/games/blackthorn-keep" sample)
 set(ENV{SAMPLE_DIR} "${sample}")
 run("the bundled editor" "${CMAKE_COMMAND}" "-DEDITOR=${macos}/${editor_name}"
     "-DSCRIPT=${SOURCE_DIR}/tests/install/open_sample.ykscript" "-DWORK=${WORK}/editor"

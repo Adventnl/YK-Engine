@@ -13,17 +13,18 @@
 // language, so a choice can need an item or a relationship and a reply can start a quest.
 //
 //   {"start": "greet",
-//    "speakers": {"mara": {"name": "Keeper Mara", "side": "left",
-//                          "portraits": {"default": "assets/mara.png", "smile":
-//                          "assets/mara_smile.png"}}},
+//    "speakers": {"speaker": {"name": "Guide", "side": "left",
+//                          "portraits": {"default": "assets/speaker.png", "smile":
+//                          "assets/speaker_smile.png"}}},
 //    "nodes": {
-//      "greet": {"speaker": "mara", "text": "Hello, {player_name}.",
+//      "greet": {"speaker": "speaker", "text": "Hello, {player_name}.",
 //                "choices": [{"text": "I need a screwdriver.", "if": {"type": "HasItem", "item":
 //                "favor_token"},
 //                             "actions": [{"type": "GiveItem", "item": "screwdriver"}], "next":
 //                             "thanks"},
 //                            {"text": "Goodbye."}]},
-//      "thanks": {"speaker": "mara", "expression": "smile", "text": "Do not let anyone see it."}}}
+//      "thanks": {"speaker": "speaker", "expression": "smile", "text": "Do not let anyone see
+//      it."}}}
 namespace yk {
 struct DialogueChoice {
     std::string text;

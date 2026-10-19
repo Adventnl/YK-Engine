@@ -83,9 +83,9 @@ jobs:
           foreach ($name in 'yk_editor.exe', 'yk_player.exe', 'yk.exe') {
             if (!(Test-Path (Join-Path $actualRoot "bin/$name"))) { throw "Installer omitted $name" }
           }
-          & (Join-Path $actualRoot 'bin/yk.exe') validate (Join-Path $actualRoot 'share/yk-engine/YK-DemoGame')
+          & (Join-Path $actualRoot 'bin/yk.exe') validate (Join-Path $actualRoot 'share/yk-engine/games/blackthorn-keep')
           if ($LASTEXITCODE -ne 0) { throw 'The installed engine cannot validate its sample' }
-          $newGame = Join-Path $actualRoot 'share/yk-engine/Fireboy-Watergirl-Demo'
+          $newGame = Join-Path $actualRoot 'share/yk-engine/games/fireboy-watergirl'
           if (!(Test-Path (Join-Path $newGame 'project.ykproj'))) { throw 'Installer omitted Fireboy and Watergirl' }
           & (Join-Path $actualRoot 'bin/yk.exe') validate $newGame
           if ($LASTEXITCODE -ne 0) { throw 'The installed engine cannot validate Fireboy and Watergirl' }

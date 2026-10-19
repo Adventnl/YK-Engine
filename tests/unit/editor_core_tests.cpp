@@ -1210,29 +1210,47 @@ void projectFiles() {
     CHECK(!RecentProjects(dir.path / "missing" / "recent.json").paths().size());
 }
 
+// Build a tiny engine fixture locally; editor checks do not require any shipped game.
+void createPlayFixture(const std::filesystem::path &root, const ComponentRegistry &registry) {
+    auto project = createProject(root, "Editor Fixture", registry);
+    CHECK(project);
+    Scene scene(registry);
+    scene.createEntity("Camera").add<Camera>();
+    const auto ground = templateNamed(registry, "Platform").create(scene, {0, 3});
+    scene.find(ground)->get<SpriteRenderer>()->size = {100, 1};
+    scene.find(ground)->get<Collider>()->size = {100, 1};
+    const auto actor = templateNamed(registry, "Character").create(scene, {0, 1});
+    scene.find(actor)->setName("Actor");
+    const auto door = templateNamed(registry, "Door").create(scene, {20, 1});
+    const auto lever = templateNamed(registry, "Lever").create(scene, {-10, 1});
+    scene.find(lever)->get<Lever>()->targets = {EntityRef{door}};
+    CHECK(saveScene(scene, root / "scenes/main.ykscene"));
+    Scene next(registry);
+    next.createEntity("Next Camera").add<Camera>();
+    CHECK(saveScene(next, root / "scenes/next.ykscene"));
+}
+
 void sampleProject() {
-    if (!std::filesystem::exists(std::filesystem::path(YK_DEMO_PROJECT_DIR) / "project.ykproj")) {
-        std::puts("no demo project here: skipped");
-        return;
-    }
     setLogStderrEnabled(false);
     ComponentRegistry registry;
     registerStandardComponents(registry);
-    auto opened = EditorProject::open(std::filesystem::path(YK_DEMO_PROJECT_DIR), registry);
+    TempDir dir("yk-editor-roundtrip-fixture");
+    createPlayFixture(dir.path, registry);
+    auto opened = EditorProject::open(dir.path, registry);
     CHECK(opened);
     if (!opened)
         return;
     EditorProject &project = *opened.value();
     CHECK(!hasErrors(project.validate()));
-    auto level = project.openScene("scenes/level01.ykscene");
-    CHECK(level && level.value()->scene().size() > 40);
+    auto level = project.openScene("scenes/main.ykscene");
+    CHECK(level && level.value()->scene().size() == 5);
     CHECK(!level.value()->dirty() && !level.value()->canUndo());
     // Round trip through the editor's own save format changes nothing of substance.
     const Json original = sceneToJson(level.value()->scene());
     auto text = Json::parse(original.dump(2));
     CHECK(text && text.value().dump(2) == original.dump(2));
     // Picking works on real content: the character is where its sprite is.
-    const Entity *emberCharacter = level.value()->scene().findByName("Ember");
+    const Entity *emberCharacter = level.value()->scene().findByName("Actor");
     CHECK(emberCharacter);
     if (emberCharacter) {
         const auto stack = pickAll(level.value()->scene(), emberCharacter->worldPosition(), 0.02F);
@@ -1257,25 +1275,23 @@ Keyboard held(std::initializer_list<Key> keys) {
 }
 
 void playing() {
-    if (!std::filesystem::exists(std::filesystem::path(YK_DEMO_PROJECT_DIR) / "project.ykproj")) {
-        std::puts("no demo project here: skipped");
-        return;
-    }
     setLogStderrEnabled(false);
     ComponentRegistry registry;
     registerStandardComponents(registry);
-    auto opened = EditorProject::open(std::filesystem::path(YK_DEMO_PROJECT_DIR), registry);
+    TempDir dir("yk-editor-play-fixture");
+    createPlayFixture(dir.path, registry);
+    auto opened = EditorProject::open(dir.path, registry);
     CHECK(opened);
     if (!opened)
         return;
     EditorProject &project = *opened.value();
-    auto document = project.openScene("scenes/level01.ykscene");
+    auto document = project.openScene("scenes/main.ykscene");
     CHECK(document);
     if (!document)
         return;
     EditorDocument &doc = *document.value();
     // An edit that was never saved must still be in the game that Play starts.
-    const Entity *character = doc.scene().findByName("Ember");
+    const Entity *character = doc.scene().findByName("Actor");
     CHECK(character);
     const EntityId characterId = character->id();
     doc.rename(characterId, "Player One");
@@ -1317,13 +1333,13 @@ void playing() {
     CHECK_NEAR(play.runtime().scene().find(characterId)->worldPosition().x, startX, 0.05);
 
     // Scene changes requested by the game load that scene from the project.
-    play.runtime().requestSceneChange("scenes/practice.ykscene");
+    play.runtime().requestSceneChange("scenes/next.ykscene");
     play.update(1.0 / 60.0, held({}));
-    CHECK(play.scenePath() == "scenes/practice.ykscene");
+    CHECK(play.scenePath() == "scenes/next.ykscene");
     CHECK(!play.runtime().scene().findByName("Player One"));
     play.runtime().requestSceneChange("scenes/none.ykscene");
     play.update(1.0 / 60.0, held({})); // A bad request is reported, not fatal.
-    CHECK(play.scenePath() == "scenes/practice.ykscene");
+    CHECK(play.scenePath() == "scenes/next.ykscene");
     play.setViewportSize({640, 360});
     CHECK(play.runtime().viewportSize() == Vec2{640.0F, 360.0F});
 

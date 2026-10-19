@@ -5,23 +5,43 @@
 
 namespace yk::editor::ui {
 namespace {
-// Bundled sample projects may live in an app, an installation, or the checkout.
-std::optional<std::filesystem::path> findBundledProject(const char *folder) {
-    std::vector<std::filesystem::path> candidates;
-    const std::filesystem::path here = yk::executableDirectory();
+// Project discovery reads ordinary project manifests. The editor knows no game names.
+struct AvailableProject {
+    std::filesystem::path root;
+    std::string name;
+};
+std::vector<AvailableProject> availableProjects() {
+    const auto here = yk::executableDirectory();
+    std::vector<std::filesystem::path> roots;
     if (const auto resources = yk::bundleResourcesFor(here); !resources.empty())
-        candidates.push_back(resources / folder);
-    candidates.push_back(here / folder);
-    candidates.push_back(here / ".." / folder);
-    candidates.push_back(here / ".." / ".." / folder);
-    candidates.push_back(here / ".." / "share" / "yk-engine" / folder);
-    candidates.push_back(folder);
-    for (const auto &candidate : candidates) {
+        roots.push_back(resources / "games");
+    roots.insert(roots.end(), {here / "games", here / ".." / "games", here / ".." / ".." / "games",
+                               here / ".." / "share" / "yk-engine" / "games",
+                               std::filesystem::current_path() / "games"});
+    std::vector<AvailableProject> projects;
+    std::vector<std::string> folders;
+    for (const auto &root : roots) {
         std::error_code error;
-        if (std::filesystem::exists(candidate / Project::fileName, error))
-            return std::filesystem::weakly_canonical(candidate, error);
+        std::filesystem::directory_iterator entries(root, error);
+        for (auto it = entries; !error && it != std::filesystem::directory_iterator{};
+             it.increment(error)) {
+            const auto folder = it->path().filename().string();
+            if (std::find(folders.begin(), folders.end(), folder) != folders.end())
+                continue;
+            if (!std::filesystem::is_regular_file(it->path() / Project::fileName, error)) {
+                error.clear();
+                continue;
+            }
+            auto project = Project::load(it->path());
+            if (project) {
+                folders.push_back(folder);
+                projects.push_back({project.value().root, project.value().name});
+            }
+        }
     }
-    return std::nullopt;
+    std::sort(projects.begin(), projects.end(),
+              [](const auto &a, const auto &b) { return a.name < b.name; });
+    return projects;
 }
 
 // A link-style action row: an icon, a title and a description, like VS Code's start page.
@@ -71,19 +91,20 @@ void welcomePage(EditorState &state) {
     if (startAction("welcome/Open Project", Icon::FolderOpen, "Open Project...",
                     "Open a folder that holds a project.ykproj"))
         showDialog(state, DialogKind::OpenProject);
-    if (const auto demo = findBundledProject("YK-DemoGame"))
-        if (startAction(
-                "welcome/Open Sample", Icon::Play, "Open the Demo Game",
-                "Cinder Vale: a two-player co-op puzzle level built from the engine's components"))
-            state.openProject(*demo);
-    if (const auto exploration = findBundledProject("YK-ExplorationDemo"))
-        if (startAction("welcome/Open Exploration Sample", Icon::Play, "Open the Exploration Demo",
-                        "Castle Paths: NPCs, dialogue, gates and connected top-down maps"))
-            state.openProject(*exploration);
-    if (const auto fireboy = findBundledProject("Fireboy-Watergirl-Demo"))
-        if (startAction("welcome/Open Fireboy Sample", Icon::Play, "Open Fireboy and Watergirl",
-                        "Pixel-art co-op platformer with switches, hazards and two exits"))
-            state.openProject(*fireboy);
+    static const auto projects = availableProjects();
+    if (!projects.empty()) {
+        ImGui::Dummy({1.0F, 14.0F});
+        ImGui::PushFont(fonts().semibold, 16.0F);
+        ImGui::TextUnformatted("Games");
+        ImGui::PopFont();
+        for (const auto &project : projects) {
+            const auto id = "welcome/game/" + project.root.filename().string();
+            const auto title = "Open " + project.name;
+            if (startAction(id.c_str(), Icon::Play, title.c_str(),
+                            "Open project; press F5 to play"))
+                state.openProject(project.root);
+        }
+    }
 
     if (!state.recent.paths().empty()) {
         ImGui::Dummy({1.0F, 18.0F});

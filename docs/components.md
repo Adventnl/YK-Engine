@@ -227,27 +227,33 @@ Timed, cancellable container search or recipe crafting with a result popup.
 | `requiredItems` | string list | [] |  |
 | `duration` | float | 2 | (range 0.1 to 30) |
 
-### EscapePresentation
+### InventoryHud
 
-A compact castle HUD with the actor's actual inventory.
+A configurable objective and inventory HUD.
 
 | Property | Type | Default | Notes |
 |---|---|---|---|
 | `actor` | entity | none |  |
-| `title` | string | "BLACKTHORN KEEP" |  |
-| `completionTitle` | string | "YOU ESCAPED BLACKTHORN KEEP" |  |
-| `completionText` | string | "Mara follows your rope into the moonlit valley." |  |
+| `title` | string | "" |  |
+| `completionTitle` | string | "COMPLETE" |  |
+| `completionText` | string | "" |  |
+| `statusText` | string | "" |  |
+| `alertText` | string | "ALERT" |  |
+| `controlsText` | string | "" |  |
+| `continueText` | string | "ENTER - CONTINUE     R - RESTART" |  |
+| `restartText` | string | "R - RESTART" |  |
 
 ### PatrolWatch
 
-A guard notices trespassing in an authored restricted area and returns the actor to their cell.
+A guard notices trespassing in an authored restricted area and returns the actor to an authored position.
 
 | Property | Type | Default | Notes |
 |---|---|---|---|
 | `actor` | entity | none |  |
-| `restrictedMin` | vec2 | [20,1] |  |
-| `restrictedMax` | vec2 | [30,8] |  |
-| `returnPosition` | vec2 | [3,4] |  |
+| `caughtText` | string | "Caught! Returned to the checkpoint." |  |
+| `restrictedMin` | vec2 | [0,0] |  |
+| `restrictedMax` | vec2 | [1,1] |  |
+| `returnPosition` | vec2 | [0,0] |  |
 | `range` | float | 3.5 | (range 0 to 20) |
 | `catchSeconds` | float | 3 | (range 0.1 to 20) |
 
@@ -272,7 +278,7 @@ Publishes the next unfinished objective and progress.
 |---|---|---|---|
 | `flags` | string list | [] |  |
 | `instructions` | string list | [] |  |
-| `completeText` | string | "Escape route ready." |  |
+| `completeText` | string | "Objectives complete." |  |
 
 ### WirePuzzle
 

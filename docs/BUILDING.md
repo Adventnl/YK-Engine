@@ -7,8 +7,8 @@
 - On Linux the usual SDL development packages (X11 or Wayland, ALSA or PulseAudio); the first
   configure prints what SDL could not find. Nothing else is installed system-wide: Box2D, SDL3,
   Dear ImGui and stb_image are built from pinned sources.
-- Python 3 with Pillow and numpy only to regenerate the demo game's art and levels
-  (`YK-DemoGame/tools/`); the demo's generated files are checked in, so building and testing need
+- Python 3 with Pillow and numpy only to regenerate the games' art and levels
+  (`games/fireboy-watergirl/tools/`); the games' generated files are checked in, so building and testing need
   no Python.
 
 The first configure downloads Box2D 3.1.1 and SDL 3.2.28 (SHA-256 checked) and Dear ImGui 1.92.9
@@ -22,10 +22,23 @@ export YK_DEPS_DIR=/path/to/deps             # or -DYK_DEPS_DIR=... on the cmake
 
 ## Presets
 
+To compile the current checkout and open the editor, run one script for your system:
+
+```powershell
+scripts\build-and-run-windows.ps1
+```
+
+```sh
+./scripts/build-and-run-macos.sh
+```
+
+Windows needs Visual Studio 2022 with the C++ workload and CMake. macOS needs Xcode command line
+tools, CMake and Ninja. The first run downloads the engine's pinned dependencies.
+
 ```sh
 cmake --preset dev                            # Debug, tests on: build/dev
 cmake --build --preset dev
-ctest --preset dev                            # 42 tests, about twelve minutes on four cores (Debug; CI takes about 17)
+ctest --preset dev                            # engine and game checks
 ```
 
 | Preset | What it is |
@@ -39,20 +52,20 @@ ctest --preset dev                            # 42 tests, about twelve minutes o
 
 Options: `YK_RUNTIME` (default ON) builds the window, renderer, audio, player and editor;
 `YK_SANITIZERS` adds the sanitizers; `YK_WARNINGS_AS_ERRORS` (default ON except with MSVC);
-`BUILD_TESTING=OFF` gives a library-only build.
+`BUILD_TESTING=OFF` disables checks. `YK_BUILD_GAMES=OFF` excludes bundled game projects.
 
 Programs, in the build folder:
 
 | Program | What it does |
 |---|---|
 | `yk_editor` | The editor ([EDITOR.md](EDITOR.md)). |
-| `yk_player` | Runs a project as a game: `yk_player YK-DemoGame`. `--fixed --frames 120 --capture shot.bmp` runs deterministically for a while and saves the last frame. |
+| `yk_player` | Runs a project as a game: `yk_player games/fireboy-watergirl`. `--fixed --frames 120 --capture shot.bmp` runs deterministically for a while and saves the last frame. |
 | `yk` | Command line: `yk new`, `yk validate`, `yk format [--check]`, `yk info`, `yk components`, `yk export`, `yk targets`. Headless. |
 
 ```sh
-./build/dev/yk_editor                        # the welcome screen offers the demo game
-./build/dev/yk_player YK-DemoGame            # play it: Ember A/D/W/S, Tide arrows
-./build/dev/yk validate YK-DemoGame
+./build/dev/yk_editor                        # the welcome screen discovers projects under games/
+./build/dev/yk_player games/fireboy-watergirl            # play it: Ember A/D/W/S, Tide arrows
+./build/dev/yk validate games/fireboy-watergirl
 ./build/dev/yk new ~/Games/MyGame --name "My Game"    # a new project anywhere; edit it with yk_editor
 ```
 
@@ -61,7 +74,7 @@ Settings that are read at build or run time (all optional):
 | Setting | Where | What it does |
 |---|---|---|
 | `YK_DEPS_DIR` | environment or `-D` | Pre-fetched dependencies (above). |
-| `YK_DEMO_PROJECT` | `-D` | The project the tests, the installation and the macOS app use as the sample (default `YK-DemoGame/`). Point it at a checkout anywhere; with none, the tests that need a game are left out. |
+| `YK_BUILD_GAMES` | `-D` | `ON` includes the two independent projects in `games/`, their checks and packaged data. `OFF` builds and packages the engine alone; engine tests use synthetic fixtures. |
 | `YK_LOG_DIR` | environment, run time | Replaces the folder logs and crash reports are written to. |
 | `YK_NO_DIALOGS` | environment, run time | Reports fatal start-up errors on stderr and in the log only (no message box); the tests set it. |
 | `YK_CODESIGN_IDENTITY`, `YK_NOTARY_PROFILE` | environment | Signing and notarization of the macOS release ([macOS](#macos)). |
@@ -89,10 +102,9 @@ Settings that are read at build or run time (all optional):
 - **`game_module*`** build a small example game module (`tests/game_module`) with
   `yk_add_game_hosts` and check its own command line, player, export and editor (see
   [Game modules](#game-modules-custom-c-components)).
-- **`demo`** plays the demo game's level with a bot that presses the real actions through the
-  real runtime, from the first step to the last exit, and fails when the level cannot be
-  completed. It also checks the generated component reference (`docs/components.md`) and that
-  each character dies only in the hazard that is deadly to it.
+- **`fireboy_watergirl`**, **`blackthorn_chapter1`** and **`blackthorn_chapter2`** exercise the
+  independent games' routes, interactions, menus and restart. Their code lives in `games/*/tests/`.
+- **`blackthorn_search_render`** captures the real search popup, including its zero-progress frame.
 - **`diagnostics`** covers paths, rotated log files, the running marker and crash reports;
   **`diagnostics_crash`** runs the real editor and crashes it on purpose, checks the report and that
   the next start says the session ended badly (not on Windows: the crash reporter is POSIX-only).
@@ -103,14 +115,9 @@ Settings that are read at build or run time (all optional):
 - **`external_project`** creates a project and copies the demo into a temporary folder (with a space
   and an umlaut) far from the source tree, then validates, plays and exports them from other working
   directories and runs the export from yet another, checking that its log went to the log folder.
-- **`editor_*`** drive the real editor UI by injected mouse and keyboard events under SDL's dummy
-  video driver: a complete workflow from an empty project to an exported game
-  (`editor_workflow`), the demo level being edited, played, restyled and exported
-  (`editor_demo_edit`, `editor_demo_play`, `editor_demo_settings`, `editor_demo_assets`,
-  `editor_demo_workbench`, `editor_demo_view`: zoom, fit, focus, panning, pins, the right-click
-  menu, `editor_demo_player`: the tracked standalone player), the layout surviving a restart (`editor_layout_*`) and a start-up
-  project that is not there (`editor_bad_project`). Screenshots of
-  failures are saved next to the test's working folder (`build/<preset>/editor-tests/<name>/shots`).
+- **`editor_*`** drive the real editor through an empty-project workflow, game discovery,
+  Blackthorn Keep playback, a custom component, layout persistence and a missing-project error.
+  Failure screenshots are saved in `build/<preset>/editor-tests/<name>/shots`.
 - **`install`** installs the build into a scratch folder, packs it with CPack and checks the
   contents, the absence of the private dependencies' headers, and that the installed programs
   work where they were put (the installed editor opens and plays the installed sample; the
@@ -139,8 +146,8 @@ cmake --install build/release --prefix /opt/yk-engine    # bin/, share/yk-engine
 scripts/package.sh                                        # build/package/YKEngine-<version>-<system>.tar.gz (.zip on Windows)
 ```
 
-An installation contains `yk_editor`, `yk_player`, `yk`, the demo game
-(`share/yk-engine/YK-DemoGame`), the documentation and the license notices
+An installation contains `yk_editor`, `yk_player`, `yk`, the optional games
+(`share/yk-engine/games/`), the documentation and the license notices
 (`share/doc/YKEngine/licenses`). It contains none of the private dependencies' headers or
 libraries; the `install` test checks that.
 
@@ -257,8 +264,7 @@ What the application is, so nothing is missing when it is copied to Applications
 
 - `Contents/MacOS/yk_editor` is the main executable (`CFBundleExecutable`); `yk_player` and `yk` sit
   next to it. The player is what the editor exports games with, and **Run in Player** starts it.
-- `Contents/Resources` holds `AppIcon.icns`, the startup updater, the sample game (`YK-DemoGame`,
-  offered on the welcome screen), the license notices and these documents. Nothing is read from the
+- `Contents/Resources` holds `AppIcon.icns`, the startup updater, the optional `games/` projects (discovered on the welcome screen), the license notices and these documents. Nothing is read from the
   build tree or the working directory; the application does not need Python or CMake.
 - `Info.plist` declares the `.ykproj` document type, so double-clicking a project (or
   `open -a "YK Engine" project.ykproj`) opens it in the editor.
@@ -346,3 +352,15 @@ keep stable (ADR 0011). The repository builds and runs an example module in its 
 - *"YK Engine" is damaged or cannot be opened* (macOS, a build that is not notarized): Control-click
   the app, choose Open, confirm once. Or `xattr -dr com.apple.quarantine "YK Engine.app"`.
 - *Behind a proxy*: `scripts/fetch-deps.sh` and `YK_DEPS_DIR` (above).
+
+## Independent games
+
+Game-specific checks live with each project under `games/*/tests/`. The engine libraries never
+compile sources from `games/`. `InventoryHud` and `PatrolWatch` expose configurable text;
+Blackthorn Keep supplies its story, instructions, routine labels and ending in its scene data.
+
+```sh
+cmake -S . -B build/engine-only -G Ninja -DYK_BUILD_GAMES=OFF
+cmake --build build/engine-only
+ctest --test-dir build/engine-only --output-on-failure
+```

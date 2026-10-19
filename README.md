@@ -1,113 +1,79 @@
-<p align="center"><img src="YK.png" alt="YK Engine logo" width="160"></p>
+<p align="center"><img src="packaging/icons/YKEngine-256.png" alt="YK Engine logo" width="160"></p>
 
 # YK Engine
 
-## Download and install
+A C++20 2D game engine and editor. Build scenes from reusable components, press **F5** to play,
+and export a standalone desktop game. The editor, player and command line share the same runtime.
 
-Get the installers from [GitHub Releases](https://github.com/Adventnl/YK-Engine/releases).
-On Windows x64, run the `windows-x64.exe` setup wizard. On an Apple silicon Mac, open
-the `.pkg` Installer wizard or the `.dmg` and drag **YK Engine** to Applications.
-The downloads include the editor, player, sample projects, and runtime libraries;
-you do not need to install SDL, CMake, or a compiler. These releases are currently
-unsigned, so Windows or macOS may ask you to confirm the first launch.
-The editor installed by these releases checks GitHub Releases when it starts. If a newer build is ready,
-the editor downloads and verifies it, then launches the Windows installer or opens the macOS
-Installer package. Network failures leave the installed editor usable.
+The repository contains exactly two independent games:
 
-A proprietary C++20 2D game engine with a VS Code-style editor. You build a level in the editor by
-placing prefabs and components, wiring them together and pressing **Play**; the same data runs in
-a standalone player and can be exported as a desktop game.
-
-**The engine is the product.** The demo game, *Cinder Vale*, is a test of it: a complete
-two-player puzzle platformer (two characters, two hazards, gems, levers, gates, plates you can stand
-on and sink, a moving platform, checkpoints, exits, two rooms that lead into each other) built only
-from the engine's components and prefabs, with original generated art, and no code of its own.
-*Castle Paths* in `YK-ExplorationDemo/` is a second data-only test: top-down movement, NPC
-conversation, a switch and locked gate, and travel between a courtyard and hall.
-*Night Shift* in `YK-SimulationDemo/` includes the original short escape and *Blackwater — Lockdown*,
-a larger furnished prison with NPC trades, repair tasks, security controls, locked gates and a labeled overview.
-`Fireboy-Watergirl-Demo/` is a separate playable level using the supplied room and pixel-art
-library, with two animated characters, color-specific hazards, switches, moving platforms, and exits.
-
-| Part | What it is | Where |
+| Game | Project | Play |
 |---|---|---|
-| **Engine** | Entities and components with reflection, scene/prefab/project files, input actions, animation clips and state machines, dialogue with portraits, a headless fixed-step runtime on Box2D, an SDL3 renderer (layers, Y sorting, culling, tiling, nine-slice, parallax, particles), audio, validation, export. No game rules. | `include/`, `src/` |
-| **Gameplay library** | Reusable mechanics as components: platformer and top-down controllers, NPC paths, proximity interactions, gates, portals and map spawns, plus plates, levers, doors, hazards, collectibles, checkpoints, goals, level flow and event reactions. | `include/yk/gameplay`, `src/gameplay` |
-| **Editor** | Workbench with an Explorer, scene hierarchy, prefabs, component catalog, inspector, a Debug view of the running game, tabs and split views, console, problems, profiler; real level editing; Play on a copy of the scene. | `editor/` |
-| **Player and tools** | `yk_player` runs any project; `yk` creates, validates, formats, inspects and exports projects. | `player/`, `tools/yk/` |
-| **Packaging** | `YK Engine.app` and its `.dmg` for macOS; the exporter writes a standalone `Game.app` (or Windows/Linux folder) without the editor, with icon, signing and a `.dmg` on a Mac. | `packaging/`, `scripts/`, `src/assets/Export.cpp` |
-| **Demo game** | *Cinder Vale*: a project folder (data) that consumes the engine, and the scripts that generate its art. It is a sample and a test; a game can live in a repository of its own. | `YK-DemoGame/` |
-| **Exploration test** | *Castle Paths*: two small top-down scenes with Invisible Castle pixel art that exercise the new reusable exploration systems. | `YK-ExplorationDemo/` |
-| **Escape test** | *Night Shift / Blackwater*: two escape routes, inmate trades, repair prerequisites, and a clear finish. | `YK-SimulationDemo/` |
-| **Fireboy and Watergirl sample** | Single-screen co-op level assembled from the supplied room, pixel-art cutouts and character poses. | `Fireboy-Watergirl-Demo/` |
+| **Fireboy and Watergirl** | [games/fireboy-watergirl](games/fireboy-watergirl/README.md) | Title screen, level selection and two co-op platforming levels. |
+| **Blackthorn Keep** | [games/blackthorn-keep](games/blackthorn-keep/README.md) | Two castle escape chapters with NPCs, inventories, searches, crafting and patrols. Starts in The Inner Keep. |
 
-## Use it (macOS)
+All scenes, assets, dialogue, game text, original art imports, authoring scripts and game-specific
+checks belong under `games/`. Engine code in `src/` and `include/` supplies reusable systems;
+it has no dependency on either game. The editor discovers ordinary `project.ykproj` files under
+`games/` and lists their names on its welcome screen.
 
-Open the `YKEngine-<version>-macos-<arch>.dmg` (built by `scripts/package-macos.sh`, and kept as the
-`macos-engine` artifact of every CI run), drag **YK Engine** to Applications and open it. The
-welcome screen offers New Project, Open Project, recent projects and the three sample games. **Build >
-Export Game** writes a standalone `GameName.app`, optionally signed and in a `.dmg`. No terminal is
-involved; logs and crash reports are in `~/Library/Logs/`. Until the app is notarized with a
-Developer ID (needs an Apple account; see [docs/BUILDING.md](docs/BUILDING.md#macos)), another Mac
-asks for Control-click > Open once.
+## Build and play
 
-## Build it
-
-Requires CMake 3.25+, Ninja and a C++20 compiler (GCC, Clang, MSVC; all three are built and tested in CI). The first
-configure downloads hash-pinned Box2D, SDL3 and Dear ImGui. Linux also needs SDL's usual
-development packages. Details, presets and the Windows and macOS notes are in
-[docs/BUILDING.md](docs/BUILDING.md).
+Requires CMake 3.25+, Ninja and a C++20 compiler. The first configure downloads pinned dependencies.
+See [Building](docs/BUILDING.md) for Windows, macOS, dependency setup and packaging.
 
 ```sh
 cmake --preset dev
 cmake --build --preset dev
 ctest --preset dev --output-on-failure
 
-./build/dev/yk_editor                       # welcome screen: projects and both demos
-./build/dev/yk_editor YK-DemoGame           # open the demo game in the editor
-./build/dev/yk_player YK-DemoGame           # play it without the editor
-./build/dev/yk_player Fireboy-Watergirl-Demo  # title screen, level selector and two co-op levels
-./build/dev/yk_player YK-ExplorationDemo     # play the top-down exploration test
-./build/dev/yk_player YK-SimulationDemo      # play Blackwater; the original scene is preserved
-./build/dev/yk export YK-DemoGame --target linux --out dist --zip     # package it
-./build/dev/yk new ~/Games/MyGame --name "My Game"                    # a new project anywhere
+./build/dev/yk_editor
+./build/dev/yk_player games/blackthorn-keep
+./build/dev/yk_player games/fireboy-watergirl
 ```
 
-Playing the demo: **Ember** uses **A/D** to move, **W** to jump and **S** to use a lever; **Tide**
-uses the **arrow keys**, **Up** to jump and **Down** to use a lever; both must reach their exits
-(each character is safe in its own pool and deadly in the other's). **R** restarts the level. In
-the editor press **F5** to play, **Shift+F5** to stop.
+Open either project from the welcome screen and press **F5** to play in the editor.
+Blackthorn Keep uses **WASD / arrows** to move, **E** to interact, **Escape** to dismiss a popup,
+**P** to pause and **R** to restart. Fireboy uses **A/D/W** and Watergirl uses the **arrow keys**;
+its existing title screen and level selection are preserved.
 
-## What the editor does
+For an engine build without bundled games or their checks:
 
-Create or open a project, open scenes in tabs, place entities and prefabs, move, resize and
-rotate them with gizmos and snapping, edit properties in an Inspector generated from the
-components' own declarations, wire mechanisms together (plates to doors) with pickers and
-eyedroppers, import images and sounds, tune texture import settings and animation timing, edit the
-input map and collision layers, validate the project, press Play on a copy of the scene (both
-characters live), and export the game. The guide is [docs/EDITOR.md](docs/EDITOR.md).
+```sh
+cmake -S . -B build/engine-only -G Ninja -DYK_BUILD_GAMES=OFF
+cmake --build build/engine-only
+ctest --test-dir build/engine-only --output-on-failure
+```
+
+The engine also supports projects anywhere outside this repository:
+
+```sh
+./build/dev/yk new ~/Games/MyGame --name "My Game"
+./build/dev/yk_editor ~/Games/MyGame
+./build/dev/yk export games/blackthorn-keep --target macos --out dist --zip
+```
+
+## Download and install
+
+[GitHub Releases](https://github.com/Adventnl/YK-Engine/releases) provides Windows x64 and macOS
+installers. Downloads include the editor, player, command line, games and dependency notices.
+No compiler is needed to play or edit. Installed editors check for release updates on startup.
 
 ## Repository layout
 
 ```text
-include/yk/  src/         engine and gameplay library (Box2D and SDL stay private)
-editor/core  editor/ui    editor: UI-free core library; Dear ImGui workbench, panels, scripted UI driver
-player/  tools/yk/        yk_player and the yk command line
-YK-DemoGame/              the demo game (data) and its art/level generators
-packaging/                macOS bundle template, entitlements, icons
-tests/                    unit, integration, editor UI scripts, install, macOS bundle, diagnostics, external project
-docs/  cmake/  scripts/   documentation, CMake modules and toolchains, verification and packaging scripts
+include/yk/  src/         reusable engine and gameplay systems
+editor/                  editor core and interface
+player/  tools/yk/        generic player and project command line
+games/                  independent game projects and their checks
+tests/                  engine tests and small synthetic fixtures
+packaging/  cmake/       distribution and build support
+docs/  scripts/          documentation, build and verification scripts
 ```
 
-## Documentation
-
-- [Architecture](docs/ARCHITECTURE.md): modules, systems, rules of the codebase
-- [Exploration pass](docs/EXPLORATION.md): audit, new systems, authoring the second demo
-- [Building, testing and shipping](docs/BUILDING.md): presets, tests, macOS app and disk image, export, signing, Windows
-- [Editor guide](docs/EDITOR.md): the workbench, level editing, prefabs, assets, play, export, shortcuts
-- [Project format](docs/PROJECT_FORMAT.md): every file the engine reads and writes
-- [Status](docs/STATUS.md): what is verified, how, and what is not done
-- [Component reference](docs/components.md) (generated from the registry the Inspector uses),
-  [physics API](docs/physics.md), [decisions](docs/decisions/), [the audit that started this pass](docs/AUDIT.md)
-- [Dependency and font notices](THIRD_PARTY.md); the demo game's own notes are in
-  [YK-DemoGame/README.md](YK-DemoGame/README.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Building and packaging](docs/BUILDING.md)
+- [Editor guide](docs/EDITOR.md)
+- [Project format](docs/PROJECT_FORMAT.md)
+- [Component reference](docs/components.md)
+- [Dependency notices](THIRD_PARTY.md)

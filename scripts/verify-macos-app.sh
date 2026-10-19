@@ -56,60 +56,60 @@ fi
 pass "the editor links only system libraries"
 
 echo "== The editor, launched with a window (real video driver, real renderer)"
-demo="$app/Contents/Resources/YK-DemoGame"
+demo="$app/Contents/Resources/games/blackthorn-keep"
 [[ -f "$demo/project.ykproj" ]] || fail "the demo game is not in Resources"
-fireboy="$app/Contents/Resources/Fireboy-Watergirl-Demo"
+fireboy="$app/Contents/Resources/games/fireboy-watergirl"
 [[ -f "$fireboy/project.ykproj" ]] || fail "Fireboy and Watergirl is not in Resources"
 "$app/Contents/MacOS/yk" validate "$fireboy" || fail "Fireboy and Watergirl failed validation"
 "$app/Contents/MacOS/yk_editor" "$demo" --no-audio --size 1600x900 --frames 90 \
     --capture "$work/shots/editor.bmp" --settings-dir "$work/editor-settings" \
     > "$work/logs/editor-run.txt" 2>&1 || { cat "$work/logs/editor-run.txt"; fail "the editor did not run"; }
-grep -q "Opened project 'Cinder Vale'" "$work/logs/editor-run.txt" || fail "the editor did not open the demo game"
+grep -q "Opened project 'Blackthorn Keep'" "$work/logs/editor-run.txt" || fail "the editor did not open the demo game"
 [[ -s "$work/shots/editor.bmp" ]] && sips -s format png "$work/shots/editor.bmp" --out "$work/shots/editor.png" > /dev/null
 pass "the editor drew 90 frames and captured one"
 grep -q "Clean shutdown" "$work/editor-settings/logs/editor.log" && pass "the editor shut down cleanly (log file)"
 
 echo "== A game exported by the packaged tool: signed, with a disk image"
 "$app/Contents/MacOS/yk" export "$demo" --target macos --out "$work/games" --zip --dmg
-game="$work/games/Cinder Vale.app"
+game="$work/games/Blackthorn Keep.app"
 codesign --verify --deep --strict "$game" && pass "the exported game's signature verifies"
 plutil -lint "$game/Contents/Info.plist" > /dev/null && pass "the game's Info.plist is valid"
 iconutil --convert iconset --output "$work/game.iconset" "$game/Contents/Resources/AppIcon.icns" \
     && pass "the game's icon is accepted by iconutil"
-[[ -f "$work/games/Cinder Vale.dmg" && -f "$work/games/Cinder Vale.app.zip" ]] || fail "missing .dmg or .zip"
-hdiutil attach -nobrowse -readonly -mountpoint "$work/mount" "$work/games/Cinder Vale.dmg" > /dev/null
-[[ -d "$work/mount/Cinder Vale.app/Contents/Resources/data" ]] || fail "the game's disk image is incomplete"
+[[ -f "$work/games/Blackthorn Keep.dmg" && -f "$work/games/Blackthorn Keep.app.zip" ]] || fail "missing .dmg or .zip"
+hdiutil attach -nobrowse -readonly -mountpoint "$work/mount" "$work/games/Blackthorn Keep.dmg" > /dev/null
+[[ -d "$work/mount/Blackthorn Keep.app/Contents/Resources/data" ]] || fail "the game's disk image is incomplete"
 hdiutil detach "$work/mount" > /dev/null
 pass "the game's disk image mounts and holds the app"
 # Nothing of the editor is in a game: one program, no ImGui, no editor fonts.
 [[ $(ls "$game/Contents/MacOS" | wc -l) -eq 1 ]] || fail "the game carries more than one program"
-if strings "$game/Contents/MacOS/CinderVale" | grep -q "ImGui\|Dear ImGui"; then
+if strings "$game/Contents/MacOS/BlackthornKeep" | grep -q "ImGui\|Dear ImGui"; then
     fail "the game contains the editor's UI library"
 fi
-ls -l "$game/Contents/MacOS/CinderVale" "$app/Contents/MacOS/yk_editor" | awk '{print $5, $9}'
+ls -l "$game/Contents/MacOS/BlackthornKeep" "$app/Contents/MacOS/yk_editor" | awk '{print $5, $9}'
 pass "the game contains no editor code"
 
 echo "== The game, launched like a double-click (Launch Services), from another folder"
 mkdir -p "$work/somewhere else"
-ditto "$game" "$work/somewhere else/Cinder Vale.app"
-log_dir="$HOME/Library/Logs/CinderVale"
+ditto "$game" "$work/somewhere else/Blackthorn Keep.app"
+log_dir="$HOME/Library/Logs/BlackthornKeep"
 rm -rf "$log_dir"
-open -n -W "$work/somewhere else/Cinder Vale.app" --args --frames 120 --fixed --capture "$work/shots/game.bmp"
+open -n -W "$work/somewhere else/Blackthorn Keep.app" --args --frames 120 --fixed --capture "$work/shots/game.bmp"
 [[ -s "$work/shots/game.bmp" ]] || fail "the launched game drew no frame"
 sips -s format png "$work/shots/game.bmp" --out "$work/shots/game.png" > /dev/null
-grep -q "Loaded scene scenes/level01.ykscene" "$log_dir/player.log" || fail "the game's log has no start-up in $log_dir"
+grep -q "Loaded scene scenes/level2.ykscene" "$log_dir/player.log" || fail "the game's log has no start-up in $log_dir"
 grep -q "Clean shutdown" "$log_dir/player.log" || fail "the game did not shut down cleanly"
 cp "$log_dir/player.log" "$work/logs/game-player.log"
-pass "the game started from Launch Services, logged to ~/Library/Logs/CinderVale and closed cleanly"
+pass "the game started from Launch Services, logged to ~/Library/Logs/BlackthornKeep and closed cleanly"
 
 echo "== The editor, launched by opening a project document, then asked to quit"
 project_copy="$work/Project Copy"
 mkdir -p "$project_copy"
-ditto "$demo" "$project_copy/Cinder Vale"
+ditto "$demo" "$project_copy/Blackthorn Keep"
 editor_logs="$HOME/Library/Logs/YKEngine/Editor"
 rm -rf "$editor_logs"
-open -n -a "$work/installed/YK Engine.app" "$project_copy/Cinder Vale/project.ykproj"
-wait_for "grep -q \"Opened project 'Cinder Vale'\" \"$editor_logs/editor.log\" 2>/dev/null" 40 \
+open -n -a "$work/installed/YK Engine.app" "$project_copy/Blackthorn Keep/project.ykproj"
+wait_for "grep -q \"Opened project 'Blackthorn Keep'\" \"$editor_logs/editor.log\" 2>/dev/null" 40 \
     || { cat "$editor_logs/editor.log" 2>/dev/null || true; fail "the project document did not open in the editor"; }
 pass "opening project.ykproj through Launch Services started the editor with that project"
 # The way the system asks an application to quit (Cmd+Q, Dock > Quit and Apple's own shutdown all

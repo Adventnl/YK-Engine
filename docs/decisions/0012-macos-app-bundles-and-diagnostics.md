@@ -32,7 +32,7 @@ open.
   unit-tested off a Mac.
 - **Helper processes are owned**: the player the editor starts is tracked, shown in the status bar,
   stopped from the Build menu and ended when the editor quits.
-- **The engine does not know the game**: the sample game is located by `YK_DEMO_PROJECT` (any
+- **The engine does not know the game**: the sample game is located by `YK_BUILD_GAMES` (any
   checkout, or none) and games can live in their own repositories (`yk new`).
 
 ## Consequences

@@ -3,6 +3,7 @@
 #include "support/world.hpp"
 #include "yk/components/Effects.hpp"
 #include "yk/core/Log.hpp"
+#include "yk/gameplay/Exploration.hpp"
 #include "yk/gameplay/Gameplay.hpp"
 #include "yk/runtime/GameRuntime.hpp"
 #include "yk/scene/SceneSerializer.hpp"
@@ -1408,9 +1409,36 @@ void templatesWork() {
     w.tick(120); // Every template survives simulation.
     CHECK(w.runtime->tick() == 120);
 }
+void inventoryHudUsesProjectCopy() {
+    World w;
+    auto &hud = w.scene->createEntity("HUD").add<InventoryHud>();
+    CHECK(hud.title.empty() && hud.completionText.empty() && hud.statusText.empty());
+    hud.title = "My Adventure";
+    hud.completionTitle = "All done";
+    hud.completionText = "A project-authored ending.";
+    hud.statusText = "Morning";
+    hud.alertText = "Stay hidden";
+    hud.controlsText = "Game controls";
+    hud.continueText = "Continue onward";
+    hud.restartText = "Try again";
+    w.start();
+    w.tick(2);
+    const auto &board = w.runtime->blackboard();
+    CHECK(board.number("inventory_hud") == 1);
+    CHECK(board.text("inventory_title") == "My Adventure");
+    CHECK(board.text("inventory_completion_title") == "All done");
+    CHECK(board.text("inventory_completion_text") == "A project-authored ending.");
+    CHECK(board.text("inventory_status") == "Morning");
+    CHECK(board.text("inventory_alert") == "Stay hidden");
+    CHECK(board.text("inventory_controls") == "Game controls");
+    CHECK(board.text("inventory_continue") == "Continue onward");
+    CHECK(board.text("inventory_restart") == "Try again");
+    CHECK(board.text("inventory_slot_0_icon").empty());
+}
 } // namespace
 
 int main() {
+    inventoryHudUsesProjectCopy();
     controllerBasics();
     characterAnimation();
     oneWayAndWedge();

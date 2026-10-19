@@ -31,18 +31,11 @@ include(YkDependencies)
 include(YkGame)
 yk_sanitize(box2d)
 
-# The demo game is a project of its own: data and no code. It sits in YK-DemoGame/ here, but nothing
-# requires that. Point YK_DEMO_PROJECT at a checkout anywhere else (a separate repository, a
-# submodule) and the tests, the installation and the bundled sample use that one; with no project
-# there, the tests that need a game are left out and the editor simply has no sample to offer.
-set(YK_DEMO_PROJECT "${CMAKE_CURRENT_SOURCE_DIR}/YK-DemoGame" CACHE PATH
-    "A project folder used as the sample game by tests, the installation and the macOS app")
-if(EXISTS "${YK_DEMO_PROJECT}/project.ykproj")
-    set(YK_HAVE_DEMO TRUE)
-else()
-    set(YK_HAVE_DEMO FALSE)
-    message(WARNING "No demo project at ${YK_DEMO_PROJECT}: the tests that need a game are skipped "
-        "and nothing is installed as a sample.")
+# Games are independent project data; engine libraries never compile their files.
+option(YK_BUILD_GAMES "Include games, their checks and packaged projects" ${PROJECT_IS_TOP_LEVEL})
+set(YK_GAMES_DIR "")
+if(YK_BUILD_GAMES)
+    set(YK_GAMES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/games")
 endif()
 
 add_library(yk_engine STATIC src/core/Log.cpp src/core/Time.cpp src/core/Color.cpp src/core/Json.cpp
@@ -57,8 +50,7 @@ add_library(yk_engine STATIC src/core/Log.cpp src/core/Time.cpp src/core/Color.c
     src/runtime/Blackboard.cpp src/runtime/EventBus.cpp src/runtime/GameRuntime.cpp src/runtime/GameSession.cpp
     src/runtime/PhysicsBinding.cpp src/runtime/TilemapBinding.cpp src/runtime/Services.cpp src/core/Value.cpp src/assets/Validation.cpp
     src/physics/World.cpp src/physics/Queries.cpp src/physics/Joints.cpp)
-# The simulation program's modules (docs/ESCAPISTS2_BUILD_PLAN.md) are folders of their own: every
-# .cpp in them belongs to the engine, so adding a file needs no edit here.
+# Reusable world, navigation, rules, inventory, simulation and persistence systems.
 file(GLOB YK_ENGINE_MODULE_SOURCES CONFIGURE_DEPENDS
     src/world/*.cpp src/navigation/*.cpp src/rules/*.cpp src/stats/*.cpp src/items/*.cpp
     src/sim/*.cpp src/ai/*.cpp src/save/*.cpp src/data/*.cpp)
@@ -171,24 +163,8 @@ if(BUILD_TESTING)
     yk_add_test(perception tests/unit/perception_tests.cpp LIBS yk::gameplay TIMEOUT 300)
     yk_add_test(mechanisms tests/unit/mechanisms_tests.cpp LIBS yk::gameplay TIMEOUT 120)
     yk_add_test(level_flow tests/unit/level_flow_tests.cpp LIBS yk::gameplay TIMEOUT 120)
-    yk_add_test(fireboy_demo tests/unit/fireboy_demo_tests.cpp LIBS yk::gameplay TIMEOUT 120
-        DEFINITIONS YK_FIREBOY_PROJECT_DIR="${CMAKE_CURRENT_SOURCE_DIR}/Fireboy-Watergirl-Demo")
     yk_add_test(export tests/unit/export_tests.cpp LIBS yk::gameplay TIMEOUT 60)
-    # The demo game is a separate project (YK-DemoGame) that only consumes the engine; this plays it.
-    if(YK_HAVE_DEMO)
-        yk_add_test(demo tests/unit/demo_tests.cpp LIBS yk::gameplay TIMEOUT 120
-            DEFINITIONS YK_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}" YK_DEMO_PROJECT_DIR="${YK_DEMO_PROJECT}")
-    endif()
-    yk_add_test(exploration tests/unit/exploration_tests.cpp LIBS yk::gameplay TIMEOUT 60
-        DEFINITIONS YK_EXPLORATION_PROJECT_DIR="${CMAKE_CURRENT_SOURCE_DIR}/YK-ExplorationDemo")
-    yk_add_test(castle_level2 tests/unit/castle_level2_tests.cpp LIBS yk::gameplay TIMEOUT 120
-        DEFINITIONS YK_EXPLORATION_PROJECT_DIR="${CMAKE_CURRENT_SOURCE_DIR}/YK-ExplorationDemo")
-    yk_add_test(simulation_demo tests/unit/simulation_demo_tests.cpp LIBS yk::gameplay TIMEOUT 60
-        DEFINITIONS YK_SIMULATION_PROJECT_DIR="${CMAKE_CURRENT_SOURCE_DIR}/YK-SimulationDemo")
-    yk_add_test(blackwater_demo tests/unit/blackwater_demo_tests.cpp LIBS yk::gameplay TIMEOUT 60
-        DEFINITIONS YK_SIMULATION_PROJECT_DIR="${CMAKE_CURRENT_SOURCE_DIR}/YK-SimulationDemo")
-    yk_add_test(editor_core tests/unit/editor_core_tests.cpp LIBS yk::editor_core TIMEOUT 120
-        DEFINITIONS YK_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}" YK_DEMO_PROJECT_DIR="${YK_DEMO_PROJECT}")
+    yk_add_test(editor_core tests/unit/editor_core_tests.cpp LIBS yk::editor_core TIMEOUT 120)
     # An example game module (one component) and the programs built for it with yk_add_game_hosts:
     # proves a game with C++ of its own gets its own player, editor and command line.
     add_library(yk_spinner_module STATIC tests/game_module/SpinnerModule.cpp)
@@ -219,14 +195,6 @@ if(BUILD_TESTING)
             TIMEOUT 60 DEFINITIONS SPINNER_PROJECT="${YK_SPINNER_PROJECT}")
     endif()
     if(YK_RUNTIME)
-        # Exercise the actual search popup, including its first zero-progress frame and loot
-        # result. Gameplay-only tests cannot catch invalid sprite dimensions in the HUD.
-        add_test(NAME exploration_search_render COMMAND yk_player
-            ${CMAKE_CURRENT_SOURCE_DIR}/YK-ExplorationDemo --scene scenes/courtyard.ykscene --fixed --no-audio --frames 520
-            --keys "S@0-56,D@58-149,S@151-181,A@183-205,S@207-283,A@285-359,E@361-363"
-            --capture ${CMAKE_BINARY_DIR}/exploration-search.bmp)
-        set_tests_properties(exploration_search_render PROPERTIES TIMEOUT 30
-            ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software;SDL_AUDIODRIVER=dummy")
         add_executable(yk_runtime_tests tests/integration/runtime_tests.cpp)
         target_link_libraries(yk_runtime_tests PRIVATE yk::engine SDL3::SDL3)
         yk_target(yk_runtime_tests)
@@ -253,24 +221,16 @@ if(BUILD_TESTING)
         file(GLOB YK_EDITOR_SCRIPTS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/tests/editor/*.ykscript")
         foreach(script ${YK_EDITOR_SCRIPTS})
             get_filename_component(script_name "${script}" NAME_WE)
-            # Scripts named demo_* start with the demo game (YK_DEMO_PROJECT) open; the others start
-            # from the welcome screen.
-            set(script_project "")
-            if(script_name MATCHES "^demo_")
-                if(NOT YK_HAVE_DEMO)
-                    continue()
-                endif()
-                set(script_project -DPROJECT=${YK_DEMO_PROJECT})
-            elseif(script_name MATCHES "^exploration_")
-                set(script_project -DPROJECT=${CMAKE_CURRENT_SOURCE_DIR}/YK-ExplorationDemo)
+            if(script_name STREQUAL "games_welcome" AND NOT YK_BUILD_GAMES)
+                continue()
             endif()
             add_test(NAME editor_${script_name}
                 COMMAND ${CMAKE_COMMAND} -DEDITOR=$<TARGET_FILE:yk_editor> -DSCRIPT=${script}
-                    -DWORK=${CMAKE_BINARY_DIR}/editor-tests/${script_name} ${script_project}
+                    -DWORK=${CMAKE_BINARY_DIR}/editor-tests/${script_name}
                     -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/editor/run_script.cmake)
             set_tests_properties(editor_${script_name} PROPERTIES TIMEOUT 600)
         endforeach()
-        # The example game's own editor, built with yk_add_game_hosts, shows and edits its component.
+        # The example module's own editor, built with yk_add_game_hosts, shows and edits its component.
         add_test(NAME editor_game_module
             COMMAND ${CMAKE_COMMAND} -DEDITOR=$<TARGET_FILE:spinner_game_editor>
                 -DSCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/tests/game_module/editor.ykscript
@@ -285,69 +245,15 @@ if(BUILD_TESTING)
                 -DRAW_PROJECT=${CMAKE_BINARY_DIR}/editor-tests/bad_project/no-such-project
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/editor/run_script.cmake)
         set_tests_properties(editor_bad_project PROPERTIES TIMEOUT 120)
-        # The window layout survives a restart: one editor process rearranges it, the next one
-        # starts from what was saved.
-        foreach(part write read)
-            if(NOT YK_HAVE_DEMO)
-                break()
-            endif()
-            set(persist_args -DEDITOR=$<TARGET_FILE:yk_editor>
-                -DSCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/tests/editor/persist/layout_${part}.ykscript
-                -DWORK=${CMAKE_BINARY_DIR}/editor-tests/layout
-                -DPROJECT=${YK_DEMO_PROJECT} -DPERSIST=ON)
-            if(part STREQUAL "read")
-                list(APPEND persist_args -DKEEP=ON)
-            endif()
-            add_test(NAME editor_layout_${part}
-                COMMAND ${CMAKE_COMMAND} ${persist_args}
-                    -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/editor/run_script.cmake)
-            set_tests_properties(editor_layout_${part} PROPERTIES TIMEOUT 600)
-        endforeach()
-        if(YK_HAVE_DEMO)
-            set_tests_properties(editor_layout_write PROPERTIES FIXTURES_SETUP editor_layout)
-            set_tests_properties(editor_layout_read PROPERTIES FIXTURES_REQUIRED editor_layout)
-        endif()
-        # A game that lives outside the engine: new, copied and exported in foreign folders.
-        if(YK_HAVE_DEMO)
-        add_test(NAME external_project
-            COMMAND ${CMAKE_COMMAND} -DTOOL=$<TARGET_FILE:yk> -DPLAYER=$<TARGET_FILE:yk_player>
-                -DDEMO=${YK_DEMO_PROJECT} -DWORK=${CMAKE_BINARY_DIR}/external-project-test
-                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/project/check_external.cmake)
-        set_tests_properties(external_project PROPERTIES TIMEOUT 600)
-        endif()
-        # "YK Engine.app" assembled somewhere else and used from there (see packaging/macos).
-        if(NOT WIN32 AND YK_HAVE_DEMO) # Paths and program names are checked as text; the layout logic is the same everywhere.
-        add_test(NAME macos_bundle
-            COMMAND ${CMAKE_COMMAND} -DEDITOR=$<TARGET_FILE:yk_editor> -DPLAYER=$<TARGET_FILE:yk_player>
-                -DTOOL=$<TARGET_FILE:yk> -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
-                -DDEMO=${YK_DEMO_PROJECT}
-                -DVERSION=${PROJECT_VERSION} -DWORK=${CMAKE_BINARY_DIR}/macos-bundle-test
-                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/macos/check_bundle.cmake)
-        set_tests_properties(macos_bundle PROPERTIES TIMEOUT 600)
-        endif()
-        # A crash leaves a log, a report with a stack trace and a notice on the next start.
-        if(NOT WIN32 AND YK_HAVE_DEMO) # The Windows crash handler compiles but has not been run yet.
-        add_test(NAME diagnostics_crash
-            COMMAND ${CMAKE_COMMAND} -DPLAYER=$<TARGET_FILE:yk_player> -DEDITOR=$<TARGET_FILE:yk_editor>
-                -DPROJECT=${YK_DEMO_PROJECT}
-                -DSCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/tests/diagnostics/after_crash.ykscript
-                -DWORK=${CMAKE_BINARY_DIR}/diagnostics-test
-                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/diagnostics/check_crash.cmake)
-        set_tests_properties(diagnostics_crash PROPERTIES TIMEOUT 240)
-        endif()
-        # The installation and its CPack archive: contents, no private dependencies, and the
-        # installed programs work where they were put.
-        if(YK_HAVE_DEMO)
-        add_test(NAME install
-            COMMAND ${CMAKE_COMMAND} -DBUILD_DIR=${CMAKE_BINARY_DIR} -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
-                -DWORK=${CMAKE_BINARY_DIR}/install-test -DCONFIG=$<CONFIG>
-                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/install/check_install.cmake)
-        set_tests_properties(install PROPERTIES TIMEOUT 600)
-        endif()
+
     endif()
 endif()
 
-# Installation: the editor, the player, the command line, the demo project, documentation and
+if(YK_BUILD_GAMES)
+    add_subdirectory(games)
+endif()
+
+# Installation: the editor, the player, the command line, optional games, documentation and
 # license notices.
 if(YK_RUNTIME AND PROJECT_IS_TOP_LEVEL)
     include(GNUInstallDirs)
@@ -355,18 +261,10 @@ if(YK_RUNTIME AND PROJECT_IS_TOP_LEVEL)
     if(WIN32)
         install(FILES packaging/update/windows.ps1 DESTINATION ${CMAKE_INSTALL_DATADIR}/yk-engine/update)
     endif()
-    if(YK_HAVE_DEMO)
-        install(DIRECTORY "${YK_DEMO_PROJECT}/" DESTINATION ${CMAKE_INSTALL_DATADIR}/yk-engine/YK-DemoGame
-            PATTERN "tools" EXCLUDE PATTERN "__pycache__" EXCLUDE)
-    endif()
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/YK-ExplorationDemo/project.ykproj")
-        install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/YK-ExplorationDemo/"
-            DESTINATION ${CMAKE_INSTALL_DATADIR}/yk-engine/YK-ExplorationDemo)
-    endif()
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Fireboy-Watergirl-Demo/project.ykproj")
-        install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/Fireboy-Watergirl-Demo/"
-            DESTINATION ${CMAKE_INSTALL_DATADIR}/yk-engine/Fireboy-Watergirl-Demo
-            PATTERN "tools" EXCLUDE PATTERN "__pycache__" EXCLUDE)
+    if(YK_BUILD_GAMES)
+        install(DIRECTORY "${YK_GAMES_DIR}/" DESTINATION ${CMAKE_INSTALL_DATADIR}/yk-engine/games
+            PATTERN "tools" EXCLUDE PATTERN "tests" EXCLUDE PATTERN "source" EXCLUDE
+            PATTERN "CMakeLists.txt" EXCLUDE PATTERN "__pycache__" EXCLUDE PATTERN ".DS_Store" EXCLUDE)
     endif()
     install(DIRECTORY docs/ DESTINATION ${CMAKE_INSTALL_DOCDIR})
     install(DIRECTORY LICENSES/ DESTINATION ${CMAKE_INSTALL_DOCDIR}/licenses)
@@ -402,7 +300,7 @@ if(APPLE AND YK_RUNTIME AND PROJECT_IS_TOP_LEVEL)
         COMMAND ${CMAKE_COMMAND} "-DOUT=${CMAKE_BINARY_DIR}/YK Engine.app"
             -DEDITOR=$<TARGET_FILE:yk_editor> -DPLAYER=$<TARGET_FILE:yk_player>
             -DTOOL=$<TARGET_FILE:yk> -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
-            -DVERSION=${PROJECT_VERSION} -DDEMO=${YK_DEMO_PROJECT}
+            -DVERSION=${PROJECT_VERSION} -DGAMES_DIR=${YK_GAMES_DIR}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/packaging/macos/assemble-app.cmake
         DEPENDS yk_editor yk_player yk
         COMMENT "Assembling YK Engine.app" VERBATIM)

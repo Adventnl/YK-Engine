@@ -3,8 +3,8 @@
 # space and an umlaut), then validated, run by the player from yet another working directory,
 # exported, and the export run from a fourth. Nothing may depend on where the engine was built.
 #
-#   cmake -DTOOL=<yk> -DPLAYER=<yk_player> -DDEMO=<a project folder> -DWORK=<scratch dir> -P check_external.cmake
-foreach(variable TOOL PLAYER DEMO WORK)
+#   cmake -DTOOL=<yk> -DPLAYER=<yk_player> -DPROJECT=<a project folder> -DWORK=<scratch dir> -P check_external.cmake
+foreach(variable TOOL PLAYER PROJECT WORK)
     if(NOT ${variable})
         message(FATAL_ERROR "${variable} is required")
     endif()
@@ -68,7 +68,7 @@ if(NOT EXISTS "${root}/new.bmp")
 endif()
 
 # 2. A copy of the demo game in a foreign place is a complete project of its own.
-file(COPY "${DEMO}/" DESTINATION "${base}/Demo Copy")
+file(COPY "${PROJECT}/" DESTINATION "${base}/Demo Copy")
 run("yk validate (demo copy)" "${root}/cwd one" "${TOOL}" validate "${base}/Demo Copy")
 run("the player on the demo copy" "${root}/cwd two" "${PLAYER}" "${base}/Demo Copy" --frames 60
     --fixed --no-audio --capture "${root}/demo.bmp")
@@ -89,9 +89,9 @@ endif()
 run("yk export" "${root}/cwd one" "${TOOL}" export "${base}/Demo Copy" --target ${target}
     --out "${base}/dist" --zip)
 if(target STREQUAL "macos")
-    set(game "${base}/dist/Cinder Vale.app/Contents/MacOS/CinderVale")
+    set(game "${base}/dist/Blackthorn Keep.app/Contents/MacOS/BlackthornKeep")
 else()
-    set(game "${base}/dist/Cinder-Vale-${target}/CinderVale${exe}")
+    set(game "${base}/dist/Blackthorn-Keep-${target}/BlackthornKeep${exe}")
 endif()
 if(NOT EXISTS "${game}")
     file(REMOVE_RECURSE "${root}")

@@ -122,6 +122,8 @@ click component/SpriteRenderer/remove
 expect no-component Entity SpriteRenderer
 key ctrl+z
 expect has-component Entity SpriteRenderer
+# Collapse the long sprite inspector so the add button and popup fit in the test viewport.
+click component/SpriteRenderer
 # Adding a Door brings the body and collider it needs, and they cannot be removed under it.
 click inspector/add-component
 click add-category/Gameplay

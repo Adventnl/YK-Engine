@@ -31,13 +31,13 @@ set(exe "")
 if(WIN32)
     set(exe ".exe")
 endif()
-set(sample "${prefix}/share/yk-engine/YK-DemoGame")
-set(exploration_sample "${prefix}/share/yk-engine/YK-ExplorationDemo")
-set(fireboy_sample "${prefix}/share/yk-engine/Fireboy-Watergirl-Demo")
+set(sample "${prefix}/share/yk-engine/games/blackthorn-keep")
+set(exploration_sample "${prefix}/share/yk-engine/games/blackthorn-keep")
+set(fireboy_sample "${prefix}/share/yk-engine/games/fireboy-watergirl")
 set(docs "${prefix}/share/doc/YKEngine")
 foreach(required
         "${prefix}/bin/yk_editor${exe}" "${prefix}/bin/yk_player${exe}" "${prefix}/bin/yk${exe}"
-        "${sample}/project.ykproj" "${sample}/scenes/level01.ykscene"
+        "${sample}/project.ykproj" "${sample}/scenes/level2.ykscene"
         "${exploration_sample}/project.ykproj" "${exploration_sample}/scenes/courtyard.ykscene"
         "${fireboy_sample}/project.ykproj" "${fireboy_sample}/scenes/menu.ykscene"
         "${fireboy_sample}/scenes/levels.ykscene" "${fireboy_sample}/scenes/level01.ykscene"
@@ -105,22 +105,22 @@ endif()
 run("the installed yk export" "${prefix}/bin/yk${exe}" export "${sample}" --target ${target}
     --out "${WORK}/exported" --zip)
 if(target STREQUAL "macos")
-    set(game_root "${WORK}/exported/Cinder Vale.app/Contents/Resources")
-    set(game "${WORK}/exported/Cinder Vale.app/Contents/MacOS/CinderVale")
-    set(game_archive "${WORK}/exported/Cinder Vale.app.zip")
+    set(game_root "${WORK}/exported/Blackthorn Keep.app/Contents/Resources")
+    set(game "${WORK}/exported/Blackthorn Keep.app/Contents/MacOS/BlackthornKeep")
+    set(game_archive "${WORK}/exported/Blackthorn Keep.app.zip")
 else()
-    set(game_root "${WORK}/exported/Cinder-Vale-${target}")
-    set(game "${game_root}/CinderVale${exe}")
-    set(game_archive "${WORK}/exported/Cinder-Vale-${target}.zip")
+    set(game_root "${WORK}/exported/Blackthorn-Keep-${target}")
+    set(game "${game_root}/BlackthornKeep${exe}")
+    set(game_archive "${WORK}/exported/Blackthorn-Keep-${target}.zip")
 endif()
 foreach(required "${game}" "${game_archive}" "${game_root}/data/project.ykproj"
-        "${game_root}/data/scenes/level01.ykscene" "${game_root}/README.txt"
+        "${game_root}/data/scenes/level2.ykscene" "${game_root}/README.txt"
         "${game_root}/licenses/SDL3.txt" "${game_root}/licenses/Box2D-MIT.txt")
     if(NOT EXISTS "${required}")
         message(FATAL_ERROR "The exported game lacks ${required}")
     endif()
 endforeach()
-foreach(never_shipped "${game_root}/data/tools" "${game_root}/data/README.md")
+foreach(never_shipped "${game_root}/data/tools" "${game_root}/data/source")
     if(EXISTS "${never_shipped}")
         message(FATAL_ERROR "The exported game contains ${never_shipped}")
     endif()

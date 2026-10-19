@@ -11,13 +11,14 @@ Status drawAsPlayed(Renderer &renderer, SceneRenderer &sceneRenderer, const Scen
     CameraView view{{0.0F, 0.0F}, 18.0F};
     if (const Camera *camera = SceneRenderer::primaryCamera(scene))
         view = interpolate ? camera->viewAt(alpha) : camera->view();
-    bool escapeHud = variables && variables->number("escape_hud") != 0;
-    if (!escapeHud)
+    bool inventoryHud = variables && variables->number("inventory_hud") != 0;
+    if (!inventoryHud)
         for (const EntityId id : scene.orderedIds())
-            if (const auto *entity = scene.find(id); entity && entity->findComponent("EscapePresentation"))
-                escapeHud = true;
+            if (const auto *entity = scene.find(id);
+                entity && entity->findComponent("InventoryHud"))
+                inventoryHud = true;
     Rect worldViewport = viewport;
-    if (escapeHud) {
+    if (inventoryHud) {
         const float scale = std::min(viewport.size.x / 1280.0F, viewport.size.y / 720.0F);
         worldViewport.position.y += 40.0F * scale;
         worldViewport.size.y -= 140.0F * scale;

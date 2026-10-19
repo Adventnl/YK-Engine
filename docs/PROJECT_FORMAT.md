@@ -1,8 +1,7 @@
 # Project format
 
 Everything a game is made of is plain text (JSON) or an ordinary media file, so it can be read,
-diffed and merged with normal tools. This page describes each file; the running example is the demo
-game in [`YK-DemoGame/`](../YK-DemoGame).
+diffed and merged with normal tools. This page describes each file; playable projects are in [`games/fireboy-watergirl/`](../games/fireboy-watergirl).
 
 Conventions that hold everywhere:
 
@@ -45,9 +44,8 @@ and folders (`.git/`) and folders named `build` are not part of the project's fi
 A project is only this folder. It does not have to be inside the engine's checkout, and it does not
 know the engine's location: create it anywhere (`yk new path/to/MyGame --name "My Game"`, or **File >
 New Project**), open it with the editor or the player by path (or by double-clicking its
-`project.ykproj`), and export it. The engine's own repository contains one project, `YK-DemoGame/`,
-as a sample and a test; CMake's `YK_DEMO_PROJECT` points the tests, the installation and the macOS
-application at a different checkout (or at none) without touching the engine. A game that needs
+`project.ykproj`), and export it. The repository keeps independent projects under `games/`. CMake's `YK_BUILD_GAMES` controls
+whether they and their checks are included in builds, installations and the macOS application. A game that needs
 C++ of its own keeps that code in its repository too and pulls the engine in as a dependency
 ([BUILDING.md](BUILDING.md#game-modules-custom-c-components)); nothing game-specific is ever added
 to `src/` or `include/`. The `external_project` test does this in a temporary folder whose name has

@@ -28,21 +28,18 @@ components supplement them rather than replacing their behavior.
 This pass intentionally uses 2D collision and SDL rendering. The demo maps are small and fully
 loaded; the engine already culls off-screen sprites. NPCs have paths rather than complex AI.
 
-## Try the second test game
+## Play Blackthorn Keep
 
 ```sh
-./build/dev/yk validate YK-ExplorationDemo
-./build/dev/yk_player YK-ExplorationDemo
-./build/dev/yk_editor YK-ExplorationDemo
+./build/dev/yk validate games/blackthorn-keep
+./build/dev/yk_player games/blackthorn-keep
+./build/dev/yk_editor games/blackthorn-keep
 ```
 
-Installed editors also offer **Open the Exploration Demo** on the welcome screen.
+Installed editors also offer **Open Blackthorn Keep** on the welcome screen.
 
-Move with WASD or arrows; press E or Space to interact and advance dialogue. Talk to Mara, light
-the brass torch, open the gate, and walk through the hall entrance. The hall has an inscription and
-a return doorway. The two portraits in Mara's dialogue are separate from her world sprite.
-The demo's input map assigns Interact to E/Space so S and Down remain movement keys; when converting
-an existing platformer project, adjust its action bindings in Project Settings the same way.
+Move with WASD or arrows; press E to interact. The project starts in The Inner Keep; see the
+[game guide](../games/blackthorn-keep/README.md) for both chapters and escape routes.
 
 ## Authoring a conversation
 

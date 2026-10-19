@@ -1,0 +1,10 @@
+# Both distinct game structures are available from the editor's start page.
+timeout 120
+expect widget "welcome/game/fireboy-watergirl"
+expect widget "welcome/game/blackthorn-keep"
+click "welcome/game/blackthorn-keep"
+expect project "Blackthorn Keep"
+expect scene scenes/level2.ykscene
+expect entity Mara
+expect problems 0
+quit

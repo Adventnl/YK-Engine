@@ -96,14 +96,15 @@ std::string normalizedExclude(std::string path) {
 bool neverShipped(const std::string &path) {
     const fs::path file(path);
     const std::string first = file.begin() == file.end() ? std::string() : file.begin()->string();
-    if (file.has_parent_path() && (first == "tools" || first == "docs" || first == "build"))
+    if (file.has_parent_path() && (first == "tools" || first == "docs" || first == "build" ||
+                                   first == "tests" || first == "source"))
         return true;
     const std::string extension = file.extension().string();
     if (extension == ".py" || extension == ".md" || extension == ".bak" || extension == ".tmp" ||
         extension == ".orig")
         return true;
     const std::string leaf = file.filename().string();
-    return !leaf.empty() && leaf.back() == '~';
+    return leaf == "CMakeLists.txt" || (!leaf.empty() && leaf.back() == '~');
 }
 
 void say(const ExportOptions &options, const std::string &line) {

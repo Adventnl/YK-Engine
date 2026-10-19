@@ -8,7 +8,7 @@ double-click it, or double-click a `.ykproj` file, and nothing else is needed. E
 `yk_editor` program. Command line:
 
 ```sh
-yk_editor                           # welcome screen: New Project, Open Project, recent projects, the demo game
+yk_editor                           # welcome screen: New Project, Open Project, recent projects, discovered games
 yk_editor path/to/project           # open a project (a folder, or its project.ykproj)
 yk_editor path/to/project --scene scenes/level2.ykscene
 yk_editor --size 1920x1080          # window size
@@ -27,9 +27,9 @@ earlier runs as `editor.1.log` ...; `crash-editor-*.txt`) and `~/Library/Applica
 folder. If the last session did not end normally, the next start says so once, names the crash
 report and offers to open the folder.
 
-The welcome screen offers **Open the Demo Game** (Cinder Vale, in `YK-DemoGame/`): open it, press
-**F5**, then select the lever and see the arrow to the gate it opens. The demo is a normal project;
-nothing in the editor knows about it.
+The welcome screen discovers the projects in `games/`. Open **Blackthorn Keep** or
+**Fireboy and Watergirl**, then press **F5**. Each is an ordinary project, with its scenes,
+assets and authoring tools kept together. New Project starts with an empty scene and camera.
 
 ## The workbench
 

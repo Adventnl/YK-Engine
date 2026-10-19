@@ -1,11 +1,10 @@
 # Architecture
 
-YK Engine is a C++20 2D engine with an editor. **The engine is the product; a game is data plus,
-when it needs them, its own components.** The demo game in [`YK-DemoGame/`](../YK-DemoGame) is a
-test of the engine: a complete two-player puzzle platformer built from the engine's parts, with no
-code of its own and no line of the engine that knows it exists. The second data-only test,
-[`YK-ExplorationDemo/`](../YK-ExplorationDemo), exercises top-down exploration; see
-[the exploration pass](EXPLORATION.md).
+YK Engine is a C++20 2D engine with an editor. Games are independent project folders under
+`games/`: Fireboy and Watergirl and Blackthorn Keep. Their scenes, art, dialogue, story text,
+authoring tools and project checks stay there. Engine libraries never compile game files.
+The editor discovers manifests under a `games/` directory beside the checkout or installation,
+including `Contents/Resources/games/` in a macOS app. It has no built-in game names.
 
 ## Repository map
 
@@ -15,8 +14,7 @@ editor/core/              what the editor does: documents, undo, selection, gizm
 editor/ui/                Dear ImGui panels, the workbench, the scripted UI driver
 player/                   yk_player: runs a project as a game (yk::host::runPlayer)
 tools/yk/                 yk: validate, format, info, components, export, targets (yk::host::runTool)
-YK-DemoGame/              the demo game: a project folder (data) and the tools that generate its art
-YK-ExplorationDemo/       the top-down exploration test: two maps, dialogue and persistent gate
+games/                    independent projects, art, authoring scripts and game-specific checks
 packaging/                macOS: Info.plist template, entitlements, the script that assembles the .app; icons
 tests/                    unit, integration, UI scripts, install check, macOS bundle and diagnostics checks
 docs/  LICENSES/  cmake/  scripts/  third_party/
@@ -55,10 +53,12 @@ docs/  LICENSES/  cmake/  scripts/  third_party/
 
 ## Engine and game are separate, and so are editor and runtime
 
-- **A game is a project folder** the engine reads. The engine's repository contains one as a
-  sample and a test (`YK-DemoGame/`, selectable with `YK_DEMO_PROJECT`); nothing in `src/`,
-  `include/` or `editor/` names it, and a game can live in a repository of its own (`yk new`, the
-  editor's New Project, or a game module that pulls the engine in as a dependency).
+- **A game is a project folder** the engine reads. `YK_BUILD_GAMES=OFF` builds and packages the
+  engine without shipped projects or their checks. Engine tests create small synthetic fixtures.
+  Games can also live anywhere outside the repository, using `yk new` or New Project.
+- **Presentation is configurable.** `InventoryHud` reads project-authored labels and an actor's
+  inventory. `PatrolWatch` uses authored bounds, return position and caught text. Story and room
+  content live in game data.
 - **The runtime is not the editor.** `yk_player` links `yk::gameplay`, the renderer and audio, and
   no editor code or Dear ImGui; an exported game is that program plus `data/`. The editor links
   the same runtime to play a copy of the scene in its own window. On macOS the engine application
@@ -106,7 +106,7 @@ never writes into a real home).
 
 `YK Engine.app` is assembled by one CMake script (`assemble-app.cmake`: plain file copying, so a test
 runs it on any system): `Contents/MacOS/{yk_editor,yk_player,yk}`, `Contents/Resources/{AppIcon.icns,
-YK-DemoGame, licenses, docs}` and an `Info.plist` from the template (bundle id, version, a document
+games/fireboy-watergirl, licenses, docs}` and an `Info.plist` from the template (bundle id, version, a document
 type so a `.ykproj` opens in the editor). `scripts/package-macos.sh` signs it and writes the `.dmg`;
 an exported game is the same layout with the game's player as its only program and its project in
 `Contents/Resources/data`. `SDL_GetBasePath()` reports `Contents/Resources` inside a bundle, which is

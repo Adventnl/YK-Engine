@@ -16,16 +16,32 @@ std::string wrapWords(const std::string &text, std::size_t columns) {
     columns = std::max<std::size_t>(1, columns);
     for (std::size_t start = 0; start < text.size();) {
         if (text[start] == '\n') {
-            result += '\n'; column = 0; ++start; continue;
+            result += '\n';
+            column = 0;
+            ++start;
+            continue;
         }
-        if (text[start] == ' ') { ++start; continue; }
+        if (text[start] == ' ') {
+            ++start;
+            continue;
+        }
         const auto end = text.find_first_of(" \n", start);
         const auto word = text.substr(start, end == std::string::npos ? end : end - start);
-        if (column && column + word.size() + 1 > columns) { result += '\n'; column = 0; }
-        if (column) { result += ' '; ++column; }
+        if (column && column + word.size() + 1 > columns) {
+            result += '\n';
+            column = 0;
+        }
+        if (column) {
+            result += ' ';
+            ++column;
+        }
         for (char ch : word) {
-            if (column >= columns) { result += '\n'; column = 0; }
-            result += ch; ++column;
+            if (column >= columns) {
+                result += '\n';
+                column = 0;
+            }
+            result += ch;
+            ++column;
         }
         start += word.size();
     }
@@ -928,38 +944,66 @@ Status SceneRenderer::drawUi(Renderer &renderer, const Scene &scene, Vec2 viewpo
                 return drawn;
         }
     }
-    // Escape projects reserve these bands outside the world viewport.
-    if (variables && variables->number("escape_hud") != 0) {
+    // Inventory HUD projects reserve bands outside the world viewport.
+    if (variables && variables->number("inventory_hud") != 0) {
         const float unit = std::min(viewport.x / 1280.0F, viewport.y / 720.0F);
         const float bottom = viewport.y - 100.0F * unit;
         auto rectangle = [&](Vec2 at, Vec2 size, Color color, int layer = 6000) {
-            if (size.x <= 0 || size.y <= 0) return success();
+            if (size.x <= 0 || size.y <= 0)
+                return success();
             Sprite sprite;
-            sprite.texture = white.value(); sprite.anchor = {0, 0};
-            sprite.transform.position = at; sprite.size = size; sprite.tint = color; sprite.layer = layer;
+            sprite.texture = white.value();
+            sprite.anchor = {0, 0};
+            sprite.transform.position = at;
+            sprite.size = size;
+            sprite.tint = color;
+            sprite.layer = layer;
             return renderer.submit(sprite);
         };
-        auto text = [&](const std::string &line, Vec2 at, float scale, Color color, int layer = 6002) {
+        auto text = [&](const std::string &line, Vec2 at, float scale, Color color,
+                        int layer = 6002) {
             return font_->draw(renderer, line, at, scale * unit, color, layer);
         };
         const Color ink{225, 218, 190, 255}, gold{229, 181, 97, 255};
-        if (auto status = rectangle({}, {viewport.x, 40 * unit}, {22, 25, 31, 255}); !status) return status;
-        if (auto status = rectangle({0, bottom}, {viewport.x, 100 * unit}, {22, 25, 31, 255}); !status) return status;
-        if (auto status = rectangle({0, bottom}, {viewport.x, unit}, {84, 78, 63, 255}); !status) return status;
-        if (auto status = text(variables->text("escape_title"), {20 * unit, 13 * unit}, 2, gold); !status) return status;
-        const float suspicion = static_cast<float>(variables->number("escape_suspicion"));
-        const std::string routine = suspicion > 0.02F ? "GUARD IS WATCHING" : "DAY 1 / EVENING FREE TIME";
-        if (auto status = text(routine, {viewport.x - 360 * unit, 14 * unit}, 1.7F, suspicion > 0.02F ? Color{245, 125, 101, 255} : ink); !status) return status;
+        if (auto status = rectangle({}, {viewport.x, 40 * unit}, {22, 25, 31, 255}); !status)
+            return status;
+        if (auto status = rectangle({0, bottom}, {viewport.x, 100 * unit}, {22, 25, 31, 255});
+            !status)
+            return status;
+        if (auto status = rectangle({0, bottom}, {viewport.x, unit}, {84, 78, 63, 255}); !status)
+            return status;
+        if (auto status = text(variables->text("inventory_title"), {20 * unit, 13 * unit}, 2, gold);
+            !status)
+            return status;
+        const float suspicion = static_cast<float>(variables->number("patrol_suspicion"));
+        const std::string routine =
+            variables->text(suspicion > 0.02F ? "inventory_alert" : "inventory_status");
+        if (auto status = text(routine, {viewport.x - 360 * unit, 14 * unit}, 1.7F,
+                               suspicion > 0.02F ? Color{245, 125, 101, 255} : ink);
+            !status)
+            return status;
         if (suspicion > 0)
-            if (auto status = rectangle({viewport.x - 360 * unit, 34 * unit}, {320 * unit * suspicion, 3 * unit}, {245, 125, 101, 255}); !status) return status;
-        const std::string notice = variables->text("escape_notice");
-        if (auto status = text(notice.empty() ? variables->text("objective") : notice, {20 * unit, bottom + 12 * unit}, 1.6F, gold); !status) return status;
-        if (auto status = text(variables->text("interaction_prompt"), {20 * unit, bottom + 37 * unit}, 1.8F, ink); !status) return status;
-        if (auto status = text("WASD / ARROWS MOVE    E USE    ESC CLOSE    R RESTART", {20 * unit, bottom + 76 * unit}, 1.2F, {167, 167, 149, 255}); !status) return status;
+            if (auto status = rectangle({viewport.x - 360 * unit, 34 * unit},
+                                        {320 * unit * suspicion, 3 * unit}, {245, 125, 101, 255});
+                !status)
+                return status;
+        const std::string notice = variables->text("interaction_notice");
+        if (auto status = text(notice.empty() ? variables->text("objective") : notice,
+                               {20 * unit, bottom + 12 * unit}, 1.6F, gold);
+            !status)
+            return status;
+        if (auto status = text(variables->text("interaction_prompt"),
+                               {20 * unit, bottom + 37 * unit}, 1.8F, ink);
+            !status)
+            return status;
+        if (auto status = text(variables->text("inventory_controls"),
+                               {20 * unit, bottom + 76 * unit}, 1.2F, {167, 167, 149, 255});
+            !status)
+            return status;
         const float first = viewport.x - 364 * unit;
         for (int i = 0; i < 6; ++i) {
             const Vec2 at{first + static_cast<float>(i) * 58 * unit, bottom + 29 * unit};
-            const std::string prefix = "escape_slot_" + std::to_string(i);
+            const std::string prefix = "inventory_slot_" + std::to_string(i);
             const auto path = variables->text(prefix + "_icon");
             const Color border = path.empty() ? Color{54, 69, 85, 255} : Color{147, 117, 60, 255};
             if (auto status = rectangle(at, {48 * unit, 48 * unit}, border); !status)
@@ -971,11 +1015,14 @@ Status SceneRenderer::drawUi(Renderer &renderer, const Scene &scene, Vec2 viewpo
             if (!path.empty()) {
                 const auto &info = textureFor(renderer, path);
                 if (info.handle) {
-                    Sprite icon; icon.texture = *info.handle; icon.anchor = {0, 0};
+                    Sprite icon;
+                    icon.texture = *info.handle;
+                    icon.anchor = {0, 0};
                     icon.transform.position = at + Vec2{6 * unit, 6 * unit};
                     icon.size = {36 * unit, 36 * unit};
                     icon.layer = 6001;
-                    if (auto status = renderer.submit(icon); !status) return status;
+                    if (auto status = renderer.submit(icon); !status)
+                        return status;
                 }
                 if (auto status = text(variables->text(prefix + "_name"),
                                        at + Vec2{-3 * unit, 52 * unit}, .8F, ink);
@@ -985,56 +1032,112 @@ Status SceneRenderer::drawUi(Renderer &renderer, const Scene &scene, Vec2 viewpo
         }
         if (variables->text("level_state") == "complete") {
             const Vec2 at{(viewport.x - 650 * unit) / 2, (viewport.y - 150 * unit) / 2};
-            if (auto status = rectangle(at, {650 * unit, 150 * unit}, {22, 25, 31, 250}, 8500); !status) return status;
-            if (auto status = text(variables->text("escape_completion_title"), at + Vec2{32 * unit, 32 * unit}, 2.8F, gold, 8502); !status) return status;
-            if (auto status = text(variables->text("escape_completion_text"), at + Vec2{32 * unit, 80 * unit}, 1.8F, ink, 8502); !status) return status;
+            if (auto status = rectangle(at, {650 * unit, 150 * unit}, {22, 25, 31, 250}, 8500);
+                !status)
+                return status;
+            if (auto status = text(variables->text("inventory_completion_title"),
+                                   at + Vec2{32 * unit, 32 * unit}, 2.8F, gold, 8502);
+                !status)
+                return status;
+            if (auto status = text(variables->text("inventory_completion_text"),
+                                   at + Vec2{32 * unit, 80 * unit}, 1.8F, ink, 8502);
+                !status)
+                return status;
             const std::string finishControls = variables->number("level_has_next") != 0
-                ? "ENTER - NEXT LEVEL     R - START AGAIN" : "R - START AGAIN";
-            if (auto status = text(finishControls, at + Vec2{32 * unit, 116 * unit}, 1.5F, ink, 8502); !status) return status;
+                                                   ? variables->text("inventory_continue")
+                                                   : variables->text("inventory_restart");
+            if (auto status =
+                    text(finishControls, at + Vec2{32 * unit, 116 * unit}, 1.5F, ink, 8502);
+                !status)
+                return status;
         }
     }
     if (variables && variables->number("search_ui_active") != 0) {
         const float unit = std::min(viewport.x / 1280.0F, viewport.y / 720.0F);
         const bool busy = variables->number("search_ui_busy") != 0;
-        const Vec2 at{busy ? viewport.x - 350 * unit : (viewport.x - 610 * unit) / 2, busy ? 60 * unit : viewport.y - 286 * unit};
+        const Vec2 at{busy ? viewport.x - 350 * unit : (viewport.x - 610 * unit) / 2,
+                      busy ? 60 * unit : viewport.y - 286 * unit};
         auto rect = [&](Vec2 offset, Vec2 size, Color color, int layer = 8100) {
-            if (size.x <= 0 || size.y <= 0) return success();
-            Sprite sprite; sprite.texture = white.value(); sprite.anchor = {0, 0};
-            sprite.transform.position = at + offset * unit; sprite.size = size * unit; sprite.tint = color; sprite.layer = layer;
+            if (size.x <= 0 || size.y <= 0)
+                return success();
+            Sprite sprite;
+            sprite.texture = white.value();
+            sprite.anchor = {0, 0};
+            sprite.transform.position = at + offset * unit;
+            sprite.size = size * unit;
+            sprite.tint = color;
+            sprite.layer = layer;
             return renderer.submit(sprite);
         };
         auto label = [&](const std::string &line, Vec2 offset, float scale, Color color) {
             return font_->draw(renderer, line, at + offset * unit, scale * unit, color, 8102);
         };
-        if (auto status = rect({}, busy ? Vec2{330, 100} : Vec2{610, 170}, {22, 25, 31, 250}); !status) return status;
-        if (auto status = rect({}, busy ? Vec2{330, 2} : Vec2{610, 2}, {229, 181, 97, 255}); !status) return status;
-        if (auto status = label(variables->text("search_ui_title"), busy ? Vec2{16, 12} : Vec2{24, 18}, busy ? 1.5F : 2.3F, {229, 181, 97, 255}); !status) return status;
+        if (auto status = rect({}, busy ? Vec2{330, 100} : Vec2{610, 170}, {22, 25, 31, 250});
+            !status)
+            return status;
+        if (auto status = rect({}, busy ? Vec2{330, 2} : Vec2{610, 2}, {229, 181, 97, 255});
+            !status)
+            return status;
+        if (auto status =
+                label(variables->text("search_ui_title"), busy ? Vec2{16, 12} : Vec2{24, 18},
+                      busy ? 1.5F : 2.3F, {229, 181, 97, 255});
+            !status)
+            return status;
         const std::string message = variables->text("search_ui_message");
         // Authored action copy wraps at spaces rather than splitting words.
-        std::string wrapped; std::size_t column = 0;
+        std::string wrapped;
+        std::size_t column = 0;
         for (std::size_t start = 0; start < message.size();) {
-            auto end = message.find(' ', start); if (end == std::string::npos) end = message.size();
+            auto end = message.find(' ', start);
+            if (end == std::string::npos)
+                end = message.size();
             const auto word = message.substr(start, end - start);
-            if (column && column + word.size() + 1 > (busy ? 38U : 48U)) { wrapped += '\n'; column = 0; }
-            if (column) { wrapped += ' '; ++column; }
-            wrapped += word; column += word.size(); start = end + 1;
+            if (column && column + word.size() + 1 > (busy ? 38U : 48U)) {
+                wrapped += '\n';
+                column = 0;
+            }
+            if (column) {
+                wrapped += ' ';
+                ++column;
+            }
+            wrapped += word;
+            column += word.size();
+            start = end + 1;
         }
-        if (auto status = label(wrapped, busy ? Vec2{16, 36} : Vec2{24, 58}, busy ? 1.2F : 1.8F, {225, 218, 190, 255}); !status) return status;
+        if (auto status = label(wrapped, busy ? Vec2{16, 36} : Vec2{24, 58}, busy ? 1.2F : 1.8F,
+                                {225, 218, 190, 255});
+            !status)
+            return status;
         if (busy) {
-            if (auto status = rect({16, 62}, {298, 6}, {61, 60, 53, 255}); !status) return status;
-            if (auto status = rect({16, 62}, {298 * static_cast<float>(variables->number("search_ui_progress")), 6}, {229, 181, 97, 255}, 8101); !status) return status;
+            if (auto status = rect({16, 62}, {298, 6}, {61, 60, 53, 255}); !status)
+                return status;
+            if (auto status =
+                    rect({16, 62},
+                         {298 * static_cast<float>(variables->number("search_ui_progress")), 6},
+                         {229, 181, 97, 255}, 8101);
+                !status)
+                return status;
         } else {
             const auto path = variables->text("search_ui_icon");
             if (!path.empty()) {
                 const auto &info = textureFor(renderer, path);
                 if (info.handle) {
-                    Sprite icon; icon.texture = *info.handle; icon.anchor = {0, 0}; icon.layer = 8101;
-                    icon.transform.position = at + Vec2{530 * unit, 100 * unit}; icon.size = {48 * unit, 48 * unit};
-                    if (auto status = renderer.submit(icon); !status) return status;
+                    Sprite icon;
+                    icon.texture = *info.handle;
+                    icon.anchor = {0, 0};
+                    icon.layer = 8101;
+                    icon.transform.position = at + Vec2{530 * unit, 100 * unit};
+                    icon.size = {48 * unit, 48 * unit};
+                    if (auto status = renderer.submit(icon); !status)
+                        return status;
                 }
             }
         }
-        if (auto status = label(busy ? "ESC - CANCEL" : "E - CONTINUE / ESC - CLOSE", busy ? Vec2{16, 82} : Vec2{24, 142}, busy ? 1.1F : 1.3F, {167, 167, 149, 255}); !status) return status;
+        if (auto status = label(busy ? "ESC - CANCEL" : "E - CONTINUE / ESC - CLOSE",
+                                busy ? Vec2{16, 82} : Vec2{24, 142}, busy ? 1.1F : 1.3F,
+                                {167, 167, 149, 255});
+            !status)
+            return status;
     }
     // Wiring UI reads presentation state published by the gameplay component.
     if (variables && variables->number("wire_ui_active") != 0) {
@@ -1136,59 +1239,100 @@ Status SceneRenderer::drawUi(Renderer &renderer, const Scene &scene, Vec2 viewpo
         const float portraitSpace = hasPortrait ? 256 * unit : 0;
         const float scale = 1.8F * unit;
         const float lineHeight = BitmapFont::lineAdvance * scale;
-        const std::size_t columns = std::max<std::size_t>(1,
-            static_cast<std::size_t>((width - portraitSpace - 64 * unit) / (BitmapFont::advance * scale)));
+        const std::size_t columns =
+            std::max<std::size_t>(1, static_cast<std::size_t>((width - portraitSpace - 64 * unit) /
+                                                              (BitmapFont::advance * scale)));
         const auto fullText = wrapWords(page.text, columns);
-        const std::size_t lines = 1 + static_cast<std::size_t>(std::count(fullText.begin(), fullText.end(), '\n'));
+        const std::size_t lines =
+            1 + static_cast<std::size_t>(std::count(fullText.begin(), fullText.end(), '\n'));
         std::size_t choiceLines = 0;
         for (const auto &choice : dialogue->choices()) {
             const auto wrappedChoice = wrapWords("> " + choice, columns);
-            choiceLines += 1 + static_cast<std::size_t>(std::count(wrappedChoice.begin(), wrappedChoice.end(), '\n'));
+            choiceLines += 1 + static_cast<std::size_t>(
+                                   std::count(wrappedChoice.begin(), wrappedChoice.end(), '\n'));
         }
-        const float height = std::max(300 * unit, 126 * unit + static_cast<float>(lines + choiceLines) * lineHeight);
+        const float height =
+            std::max(300 * unit, 126 * unit + static_cast<float>(lines + choiceLines) * lineHeight);
         const float progress = std::clamp(dialogue->presentationTime() / .18F, 0.0F, 1.0F);
         const float arrival = 1.0F - std::pow(1.0F - progress, 3.0F);
         const Vec2 boxPos{(viewport.x - width) * .5F,
-                         viewport.y - 124 * unit - height + 12 * unit * (1 - arrival)};
+                          viewport.y - 124 * unit - height + 12 * unit * (1 - arrival)};
         auto rectangle = [&](Vec2 at, Vec2 size, Color color, int layer) {
             Sprite quad;
-            quad.texture = white.value(); quad.anchor = {0, 0};
-            quad.transform.position = at; quad.size = size; quad.tint = color; quad.layer = layer;
+            quad.texture = white.value();
+            quad.anchor = {0, 0};
+            quad.transform.position = at;
+            quad.size = size;
+            quad.tint = color;
+            quad.layer = layer;
             return renderer.submit(quad);
         };
-        if (auto status = rectangle({}, viewport, {5, 9, 16, static_cast<std::uint8_t>(105 * arrival)}, 8000); !status) return status;
-        if (auto status = rectangle(boxPos + Vec2{0, 6 * unit}, {width, height}, {0, 0, 0, 90}, 8001); !status) return status;
-        if (auto status = rectangle(boxPos, {width, height}, {22, 25, 31, 255}, 8002); !status) return status;
-        if (auto status = rectangle(boxPos, {width, 2 * unit}, {229, 181, 97, 255}, 8003); !status) return status;
+        if (auto status =
+                rectangle({}, viewport, {5, 9, 16, static_cast<std::uint8_t>(105 * arrival)}, 8000);
+            !status)
+            return status;
+        if (auto status =
+                rectangle(boxPos + Vec2{0, 6 * unit}, {width, height}, {0, 0, 0, 90}, 8001);
+            !status)
+            return status;
+        if (auto status = rectangle(boxPos, {width, height}, {22, 25, 31, 255}, 8002); !status)
+            return status;
+        if (auto status = rectangle(boxPos, {width, 2 * unit}, {229, 181, 97, 255}, 8003); !status)
+            return status;
         float textX = boxPos.x + 32 * unit;
         if (hasPortrait) {
-            const Vec2 portraitAt = boxPos + Vec2{portraitRight ? width - 248 * unit : 16 * unit, 16 * unit};
-            if (auto status = rectangle(portraitAt, {232 * unit, height - 32 * unit}, {36, 42, 52, 255}, 8003); !status) return status;
+            const Vec2 portraitAt =
+                boxPos + Vec2{portraitRight ? width - 248 * unit : 16 * unit, 16 * unit};
+            if (auto status = rectangle(portraitAt, {232 * unit, height - 32 * unit},
+                                        {36, 42, 52, 255}, 8003);
+                !status)
+                return status;
             const TextureInfo &portrait = textureFor(renderer, page.portrait.path);
             if (portrait.handle && portrait.pixels.x > 0 && portrait.pixels.y > 0) {
-                const float fit = std::min(224 * unit / portrait.pixels.x, (height - 40 * unit) / portrait.pixels.y);
+                const float fit = std::min(224 * unit / portrait.pixels.x,
+                                           (height - 40 * unit) / portrait.pixels.y);
                 Sprite artwork;
-                artwork.texture = *portrait.handle; artwork.anchor = {0, 0}; artwork.layer = 8004;
+                artwork.texture = *portrait.handle;
+                artwork.anchor = {0, 0};
+                artwork.layer = 8004;
                 artwork.size = portrait.pixels * fit;
-                artwork.transform.position = portraitAt + Vec2{(232 * unit - artwork.size.x) * .5F, height - 32 * unit - artwork.size.y};
-                if (auto status = renderer.submit(artwork); !status) return status;
+                artwork.transform.position = portraitAt + Vec2{(232 * unit - artwork.size.x) * .5F,
+                                                               height - 32 * unit - artwork.size.y};
+                if (auto status = renderer.submit(artwork); !status)
+                    return status;
             }
-            if (!portraitRight) textX += portraitSpace;
+            if (!portraitRight)
+                textX += portraitSpace;
         }
         const Color ink{225, 218, 190, 255}, gold{229, 181, 97, 255};
-        if (auto status = font_->draw(renderer, page.speaker, {textX, boxPos.y + 28 * unit}, 2.5F * unit, gold, 8005); !status) return status;
-        if (auto status = font_->draw(renderer, wrapWords(dialogue->visibleText(), columns), {textX, boxPos.y + 76 * unit}, scale, ink, 8005); !status) return status;
+        if (auto status = font_->draw(renderer, page.speaker, {textX, boxPos.y + 28 * unit},
+                                      2.5F * unit, gold, 8005);
+            !status)
+            return status;
+        if (auto status = font_->draw(renderer, wrapWords(dialogue->visibleText(), columns),
+                                      {textX, boxPos.y + 76 * unit}, scale, ink, 8005);
+            !status)
+            return status;
         if (dialogue->choosing()) {
             float y = boxPos.y + 88 * unit + static_cast<float>(lines) * lineHeight;
             for (std::size_t i = 0; i < dialogue->choices().size(); ++i) {
                 const bool selected = static_cast<int>(i) == dialogue->selectedChoice();
-                const auto line = wrapWords((selected ? "> " : "  ") + dialogue->choices()[i], columns);
-                if (auto status = font_->draw(renderer, line, {textX, y}, scale, selected ? gold : ink, 8005); !status) return status;
-                y += static_cast<float>(1 + std::count(line.begin(), line.end(), '\n')) * lineHeight;
+                const auto line =
+                    wrapWords((selected ? "> " : "  ") + dialogue->choices()[i], columns);
+                if (auto status =
+                        font_->draw(renderer, line, {textX, y}, scale, selected ? gold : ink, 8005);
+                    !status)
+                    return status;
+                y +=
+                    static_cast<float>(1 + std::count(line.begin(), line.end(), '\n')) * lineHeight;
             }
         }
-        const std::string controls = dialogue->choosing() ? "ARROWS SELECT   E CONFIRM   ESC CLOSE" : "E CONTINUE   ESC CLOSE";
-        if (auto status = font_->draw(renderer, controls, {textX, boxPos.y + height - 30 * unit}, 1.4F * unit, gold, 8005); !status) return status;
+        const std::string controls = dialogue->choosing() ? "ARROWS SELECT   E CONFIRM   ESC CLOSE"
+                                                          : "E CONTINUE   ESC CLOSE";
+        if (auto status = font_->draw(renderer, controls, {textX, boxPos.y + height - 30 * unit},
+                                      1.4F * unit, gold, 8005);
+            !status)
+            return status;
         break;
     }
     return success();

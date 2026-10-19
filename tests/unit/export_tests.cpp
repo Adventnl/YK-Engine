@@ -139,6 +139,9 @@ void whichFilesShip() {
     put(dir.path / "art" / "keep" / "a.png", "x");
     put(dir.path / "scripts.py", "top level py");
     put(dir.path / "tools.png", "not the tools folder");
+    put(dir.path / "source" / "original.png", "authoring import");
+    put(dir.path / "tests" / "route.ykscript", "project checks");
+    put(dir.path / "CMakeLists.txt", "project checks build");
 
     std::vector<std::string> files = exportedFiles(project);
     CHECK(has(files, "project.ykproj") && has(files, "scenes/main.ykscene"));
@@ -146,7 +149,8 @@ void whichFilesShip() {
           has(files, "art/source/hero.psd") && has(files, "tools.png"));
     for (const char *left : {"tools/gen.py", "tools/data.json", "docs/guide.txt", "README.md",
                              "assets/notes.md", "assets/hero.png.bak", "assets/scratch.tmp",
-                             "assets/backup~", ".hidden/x", "build/out.bin", "scripts.py"})
+                             "assets/backup~", ".hidden/x", "build/out.bin", "scripts.py",
+                             "source/original.png", "tests/route.ykscript", "CMakeLists.txt"})
         CHECK(!has(files, left));
     CHECK(std::is_sorted(files.begin(), files.end()));
 

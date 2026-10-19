@@ -1,8 +1,8 @@
 #include "yk/gameplay/Exploration.hpp"
-#include "yk/gameplay/Character.hpp"
-#include "yk/items/Inventory.hpp"
-#include "yk/items/Crafting.hpp"
 #include "yk/data/GameData.hpp"
+#include "yk/gameplay/Character.hpp"
+#include "yk/items/Crafting.hpp"
+#include "yk/items/Inventory.hpp"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -17,7 +17,7 @@ bool clearReach(GameContext &context, const Entity &actor, const Entity &target)
     const auto hit = context.physics().rayCast(start, target.worldPosition() - start, filter);
     return hit && (!hit.value() || context.entityOfShape(hit.value()->shape) == &target);
 }
-}
+} // namespace
 
 void TopDownController::describe(TypeBuilder<TopDownController> &type) {
     type.category("Exploration")
@@ -43,7 +43,8 @@ void TopDownController::onFixedUpdate(GameContext &context, float seconds) {
     if (context.inputLocked()) {
         direction_ = {};
         context.physics().setVelocity(*body, {});
-        if (context.blackboard().number("search_ui_busy") == 0 && context.blackboard().number("wire_ui_active") == 0)
+        if (context.blackboard().number("search_ui_busy") == 0 &&
+            context.blackboard().number("wire_ui_active") == 0)
             detail::animateDirection(entity(), {}, facing_, animation_);
         else
             animation_.clear();
@@ -67,8 +68,8 @@ void TopDownController::onFixedUpdate(GameContext &context, float seconds) {
     const float limit = std::max(0.0F, acceleration) * seconds;
     if (length(delta) > limit)
         delta = normalized(delta) * limit;
-    context.physics().setVelocity(*body, lengthSquared(direction) > .001F
-                                           ? state.value().linearVelocity + delta : Vec2{});
+    context.physics().setVelocity(
+        *body, lengthSquared(direction) > .001F ? state.value().linearVelocity + delta : Vec2{});
 }
 void TopDownController::onUpdate(GameContext &context, float) {
     // Animation sees the resolved physics velocity. Holding a key into a wall
@@ -104,8 +105,10 @@ void NpcPath::onFixedUpdate(GameContext &context, float seconds) {
     Vec2 motion{};
     const auto *dialogue = entity().get<Dialogue>();
     const bool talking = dialogue && dialogue->active();
-    const bool worldMoving = !context.inputLocked() || context.blackboard().number("search_ui_busy") != 0 ||
-                             context.blackboard().number("wire_ui_active") != 0 || context.blackboard().number("dialogue_active") != 0;
+    const bool worldMoving = !context.inputLocked() ||
+                             context.blackboard().number("search_ui_busy") != 0 ||
+                             context.blackboard().number("wire_ui_active") != 0 ||
+                             context.blackboard().number("dialogue_active") != 0;
     if (wait_ > 0)
         wait_ = std::max(0.0F, wait_ - seconds);
     else if (!talking && worldMoving &&
@@ -164,8 +167,8 @@ void Interactable::activate(GameContext &context, Entity &actor) {
     }
     if (gate) {
         if (gate->locked(context)) {
-            context.blackboard().set("escape_notice", "LOCKED - " + prompt);
-            context.blackboard().set("escape_notice_until", context.time() + 3.0);
+            context.blackboard().set("interaction_notice", "LOCKED - " + prompt);
+            context.blackboard().set("interaction_notice_until", context.time() + 3.0);
             context.emit("gate_locked", entity().id(), actor.id());
             return;
         }
@@ -213,7 +216,8 @@ void Interactor::onFixedUpdate(GameContext &context, float) {
             if (!candidate || !candidate->available(context))
                 continue;
             const float gap = distance(entity().worldPosition(), object->worldPosition());
-            if (gap <= candidate->range && gap < nearest && clearReach(context, entity(), *object)) {
+            if (gap <= candidate->range && gap < nearest &&
+                clearReach(context, entity(), *object)) {
                 closest = candidate;
                 nearest = gap;
             }
@@ -221,7 +225,8 @@ void Interactor::onFixedUpdate(GameContext &context, float) {
     std::string prompt = closest ? closest->prompt : "";
     if (closest)
         if (auto *gate = closest->entity().get<StateGate>(); gate && !gate->locked(context))
-            prompt = std::string("E - ") + (gate->open() ? "CLOSE " : "OPEN ") + closest->entity().name();
+            prompt = std::string("E - ") + (gate->open() ? "CLOSE " : "OPEN ") +
+                     closest->entity().name();
     context.blackboard().set("interaction_prompt", prompt);
     if (closest && !justUnlocked && input->button(context, action).pressed)
         closest->activate(context, entity());
@@ -264,7 +269,8 @@ void StateGate::describe(TypeBuilder<StateGate> &type) {
 }
 void StateGate::onStart(GameContext &context) {
     open_ = !persistFlag.empty() && context.blackboard().has(persistFlag)
-                ? context.blackboard().number(persistFlag) != 0 : startsOpen;
+                ? context.blackboard().number(persistFlag) != 0
+                : startsOpen;
     amount_ = open_ ? 1.0F : 0.0F;
     for (Collider *collider : entity().getAll<Collider>())
         if (!collider->isTrigger)
@@ -334,19 +340,25 @@ void StateGate::onFixedUpdate(GameContext &context, float seconds) {
     // Never materialize closed collision over someone in the doorway.
     if (!open_ && amount_ > 0 && stopWhenBlocked) {
         for (const auto *collider : entity().getAll<Collider>()) {
-            if (collider->isTrigger) continue;
+            if (collider->isTrigger)
+                continue;
             const auto transform = entity().worldTransform();
-            const Vec2 size = hadamard(collider->size, {std::abs(transform.scale.x), std::abs(transform.scale.y)});
+            const Vec2 size = hadamard(collider->size,
+                                       {std::abs(transform.scale.x), std::abs(transform.scale.y)});
             const float angle = degreesToRadians(transform.rotationDegrees);
-            const Vec2 extent{std::abs(std::cos(angle)) * size.x + std::abs(std::sin(angle)) * size.y,
-                              std::abs(std::sin(angle)) * size.x + std::abs(std::cos(angle)) * size.y};
+            const Vec2 extent{
+                std::abs(std::cos(angle)) * size.x + std::abs(std::sin(angle)) * size.y,
+                std::abs(std::sin(angle)) * size.x + std::abs(std::cos(angle)) * size.y};
             physics::QueryFilter filter;
             filter.categoryBits = UINT64_MAX;
-            filter.maskBits = context.layers().categoryBits("Player") | context.layers().categoryBits("Prop");
-            auto hits = context.physics().queryAabb({transformPoint(transform, collider->offset) - extent * .5F, extent}, filter);
+            filter.maskBits =
+                context.layers().categoryBits("Player") | context.layers().categoryBits("Prop");
+            auto hits = context.physics().queryAabb(
+                {transformPoint(transform, collider->offset) - extent * .5F, extent}, filter);
             if (hits)
                 for (auto shape : hits.value())
-                    if (auto *occupant = context.entityOfShape(shape); occupant && occupant != &entity())
+                    if (auto *occupant = context.entityOfShape(shape);
+                        occupant && occupant != &entity())
                         return;
         }
     }
@@ -446,9 +458,10 @@ void CharacterMotion::onFixedUpdate(GameContext &context, float seconds) {
             velocity = state.value().linearVelocity;
     const bool walking = lengthSquared(velocity) > 0.04F;
     phase_ += seconds * (walking ? 14.0F : 2.5F);
-    const float bounce =
-        walking ? std::abs(std::sin(phase_)) * stepHeight : (std::sin(phase_) + 1.0F) * idleHeight * .5F;
-    sprite->offset = offset_ + Vec2{walking && animateSteps ? std::sin(phase_) * 0.012F : 0.0F, -bounce};
+    const float bounce = walking ? std::abs(std::sin(phase_)) * stepHeight
+                                 : (std::sin(phase_) + 1.0F) * idleHeight * .5F;
+    sprite->offset =
+        offset_ + Vec2{walking && animateSteps ? std::sin(phase_) * 0.012F : 0.0F, -bounce};
     sprite->size = {size_.x, size_.y + bounce * 0.3F};
     sprite->stepSwing = walking && animateSteps ? std::sin(phase_) * stepHeight * 0.75F : 0.0F;
     if (flipWithMovement && std::abs(velocity.x) > 0.1F)
@@ -456,7 +469,8 @@ void CharacterMotion::onFixedUpdate(GameContext &context, float seconds) {
 }
 
 void LocationArea::describe(TypeBuilder<LocationArea> &type) {
-    type.category("Exploration").description("Publishes the current room name inside authored bounds.");
+    type.category("Exploration")
+        .description("Publishes the current room name inside authored bounds.");
     type.field("actor", &LocationArea::actor);
     type.field("title", &LocationArea::title);
     type.field("boundsMin", &LocationArea::boundsMin);
@@ -494,7 +508,8 @@ void ObjectiveList::onFixedUpdate(GameContext &context, float) {
 }
 
 void SearchAction::describe(TypeBuilder<SearchAction> &type) {
-    type.category("Exploration").description("Timed, cancellable container search or recipe crafting with a result popup.");
+    type.category("Exploration")
+        .description("Timed, cancellable container search or recipe crafting with a result popup.");
     type.field("title", &SearchAction::title);
     type.field("verb", &SearchAction::verb);
     type.field("successText", &SearchAction::successText);
@@ -511,7 +526,8 @@ void SearchAction::result(GameContext &context, const std::string &message) {
     context.blackboard().set("search_ui_message", message);
 }
 void SearchAction::begin(GameContext &context, Entity &actor) {
-    if (active_ || context.inputLocked()) return;
+    if (active_ || context.inputLocked())
+        return;
     actor_ = actor.id();
     active_ = busy_ = true;
     elapsed_ = 0;
@@ -527,7 +543,8 @@ void SearchAction::begin(GameContext &context, Entity &actor) {
     const auto *inventory = actor.get<Inventory>();
     for (const auto &item : requiredItems)
         if (!inventory || !inventory->has(ItemId(item))) {
-            result(context, lockedText.empty() ? "LOCKED - find the required tool first." : lockedText);
+            result(context,
+                   lockedText.empty() ? "LOCKED - find the required tool first." : lockedText);
             return;
         }
     if (!successFlag.empty() && board.number(successFlag) != 0) {
@@ -550,22 +567,28 @@ void SearchAction::begin(GameContext &context, Entity &actor) {
             return;
         }
     }
-    if (const auto body = context.bodyOf(actor.id())) context.physics().setVelocity(*body, {});
+    if (const auto body = context.bodyOf(actor.id()))
+        context.physics().setVelocity(*body, {});
     const Vec2 delta = entity().worldPosition() - actor.worldPosition();
-    const std::string facing = std::abs(delta.x) > std::abs(delta.y) ? (delta.x < 0 ? "left" : "right") : (delta.y < 0 ? "up" : "down");
-    if (auto *animation = actor.get<AnimatedSprite>()) animation->play("search_" + facing);
+    const std::string facing = std::abs(delta.x) > std::abs(delta.y)
+                                   ? (delta.x < 0 ? "left" : "right")
+                                   : (delta.y < 0 ? "up" : "down");
+    if (auto *animation = actor.get<AnimatedSprite>())
+        animation->play("search_" + facing);
     context.emit("search_started", entity().id(), actor_);
 }
 void SearchAction::close(GameContext &context) {
     if (auto *actor = context.scene().find(actor_))
-        if (auto *container = entity().get<Container>()) container->close(context, *actor);
+        if (auto *container = entity().get<Container>())
+            container->close(context, *actor);
     active_ = busy_ = false;
     context.blackboard().set("search_ui_active", 0.0);
     context.blackboard().set("search_ui_busy", 0.0);
     context.lockInput("search:" + toString(entity().id()), false);
 }
 void SearchAction::onFixedUpdate(GameContext &context, float seconds) {
-    if (!active_ || context.tick() == startedTick_) return;
+    if (!active_ || context.tick() == startedTick_)
+        return;
     Entity *actor = context.scene().find(actor_);
     if (!actor || distance(actor->worldPosition(), entity().worldPosition()) > 2.3F ||
         context.input().state("Global", "Cancel").pressed) {
@@ -573,12 +596,15 @@ void SearchAction::onFixedUpdate(GameContext &context, float seconds) {
         return;
     }
     if (!busy_) {
-        if (context.input().state("Player1", "Interact").pressed) close(context);
+        if (context.input().state("Player1", "Interact").pressed)
+            close(context);
         return;
     }
     elapsed_ += seconds;
-    context.blackboard().set("search_ui_progress", static_cast<double>(std::min(1.0F, elapsed_ / std::max(duration, 0.1F))));
-    if (elapsed_ < duration) return;
+    context.blackboard().set("search_ui_progress", static_cast<double>(std::min(
+                                                       1.0F, elapsed_ / std::max(duration, 0.1F))));
+    if (elapsed_ < duration)
+        return;
     std::string icon;
     if (auto *container = entity().get<Container>()) {
         container->search(context, *actor);
@@ -586,17 +612,27 @@ void SearchAction::onFixedUpdate(GameContext &context, float seconds) {
         bool taken = false;
         if (contents)
             for (int i = 0; i < contents->size(); ++i) {
-                const auto *definition = gameData(context).items.items.find(contents->slot(i).item.str());
-                if (definition) icon = definition->icon;
+                const auto *definition =
+                    gameData(context).items.items.find(contents->slot(i).item.str());
+                if (definition)
+                    icon = definition->icon;
                 taken = container->take(context, *actor, i) > 0 || taken;
             }
-        if (!taken) { result(context, emptyText); return; }
+        if (!taken) {
+            result(context, emptyText);
+            return;
+        }
     }
     if (!recipe.empty()) {
         const auto made = actor->get<Crafter>()->craft(context, recipe);
-        if (!made.ok) { result(context, made.reason); return; }
+        if (!made.ok) {
+            result(context, made.reason);
+            return;
+        }
         if (!made.outputs.empty())
-            if (const auto *definition = gameData(context).items.items.find(made.outputs.front().item.str())) icon = definition->icon;
+            if (const auto *definition =
+                    gameData(context).items.items.find(made.outputs.front().item.str()))
+                icon = definition->icon;
     }
     if (!successFlag.empty()) {
         context.blackboard().set(successFlag, 1.0);
@@ -608,34 +644,52 @@ void SearchAction::onFixedUpdate(GameContext &context, float seconds) {
     result(context, successText);
     context.emit("search_completed", entity().id(), actor_);
 }
-void SearchAction::onDestroy(GameContext &context) { if (active_) close(context); }
-
-void EscapePresentation::describe(TypeBuilder<EscapePresentation> &type) {
-    type.category("Exploration").description("A compact castle HUD with the actor's actual inventory.");
-    type.field("actor", &EscapePresentation::actor);
-    type.field("title", &EscapePresentation::title);
-    type.field("completionTitle", &EscapePresentation::completionTitle);
-    type.field("completionText", &EscapePresentation::completionText);
+void SearchAction::onDestroy(GameContext &context) {
+    if (active_)
+        close(context);
 }
-void EscapePresentation::onFixedUpdate(GameContext &context, float) {
+
+void InventoryHud::describe(TypeBuilder<InventoryHud> &type) {
+    type.category("Exploration").description("A configurable objective and inventory HUD.");
+    type.field("actor", &InventoryHud::actor);
+    type.field("title", &InventoryHud::title);
+    type.field("completionTitle", &InventoryHud::completionTitle);
+    type.field("completionText", &InventoryHud::completionText);
+    type.field("statusText", &InventoryHud::statusText);
+    type.field("alertText", &InventoryHud::alertText);
+    type.field("controlsText", &InventoryHud::controlsText);
+    type.field("continueText", &InventoryHud::continueText);
+    type.field("restartText", &InventoryHud::restartText);
+}
+void InventoryHud::onFixedUpdate(GameContext &context, float) {
     auto &board = context.blackboard();
-    board.set("escape_hud", 1.0);
-    board.set("escape_title", title);
-    board.set("escape_completion_title", completionTitle);
-    board.set("escape_completion_text", completionText);
+    board.set("inventory_hud", 1.0);
+    board.set("inventory_title", title);
+    board.set("inventory_completion_title", completionTitle);
+    board.set("inventory_completion_text", completionText);
+    board.set("inventory_status", statusText);
+    board.set("inventory_alert", alertText);
+    board.set("inventory_controls", controlsText);
+    board.set("inventory_continue", continueText);
+    board.set("inventory_restart", restartText);
     const Entity *person = context.scene().find(actor);
     const auto *inventory = person ? person->get<Inventory>() : nullptr;
     for (int i = 0; i < 6; ++i) {
-        const std::string prefix = "escape_slot_" + std::to_string(i);
-        const auto *definition = inventory ? gameData(context).items.items.find(inventory->slot(i).item.str()) : nullptr;
+        const std::string prefix = "inventory_slot_" + std::to_string(i);
+        const auto *definition =
+            inventory ? gameData(context).items.items.find(inventory->slot(i).item.str()) : nullptr;
         board.set(prefix + "_icon", definition ? definition->icon : "");
         board.set(prefix + "_name", definition ? definition->displayName : "");
     }
-    if (context.time() > board.number("escape_notice_until")) board.set("escape_notice", "");
+    if (context.time() > board.number("interaction_notice_until"))
+        board.set("interaction_notice", "");
 }
 void PatrolWatch::describe(TypeBuilder<PatrolWatch> &type) {
-    type.category("Exploration").description("A guard notices trespassing in an authored restricted area and returns the actor to their cell.");
+    type.category("Exploration")
+        .description("A guard notices trespassing in an authored restricted area and returns the "
+                     "actor to an authored position.");
     type.field("actor", &PatrolWatch::actor);
+    type.field("caughtText", &PatrolWatch::caughtText);
     type.field("restrictedMin", &PatrolWatch::restrictedMin);
     type.field("restrictedMax", &PatrolWatch::restrictedMax);
     type.field("returnPosition", &PatrolWatch::returnPosition);
@@ -643,21 +697,25 @@ void PatrolWatch::describe(TypeBuilder<PatrolWatch> &type) {
     type.field("catchSeconds", &PatrolWatch::catchSeconds).range(0.1, 20, 0.1);
 }
 void PatrolWatch::onFixedUpdate(GameContext &context, float seconds) {
-    if (context.blackboard().number("dialogue_active") != 0) return;
+    if (context.blackboard().number("dialogue_active") != 0)
+        return;
     Entity *person = context.scene().find(actor);
-    if (!person || context.blackboard().text("level_state") == "complete") return;
+    if (!person || context.blackboard().text("level_state") == "complete")
+        return;
     cooldown_ = std::max(0.0F, cooldown_ - seconds);
     const Vec2 at = person->worldPosition();
     const bool seen = cooldown_ == 0 && at.x > restrictedMin.x && at.x < restrictedMax.x &&
-        at.y > restrictedMin.y && at.y < restrictedMax.y && distance(at, entity().worldPosition()) < range && clearReach(context, entity(), *person);
+                      at.y > restrictedMin.y && at.y < restrictedMax.y &&
+                      distance(at, entity().worldPosition()) < range &&
+                      clearReach(context, entity(), *person);
     suspicion_ = std::clamp(suspicion_ + seconds * (seen ? 1.0F : -2.0F), 0.0F, catchSeconds);
-    context.blackboard().set("escape_suspicion", static_cast<double>(suspicion_ / catchSeconds));
+    context.blackboard().set("patrol_suspicion", static_cast<double>(suspicion_ / catchSeconds));
     if (suspicion_ >= catchSeconds) {
         context.teleport(*person, returnPosition);
         suspicion_ = 0;
         cooldown_ = 4;
-        context.blackboard().set("escape_notice", "Caught! Back to your cell. Your hidden supplies are safe.");
-        context.blackboard().set("escape_notice_until", context.time() + 4.0);
+        context.blackboard().set("interaction_notice", caughtText);
+        context.blackboard().set("interaction_notice_until", context.time() + 4.0);
         context.emit("guard_caught", entity().id(), person->id());
     }
 }
@@ -689,8 +747,11 @@ void WirePuzzle::begin(GameContext &context, EntityId actor) {
     context.lockInput("wires:" + toString(entity().id()), true);
     if (auto *person = context.scene().find(actor)) {
         const Vec2 delta = entity().worldPosition() - person->worldPosition();
-        const std::string facing = std::abs(delta.x) > std::abs(delta.y) ? (delta.x < 0 ? "left" : "right") : (delta.y < 0 ? "up" : "down");
-        if (auto *animation = person->get<AnimatedSprite>()) animation->play("search_" + facing);
+        const std::string facing = std::abs(delta.x) > std::abs(delta.y)
+                                       ? (delta.x < 0 ? "left" : "right")
+                                       : (delta.y < 0 ? "up" : "down");
+        if (auto *animation = person->get<AnimatedSprite>())
+            animation->play("search_" + facing);
     }
     context.emit("wire_puzzle_started", entity().id(), actor);
 }
@@ -753,7 +814,7 @@ void WirePuzzle::onDestroy(GameContext &context) {
 void registerExplorationComponents(ComponentRegistry &registry) {
     registry.add<LocationArea>("LocationArea");
     registry.add<SearchAction>("SearchAction");
-    registry.add<EscapePresentation>("EscapePresentation");
+    registry.add<InventoryHud>("InventoryHud");
     registry.add<PatrolWatch>("PatrolWatch");
     registry.add<CharacterMotion>("CharacterMotion");
     registry.add<ObjectiveList>("ObjectiveList");
