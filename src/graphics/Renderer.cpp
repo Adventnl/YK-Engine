@@ -75,6 +75,7 @@ struct Renderer::Impl {
     std::unique_ptr<SDL_Renderer, RendererDeleter> native;
     std::shared_ptr<const void> identity = std::make_shared<const int>(0);
     std::vector<NativeTexture> textures;
+    std::vector<TextureHandle> retiring;
     std::vector<Command> commands;
     std::map<std::filesystem::path, TextureHandle> fileTextures;
     Camera2D camera;      // Camera of the pass being recorded.
@@ -202,7 +203,7 @@ Vec2 Renderer::textureSize(TextureHandle texture) const {
     SDL_GetTextureSize(impl_->textures[texture.index_].get(), &width, &height);
     return {width, height};
 }
-Result<TextureHandle> Renderer::createRenderTarget(int width, int height) {
+Result<TextureHandle> Renderer::createRenderTarget(int width, int height, TextureFilter filter) {
     assertThread();
     if (width <= 0 || height <= 0 || width > 16384 || height > 16384)
         return Error{"Render target dimensions invalid"};
@@ -211,7 +212,9 @@ Result<TextureHandle> Renderer::createRenderTarget(int width, int height) {
     if (!texture)
         return sdlError("Create render target");
     if (!SDL_SetTextureBlendMode(texture.get(), SDL_BLENDMODE_BLEND) ||
-        !SDL_SetTextureScaleMode(texture.get(), SDL_SCALEMODE_LINEAR))
+        !SDL_SetTextureScaleMode(texture.get(), filter == TextureFilter::Nearest
+                                                    ? SDL_SCALEMODE_NEAREST
+                                                    : SDL_SCALEMODE_LINEAR))
         return sdlError("Configure render target");
     TextureHandle handle;
     handle.owner_ = impl_->identity;
@@ -318,6 +321,15 @@ Status Renderer::release(TextureHandle texture) {
     impl_->renderTargets.erase(texture.index_);
     return success();
 }
+Status Renderer::retire(TextureHandle texture) {
+    assertThread();
+    if (!valid(texture))
+        return Error{"Invalid, released, or foreign texture handle"};
+    if (!impl_->inFrame)
+        return release(texture);
+    impl_->retiring.push_back(texture);
+    return success();
+}
 Vec2 Renderer::viewport() const {
     assertThread();
     return impl_->viewport;
@@ -394,10 +406,28 @@ Status Renderer::flush() {
                             sprite->size.y * sprite->transform.scale.y * impl_->camera.zoom()};
             const auto position =
                 impl_->camera.worldToScreen(sprite->transform.position, impl_->passSize);
-            const SDL_FPoint pivot{size.x * sprite->anchor.x, size.y * sprite->anchor.y};
-            const SDL_FRect destination{position.x - pivot.x, position.y - pivot.y, size.x, size.y};
+            SDL_FPoint pivot{size.x * sprite->anchor.x, size.y * sprite->anchor.y};
+            SDL_FRect destination{position.x - pivot.x, position.y - pivot.y, size.x, size.y};
             if (!finite(size) || !finite({destination.x, destination.y}))
                 return Error{"Sprite projection overflow"};
+            if (sprite->snapEdges && sprite->transform.rotationDegrees == 0.0F) {
+                // Rounding position and width independently loses a pixel between repeated
+                // quads at fractional zoom. Round both shared boundaries, then take their span.
+                const auto edge = [](float value) {
+                    // Adjacent center/half-size calculations can straddle an exact half pixel
+                    // by a few float ULPs. Resolve those ties consistently, including negatives.
+                    return std::floor(value + .5F + .001F);
+                };
+                const float right = edge(destination.x + destination.w);
+                const float bottom = edge(destination.y + destination.h);
+                destination.x = edge(destination.x);
+                destination.y = edge(destination.y);
+                destination.w = right - destination.x;
+                destination.h = bottom - destination.y;
+                if (destination.w <= 0.0F || destination.h <= 0.0F)
+                    continue;
+                pivot = {destination.w * sprite->anchor.x, destination.h * sprite->anchor.y};
+            }
             auto *texture = impl_->textures[sprite->texture.index_].get();
             SDL_FRect sourceStorage{};
             const SDL_FRect *source = nullptr;
@@ -540,6 +570,13 @@ Status Renderer::present(const std::optional<std::filesystem::path> &capture) {
     impl_->camera = impl_->frameCamera;
     impl_->passSize = impl_->viewport;
     impl_->finished = impl_->building;
+    // endPass has flushed offscreen work; flush above finishes the remaining window commands.
+    for (const auto &texture : impl_->retiring)
+        if (valid(texture)) {
+            impl_->textures[texture.index_].reset();
+            impl_->renderTargets.erase(texture.index_);
+        }
+    impl_->retiring.clear();
     if (!drawn)
         return drawn;
     if (capture)

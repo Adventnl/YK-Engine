@@ -173,6 +173,13 @@ Development folders never ship whatever the list says: `tools/`, `docs/`, `build
 
 Scene `settings`: `name`, `gravity` (m/s², +Y down) and `background` (`#rrggbbaa`).
 
+`Camera.pixelsPerUnit` optionally fixes the world's raster density. With a positive value,
+the game view renders all world sprites, lights and shadows into a nearest-filtered surface
+at that many samples per world unit, then scales it to the playfield. Camera presentation
+snaps to that grid; simulation and collisions retain full precision. Screen-space UI stays
+at display resolution. The default `0` renders directly at display resolution. This works
+in the standalone player and the editor's game preview, including previews inside render targets.
+
 Entity record:
 
 | Key | Meaning |

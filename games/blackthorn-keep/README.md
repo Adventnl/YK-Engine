@@ -47,25 +47,36 @@ See [LEVEL2.md](LEVEL2.md) for the second chapter's route and artwork details.
 ## Artwork and authoring
 
 `assets/castle/reference/` contains the supplied editable ZIP's PNGs and original manifest.
-Chapter two uses their native placements at 35 pixels per world unit. Floors, walls and props
-remain separate editable entities. Doorways are cut into reconstructed wall sections to make
-all rooms reachable. Chapter one uses the same floor, wall and furnishing materials.
+The original source art uses 35 pixels per world unit. Both chapters now render directly at
+the display resolution, preserving source detail instead of discarding it into a smaller
+intermediate image. Thirty-six repaired furniture sprites use twice the source resolution;
+stone materials use four times the source resolution and preserve complete coping and bases.
+The blue corridor runner also has a clean cloth texture without embedded floor patches.
+Floors, walls and props remain separate editable entities.
 
 Ordinary passages are clear openings in the stone walls, with no door artwork or blocking
 components. Locked escape gates use animated `StateGate` leaves and synchronized collision.
-Vertical walls use short sections from shared atlases for local depth sorting;
+`tools/castle_geometry.py` owns reusable wall lengths, finished returns, furniture dimensions
+and floor footprints for both chapters. Wall runs use tiled nine-slice materials: changing a
+length repeats the stone rather than stretching an image or clipping a wall end. Openings
+split those runs into complete pieces with matching collision. Vertical walls are joined runs with finished free ends;
 banners share their supporting wall's depth. Clean column tiles and banner silhouettes remove
-the floor scraps baked into the earlier extracted art.
+the floor scraps baked into the earlier extracted art. Repeated beds, chairs, crates, barrels,
+plants and racks use shared silhouettes and dimensions. The utility machine fits inside its room
+and its collision covers the pipe assembly. Furniture and walls have grounded contact shadows.
 
 ImageGen masters and their exact prompts are preserved in `assets/castle/source/` and
 `assets/level2/source/hero_idle.*`. Runtime outputs are `assets/castle/doors/`,
-`assets/castle/fixtures/` and `assets/level2/hero-polished.*`.
+`assets/castle/fixtures/`, `assets/castle/materials/`, `assets/castle/props/` and `assets/level2/hero-polished.*`.
 
 Generated with the built-in image_gen tool:
 
 - [Standing hero master](assets/level2/source/hero_idle.png) and [prompt](assets/level2/source/hero_idle.prompt.txt).
 - [Door master](assets/castle/source/door-simple.png) and [prompt](assets/castle/source/door-simple.prompt.txt).
 - [Clean banner master](assets/castle/source/banner-clean.png) and [prompt](assets/castle/source/banner-clean.prompt.txt).
+- [Furniture masters, exact prompts and export notes](assets/castle/source/repairs/README.md).
+- [Detailed masonry masters and exact prompts](assets/castle/source/masonry-hq/README.md),
+  exported by `tools/castle_masonry_art.py`.
 
 Rebuild both scenes and the door strip without regenerating existing character atlases:
 
@@ -76,10 +87,13 @@ python3 games/blackthorn-keep/tools/build_frontend.py
 ./build/dev/yk validate games/blackthorn-keep
 ctest --preset dev -R blackthorn
 python3 games/blackthorn-keep/tools/capture_previews.py
+python3 games/blackthorn-keep/tools/capture_previews.py --audit
 ```
 
 The frontend builder writes ordinary editable scenes and packages its chapter previews under
 `assets/ui/`. Chapter builders preserve pause controls, completion flow and the title as the start scene.
+The optional visual audit captures every room in both chapters and both overviews at
+2560 × 1440 under `build/blackthorn-visual-audit/`, with a framing manifest.
 
 Pillow is required for chapter authoring. `--regenerate-art` explicitly re-exports the earlier generated
 atlases; normal scene rebuilds preserve them. 

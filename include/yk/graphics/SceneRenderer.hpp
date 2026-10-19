@@ -79,6 +79,8 @@ class SceneRenderer {
     std::optional<LoadedTexture> loadedTexture(Renderer &renderer, const std::string &path);
     // Import settings of a texture (project defaults merged with its sidecar).
     ResolvedTexture textureSettings(const std::string &path);
+    // Reuses the world's nearest-filtered raster surface, resizing only when framing changes.
+    Result<TextureHandle> worldRaster(Renderer &renderer, Vec2 pixels);
     // Drops what was loaded for `path` (texture and sidecar) so the next draw reads it again; the
     // editor calls this after the file or its import settings changed.
     void reload(Renderer &renderer, const std::string &path);
@@ -119,5 +121,6 @@ class SceneRenderer {
     std::map<std::string, TextureInfo> textures_;
     std::map<std::string, std::shared_ptr<const Tileset>> tilesets_;
     SceneRenderStats stats_;
+    std::optional<TextureHandle> worldRaster_;
 };
 } // namespace yk

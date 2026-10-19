@@ -12,6 +12,9 @@ colors:
   hud: "#16191f"
   text: "#e1dabe"
   action: "#e5b561"
+  candle-light: "#ffb945"
+  torch-light: "#ffb24d"
+  powered-exit: "#55ed7a"
   muted-text: "#a7a795"
   inventory-slot: "#2e3135"
   progress-track: "#3d3c35"
@@ -118,11 +121,20 @@ Pillow's default raster font baked into their plaque textures.
 
 ## Layout
 
-The game is a native SDL desktop experience. The world uses 32-pixel tiles at one world unit;
-all floor origins and wall footprints sit on integer coordinates. At the default window size,
-the camera shows 18.125 world units in the reserved 580-pixel-high play area, giving an exact
-32-pixel tile scale. Retina rendering doubles those pixels without smoothing.
+The game is a native SDL desktop experience. Source materials use 35 pixels per world unit.
+Both chapters use a camera height of 11.6 units and render world art, lights and shadows
+directly at the display resolution. At 1280 × 720 the playfield is 1280 × 580; larger windows
+retain more of the artwork's detail. There is no intermediate raster that discards source
+pixels or quantizes camera motion. HUD and dialogue also use display resolution.
 
+Walls are resizable nine-slice runs: native coping and masonry repeat between finished
+left and right returns. Ordinary openings split the run and its solid footprint; there are
+no clipped facade PNGs or overhead scraps. Vertical walls form joined runs with complete
+free-end faces. Intersections have one visible surface. `tools/castle_geometry.py` owns these materials and the shared
+furniture silhouettes, dimensions, feet and contact shadows used by both chapter builders.
+Repeated beds, chairs, crates, barrels, plants and racks use the same canonical assets.
+Equipment has deliberate size limits; the utility machine's pipe assembly has a full
+floor footprint.
 The HUD reserves 40 pixels above the world and 100 below at 1280 × 720. Interface placement and
 text scale follow the viewport; objectives and supplies never cover the moving game.
 The shared scale unit is `min(viewport width / 1280, viewport height / 720)`.

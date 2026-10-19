@@ -360,6 +360,10 @@ void Camera::describe(TypeBuilder<Camera> &type) {
     type.field("orthographicHeight", &Camera::orthographicHeight)
         .range(1, 500, 0.5)
         .tooltip("World units visible vertically.");
+    type.field("pixelsPerUnit", &Camera::pixelsPerUnit)
+        .range(0, 512, 1)
+        .tooltip("World raster pixels per unit; 0 uses display resolution. UI stays at full "
+                 "resolution.");
     type.field("viewportInset", &Camera::viewportInset)
         .range(0, 2000)
         .tooltip("Screen width/height reserved by UI at 1280 x 720; excluded from bounds framing.");

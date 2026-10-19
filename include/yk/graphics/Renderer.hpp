@@ -41,6 +41,8 @@ struct Sprite {
     // Pixel-space atlas region. Empty draws the complete texture.
     std::optional<Rect> source;
     bool flipHorizontal{};
+    // Align joined, axis-aligned tile/slice edges to complete output pixels.
+    bool snapEdges{};
     BlendMode blend{BlendMode::Alpha};
     int layer{};
     float depth{}; // Ascending depth, then submission order within each layer.
@@ -65,8 +67,9 @@ class Renderer {
     Result<TextureHandle> createTexture(int width, int height, std::span<const Color> pixels,
                                         TextureFilter filter = TextureFilter::Nearest);
     Result<TextureHandle> builtinTexture(BuiltinTexture kind);
-    // A texture that passes can render into (linear filtered, alpha blended).
-    Result<TextureHandle> createRenderTarget(int width, int height);
+    // A texture that passes can render into (alpha blended).
+    Result<TextureHandle> createRenderTarget(int width, int height,
+                                             TextureFilter filter = TextureFilter::Linear);
     // Backend texture, for tools that display a texture through their own UI layer. Null if
     // invalid.
     SDL_Texture *nativeTexture(TextureHandle texture) const;
@@ -83,6 +86,8 @@ class Renderer {
     Result<TextureHandle> loadPngMemory(std::span<const unsigned char> bytes,
                                         TextureFilter filter = TextureFilter::Nearest);
     Status release(TextureHandle texture);
+    // Retire a transient surface after queued frame commands finish (immediate outside a frame).
+    Status retire(TextureHandle texture);
     bool valid(TextureHandle texture) const;
     // Logical size in letterbox mode; the current output size in native-resolution mode.
     Vec2 viewport() const;

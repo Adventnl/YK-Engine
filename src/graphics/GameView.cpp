@@ -1,6 +1,7 @@
 #include "yk/graphics/GameView.hpp"
 #include "yk/graphics/PhysicsDebug.hpp"
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 
 namespace yk {
@@ -23,8 +24,28 @@ Status drawAsPlayed(Renderer &renderer, SceneRenderer &sceneRenderer, const Scen
         worldViewport.position.y += 40.0F * scale;
         worldViewport.size.y -= 140.0F * scale;
     }
-    RenderPass world{SceneRenderer::cameraFor(view, worldViewport.size), worldViewport,
+    Rect rasterViewport = worldViewport;
+    std::optional<TextureHandle> raster;
+    const Camera *primary = SceneRenderer::primaryCamera(scene);
+    if (primary && std::isfinite(primary->pixelsPerUnit) && primary->pixelsPerUnit > 0 &&
+        view.visibleHeight > 0 && worldViewport.size.x > 0 && worldViewport.size.y > 0) {
+        const float density = primary->pixelsPerUnit;
+        const float height = std::clamp(std::round(view.visibleHeight * density), 1.0F, 8192.0F);
+        const float width = std::clamp(
+            std::round(height * worldViewport.size.x / worldViewport.size.y), 1.0F, 8192.0F);
+        rasterViewport = {{0, 0}, {width, height}};
+        auto surface = sceneRenderer.worldRaster(renderer, rasterViewport.size);
+        if (!surface)
+            return Error{surface.error()};
+        raster = surface.value();
+        // Keep camera motion on the same grid as the scenery, without changing simulation state.
+        view.position.x = std::round(view.position.x * density) / density;
+        view.position.y = std::round(view.position.y * density) / density;
+    }
+    RenderPass world{SceneRenderer::cameraFor(view, rasterViewport.size), rasterViewport,
                      scene.settings.background, options.target};
+    if (raster)
+        world.target = raster;
     if (auto status = renderer.beginPass(world); !status)
         return status;
     // Which levels the game view shows: the one the camera looks at, and perhaps those below it.
@@ -38,7 +59,7 @@ Status drawAsPlayed(Renderer &renderer, SceneRenderer &sceneRenderer, const Scen
     worldView.levelAlpha = levelAlpha.empty() ? nullptr : &levelAlpha;
     worldView.time = time;
     worldView.camera = world.camera;
-    worldView.viewport = worldViewport.size;
+    worldView.viewport = rasterViewport.size;
     worldView.parallax = true;
     worldView.interpolate = interpolate;
     worldView.alpha = alpha;
@@ -51,6 +72,24 @@ Status drawAsPlayed(Renderer &renderer, SceneRenderer &sceneRenderer, const Scen
         drawn = ended;
     if (!drawn)
         return drawn;
+
+    if (raster) {
+        Camera2D compositeCamera;
+        compositeCamera.position = worldViewport.size * .5F;
+        if (auto status =
+                renderer.beginPass({compositeCamera, worldViewport, std::nullopt, options.target});
+            !status)
+            return status;
+        Sprite picture;
+        picture.texture = *raster;
+        picture.size = worldViewport.size;
+        picture.transform.position = worldViewport.size * .5F;
+        drawn = renderer.submit(picture);
+        if (auto ended = renderer.endPass(); drawn && !ended)
+            drawn = ended;
+        if (!drawn)
+            return drawn;
+    }
 
     Camera2D screen;
     screen.position = viewport.size * 0.5F;

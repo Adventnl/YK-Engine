@@ -51,6 +51,8 @@ struct Case {
     Rect region;
     Color clear{clearGray};
     bool parallax{false};
+    float visibleHeight{5.0F};
+    Vec2 coverageOffset{};
     SceneRenderStats stats;
 };
 
@@ -169,6 +171,31 @@ class ModesLayer final : public ApplicationLayer {
             glow.color = {200, 100, 0, 255};
             glow.radius = 2.0F;
         }
+        // 10..17: native-resolution cameras at fractional zoom, translated viewports,
+        // negative world positions and exact half-pixel tile boundaries. Every opaque
+        // interior pixel must remain covered at tiled and tiled nine-slice joins.
+        for (int variant = 0; variant < 4; ++variant)
+            for (const bool sliced : {false, true}) {
+                const float sign = variant % 2 ? -1.0F : 1.0F;
+                Case &c = add({5.5571429F * sign, 4.785714F * sign});
+                c.visibleHeight = 11.6F;
+                if (variant >= 2) {
+                    const float zoom = c.region.size.y / c.visibleHeight;
+                    // Put the first interior tile edge exactly halfway between pixels.
+                    const float xEdge = regionWidth / 2.0F +
+                                        (-16.33F / 2 + (sliced ? 1.0F : .97142857F)) * zoom;
+                    const float yEdge = regionHeight / 2.0F +
+                                        (-8.77F / 2 + (sliced ? 1.0F : 1.1142857F)) * zoom;
+                    c.coverageOffset = {(std::floor(xEdge) + .5F - xEdge) / zoom,
+                                        (std::floor(yEdge) + .5F - yEdge) / zoom};
+                }
+                auto &s = sprite(c, "Fractional joins", c.center + c.coverageOffset,
+                                 {16.33F, 8.77F},
+                                 sliced ? "assets/frame.bmp" : "assets/tile.bmp");
+                s.drawMode = sliced ? SpriteDrawMode::Sliced : SpriteDrawMode::Tiled;
+                s.sliceFill = SpriteFill::Tile;
+                s.tileSize = {.97142857F, 1.1142857F};
+            }
         return success();
     }
     bool update(const FrameContext &) override {
@@ -176,7 +203,8 @@ class ModesLayer final : public ApplicationLayer {
     }
     Status render(Renderer &renderer) override {
         for (Case &c : cases_) {
-            const Camera2D camera = SceneRenderer::cameraFor({c.center, 5.0F}, c.region.size);
+            const Camera2D camera =
+                SceneRenderer::cameraFor({c.center, c.visibleHeight}, c.region.size);
             RenderPass pass{camera, c.region, c.clear};
             if (auto begun = renderer.beginPass(pass); !begun)
                 return begun;
@@ -262,7 +290,7 @@ int main() {
     std::vector<Case> cases;
     {
         auto app =
-            Application::create({"render modes test", 4 * regionWidth, 3 * regionHeight, 0, 0});
+            Application::create({"render modes test", 4 * regionWidth, 5 * regionHeight, 0, 0});
         CHECK(app);
         if (!app)
             return 1;
@@ -277,14 +305,16 @@ int main() {
             cases.back().center = c.center;
             cases.back().region = c.region;
             cases.back().stats = c.stats;
+            cases.back().visibleHeight = c.visibleHeight;
+            cases.back().coverageOffset = c.coverageOffset;
         }
     }
     SDL_Surface *image = SDL_LoadBMP(capture.string().c_str());
     CHECK(image != nullptr);
     if (!image)
         return yk::test::finish("render_modes");
-    CHECK(cases.size() == 10);
-    if (cases.size() != 10)
+    CHECK(cases.size() == 18);
+    if (cases.size() != 18)
         return yk::test::finish("render_modes");
 
     // 0: Tiled. Sprite spans x in [-1.75, 1.75], y in [-1, 1]; tiles start at its top-left, so tile
@@ -370,6 +400,27 @@ int main() {
     CHECK(torch.at(1.0F, 0.0F, {90, 65, 40, 255}, 8));
     CHECK(torch.at(2.3F, 0.0F, clearGray));
     CHECK(cases[9].stats.quads == 1);
+    for (std::size_t index = 10; index < cases.size(); ++index) {
+        const Case &c = cases[index];
+        const float zoom = c.region.size.y / c.visibleHeight;
+        const Vec2 center = c.region.position + c.region.size * .5F + c.coverageOffset * zoom;
+        const Vec2 half = Vec2{16.33F, 8.77F} * (zoom * .5F);
+        const int left = static_cast<int>(std::ceil(center.x - half.x)) + 1;
+        const int right = static_cast<int>(std::floor(center.x + half.x)) - 1;
+        const int top = static_cast<int>(std::ceil(center.y - half.y)) + 1;
+        const int bottom = static_cast<int>(std::floor(center.y + half.y)) - 1;
+        int cracks = 0;
+        for (int y = top; y <= bottom; ++y)
+            for (int x = left; x <= right; ++x) {
+                Uint8 r{}, g{}, b{}, a{};
+                CHECK(SDL_ReadSurfacePixel(image, x, y, &r, &g, &b, &a));
+                cracks += r == clearGray.r && g == clearGray.g && b == clearGray.b;
+            }
+        if (cracks)
+            std::fprintf(stderr, "  fractional %s sprite has %d uncovered interior pixels\n",
+                         index % 2 == 0 ? "tiled" : "nine-slice", cracks);
+        CHECK(cracks == 0);
+    }
     SDL_DestroySurface(image);
     std::filesystem::remove_all(root);
     return yk::test::finish("render_modes");

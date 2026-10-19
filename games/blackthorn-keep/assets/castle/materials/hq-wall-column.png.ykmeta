@@ -1,0 +1,12 @@
+{
+  "format": "yk.texture",
+  "version": 1,
+  "pixelsPerUnit": 140,
+  "filter": "linear",
+  "border": [
+    16,
+    12,
+    16,
+    12
+  ]
+}

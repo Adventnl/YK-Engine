@@ -3,7 +3,8 @@
 A furnished castle prison assembled from `invisible_castle_level2_editable.zip` in YK Engine.
 The supplied five-layer composition guides the floor plan, wall elevations, prop positions,
 room colors and relative furnishing scale. The previous enlarged corridor is restored to the
-reference proportions. Native artwork is kept at 35 pixels per world unit.
+reference proportions. Layout coordinates use 35 pixels per world unit; repaired props
+use 70 pixels per unit and detailed masonry uses 140 pixels per unit.
 
 ```sh
 ./build/dev/yk_player games/blackthorn-keep
@@ -12,7 +13,8 @@ reference proportions. Native artwork is kept at 35 pixels per world unit.
 Move with **WASD / arrows**, interact with **E**, dismiss or cancel with **Escape**,
 pause with **P**, and restart with **R**. Room and corridor passages have no doors; walk straight through.
 The camera follows the player with an 11.6-unit view and clamps to the keep boundaries.
-At 1280 by 720, the world has 580 vertical pixels, or 50 pixels per world unit.
+At 1280 by 720, the 580-pixel playfield renders at its full 1280 × 580 resolution.
+Larger windows render additional detail; there is no forced low-resolution intermediate.
 
 ## Escape route
 
@@ -49,8 +51,10 @@ colliders. Locked escape gates retain their requirements and animated leaves.
 The ImageGen masters in `assets/castle/source/door-simple.png` and `banner-clean.png`
 and their adjacent `.prompt.txt` files remain available for authoring.
 
-Vertical walls are rebuilt from clean stone modules and split into short, locally sorted
-sections in shared atlases. This removes floor and runner fragments from the extracted columns.
+Walls are extensible nine-slice objects with tiled masonry, fixed-width end returns and
+matching solid footprints. Doorways split runs instead of cutting holes in large images.
+Vertical walls join into continuous runs, end with finished stone faces at passages,
+and share a single surface with adjoining horizontal facades.
 Banners sort at their wall's base and have clean transparent silhouettes. The yard planter is
 clear of the utility doorway. The hero's separate `hero-polished` atlas adds four standing and
 blinking directions without changing the existing walk and search cells. Movement stops on
@@ -59,8 +63,10 @@ release, and resolved physics velocity selects walking versus idle when pushing 
 ## Editable assets and rebuild
 
 The supplied manifest records source origins and pivots. Scenery stays individually editable;
-it is not a flattened background. `tools/castle_reference.py` imports its placements, authors
-physical footprints, and opens connecting passages in the extracted wall sections. Scene
+it is not a flattened background. `tools/castle_reference.py` imports its placements;
+`tools/castle_geometry.py` shares wall materials, furniture sizes and physical footprints
+with chapter one. Oversized equipment is reduced, repeated furniture uses canonical assets,
+and beds and the pipe machine have full floor footprints. Scene
 logic still uses reusable engine components for inventories, crafting, patrols, dialogue,
 wire matching and level flow.
 
@@ -77,7 +83,9 @@ re-exporting them. The source door master and original prompts are excluded from
 Gameplay checks verify all eighteen ordinary passages have no doors and physically traverse
 them in both directions. They also cover NPC push resistance and motion, modal dismissal,
 three camera viewport sizes, searches, crafting, guard capture, the wire puzzle, the sealed
-exit, completion and restart. The renderer test checks actual contact-shadow pixels.
+exit, completion and restart. Additional collision checks walk into beds and the machine from
+exposed sides. The renderer test checks actual contact-shadow pixels, optional raster cameras,
+one-pixel UI details, offset viewports and resizing within an outer render target.
 
 The overview below uses a temporary fixed camera for layout review. Shipping scenes follow
 the character at the close zoom shown in the player preview.

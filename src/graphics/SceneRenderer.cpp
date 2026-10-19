@@ -164,6 +164,21 @@ Camera2D SceneRenderer::cameraFor(const CameraView &view, Vec2 viewport) {
     return camera;
 }
 
+Result<TextureHandle> SceneRenderer::worldRaster(Renderer &renderer, Vec2 pixels) {
+    if (worldRaster_ && renderer.valid(*worldRaster_) &&
+        renderer.textureSize(*worldRaster_) == pixels)
+        return *worldRaster_;
+    if (worldRaster_ && renderer.valid(*worldRaster_))
+        if (auto released = renderer.retire(*worldRaster_); !released)
+            return Error{released.error()};
+    worldRaster_.reset();
+    auto created = renderer.createRenderTarget(static_cast<int>(pixels.x),
+                                               static_cast<int>(pixels.y), TextureFilter::Nearest);
+    if (created)
+        worldRaster_ = created.value();
+    return created;
+}
+
 const Camera *SceneRenderer::primaryCamera(const Scene &scene) {
     const Camera *fallback = nullptr;
     for (const EntityId id : scene.orderedIds()) {
@@ -326,6 +341,7 @@ Status SceneRenderer::drawSprite(Renderer &renderer, const Entity &entity, const
         sprite.ySort ? world.position.y + sprite.sortOffset + sprite.order : sprite.order;
     sink.proto.transform.rotationDegrees = world.rotationDegrees;
     sink.proto.flipHorizontal = sink.flip;
+    sink.proto.snapEdges = sprite.drawMode != SpriteDrawMode::Simple;
     sink.proto.blend =
         sprite.blend == SpriteBlend::Additive ? BlendMode::Additive : BlendMode::Alpha;
     const Rect whole{-size * 0.5F, size};

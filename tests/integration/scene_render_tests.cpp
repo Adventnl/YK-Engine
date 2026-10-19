@@ -1,6 +1,7 @@
 // Renders scenes through the real renderer (SDL software backend) and checks actual pixels.
 #include "support/check.hpp"
 #include "yk/core/Application.hpp"
+#include "yk/graphics/GameView.hpp"
 #include "yk/graphics/SceneRenderer.hpp"
 #include <SDL3/SDL.h>
 #include <cstring>
@@ -11,6 +12,73 @@ using namespace yk;
 namespace {
 constexpr Color leftClear{20, 24, 40, 255};
 constexpr Color rightClear{90, 90, 90, 255};
+
+// Two offset editor-style previews, composed into another target. Every world sample must
+// occupy a whole 2x2 block, while a one-pixel UI detail stays one pixel wide.
+class RasterTestLayer final : public ApplicationLayer {
+  public:
+    Status initialize(Renderer &renderer) override {
+        registerEngineComponents(registry_);
+        auto created = SceneRenderer::create(renderer, nullptr);
+        if (!created)
+            return Error{created.error()};
+        sceneRenderer_ = std::move(created.value());
+        scene_ = std::make_unique<Scene>(registry_, 6);
+        scene_->settings.background = leftClear;
+        auto &camera = scene_->createEntity("Camera").add<Camera>();
+        camera.orthographicHeight = 8;
+        camera.pixelsPerUnit = 10;
+        for (int i = -7; i < 8; ++i) {
+            auto &entity = scene_->createEntity("Thin world detail");
+            entity.transform().position = {static_cast<float>(i) * .41F, .13F};
+            auto &sprite = entity.add<SpriteRenderer>();
+            sprite.size = {.13F, 1.37F};
+            sprite.color = {255, 0, 0, 255};
+        }
+        auto &ui = scene_->createEntity("One pixel UI").add<UiPanel>();
+        ui.size = {1, 7};
+        ui.offset = {1, 1};
+        ui.color = {255, 255, 255, 255};
+        auto target = renderer.createRenderTarget(600, 200, TextureFilter::Nearest);
+        if (!target)
+            return Error{target.error()};
+        target_ = target.value();
+        return success();
+    }
+    bool update(const FrameContext &) override {
+        return true;
+    }
+    Status render(Renderer &renderer) override {
+        Camera2D screen;
+        screen.position = {300, 100};
+        if (auto status = renderer.beginPass({screen, std::nullopt, rightClear, target_}); !status)
+            return status;
+        if (auto status = renderer.endPass(); !status)
+            return status;
+        GameViewOptions options;
+        options.target = target_;
+        for (const Rect viewport : {Rect{{20, 20}, {320, 160}}, Rect{{380, 20}, {200, 160}}})
+            if (auto status =
+                    drawScenePreview(renderer, *sceneRenderer_, *scene_, viewport, options);
+                !status)
+                return status;
+        if (auto status = renderer.beginPass({screen, std::nullopt, std::nullopt}); !status)
+            return status;
+        Sprite picture;
+        picture.texture = target_;
+        picture.size = {600, 200};
+        picture.transform.position = {300, 100};
+        if (auto status = renderer.submit(picture); !status)
+            return status;
+        return renderer.endPass();
+    }
+
+  private:
+    ComponentRegistry registry_;
+    std::unique_ptr<Scene> scene_;
+    std::unique_ptr<SceneRenderer> sceneRenderer_;
+    TextureHandle target_;
+};
 
 // Draws into a render target, then shows the target as a sprite in the window.
 class TargetTestLayer final : public ApplicationLayer {
@@ -258,6 +326,40 @@ int main(int argc, char **argv) {
             SDL_DestroySurface(targetImage);
         } else {
             CHECK(false);
+        }
+    }
+    {
+        auto app = Application::create({"pixel grid test", 600, 200, 0, 0});
+        CHECK(app);
+        if (app) {
+            RasterTestLayer layer;
+            const auto result = app.value()->run(layer, {3, capture});
+            if (!result)
+                std::fprintf(stderr, "%s\n", result.error().c_str());
+            CHECK(result);
+        }
+        SDL_Surface *rasterImage = SDL_LoadBMP(capture.string().c_str());
+        CHECK(rasterImage);
+        if (rasterImage) {
+            CHECK(pixelIs(rasterImage, 0, 0, rightClear));
+            int redSamples = 0;
+            for (const int left : {20, 380}) {
+                CHECK(pixelIs(rasterImage, left + 1, 21, {255, 255, 255, 255}));
+                CHECK(pixelIs(rasterImage, left + 2, 21, leftClear));
+                const int width = left == 20 ? 320 : 200;
+                for (int y = 40; y < 170; y += 2)
+                    for (int x = left; x < left + width; x += 2) {
+                        Uint8 r{}, g{}, b{}, a{};
+                        CHECK(SDL_ReadSurfacePixel(rasterImage, x, y, &r, &g, &b, &a));
+                        const Color value{r, g, b, a};
+                        redSamples += r == 255 && g == 0;
+                        CHECK(pixelIs(rasterImage, x + 1, y, value, 0));
+                        CHECK(pixelIs(rasterImage, x, y + 1, value, 0));
+                        CHECK(pixelIs(rasterImage, x + 1, y + 1, value, 0));
+                    }
+            }
+            CHECK(redSamples > 100);
+            SDL_DestroySurface(rasterImage);
         }
     }
     if (!keep)

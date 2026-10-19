@@ -99,9 +99,140 @@ int main() {
     CHECK(board.text("current_room") == "DORMITORY NORTH");
     CHECK(actor()->get<SpriteRenderer>()->shadowSize.x > .5F);
     CHECK(actor()->getAll<Collider>().size() == 1);
+    CHECK(object("Player follow camera")->get<Camera>()->pixelsPerUnit == 0);
+    auto chapterOne = load("scenes/courtyard.ykscene");
+    CHECK(chapterOne);
+    if (chapterOne) {
+        const auto *firstCamera = chapterOne.value()->findByName("Camera")->get<Camera>();
+        CHECK(firstCamera->pixelsPerUnit == 0);
+        CHECK(firstCamera->boundsMin.y <= -1.4F); // Include the whole projected north facade.
+        for (const auto &[firstName, secondName] : {
+                 std::pair{"Your straw bed", "Dorm Bed Nw"}, std::pair{"Tool bench", "Tool bench"}}) {
+            const auto *first = chapterOne.value()->findByName(firstName)->get<SpriteRenderer>();
+            const auto *second = object(secondName)->get<SpriteRenderer>();
+            CHECK(first->texture.path == second->texture.path && first->size == second->size);
+        }
+    }
+    // Narrow front-facing wall returns must not be mistaken for long vertical columns.
+    // Neither chapter may hide a furnishing's floor footprint inside solid masonry.
+    auto clearFurniture = [](const Scene &world) {
+        for (const auto propId : world.orderedIds()) {
+            const auto *prop = world.find(propId);
+            const auto *sprite = prop->get<SpriteRenderer>();
+            if (!sprite || (!sprite->texture.path.starts_with("assets/castle/reference/") &&
+                            !sprite->texture.path.starts_with("assets/castle/props/")))
+                continue;
+            for (const auto *feet : prop->getAll<Collider>()) {
+                if (feet->isTrigger)
+                    continue;
+                const Vec2 center = prop->worldPosition() + feet->offset;
+                for (const auto wallId : world.orderedIds()) {
+                    const auto *wall = world.find(wallId);
+                    const auto *material = wall->get<SpriteRenderer>();
+                    if (!material ||
+                        !material->texture.path.starts_with("assets/castle/materials/"))
+                        continue;
+                    const Vec2 artCenter = prop->worldPosition() + sprite->offset;
+                    const Vec2 wallArtCenter = wall->worldPosition() + material->offset;
+                    const float artDepth = prop->worldPosition().y + sprite->sortOffset;
+                    const float wallDepth = wall->worldPosition().y + material->sortOffset;
+                    const bool sideWall = material->texture.path.find("wall-column") != std::string::npos;
+                    if (sideWall || artDepth < wallDepth) {
+                        const Vec2 radii = (sprite->size + material->size) * .5F;
+                        const Vec2 delta = artCenter - wallArtCenter;
+                        const bool clipped = radii.x - std::abs(delta.x) > 2.1F / 35 &&
+                                             radii.y - std::abs(delta.y) > 2.1F / 35;
+                        if (clipped)
+                            std::fprintf(stderr, "Furniture clipped by wall: %s / %s\n",
+                                         prop->name().c_str(), wall->name().c_str());
+                        CHECK(!clipped);
+                    }
+                    for (const auto *solid : wall->getAll<Collider>()) {
+                        const Vec2 wallCenter = wall->worldPosition() + solid->offset;
+                        const Vec2 radius = (feet->size + solid->size) * .5F;
+                        const Vec2 delta = center - wallCenter;
+                        const bool intersects = radius.x - std::abs(delta.x) > .06F &&
+                                                radius.y - std::abs(delta.y) > .06F;
+                        if (intersects)
+                            std::fprintf(stderr, "Furniture in stone: %s / %s\n",
+                                         prop->name().c_str(), wall->name().c_str());
+                        CHECK(!intersects);
+                    }
+                }
+            }
+        }
+    };
+    clearFurniture(session->runtime().scene());
+    if (chapterOne)
+        clearFurniture(*chapterOne.value());
+    // A facade touching one edge of a column cannot erase its full width.
+    // These joints previously exposed black holes through the keep's walls.
+    for (Vec2 joint : {at(60, 260), at(1146, 380), at(1146, 555), at(1430, 380)}) {
+        bool drawn = false, solid = false;
+        for (auto id : session->runtime().scene().orderedIds()) {
+            const auto *wall = session->runtime().scene().find(id);
+            const auto *art = wall->get<SpriteRenderer>();
+            if (!art || !art->texture.path.starts_with("assets/castle/materials/"))
+                continue;
+            auto contains = [&](Vec2 center, Vec2 size) {
+                return std::abs(joint.x - center.x) <= size.x * .5F &&
+                       std::abs(joint.y - center.y) <= size.y * .5F;
+            };
+            drawn = drawn || contains(wall->worldPosition() + art->offset, art->size);
+            for (const auto *stone : wall->getAll<Collider>())
+                solid = solid || contains(wall->worldPosition() + stone->offset, stone->size);
+        }
+        CHECK(drawn && solid);
+    }
+    for (const char *name : {"Power terminal", "Emergency exit switch"}) {
+        const auto *control = object(name);
+        const auto *art = control->get<SpriteRenderer>();
+        CHECK(control->worldPosition().y + art->offset.y + art->size.y * .5F <= at(0, 714).y - 2 / 35.0F);
+    }
+    // The scaled machine and beds have real floor footprints, including the long pipe assembly.
+    // Walk against each exposed side: shallow bottom-only boxes previously let the actor inside.
+    for (const char *name : {"Utility Energy Device Pipes", "Dorm Bed Nw", "Infirmary Bed West"}) {
+        const auto *furniture = object(name);
+        CHECK(furniture);
+        if (!furniture)
+            continue;
+        const auto *feet = furniture->get<Collider>();
+        const auto *art = furniture->get<SpriteRenderer>();
+        CHECK(feet && art && art->shadowSize.x > 0);
+        if (!feet || !art)
+            continue;
+        CHECK(feet->size.y > art->size.y * .5F);
+        const Vec2 center = furniture->worldPosition() + feet->offset;
+        // The dorm bed's left edge is against the perimeter: approach its open
+        // right edge instead of teleporting the player inside the stone wall.
+        const bool rightSide = std::string_view(name) == "Dorm Bed Nw";
+        for (bool fromSide : {false, true}) {
+            const Vec2 radius = (feet->size + actor()->get<Collider>()->size) * .5F;
+            const Key towards = fromSide ? (rightSide ? Key::A : Key::D) : Key::W;
+            teleport(center + (fromSide ? Vec2{(rightSide ? 1 : -1) * (radius.x + .25F), 0}
+                                       : Vec2{0, radius.y + .25F}));
+            keyboard.set(towards, true);
+            tick(65);
+            keyboard.set(towards, false);
+            tick(3);
+            const Vec2 position = actor()->worldPosition();
+            const bool outside = fromSide ? (rightSide ? position.x >= center.x + radius.x - .04F
+                                                       : position.x <= center.x - radius.x + .04F)
+                                          : position.y >= center.y + radius.y - .04F;
+            if (!outside)
+                std::fprintf(stderr, "Furniture contact failed: %s, %s, at %.2f %.2f, center %.2f %.2f, radius %.2f %.2f\n",
+                             name, fromSide ? (rightSide ? "right" : "left") : "front", position.x, position.y,
+                             center.x, center.y, radius.x, radius.y);
+            CHECK(outside);
+        }
+    }
+    teleport(at(172, 196));
     const Vec2 idleOffset = actor()->get<SpriteRenderer>()->offset;
     bool breathed = false;
-    for (int i = 0; i < 5; ++i) { tick(15); breathed = breathed || distance(idleOffset, actor()->get<SpriteRenderer>()->offset) > .003F; }
+    for (int i = 0; i < 5; ++i) {
+        tick(15);
+        breathed = breathed || distance(idleOffset, actor()->get<SpriteRenderer>()->offset) > .003F;
+    }
     CHECK(breathed);
     // Every resident has a real room routine and independently phased breathing/stepping.
     for (const char *name : {"Mara", "Cook Bram", "Ada", "Tomas", "Nurse Iona", "Rowan"}) {
@@ -118,7 +249,9 @@ int main() {
             const int frame = resident->get<SpriteRenderer>()->frame;
             tick(5);
             moved = moved || distance(start, resident->worldPosition()) > .1F;
-            animatedWalk = animatedWalk || (state.starts_with("walk_") && state == resident->get<AnimatedSprite>()->state() && frame != resident->get<SpriteRenderer>()->frame);
+            animatedWalk = animatedWalk || (state.starts_with("walk_") &&
+                                            state == resident->get<AnimatedSprite>()->state() &&
+                                            frame != resident->get<SpriteRenderer>()->frame);
         }
         CHECK(moved && animatedWalk);
     }

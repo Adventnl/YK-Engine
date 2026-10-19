@@ -9,7 +9,9 @@ if(YK_RUNTIME)
         ${CMAKE_CURRENT_SOURCE_DIR} --scene scenes/courtyard.ykscene --fixed --no-audio --frames 520
         --keys "S@0-56,D@58-149,S@151-181,A@183-205,S@207-283,A@285-359,E@361-363"
         --capture ${CMAKE_BINARY_DIR}/blackthorn-search.bmp)
-    set_tests_properties(blackthorn_search_render PROPERTIES TIMEOUT 120
+    # This scripted playback renders 520 display-resolution frames in software.
+    # Avoid CPU contention with simultaneous editor and packaging captures.
+    set_tests_properties(blackthorn_search_render PROPERTIES TIMEOUT 120 RUN_SERIAL TRUE
         ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software;SDL_AUDIODRIVER=dummy")
     add_test(NAME editor_blackthorn COMMAND ${CMAKE_COMMAND}
         -DEDITOR=$<TARGET_FILE:yk_editor> -DSCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/tests/editor_project.ykscript

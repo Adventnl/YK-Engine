@@ -1,15 +1,18 @@
 """Shared castle presentation from the user's editable layers and original animated doors.
 
-The supplied asset manifest is data, not build instructions. Artwork stays at its native
-35 pixels per tile; collision footprints and connecting passages are authored here.
+The supplied asset manifest is data, not build instructions. Coordinates use 35 pixels
+per tile; complete high-density artwork, collision and passages are authored here.
 Both chapter builders call these functions, so rebuilding cannot restore the old style.
 """
 import json
 import math
+from copy import deepcopy
 from pathlib import Path
 
 from PIL import Image, ImageDraw
 from art_import import generated_objects, silhouette
+from castle_geometry import (export_wall_materials, wall_parts, subtract_interval,
+                             prop_definition, prop_sprite, footprint, ground_prop, WORLD_DENSITY)
 
 ROOT = Path(__file__).resolve().parents[1]
 ART = ROOT / 'assets/castle'
@@ -204,33 +207,6 @@ def set_door(entity, width, depth=.55, automatic=True, height=None, side=False):
     entity['tags'] = list(dict.fromkeys(entity.get('tags', []) + ['room_door' if automatic else 'gate']))
 
 
-def wall_rectangles(image, cell=4):
-    """Merge a coarse opaque mask into rectangles, retaining every authored passage."""
-    width, height = image.size
-    mask = image.getchannel('A')
-    active = {}
-    rectangles = []
-    for y in range(0, height + cell, cell):
-        runs = []
-        start = None
-        for x in range(0, width + cell, cell):
-            opaque = (y < height and x < width and
-                      mask.getpixel((min(x + cell // 2, width - 1),
-                                     min(y + cell // 2, height - 1))) > 192)
-            if opaque and start is None:
-                start = x
-            if not opaque and start is not None:
-                runs.append((start, min(x, width)))
-                start = None
-        following = {}
-        for run in runs:
-            following[run] = active.pop(run, [run[0], y, run[1] - run[0], 0])
-            following[run][3] += min(cell, height - y)
-        rectangles.extend(active.values())
-        active = following
-    return rectangles
-
-
 def style_level_two(scene):
     character_art()
     banner_art()
@@ -262,93 +238,64 @@ def style_level_two(scene):
                                                'tile_west_common_room' if i == 0 else 'tile_main_corridor'),
               size=[(x2 - x1) / PPU, (y2 - y1) / PPU], layer=-29,
               drawMode='Tiled', tileSize=[1, 1]))
-    derived = ART / 'walls'
-    derived.mkdir(exist_ok=True)
-
-    def wall_pieces(name, image, x, y, vertical=None, collidable=True):
-        # A vertical wall's depth changes along its length. Giving the whole column
-        # its bottom-most depth makes every section cover actors and wall fixtures.
-        w, h = image.size
-        is_vertical = h > w if vertical is None else vertical
-        cell_height = PPU if is_vertical else h
-        rows = math.ceil(h / cell_height)
-        atlas = Image.new('RGBA', (w, rows * cell_height))
-        atlas.alpha_composite(image)
-        path = derived / f'{name}.png'
-        atlas.save(path)
-        for top in range(0, atlas.height, cell_height):
-            bottom = top + cell_height
-            piece = atlas.crop((0, top, w, bottom))
-            if not piece.getchannel('A').getbbox():
-                continue
-            ph = bottom - top
-            parts = [c('SpriteRenderer', texture=path.relative_to(ROOT).as_posix(),
-                       size=[w / PPU, ph / PPU], offset=[0, -ph / PPU / 2],
-                       rows=rows, frame=top // cell_height, layer=10, ySort=True,
-                       sortOffset=(piece.getchannel('A').getbbox()[3] - ph) / PPU - .001 if is_vertical else 0)]
-            for rx, ry, rw, rh in wall_rectangles(piece) if collidable else []:
-                parts.append(c('Collider', layer='Solid', friction=0,
-                               size=[rw / PPU, rh / PPU],
-                               offset=[(rx + rw / 2 - w / 2) / PPU, (ry + rh / 2 - ph) / PPU]))
-            add(name.replace('_', ' ').title() + f' section {top}', point(x + w / 2, y + bottom), *parts)
-
+    export_wall_materials()
+    # Floors repeat on the shared native grid rather than stretching extracted room canvases.
     for asset in MANIFEST['assets']:
-        if asset['category'] not in ('floors', 'walls'):
+        if asset['category'] != 'floors':
             continue
         x, y = asset['origin_px']
         w, h = asset['width'], asset['height']
-        sprite = c('SpriteRenderer', texture=texture(asset['id']), size=[w / PPU, h / PPU],
-                   offset=[0, -h / PPU / 2], layer=-30 if asset['category'] == 'floors' else 10,
-                   ySort=asset['category'] == 'walls')
-        parts = [sprite]
-        if asset['category'] == 'walls':
-            image = Image.open(REFERENCE / asset['file']).convert('RGBA')
-            if h > w:
-                # Reconstructed columns contain opaque scraps of floor and runner
-                # in their old gaps. Build clean stone from the supplied module;
-                # passages are exclusively the authored cuts below.
-                tile = Image.open(REFERENCE / ASSETS['module_vertical_light']['file']).convert('RGBA')
-                tile = tile.resize((w, PPU), Image.Resampling.NEAREST)
-                image = Image.new('RGBA', (w, h))
-                for py in range(0, h, PPU):
-                    image.alpha_composite(tile.crop((0, 0, w, min(PPU, h - py))), (0, py))
-            draw = ImageDraw.Draw(image)
-            for x1, y1, x2, y2 in cuts + front_cuts:
-                if x1 < x + w and x2 > x and y1 < y + h and y2 > y:
-                    draw.rectangle((x1 - x, y1 - y, x2 - x - 1, y2 - y - 1), fill=(0, 0, 0, 0))
-            wall_pieces(asset['id'], image, x, y)
-        else:
-            add(asset['id'].replace('_', ' ').title(), point(x + w / 2, y + h), *parts)
-    # All ordinary front doors share one silhouette and one native pixel scale.
-    # Complete the larger source apertures with stone surrounds. Their lintels
-    # are overhead artwork; only the side piers have ground collision.
-    for (name, x, y, w, h), hole in zip(FRONT_DOORS, front_cuts):
-        left = min(math.floor(x - w / 2), hole[0])
-        right = max(math.ceil(x + w / 2), hole[2])
-        top = math.ceil(y + h / 2) - h
-        samples = [a for a in MANIFEST['assets'] if a['category'] == 'walls'
-                   and a['height'] == h and a['width'] > h]
-        source = max(samples, key=lambda a: a['width'])
-        stone = Image.open(REFERENCE / source['file']).convert('RGBA')
-        strip = stone.crop((stone.width // 2 - 17, 0, stone.width // 2 + 18, h))
-        surround = Image.new('RGBA', (right - left, h))
-        for px in range(0, surround.width, PPU):
-            surround.alpha_composite(strip.crop((0, 0, min(PPU, surround.width - px), h)), (px, 0))
-        ImageDraw.Draw(surround).rectangle((hole[0] - left, hole[1] - top,
-                                           hole[2] - left - 1, hole[3] - top - 1), fill=(0, 0, 0, 0))
-        wall_pieces(name.lower().replace(' ', '_') + '_surround', surround, left, top,
-                    vertical=False, collidable=False)
-        for edge, start, end in [('west', left, hole[0]), ('east', hole[2], right)]:
-            if end > start:
-                add(name + ' ' + edge + ' pier', point((start + end) / 2, top + h / 2),
-                    c('Collider', size=[(end - start) / PPU, h / PPU], layer='Solid', friction=0))
-    # Extraction seams are stone joints, not tiny unwalkable floor slits.
-    for name, x, y, w, h in [('control_joint', 1131, 252, 31, 2)]:
-        tile = Image.open(REFERENCE / ASSETS['module_vertical_light']['file']).convert('RGBA')
-        seal = Image.new('RGBA', (w, h))
-        for px in range(0, w, tile.width):
-            seal.alpha_composite(tile.crop((0, 0, min(tile.width, w - px), h)), (px, 0))
-        wall_pieces(name, seal, x, y)
+        tile = 'tile_' + asset['id'][6:]
+        if tile not in ASSETS:
+            tile = 'tile_main_corridor'
+        add(asset['id'].replace('_', ' ').title(), point(x + w / 2, y + h),
+            c('SpriteRenderer', texture=texture(tile), size=[w / PPU, h / PPU],
+              offset=[0, -h / PPU / 2], layer=-30, drawMode='Tiled', tileSize=[1, 1]))
+
+    # A wall is a length with two returns and a solid footprint. Resize the run and its
+    # masonry repeats. Openings split geometry, so both sides get complete finished ends.
+    horizontal, vertical = {}, {}
+    wall_runs = []
+    column_runs = []
+    for asset in MANIFEST['assets']:
+        if asset['category'] != 'walls':
+            continue
+        x, y = asset['origin_px']
+        w, h = asset['width'], asset['height']
+        is_column = (asset['id'] in ('wall_outer_west', 'wall_outer_east', 'wall_control_room_pier')
+                     or 'divider_' in asset['id'] or '_partition_' in asset['id'])
+        group, key, span = ((vertical, (x, w), (y, y + h)) if is_column
+                            else (horizontal, (y, h), (x, x + w)))
+        group.setdefault(key, []).append(span)
+    for (y, h), spans in horizontal.items():
+        start, end = min(a for a, _ in spans), max(b for _, b in spans)
+        holes = [(x1, x2) for x1, y1, x2, y2 in cuts + front_cuts
+                 if y1 < y + h and y2 > y]
+        if y == 823:
+            holes.append((1482, 1556))  # Locked escape gate retains its own geometry.
+        for i, (left, right) in enumerate(subtract_interval(start, end, holes)):
+            wall_runs.append((left, y, right, y + h))
+            add(f'Masonry run {y} {i}', point((left + right) / 2, y + h),
+                *wall_parts(right - left, h))
+    for (x, w), spans in vertical.items():
+        start, end = min(a for a, _ in spans), max(b for _, b in spans)
+        holes = [(y1, y2) for x1, y1, x2, y2 in cuts + front_cuts
+                 if x1 < x + w and x2 > x]
+        # Wall intersections have one visible surface, not two independently
+        # sorted textures. Remove column portions already covered by a facade.
+        crosswalls = [(top, bottom) for left, top, right, bottom in wall_runs
+                      if left <= x and right >= x + w]
+        # A thirteen-pixel remnant above the north cell facade was the apparent
+        # floating tile in the old view. Continue its doorway to the next wall.
+        holes = [(min([a] + [bottom for top, bottom in crosswalls if 0 <= a - bottom < 20]),
+                  max([b] + [top for top, bottom in crosswalls if 0 <= top - b < 20]))
+                 for a, b in holes]
+        holes += crosswalls
+        for i, (top, bottom) in enumerate(subtract_interval(start, end, holes)):
+            column_runs.append((x, top, x + w, bottom))
+            connected = any(abs(bottom - wall_top) < 1 for wall_top, _ in crosswalls)
+            add(f'Masonry column {x} {i}', point(x + w / 2, bottom),
+                *wall_parts(w, bottom - top, vertical=True, free_end=not connected))
 
     bindings = {'laundry_folding_table': 'Linen table', 'control_computer_desk': 'Security desk',
                 'store_lower_crate': 'Fuse cabinet', 'workshop_tools_rack_west': 'Tool bench',
@@ -365,7 +312,40 @@ def style_level_two(scene):
         if key == 'yard_stone_planter':
             x -= 14
             y += 66
-        w, h = asset['width'], asset['height']
+        original_w, original_h = asset['width'], asset['height']
+        canonical, w, h = prop_definition(key)
+        x += (original_w - w) / 2
+        y += original_h - h
+        # Keep the machine and its pipes inside the utility room at an intentional scale.
+        if key == 'utility_energy_device_pipes':
+            x, y = 1536, 462
+        # Chairs belong beside the beds, never embedded in their mattress silhouettes.
+        if key == 'dorm_chair_nw':
+            x, y = 171, 113
+        elif key == 'dorm_chair_ne_top':
+            x, y = 266, 172
+        if key in ('dorm_bed_nw', 'dorm_bed_ne'):
+            y = 105
+        flat = key in ('corridor_runner', 'arena_court_markings')
+        hanging = ('banner' in key or 'linen_rail' in key or key in
+                   ('utility_green_console', 'utility_box', 'workshop_rack_top_crate'))
+        if not flat and not hanging and key != 'yard_exercise_fence':
+            feet = footprint(key)
+            fw, fh = [v * PPU for v in feet['size']]
+            # Projected artwork may overlap a facade; its floor contact may not enter stone.
+            # Resolve in front of or behind the wall, preserving the nearest side of the room.
+            for left, top, right, bottom in wall_runs:
+                fx = x + w / 2
+                fy = y + h - 2 + feet['offset'][1] * PPU
+                if (min(fx + fw / 2, right) - max(fx - fw / 2, left) > 2 and
+                        min(fy + fh / 2, bottom) - max(fy - fh / 2, top) > 2):
+                    shifts = [bottom - (fy - fh / 2) + 2, top - (fy + fh / 2) - 2]
+                    y += min(shifts, key=abs)
+            # Full silhouettes need lateral clearance too. A bed can have clear
+            # feet while its wooden side is still sliced by a column in front.
+            for left, top, right, bottom in column_runs:
+                if (y < bottom and y + h > top and x < right and x + w > left):
+                    x = left - w - 2 if x + w / 2 < (left + right) / 2 else right + 2
         name = bindings.get(key)
         entity = old.get(name) if name else None
         if entity:
@@ -375,11 +355,9 @@ def style_level_two(scene):
             entity['transform']['position'] = point(x + w / 2, y + h - 2)
         else:
             entity = add(key.replace('_', ' ').title(), point(x + w / 2, y + h - 2))
-        flat = key in ('corridor_runner', 'arena_court_markings')
-        hanging = 'banner' in key or 'linen_rail' in key
-        entity['components'].insert(0, c('SpriteRenderer', texture=texture(key), size=[w / PPU, h / PPU],
-                                       offset=[0, (-h / 2 + 2) / PPU], ySort=not flat,
-                                       layer=-20 if flat else 10))
+        properties = prop_sprite(key)
+        properties.update(ySort=not flat, layer=-20 if flat else 10)
+        entity['components'].insert(0, c('SpriteRenderer', **properties))
         if 'banner' in key:
             part(entity, 'SpriteRenderer')['texture'] = banner_texture(key)
             # A banner belongs to its supporting wall plane. Its hanging tip must
@@ -392,15 +370,20 @@ def style_level_two(scene):
                 base = max(a['origin_px'][1] + a['height'] for a in supports)
                 part(entity, 'SpriteRenderer')['sortOffset'] = (base - (y + h - 2) + .5) / PPU
         if key in ('utility_green_console', 'utility_box'):
-            # Wall-mounted controls are reached in front of the facade, not through its body.
+            # Keep the entire controls above the foreground coping, with their
+            # interaction points reachable in the narrow service alcove.
             entity['transform']['position'][1] -= 12 / PPU
-            part(entity, 'SpriteRenderer')['offset'][1] += 12 / PPU
             part(entity, 'SpriteRenderer')['sortOffset'] = 12 / PPU
             hanging = True
+        if key == 'workshop_rack_top_crate':
+            # This crate rests on the rack; it has neither a second floor collider nor shadow.
+            rack = ASSETS['workshop_tools_rack_east']
+            part(entity, 'SpriteRenderer')['sortOffset'] = (
+                rack['origin_px'][1] + rack['height'] - (y + h - 2) + .1) / PPU
         if not flat and not hanging:
-            depth = min(32, h * (.68 if 'bed' in key or 'dining_set' in key else .33))
-            entity['components'].append(c('Collider', layer='Solid', friction=0,
-                size=[max(10, w - 12) / PPU, depth / PPU], offset=[0, -depth / PPU / 2]))
+            feet = footprint(key)
+            entity['components'].append(c('Collider', **feet))
+            ground_prop(part(entity, 'SpriteRenderer'), feet)
         if key == 'yard_exercise_fence':
             entity['components'] = [p for p in entity['components'] if p['type'] != 'Collider']
             for cw, ch, ox, oy in [(w - 15, 9, 0, -h + 12), (w - 15, 9, 0, -4),
@@ -408,8 +391,6 @@ def style_level_two(scene):
                                    (9, 65, w / 2 - 8, -h + 42), (9, 65, w / 2 - 8, -36)]:
                 entity['components'].append(c('Collider', size=[cw / PPU, ch / PPU],
                     offset=[ox / PPU, oy / PPU], layer='Solid', friction=0))
-        if key == 'utility_energy_device_pipes':
-            part(entity, 'Collider').update(size=[1.2, .6], offset=[.5, -.3])
         if 'candle' in key or key in ('kitchen_fireplace', 'canteen_dining_set_west'):
             entity['components'].append(c('Light2D', color='#ffb945ff', radius=1.15,
                                           intensity=.17, offset=[0, -.6], flicker=.16, layer=12))
@@ -442,19 +423,6 @@ def style_level_two(scene):
     part(old['Control guard'], 'Dialogue')['pages'] = [
         'Free time ends at dusk. Keep clear of the control desk. The room passages are clear.']
 
-    # Ordinary passages stay open, with no door sprites, gates or hidden jamb colliders.
-    # Keep the stone caps at the ends of the east/west wall openings.
-    for name, x1, y1, x2, y2 in [
-            ('Common corridor door', *cuts[0]), ('Middle corridor door', *cuts[1]),
-            ('Yard corridor door', *cuts[2]), ('Utility corridor door', *cuts[3]),
-            ('North cell connecting door', *cuts[6]), ('South cell connecting door', *cuts[7])]:
-        w = x2 - x1
-        for suffix, top in [('north', y1 - 9), ('south', y2)]:
-            add(name + ' ' + suffix + ' cap', point((x1 + x2) / 2, top + 9),
-                c('SpriteRenderer', texture=texture('module_vertical_light'),
-                  size=[w / PPU, 9 / PPU], offset=[0, -4.5 / PPU],
-                  drawMode='Tiled', tileSize=[w / PPU, 1], layer=10, ySort=True,
-                  sortOffset=-9 / PPU if suffix == 'north' else 0))
     gate = old['Green exit gate']
     gate['transform']['position'] = point(1519, 850)
     set_door(gate, 74 / PPU, automatic=False, height=2.45)
@@ -468,7 +436,7 @@ def style_level_two(scene):
     for name in ('Player follow camera', 'Level two story'):
         used.append(old[name])
     camera = part(old['Player follow camera'], 'Camera')
-    camera.update(orthographicHeight=VIEW_HEIGHT, boundsMax=BOUNDS)
+    camera.update(orthographicHeight=VIEW_HEIGHT, pixelsPerUnit=WORLD_DENSITY, boundsMax=BOUNDS)
     old['Player follow camera']['transform']['position'] = point(*positions['Explorer'])
     for asset in MANIFEST['assets']:
         if asset['category'] != 'floors' or asset['id'] == 'floor_exercise_arena':
@@ -485,6 +453,7 @@ def style_level_two(scene):
 def style_level_one(scene):
     character_art()
     banner_art()
+    export_wall_materials()
     entities = scene['entities']
     floor_map = {'floor': 'tile_dormitory_north', 'corridor_floor': 'tile_main_corridor',
                  'work_floor': 'tile_workshop', 'office_floor': 'tile_control_room'}
@@ -507,40 +476,52 @@ def style_level_one(scene):
                 continue
             if name in floor_map:
                 sprite.update(texture=texture(floor_map[name]), tileSize=[1, 1])
+            elif name == 'drain':
+                sprite['texture'] = 'assets/castle/props/drain_grate.png'
             elif name in wall_map:
-                source = ASSETS[wall_map[name]]
-                height = source['height'] / PPU
-                sprite.update(texture=texture(wall_map[name]), size=[1, height],
-                              offset=[0, .5 - height / 2], layer=10, ySort=True, sortOffset=.5)
+                # One shared resizable wall object; expose returns only at actual openings.
+                vertical = name == 'wall_vertical'
+                height = PPU if vertical else 84
+                pieces = wall_parts(PPU, height, vertical)
+                pieces[0]['properties']['offset'][1] += .5
+                pieces[0]['properties']['sortOffset'] = .5
+                pieces[1]['properties'].update(size=[1, 1], offset=[0, 0])
+                entity['components'] = pieces
+                sprite = part(entity, 'SpriteRenderer')
             elif name in prop_map:
                 asset = prop_map[name]
-                source = ASSETS[asset]
-                width, height = source['width'] / PPU, source['height'] / PPU
+                canonical, pw, ph = prop_definition(asset)
+                source = ASSETS[canonical]
+                width, height = pw / PPU, ph / PPU
                 if name in ('banner', 'rug'):
-                    sprite['texture'] = texture(asset)
+                    sprite['texture'] = prop_sprite(asset)['texture'] if name == 'rug' else texture(asset)
                     if name == 'rug':
-                        sprite['size'][1] = .55
+                        sprite.update(size=[sprite['size'][0], 45 / PPU], drawMode='Sliced', sliceFill='Tile')
                     else:
-                        asset = ASSETS['dormitory_wall_banner']
+                        asset = ASSETS['control_banner']
                         height = asset['height'] / PPU
                         sprite.update(texture=banner_texture(asset['id']),
                                       size=[asset['width'] / PPU, height], offset=[0, .25 - height / 2],
                                       layer=10, ySort=True)
                         entity['transform']['position'][1] = 1
+                        entity['transform']['position'][1] = .75
+                        sprite['sortOffset'] = .251
                 else:
                     # A consistent pixels-per-tile ratio avoids stretching every prop to 1 x 1.5.
-                    sprite.update(texture=texture(asset), size=[width, height],
-                                  offset=[0, -height / 2 + .12], layer=10, ySort=True)
+                    sprite.update(**prop_sprite(asset))
                     collider = part(entity, 'Collider')
                     if collider:
-                        depth = min(.8, height * .38)
-                        collider.update(size=[width * .78, depth], offset=[0, -depth / 2 + .12])
+                        collider.update(**footprint(asset))
+                        ground_prop(sprite, collider)
         role = {'Explorer': 'hero', 'Mara': 'companion', 'Old prisoner': 'yard_worker', 'Keep guard': 'guard'}.get(entity['name'])
         if role:
             set_character(entity, role)
         camera = part(entity, 'Camera')
         if camera:
-            camera['orthographicHeight'] = VIEW_HEIGHT
+            # The north facade projects above the first floor cell. Include the
+            # whole coping in the camera bounds instead of cutting it at y=0.
+            camera.update(orthographicHeight=VIEW_HEIGHT, pixelsPerUnit=WORLD_DENSITY,
+                          boundsMin=[0, -1.4])
         if part(entity, 'StateGate') and entity['name'] != 'Drain grate':
             collider = part(entity, 'Collider')
             side = collider['size'][1] > collider['size'][0]
@@ -549,7 +530,112 @@ def style_level_one(scene):
         if entity['name'] == 'Fixed wall torch':
             entity['components'].append(c('Light2D', radius=1.25, color='#ffb24dff', intensity=.16,
                                           offset=[0, -.25], flicker=.18, layer=12))
+        if entity['name'] == 'Brass doorway threshold':
+            # A flush strip of brass, rather than a stretched picture of upright bars.
+            sprite.update(texture='builtin:white', size=[sprite['size'][0], .08],
+                          color='#b99855a0', drawMode='Simple')
         keep.append(entity)
-    # The existing wall openings remain clear for ordinary room travel.
-    scene['entities'] = keep
+    # Keep the entire prop, including frame edges, clear of side walls. The
+    # source canvas is deliberately used here instead of the narrower feet box.
+    sidewalls = []
+    frontwalls = []
+    for wall in keep:
+        sprite = part(wall, 'SpriteRenderer')
+        if wall['name'].startswith('Masonry ') and sprite and sprite['texture'].endswith('wall-column.png'):
+            x, y = wall['transform']['position']
+            sidewalls.append((x - .5, y - .5, x + .5, y + .5))
+        elif wall['name'].startswith('Masonry ') and sprite and sprite['texture'].endswith('wall-run.png'):
+            x, y = wall['transform']['position']
+            w, h = sprite['size']
+            cy = y + sprite['offset'][1]
+            frontwalls.append((x - w / 2, cy - h / 2, x + w / 2, cy + h / 2,
+                               y + sprite.get('sortOffset', 0)))
+    for prop in keep:
+        sprite = part(prop, 'SpriteRenderer')
+        if (not sprite or not part(prop, 'Collider') or prop['name'].startswith('Masonry ')
+                or not sprite['texture'].startswith(('assets/castle/props/', 'assets/castle/reference/'))):
+            continue
+        x, y = prop['transform']['position']
+        w, h = sprite['size']
+        dx, dy = sprite.get('offset', [0, 0])
+        for left, top, right, bottom in sidewalls:
+            if (y + dy - h / 2 < bottom and y + dy + h / 2 > top
+                    and x + dx - w / 2 < right and x + dx + w / 2 > left):
+                center = left - w / 2 - 2 / PPU if x + dx < (left + right) / 2 else right + w / 2 + 2 / PPU
+                x = center - dx
+        for left, top, right, bottom, depth in frontwalls:
+            if (y + sprite.get('sortOffset', 0) < depth and x + dx - w / 2 < right
+                    and x + dx + w / 2 > left and y + dy - h / 2 < bottom and y + dy + h / 2 > top):
+                y = top - dy - h / 2 - 2 / PPU
+        prop['transform']['position'] = [x, y]
+    # Merge adjacent front-facing cells into extendable runs with one pair of returns.
+    rows = {}
+    for entity in keep:
+        sprite = part(entity, 'SpriteRenderer')
+        if entity['name'].startswith('Masonry ') and sprite['texture'].endswith('wall-run.png'):
+            x, y = entity['transform']['position']
+            rows.setdefault(y, []).append((x, entity))
+    removed = set()
+    for y, cells in rows.items():
+        cells.sort(key=lambda item: item[0])
+        runs = []
+        for x, entity in cells:
+            if not runs or x - runs[-1][-1][0] > 1.01:
+                runs.append([])
+            runs[-1].append((x, entity))
+        for run in runs:
+            width = len(run)
+            first = run[0][1]
+            first['transform']['position'][0] = (run[0][0] + run[-1][0]) / 2
+            part(first, 'SpriteRenderer')['size'][0] = width
+            part(first, 'SpriteRenderer')['shadowSize'][0] = width + .18
+            part(first, 'Collider')['size'][0] = width
+            removed.update(entity['id'] for _, entity in run[1:])
+    keep = [entity for entity in keep if entity['id'] not in removed]
+    # Join vertical cells too. Their old 35px quads restarted stone joints at
+    # every cell and had no finished ends. Clip only the hidden intersection
+    # with a horizontal facade; the original continuous physics stays intact.
+    columns = {}
+    facades = []
+    for entity in keep:
+        sprite = part(entity, 'SpriteRenderer')
+        if not entity['name'].startswith('Masonry ') or not sprite:
+            continue
+        x, y = entity['transform']['position']
+        if sprite['texture'].endswith('wall-column.png'):
+            columns.setdefault(x, []).append((y, entity))
+        elif sprite['texture'].endswith('wall-run.png'):
+            w, h = sprite['size']
+            cy = y + sprite['offset'][1]
+            facades.append((x - w / 2, cy - h / 2, x + w / 2, cy + h / 2))
+    removed = set()
+    next_id = max(int(e['id'], 16) for e in keep) + 1
+    joined = []
+    for x, cells in columns.items():
+        cells.sort(key=lambda item: item[0])
+        runs = []
+        for y, entity in cells:
+            if not runs or y - runs[-1][-1][0] > 1.01:
+                runs.append([])
+            runs[-1].append((y, entity))
+        for run in runs:
+            top, bottom = run[0][0] - .5, run[-1][0] + .5
+            crossings = [(a, b) for left, a, right, b in facades if left < x + .5 and right > x - .5]
+            visible = subtract_interval(top, bottom, crossings)
+            removed.update(entity['id'] for _, entity in run)
+            for index, (a, b) in enumerate(visible):
+                entity = deepcopy(run[0][1])
+                entity.update(id=f'{next_id:016x}', name=f'Masonry joined column {x} {a}')
+                next_id += 1
+                entity['transform']['position'] = [x, b]
+                connected = any(abs(b - start) < .001 for start, _ in crossings)
+                entity['components'] = wall_parts(PPU, (b - a) * PPU,
+                                                  vertical=True, free_end=not connected)
+                if index == 0:
+                    part(entity, 'Collider').update(size=[1, bottom - top],
+                                                    offset=[0, (top + bottom) / 2 - b])
+                else:
+                    entity['components'] = [p for p in entity['components'] if p['type'] != 'Collider']
+                joined.append(entity)
+    scene['entities'] = [entity for entity in keep if entity['id'] not in removed] + joined
     scene['settings']['background'] = '#101823ff'
