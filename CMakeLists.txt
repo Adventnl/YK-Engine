@@ -195,6 +195,9 @@ if(BUILD_TESTING)
             TIMEOUT 60 DEFINITIONS SPINNER_PROJECT="${YK_SPINNER_PROJECT}")
     endif()
     if(YK_RUNTIME)
+        yk_add_test(player_input tests/integration/player_input_tests.cpp
+            LIBS yk_player_host SDL3::SDL3 TIMEOUT 30
+            ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software;SDL_AUDIODRIVER=dummy;YK_LOG_DIR=${CMAKE_BINARY_DIR}/test-logs")
         add_executable(yk_runtime_tests tests/integration/runtime_tests.cpp)
         target_link_libraries(yk_runtime_tests PRIVATE yk::engine SDL3::SDL3)
         yk_target(yk_runtime_tests)

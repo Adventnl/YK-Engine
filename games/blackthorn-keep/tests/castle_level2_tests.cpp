@@ -115,7 +115,12 @@ int main() {
     }
     // Narrow front-facing wall returns must not be mistaken for long vertical columns.
     // Neither chapter may hide a furnishing's floor footprint inside solid masonry.
-    auto clearFurniture = [](const Scene &world) {
+    const auto drawnSize = [](const Entity &entity, const SpriteRenderer &sprite) {
+        const float angle = degreesToRadians(entity.worldTransform().rotationDegrees);
+        const float c = std::abs(std::cos(angle)), s = std::abs(std::sin(angle));
+        return Vec2{c * sprite.size.x + s * sprite.size.y, s * sprite.size.x + c * sprite.size.y};
+    };
+    auto clearFurniture = [&](const Scene &world) {
         for (const auto propId : world.orderedIds()) {
             const auto *prop = world.find(propId);
             const auto *sprite = prop->get<SpriteRenderer>();
@@ -136,9 +141,10 @@ int main() {
                     const Vec2 wallArtCenter = wall->worldPosition() + material->offset;
                     const float artDepth = prop->worldPosition().y + sprite->sortOffset;
                     const float wallDepth = wall->worldPosition().y + material->sortOffset;
-                    const bool sideWall = material->texture.path.find("wall-column") != std::string::npos;
+                    const bool sideWall = material->texture.path.find("wall-column") != std::string::npos &&
+                                          wall->worldTransform().rotationDegrees == 0;
                     if (sideWall || artDepth < wallDepth) {
-                        const Vec2 radii = (sprite->size + material->size) * .5F;
+                        const Vec2 radii = (drawnSize(*prop, *sprite) + drawnSize(*wall, *material)) * .5F;
                         const Vec2 delta = artCenter - wallArtCenter;
                         const bool clipped = radii.x - std::abs(delta.x) > 2.1F / 35 &&
                                              radii.y - std::abs(delta.y) > 2.1F / 35;
@@ -165,6 +171,60 @@ int main() {
     clearFurniture(session->runtime().scene());
     if (chapterOne)
         clearFurniture(*chapterOne.value());
+    // Every freestanding prop is solid in both chapters. Mounting artwork and
+    // flat rugs/court lines are the only exceptions; control machines are not decor.
+    auto solidFurniture = [&](const Scene &world) {
+        for (auto id : world.orderedIds()) {
+            const auto *entity = world.find(id);
+            const auto *sprite = entity->get<SpriteRenderer>();
+            if (!sprite || (!sprite->texture.path.starts_with("assets/castle/props/") &&
+                            !sprite->texture.path.starts_with("assets/castle/reference/png/props/")))
+                continue;
+            const std::string &path = sprite->texture.path;
+            if (path.ends_with("corridor_runner.png") || path.ends_with("arena_court_markings.png") ||
+                path.ends_with("laundry_switch.png") || path.ends_with("workshop_rack_top_crate.png"))
+                continue;
+            bool solid = false;
+            for (const auto *collider : entity->getAll<Collider>())
+                solid = solid || !collider->isTrigger;
+            if (!solid)
+                std::fprintf(stderr, "Missing furniture collision: %s\n", entity->name().c_str());
+            CHECK(solid);
+        }
+    };
+    solidFurniture(session->runtime().scene());
+    if (chapterOne)
+        solidFurniture(*chapterOne.value());
+    // Hanging art must fit within a real wall face, including both mounting brackets.
+    for (auto id : session->runtime().scene().orderedIds()) {
+        const auto *banner = session->runtime().scene().find(id);
+        const auto *art = banner->get<SpriteRenderer>();
+        if (!art || (!art->texture.path.starts_with("assets/castle/fixtures/") &&
+                     !art->texture.path.ends_with("/laundry_switch.png")))
+            continue;
+        const Vec2 center = banner->worldPosition() + art->offset;
+        bool supported = false;
+        for (auto wallId : session->runtime().scene().orderedIds()) {
+            const auto *wall = session->runtime().scene().find(wallId);
+            const auto *face = wall->get<SpriteRenderer>();
+            if (!face || !face->texture.path.ends_with("hq-wall-run.png"))
+                continue;
+            const Vec2 wc = wall->worldPosition() + face->offset;
+            supported = supported || (center.x - art->size.x / 2 >= wc.x - face->size.x / 2 &&
+                center.x + art->size.x / 2 <= wc.x + face->size.x / 2 &&
+                center.y - art->size.y / 2 >= wc.y - face->size.y / 2 + 26 / 35.0F &&
+                center.y + art->size.y / 2 <= wc.y + face->size.y / 2 + .01F);
+        }
+        if (!supported)
+            std::fprintf(stderr, "Unsupported banner: %s\n", banner->name().c_str());
+        CHECK(supported);
+    }
+    CHECK(object("Store Upper Crates")->get<SpriteRenderer>()->size.y ==
+          object("Corridor Crate West")->get<SpriteRenderer>()->size.y);
+    CHECK(object("Yard Bench North")->get<SpriteRenderer>()->texture.path ==
+          object("Yard Bench South")->get<SpriteRenderer>()->texture.path);
+    CHECK(object("Corridor Weapon Rack West")->get<SpriteRenderer>()->texture.path ==
+          object("Corridor Weapon Rack East")->get<SpriteRenderer>()->texture.path);
     // A facade touching one edge of a column cannot erase its full width.
     // These joints previously exposed black holes through the keep's walls.
     for (Vec2 joint : {at(60, 260), at(1146, 380), at(1146, 555), at(1430, 380)}) {
@@ -178,11 +238,34 @@ int main() {
                 return std::abs(joint.x - center.x) <= size.x * .5F &&
                        std::abs(joint.y - center.y) <= size.y * .5F;
             };
-            drawn = drawn || contains(wall->worldPosition() + art->offset, art->size);
+            drawn = drawn || contains(wall->worldPosition() + art->offset, drawnSize(*wall, *art));
             for (const auto *stone : wall->getAll<Collider>())
                 solid = solid || contains(wall->worldPosition() + stone->offset, stone->size);
         }
         CHECK(drawn && solid);
+    }
+    // Dormitory and workshop T junctions reach the coping plane, above the brick face.
+    // Check the columns themselves: an underlying facade cannot satisfy this.
+    for (Vec2 joint : {at(808, 550), at(238, 667), at(238, 840), at(410, 840)}) {
+        bool joined = false;
+        for (auto id : session->runtime().scene().orderedIds()) {
+            const auto *wall = session->runtime().scene().find(id);
+            const auto *art = wall->get<SpriteRenderer>();
+            if (!art || art->texture.path.find("wall-column") == std::string::npos ||
+                wall->worldTransform().rotationDegrees != 0)
+                continue;
+            const Vec2 center = wall->worldPosition() + art->offset;
+            joined = joined || (std::abs(joint.x - center.x) < art->size.x * .5F &&
+                                std::abs(joint.y - center.y) < art->size.y * .5F);
+        }
+        CHECK(joined);
+    }
+    const auto *southCoping = object("Masonry run 823 0 coping");
+    CHECK(southCoping);
+    if (southCoping) {
+        CHECK(southCoping->worldTransform().rotationDegrees == 90);
+        CHECK(southCoping->get<SpriteRenderer>()->texture.path == "assets/castle/materials/hq-wall-column.png");
+        CHECK(!southCoping->has<Collider>());
     }
     for (const char *name : {"Power terminal", "Emergency exit switch"}) {
         const auto *control = object(name);
@@ -191,7 +274,8 @@ int main() {
     }
     // The scaled machine and beds have real floor footprints, including the long pipe assembly.
     // Walk against each exposed side: shallow bottom-only boxes previously let the actor inside.
-    for (const char *name : {"Utility Energy Device Pipes", "Dorm Bed Nw", "Infirmary Bed West"}) {
+    for (const char *name : {"Utility Energy Device Pipes", "Dorm Bed Nw", "Infirmary Bed West",
+                             "Power terminal", "Emergency exit switch"}) {
         const auto *furniture = object(name);
         CHECK(furniture);
         if (!furniture)
@@ -203,9 +287,10 @@ int main() {
             continue;
         CHECK(feet->size.y > art->size.y * .5F);
         const Vec2 center = furniture->worldPosition() + feet->offset;
-        // The dorm bed's left edge is against the perimeter: approach its open
-        // right edge instead of teleporting the player inside the stone wall.
-        const bool rightSide = std::string_view(name) == "Dorm Bed Nw";
+        // The bed and power terminal sit beside the west wall. Their exposed
+        // right side is reachable; the wall-side gap cannot contain an actor.
+        const bool rightSide = std::string_view(name) == "Dorm Bed Nw" ||
+                               std::string_view(name) == "Power terminal";
         for (bool fromSide : {false, true}) {
             const Vec2 radius = (feet->size + actor()->get<Collider>()->size) * .5F;
             const Key towards = fromSide ? (rightSide ? Key::A : Key::D) : Key::W;
@@ -226,6 +311,15 @@ int main() {
             CHECK(outside);
         }
     }
+    // The arena entrance needs a real route around the fence's east edge.
+    // The old oversized enclosure left a gap narrower than the player's feet.
+    const auto *fence = object("Yard Exercise Fence");
+    const auto *fenceArt = fence->get<SpriteRenderer>();
+    const Vec2 entrance = fence->worldPosition() + Vec2{fenceArt->size.x / 2, -fenceArt->size.y / 2};
+    teleport(entrance + Vec2{.5F, -2.0F});
+    walk(entrance + Vec2{.5F, 0});
+    walk(entrance + Vec2{-1.0F, 0});
+    walk(entrance + Vec2{.5F, 0});
     teleport(at(172, 196));
     const Vec2 idleOffset = actor()->get<SpriteRenderer>()->offset;
     bool breathed = false;

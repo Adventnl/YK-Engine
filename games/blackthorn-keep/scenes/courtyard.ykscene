@@ -3266,7 +3266,7 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/castle/reference/png/props/corridor_crate_west.png",
+            "texture": "assets/castle/props/corridor_crate_west.png",
             "size": [
               1.1714285714285715,
               1.4285714285714286
@@ -3323,7 +3323,7 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/castle/reference/png/props/corridor_crate_west.png",
+            "texture": "assets/castle/props/corridor_crate_west.png",
             "size": [
               1.1714285714285715,
               1.4285714285714286
@@ -3382,13 +3382,13 @@
           "properties": {
             "texture": "assets/castle/fixtures/control_banner.png",
             "size": [
-              1.6857142857142857,
-              2.2285714285714286
+              0.9983193277310923,
+              1.542857142857143
             ],
             "layer": 10,
             "offset": [
               0,
-              -0.8642857142857143
+              -0.5214285714285715
             ],
             "ySort": true,
             "sortOffset": 0.251
@@ -3416,13 +3416,13 @@
           "properties": {
             "texture": "assets/castle/fixtures/control_banner.png",
             "size": [
-              1.6857142857142857,
-              2.2285714285714286
+              0.9983193277310923,
+              1.542857142857143
             ],
             "layer": 10,
             "offset": [
               0,
-              -0.8642857142857143
+              -0.5214285714285715
             ],
             "ySort": true,
             "sortOffset": 0.251
@@ -3450,13 +3450,13 @@
           "properties": {
             "texture": "assets/castle/fixtures/control_banner.png",
             "size": [
-              1.6857142857142857,
-              2.2285714285714286
+              0.9983193277310923,
+              1.542857142857143
             ],
             "layer": 10,
             "offset": [
               0,
-              -0.8642857142857143
+              -0.5214285714285715
             ],
             "ySort": true,
             "sortOffset": 0.251
@@ -3484,13 +3484,13 @@
           "properties": {
             "texture": "assets/castle/fixtures/control_banner.png",
             "size": [
-              1.6857142857142857,
-              2.2285714285714286
+              0.9983193277310923,
+              1.542857142857143
             ],
             "layer": 10,
             "offset": [
               0,
-              -0.8642857142857143
+              -0.5214285714285715
             ],
             "ySort": true,
             "sortOffset": 0.251
@@ -4596,11 +4596,11 @@
             "texture": "assets/castle/materials/hq-wall-column.png",
             "size": [
               1.0,
-              4.6
+              7.0
             ],
             "offset": [
               0,
-              -2.3
+              -2.757142857142857
             ],
             "drawMode": "Sliced",
             "sliceFill": "Tile",
@@ -4614,7 +4614,8 @@
               0.05714285714285714,
               0.08571428571428572
             ],
-            "shadowColor": "#080e2448"
+            "shadowColor": "#080e2448",
+            "sortOffset": 2.4028571428571426
           }
         },
         {
@@ -4655,11 +4656,11 @@
             "texture": "assets/castle/materials/hq-wall-column.png",
             "size": [
               1.0,
-              1.6000000000000014
+              4.000000000000002
             ],
             "offset": [
               0,
-              -0.8000000000000007
+              -1.2571428571428587
             ],
             "drawMode": "Sliced",
             "sliceFill": "Tile",
@@ -4673,7 +4674,8 @@
               0.05714285714285714,
               0.08571428571428572
             ],
-            "shadowColor": "#080e2448"
+            "shadowColor": "#080e2448",
+            "sortOffset": 2.4028571428571412
           }
         },
         {
@@ -4714,11 +4716,11 @@
             "texture": "assets/castle/materials/hq-wall-column.png",
             "size": [
               1.0,
-              3.6000000000000014
+              5.999999999999998
             ],
             "offset": [
               0,
-              -1.8000000000000007
+              -2.257142857142857
             ],
             "drawMode": "Sliced",
             "sliceFill": "Tile",
@@ -4732,7 +4734,8 @@
               0.05714285714285714,
               0.08571428571428572
             ],
-            "shadowColor": "#080e2448"
+            "shadowColor": "#080e2448",
+            "sortOffset": 2.4028571428571426
           }
         },
         {
@@ -4773,11 +4776,11 @@
             "texture": "assets/castle/materials/hq-wall-column.png",
             "size": [
               1.0,
-              4.6
+              7.0
             ],
             "offset": [
               0,
-              -2.3
+              -2.757142857142857
             ],
             "drawMode": "Sliced",
             "sliceFill": "Tile",
@@ -4791,7 +4794,8 @@
               0.05714285714285714,
               0.08571428571428572
             ],
-            "shadowColor": "#080e2448"
+            "shadowColor": "#080e2448",
+            "sortOffset": 2.4028571428571426
           }
         },
         {
@@ -4832,11 +4836,11 @@
             "texture": "assets/castle/materials/hq-wall-column.png",
             "size": [
               1.0,
-              3.6000000000000014
+              5.999999999999998
             ],
             "offset": [
               0,
-              -1.8000000000000007
+              -2.257142857142857
             ],
             "drawMode": "Sliced",
             "sliceFill": "Tile",
@@ -4850,7 +4854,8 @@
               0.05714285714285714,
               0.08571428571428572
             ],
-            "shadowColor": "#080e2448"
+            "shadowColor": "#080e2448",
+            "sortOffset": 2.4028571428571426
           }
         },
         {
@@ -4891,11 +4896,11 @@
             "texture": "assets/castle/materials/hq-wall-column.png",
             "size": [
               1.0,
-              4.6
+              7.0
             ],
             "offset": [
               0,
-              -2.3
+              -2.757142857142857
             ],
             "drawMode": "Sliced",
             "sliceFill": "Tile",
@@ -4909,7 +4914,8 @@
               0.05714285714285714,
               0.08571428571428572
             ],
-            "shadowColor": "#080e2448"
+            "shadowColor": "#080e2448",
+            "sortOffset": 2.4028571428571426
           }
         },
         {
@@ -4950,11 +4956,11 @@
             "texture": "assets/castle/materials/hq-wall-column.png",
             "size": [
               1.0,
-              4.6
+              7.0
             ],
             "offset": [
               0,
-              -2.3
+              -2.757142857142857
             ],
             "drawMode": "Sliced",
             "sliceFill": "Tile",
@@ -4968,7 +4974,8 @@
               0.05714285714285714,
               0.08571428571428572
             ],
-            "shadowColor": "#080e2448"
+            "shadowColor": "#080e2448",
+            "sortOffset": 2.4028571428571426
           }
         },
         {
@@ -5009,11 +5016,11 @@
             "texture": "assets/castle/materials/hq-wall-column-end.png",
             "size": [
               1.0,
-              1.0
+              2.657142857142857
             ],
             "offset": [
               0,
-              -0.5
+              -1.3285714285714285
             ],
             "drawMode": "Sliced",
             "sliceFill": "Tile",
@@ -5068,11 +5075,11 @@
             "texture": "assets/castle/materials/hq-wall-column.png",
             "size": [
               1.0,
-              3.6000000000000014
+              5.999999999999998
             ],
             "offset": [
               0,
-              -1.8000000000000007
+              -2.257142857142857
             ],
             "drawMode": "Sliced",
             "sliceFill": "Tile",
@@ -5086,7 +5093,8 @@
               0.05714285714285714,
               0.08571428571428572
             ],
-            "shadowColor": "#080e2448"
+            "shadowColor": "#080e2448",
+            "sortOffset": 2.4028571428571426
           }
         },
         {
@@ -5127,11 +5135,11 @@
             "texture": "assets/castle/materials/hq-wall-column.png",
             "size": [
               1.0,
-              4.6
+              7.0
             ],
             "offset": [
               0,
-              -2.3
+              -2.757142857142857
             ],
             "drawMode": "Sliced",
             "sliceFill": "Tile",
@@ -5145,7 +5153,8 @@
               0.05714285714285714,
               0.08571428571428572
             ],
-            "shadowColor": "#080e2448"
+            "shadowColor": "#080e2448",
+            "sortOffset": 2.4028571428571426
           }
         },
         {
@@ -5186,11 +5195,11 @@
             "texture": "assets/castle/materials/hq-wall-column.png",
             "size": [
               1.0,
-              1.6000000000000014
+              4.000000000000002
             ],
             "offset": [
               0,
-              -0.8000000000000007
+              -1.2571428571428587
             ],
             "drawMode": "Sliced",
             "sliceFill": "Tile",
@@ -5204,7 +5213,8 @@
               0.05714285714285714,
               0.08571428571428572
             ],
-            "shadowColor": "#080e2448"
+            "shadowColor": "#080e2448",
+            "sortOffset": 2.4028571428571412
           }
         },
         {
@@ -5245,11 +5255,11 @@
             "texture": "assets/castle/materials/hq-wall-column.png",
             "size": [
               1.0,
-              3.6000000000000014
+              5.999999999999998
             ],
             "offset": [
               0,
-              -1.8000000000000007
+              -2.257142857142857
             ],
             "drawMode": "Sliced",
             "sliceFill": "Tile",
@@ -5263,7 +5273,8 @@
               0.05714285714285714,
               0.08571428571428572
             ],
-            "shadowColor": "#080e2448"
+            "shadowColor": "#080e2448",
+            "sortOffset": 2.4028571428571426
           }
         },
         {
@@ -5279,6 +5290,358 @@
             ],
             "layer": "Solid",
             "friction": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000102",
+      "name": "Masonry 0 0 coping",
+      "transform": {
+        "position": [
+          16.0,
+          -1.0285714285714285
+        ],
+        "rotation": 90,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/castle/materials/hq-wall-column.png",
+            "size": [
+              0.7428571428571429,
+              32
+            ],
+            "layer": 10,
+            "ySort": true,
+            "sortOffset": 2.028857142857143,
+            "drawMode": "Sliced",
+            "sliceFill": "Tile"
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000103",
+      "name": "Masonry 0 7 coping",
+      "transform": {
+        "position": [
+          1.5,
+          5.9714285714285715
+        ],
+        "rotation": 90,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/castle/materials/hq-wall-column.png",
+            "size": [
+              0.7428571428571429,
+              3
+            ],
+            "layer": 10,
+            "ySort": true,
+            "sortOffset": 2.028857142857143,
+            "drawMode": "Sliced",
+            "sliceFill": "Tile"
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000104",
+      "name": "Masonry 0 11 coping",
+      "transform": {
+        "position": [
+          3.5,
+          9.971428571428573
+        ],
+        "rotation": 90,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/castle/materials/hq-wall-column.png",
+            "size": [
+              0.7428571428571429,
+              7
+            ],
+            "layer": 10,
+            "ySort": true,
+            "sortOffset": 2.028857142857141,
+            "drawMode": "Sliced",
+            "sliceFill": "Tile"
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000105",
+      "name": "Masonry 0 17 coping",
+      "transform": {
+        "position": [
+          16.0,
+          15.971428571428573
+        ],
+        "rotation": 90,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/castle/materials/hq-wall-column.png",
+            "size": [
+              0.7428571428571429,
+              32
+            ],
+            "layer": 10,
+            "ySort": true,
+            "sortOffset": 2.028857142857141,
+            "drawMode": "Sliced",
+            "sliceFill": "Tile"
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000106",
+      "name": "Masonry 5 7 coping",
+      "transform": {
+        "position": [
+          7.0,
+          5.9714285714285715
+        ],
+        "rotation": 90,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/castle/materials/hq-wall-column.png",
+            "size": [
+              0.7428571428571429,
+              4
+            ],
+            "layer": 10,
+            "ySort": true,
+            "sortOffset": 2.028857142857143,
+            "drawMode": "Sliced",
+            "sliceFill": "Tile"
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000107",
+      "name": "Masonry 9 11 coping",
+      "transform": {
+        "position": [
+          12.0,
+          9.971428571428573
+        ],
+        "rotation": 90,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/castle/materials/hq-wall-column.png",
+            "size": [
+              0.7428571428571429,
+              6
+            ],
+            "layer": 10,
+            "ySort": true,
+            "sortOffset": 2.028857142857141,
+            "drawMode": "Sliced",
+            "sliceFill": "Tile"
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000108",
+      "name": "Masonry 11 7 coping",
+      "transform": {
+        "position": [
+          13.5,
+          5.9714285714285715
+        ],
+        "rotation": 90,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/castle/materials/hq-wall-column.png",
+            "size": [
+              0.7428571428571429,
+              5
+            ],
+            "layer": 10,
+            "ySort": true,
+            "sortOffset": 2.028857142857143,
+            "drawMode": "Sliced",
+            "sliceFill": "Tile"
+          }
+        }
+      ]
+    },
+    {
+      "id": "0000000000000109",
+      "name": "Masonry 17 11 coping",
+      "transform": {
+        "position": [
+          19.0,
+          9.971428571428573
+        ],
+        "rotation": 90,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/castle/materials/hq-wall-column.png",
+            "size": [
+              0.7428571428571429,
+              4
+            ],
+            "layer": 10,
+            "ySort": true,
+            "sortOffset": 2.028857142857141,
+            "drawMode": "Sliced",
+            "sliceFill": "Tile"
+          }
+        }
+      ]
+    },
+    {
+      "id": "000000000000010a",
+      "name": "Masonry 18 7 coping",
+      "transform": {
+        "position": [
+          21.5,
+          5.9714285714285715
+        ],
+        "rotation": 90,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/castle/materials/hq-wall-column.png",
+            "size": [
+              0.7428571428571429,
+              7
+            ],
+            "layer": 10,
+            "ySort": true,
+            "sortOffset": 2.028857142857143,
+            "drawMode": "Sliced",
+            "sliceFill": "Tile"
+          }
+        }
+      ]
+    },
+    {
+      "id": "000000000000010b",
+      "name": "Masonry 27 7 coping",
+      "transform": {
+        "position": [
+          29.5,
+          5.9714285714285715
+        ],
+        "rotation": 90,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/castle/materials/hq-wall-column.png",
+            "size": [
+              0.7428571428571429,
+              5
+            ],
+            "layer": 10,
+            "ySort": true,
+            "sortOffset": 2.028857142857143,
+            "drawMode": "Sliced",
+            "sliceFill": "Tile"
+          }
+        }
+      ]
+    },
+    {
+      "id": "000000000000010c",
+      "name": "Masonry 31 11 coping",
+      "transform": {
+        "position": [
+          31.5,
+          9.971428571428573
+        ],
+        "rotation": 90,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/castle/materials/hq-wall-column.png",
+            "size": [
+              0.7428571428571429,
+              1
+            ],
+            "layer": 10,
+            "ySort": true,
+            "sortOffset": 2.028857142857141,
+            "drawMode": "Sliced",
+            "sliceFill": "Tile"
           }
         }
       ]

@@ -6,10 +6,15 @@ original reference extraction remains unchanged under `../../reference/`.
 
 `layout.json` lists each master's objects in reading order. Run
 `python3 games/blackthorn-keep/tools/castle_prop_repairs.py` from the repository root
-to package the complete silhouettes under `assets/castle/props/` at twice the source
+to package the complete silhouettes under `assets/castle/props/` at four times the source
 pixel dimensions. Transparent gutters determine extraction boundaries, so uneven
 generator spacing cannot chop an object at an assumed cell edge. Runtime metadata
-uses 70 pixels per unit and linear sampling to retain the finer detail.
+uses 140 pixels per unit and linear sampling to retain the finer detail.
+
+The [spear-rack consistency pass](consistency/README.md) adds fourteen individual
+ImageGen masters for remaining extracted props and banners. Shared size definitions
+keep the export canvas and world dimensions in agreement, and repeated racks,
+benches, stools and crates use shared silhouettes across both chapters.
 
 The replacements remove floor ledges, neighboring-furniture slivers, disconnected
 strips and abruptly severed feet from the kitchen, laundry, security room,

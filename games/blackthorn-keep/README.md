@@ -49,7 +49,7 @@ See [LEVEL2.md](LEVEL2.md) for the second chapter's route and artwork details.
 `assets/castle/reference/` contains the supplied editable ZIP's PNGs and original manifest.
 The original source art uses 35 pixels per world unit. Both chapters now render directly at
 the display resolution, preserving source detail instead of discarding it into a smaller
-intermediate image. Thirty-six repaired furniture sprites use twice the source resolution;
+intermediate image. Repaired furniture sprites use four times the source resolution;
 stone materials use four times the source resolution and preserve complete coping and bases.
 The blue corridor runner also has a clean cloth texture without embedded floor patches.
 Floors, walls and props remain separate editable entities.
@@ -60,7 +60,9 @@ components. Locked escape gates use animated `StateGate` leaves and synchronized
 and floor footprints for both chapters. Wall runs use tiled nine-slice materials: changing a
 length repeats the stone rather than stretching an image or clipping a wall end. Openings
 split those runs into complete pieces with matching collision. Vertical walls are joined runs with finished free ends;
-banners share their supporting wall's depth. Clean column tiles and banner silhouettes remove
+their tops meet the horizontal coping rather than the bottom of its brick face. Horizontal
+coping shares the side walls' stone material, including along the south perimeter.
+Banners share their supporting wall's depth. Clean column tiles and banner silhouettes remove
 the floor scraps baked into the earlier extracted art. Repeated beds, chairs, crates, barrels,
 plants and racks use shared silhouettes and dimensions. The utility machine fits inside its room
 and its collision covers the pipe assembly. Furniture and walls have grounded contact shadows.
@@ -72,9 +74,10 @@ ImageGen masters and their exact prompts are preserved in `assets/castle/source/
 Generated with the built-in image_gen tool:
 
 - [Standing hero master](assets/level2/source/hero_idle.png) and [prompt](assets/level2/source/hero_idle.prompt.txt).
-- [Door master](assets/castle/source/door-simple.png) and [prompt](assets/castle/source/door-simple.prompt.txt).
+- [Detailed gate master](assets/castle/source/repairs/consistency/gate.png) and [prompt](assets/castle/source/repairs/consistency/gate.prompt.txt).
 - [Clean banner master](assets/castle/source/banner-clean.png) and [prompt](assets/castle/source/banner-clean.prompt.txt).
 - [Furniture masters, exact prompts and export notes](assets/castle/source/repairs/README.md).
+- [Fourteen spear-rack style replacements and exact prompts](assets/castle/source/repairs/consistency/README.md).
 - [Detailed masonry masters and exact prompts](assets/castle/source/masonry-hq/README.md),
   exported by `tools/castle_masonry_art.py`.
 

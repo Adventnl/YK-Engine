@@ -11,8 +11,8 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw
 from art_import import generated_objects, silhouette
-from castle_geometry import (export_wall_materials, wall_parts, subtract_interval,
-                             prop_definition, prop_sprite, footprint, ground_prop, WORLD_DENSITY)
+from castle_geometry import (export_wall_materials, wall_parts, column_parts, add_wall_copings, subtract_interval,
+                             prop_definition, prop_sprite, footprint, ground_prop, fence_colliders, WORLD_DENSITY)
 
 ROOT = Path(__file__).resolve().parents[1]
 ART = ROOT / 'assets/castle'
@@ -49,35 +49,36 @@ def texture(asset):
 
 
 def door_art(width=64, height=72, side=False):
-    """Bake doors on the scenery's pixel grid, with fixed jambs and isolated leaves.
-
-    Each opening gets an integer-pixel atlas: the runtime never squashes a detailed
-    112px door into a narrow opening. Frame pixels cannot retain fragments of a leaf.
-    """
+    """Bake detailed gates at 140px/unit, retaining fixed jambs and animated leaves."""
     output = ART / 'doors'
     output.mkdir(exist_ok=True)
     path = output / f'{"side" if side else "front"}-{width}x{height}.png'
-    master = Image.open(ART / 'source/door-simple.png').convert('RGBA')
+    density = 4
+    width, height = width * density, height * density
+    master = Image.open(ART / 'source/repairs/consistency/gate.png').convert('RGBA')
     bounds = master.getchannel('A').point(lambda a: 255 if a >= 128 else 0).getbbox()
-    master = master.crop(bounds).resize((64, 64), Image.Resampling.NEAREST)
+    master = master.crop(bounds).resize((64 * density, 64 * density), Image.Resampling.LANCZOS)
     # The new master's jambs are eight pixels wide, with a nine-pixel lintel.
-    panel = master.crop((9, 10, 55, 63))
+    panel = master.crop((9 * density, 10 * density, 55 * density, 63 * density))
     jamb = Image.new('RGBA', (width, height))
     if side:
         cap = Image.open(REFERENCE / ASSETS['module_inner_cap']['file']).convert('RGBA')
-        cap = cap.resize((width, 9), Image.Resampling.NEAREST)
+        cap = cap.resize((width, 9 * density), Image.Resampling.LANCZOS)
         jamb.alpha_composite(cap)
-        jamb.alpha_composite(cap, (0, height - 9))
-        interior = (0, 9, width, height - 9)
+        jamb.alpha_composite(cap, (0, height - 9 * density))
+        interior = (0, 9 * density, width, height - 9 * density)
     else:
-        jamb.alpha_composite(master.crop((0, 0, 64, 9)).resize((width, 9), Image.Resampling.NEAREST))
-        for left, x in [(True, 0), (False, width - 8)]:
-            strip = master.crop((0 if left else 56, 9, 8 if left else 64, 64))
-            jamb.alpha_composite(strip.resize((8, height - 9), Image.Resampling.NEAREST), (x, 9))
-        interior = (8, 9, width - 8, height)
+        jamb.alpha_composite(master.crop((0, 0, 64 * density, 9 * density)).resize(
+            (width, 9 * density), Image.Resampling.LANCZOS))
+        for left, x in [(True, 0), (False, width - 8 * density)]:
+            strip = master.crop((0 if left else 56 * density, 9 * density,
+                                 8 * density if left else 64 * density, 64 * density))
+            jamb.alpha_composite(strip.resize((8 * density, height - 9 * density),
+                                              Image.Resampling.LANCZOS), (x, 9 * density))
+        interior = (8 * density, 9 * density, width - 8 * density, height)
     x1, y1, x2, y2 = interior
     iw, ih = x2 - x1, y2 - y1
-    closed = panel.resize((iw, ih), Image.Resampling.NEAREST)
+    closed = panel.resize((iw, ih), Image.Resampling.LANCZOS)
     # Side frames are separate scene pieces so the top jamb shares the supporting
     # wall's depth instead of covering banners with a whole doorway-sized quad.
     frame_height = ih if side else height
@@ -89,18 +90,20 @@ def door_art(width=64, height=72, side=False):
             extent = max(1, round(ih / 2 * math.cos(amount * math.pi / 2)))
             for leaf, y in [(closed.crop((0, 0, iw, ih // 2)), y1),
                             (closed.crop((0, ih // 2, iw, ih)), y2 - extent)]:
-                face.alpha_composite(leaf.resize((iw, extent), Image.Resampling.NEAREST), (x1, y))
+                face.alpha_composite(leaf.resize((iw, extent), Image.Resampling.LANCZOS), (x1, y))
         else:
             extent = max(1, round(iw / 2 * math.cos(amount * math.pi / 2)))
             for leaf, x in [(closed.crop((0, 0, iw // 2, ih)), x1),
                             (closed.crop((iw // 2, 0, iw, ih)), x2 - extent)]:
-                face.alpha_composite(leaf.resize((extent, ih), Image.Resampling.NEAREST), (x, y1))
+                face.alpha_composite(leaf.resize((extent, ih), Image.Resampling.LANCZOS), (x, y1))
         if side:
             face = face.crop((0, y1, width, y2))
         else:
             face.alpha_composite(jamb)
         sheet.alpha_composite(face, (frame * width, 0))
     sheet.save(path)
+    Path(str(path) + '.ykmeta').write_text(json.dumps(dict(
+        format='yk.texture', version=1, pixelsPerUnit=140, filter='linear'), indent=2) + '\n')
     return path.relative_to(ROOT).as_posix()
 
 
@@ -137,16 +140,19 @@ def banner_art():
     """Export clean cloth silhouettes; source extractions contain attached floor pixels."""
     directory = ART / 'fixtures'
     directory.mkdir(exist_ok=True)
-    master = silhouette(Image.open(ART / 'source/banner-clean.png').convert('RGBA'))
+    master = silhouette(Image.open(ART / 'source/repairs/consistency/banner.png').convert('RGBA'))
     for key, asset in ASSETS.items():
         if 'banner' not in key:
             continue
-        w, h = asset['width'], asset['height']
-        scale = min(min(w - 4, 44) / master.width, min(h - 4, 68) / master.height)
-        flag = master.resize((round(master.width * scale), round(master.height * scale)), Image.Resampling.NEAREST)
+        w, h = 44 * 4, 68 * 4
+        scale = min((w - 8) / master.width, (h - 8) / master.height)
+        flag = master.resize((round(master.width * scale), round(master.height * scale)), Image.Resampling.LANCZOS)
         image = Image.new('RGBA', (w, h))
-        image.alpha_composite(flag, ((w - flag.width) // 2, 2))
-        image.save(directory / (key + '.png'))
+        image.alpha_composite(flag, ((w - flag.width) // 2, (h - flag.height) // 2))
+        path = directory / (key + '.png')
+        image.save(path)
+        Path(str(path) + '.ykmeta').write_text(json.dumps(dict(
+            format='yk.texture', version=1, pixelsPerUnit=140, filter='linear'), indent=2) + '\n')
 
 
 def banner_texture(key):
@@ -281,8 +287,8 @@ def style_level_two(scene):
         start, end = min(a for a, _ in spans), max(b for _, b in spans)
         holes = [(y1, y2) for x1, y1, x2, y2 in cuts + front_cuts
                  if x1 < x + w and x2 > x]
-        # Wall intersections have one visible surface, not two independently
-        # sorted textures. Remove column portions already covered by a facade.
+        # Split solid columns at facades. column_parts joins their visible
+        # coping planes above the projected brick face without changing physics.
         crosswalls = [(top, bottom) for left, top, right, bottom in wall_runs
                       if left <= x and right >= x + w]
         # A thirteen-pixel remnant above the north cell facade was the apparent
@@ -293,9 +299,8 @@ def style_level_two(scene):
         holes += crosswalls
         for i, (top, bottom) in enumerate(subtract_interval(start, end, holes)):
             column_runs.append((x, top, x + w, bottom))
-            connected = any(abs(bottom - wall_top) < 1 for wall_top, _ in crosswalls)
             add(f'Masonry column {x} {i}', point(x + w / 2, bottom),
-                *wall_parts(w, bottom - top, vertical=True, free_end=not connected))
+                *column_parts(w, top, bottom, crosswalls))
 
     bindings = {'laundry_folding_table': 'Linen table', 'control_computer_desk': 'Security desk',
                 'store_lower_crate': 'Fuse cabinet', 'workshop_tools_rack_west': 'Tool bench',
@@ -316,6 +321,35 @@ def style_level_two(scene):
         canonical, w, h = prop_definition(key)
         x += (original_w - w) / 2
         y += original_h - h
+        banner_base = None
+        if 'banner' in key:
+            # Attach the entire flag to an actual facade, including its brackets.
+            # Short parapets get a proportionately smaller flag, never a full-size
+            # banner suspended over the floor beyond the supporting wall.
+            center = asset['origin_px'][0] + original_w / 2
+            source_top = asset['origin_px'][1]
+            if key in ('exit_banner_west', 'exit_banner_east'):
+                # The shallow service parapet has no room for a readable banner.
+                # Frame the locked escape gate on the full-height outer facade.
+                source_top = 851
+            supports = [(left, top, right, bottom) for left, top, right, bottom in wall_runs
+                        if left <= center <= right and top - 20 <= source_top <= bottom + 20]
+            if not supports:
+                raise ValueError(f'Banner has no supporting wall: {key}')
+            left, top, right, bottom = min(supports, key=lambda r: abs(source_top - (r[1] + 26)))
+            h = min(68, bottom - top - min(26, bottom - top) - 4)
+            w = h * 44 / 68
+            center = max(left + w / 2 + 2, min(right - w / 2 - 2, center))
+            x, y = center - w / 2, top + min(26, bottom - top) + 2
+            banner_base = bottom
+        if key == 'laundry_switch':
+            # This is a wall plate, not a loose object on the laundry floor.
+            center = x + w / 2
+            supports = [(left, top, right, bottom) for left, top, right, bottom in wall_runs
+                        if left <= center <= right and 0 <= top - y <= 100]
+            left, top, right, bottom = min(supports, key=lambda r: r[1] - y)
+            y = top + 30
+            banner_base = bottom
         # Keep the machine and its pipes inside the utility room at an intentional scale.
         if key == 'utility_energy_device_pipes':
             x, y = 1536, 462
@@ -327,8 +361,7 @@ def style_level_two(scene):
         if key in ('dorm_bed_nw', 'dorm_bed_ne'):
             y = 105
         flat = key in ('corridor_runner', 'arena_court_markings')
-        hanging = ('banner' in key or 'linen_rail' in key or key in
-                   ('utility_green_console', 'utility_box', 'workshop_rack_top_crate'))
+        hanging = ('banner' in key or key in ('laundry_switch', 'workshop_rack_top_crate'))
         if not flat and not hanging and key != 'yard_exercise_fence':
             feet = footprint(key)
             fw, fh = [v * PPU for v in feet['size']]
@@ -359,22 +392,18 @@ def style_level_two(scene):
         properties.update(ySort=not flat, layer=-20 if flat else 10)
         entity['components'].insert(0, c('SpriteRenderer', **properties))
         if 'banner' in key:
-            part(entity, 'SpriteRenderer')['texture'] = banner_texture(key)
+            part(entity, 'SpriteRenderer').update(texture=banner_texture(key),
+                size=[w / PPU, h / PPU], offset=[0, (-h / 2 + 2) / PPU])
             # A banner belongs to its supporting wall plane. Its hanging tip must
             # never force it in front of a player already standing on the floor.
-            supports = [a for a in MANIFEST['assets'] if a['category'] == 'walls'
-                        and a['width'] > a['height']
-                        and a['origin_px'][0] <= x + w / 2 <= a['origin_px'][0] + a['width']
-                        and a['origin_px'][1] <= y <= a['origin_px'][1] + a['height']]
-            if supports:
-                base = max(a['origin_px'][1] + a['height'] for a in supports)
-                part(entity, 'SpriteRenderer')['sortOffset'] = (base - (y + h - 2) + .5) / PPU
+            part(entity, 'SpriteRenderer')['sortOffset'] = (banner_base - (y + h - 2) + .5) / PPU
+        if key == 'laundry_switch':
+            part(entity, 'SpriteRenderer')['sortOffset'] = (banner_base - (y + h - 2) + .5) / PPU
         if key in ('utility_green_console', 'utility_box'):
             # Keep the entire controls above the foreground coping, with their
             # interaction points reachable in the narrow service alcove.
             entity['transform']['position'][1] -= 12 / PPU
             part(entity, 'SpriteRenderer')['sortOffset'] = 12 / PPU
-            hanging = True
         if key == 'workshop_rack_top_crate':
             # This crate rests on the rack; it has neither a second floor collider nor shadow.
             rack = ASSETS['workshop_tools_rack_east']
@@ -386,11 +415,7 @@ def style_level_two(scene):
             ground_prop(part(entity, 'SpriteRenderer'), feet)
         if key == 'yard_exercise_fence':
             entity['components'] = [p for p in entity['components'] if p['type'] != 'Collider']
-            for cw, ch, ox, oy in [(w - 15, 9, 0, -h + 12), (w - 15, 9, 0, -4),
-                                   (9, h - 18, -w / 2 + 8, -h / 2),
-                                   (9, 65, w / 2 - 8, -h + 42), (9, 65, w / 2 - 8, -36)]:
-                entity['components'].append(c('Collider', size=[cw / PPU, ch / PPU],
-                    offset=[ox / PPU, oy / PPU], layer='Solid', friction=0))
+            entity['components'].extend(fence_colliders())
         if 'candle' in key or key in ('kitchen_fireplace', 'canteen_dining_set_west'):
             entity['components'].append(c('Light2D', color='#ffb945ff', radius=1.15,
                                           intensity=.17, offset=[0, -.6], flicker=.16, layer=12))
@@ -426,7 +451,7 @@ def style_level_two(scene):
     gate = old['Green exit gate']
     gate['transform']['position'] = point(1519, 850)
     set_door(gate, 74 / PPU, automatic=False, height=2.45)
-    part(gate, 'SpriteRenderer')['color'] = '#7ce6a0ff'
+    part(gate, 'SpriteRenderer')['color'] = '#c4f4d4ff'
     gate['components'].append(c('Light2D', color='#55ed7aff', radius=1.55, intensity=.18, layer=12))
     used.append(gate)
     goal = old['South escape passage']
@@ -446,6 +471,7 @@ def style_level_two(scene):
         add(title + ' location', [0, 0], c('LocationArea', actor=old['Explorer']['id'], title=title,
             boundsMin=point(x, y), boundsMax=point(x + asset['width'], y + asset['height'])))
     scene['entities'] = used
+    add_wall_copings(scene)
     scene['settings']['background'] = '#101823ff'
     print('Reference keep:', len(used), 'entities, native 35px tiles,', BOUNDS, 'world bounds')
 
@@ -499,11 +525,10 @@ def style_level_one(scene):
                         sprite.update(size=[sprite['size'][0], 45 / PPU], drawMode='Sliced', sliceFill='Tile')
                     else:
                         asset = ASSETS['control_banner']
-                        height = asset['height'] / PPU
+                        height = 54 / PPU
                         sprite.update(texture=banner_texture(asset['id']),
-                                      size=[asset['width'] / PPU, height], offset=[0, .25 - height / 2],
+                                      size=[54 * 44 / 68 / PPU, height], offset=[0, .25 - height / 2],
                                       layer=10, ySort=True)
-                        entity['transform']['position'][1] = 1
                         entity['transform']['position'][1] = .75
                         sprite['sortOffset'] = .251
                 else:
@@ -628,9 +653,8 @@ def style_level_one(scene):
                 entity.update(id=f'{next_id:016x}', name=f'Masonry joined column {x} {a}')
                 next_id += 1
                 entity['transform']['position'] = [x, b]
-                connected = any(abs(b - start) < .001 for start, _ in crossings)
-                entity['components'] = wall_parts(PPU, (b - a) * PPU,
-                                                  vertical=True, free_end=not connected)
+                entity['components'] = column_parts(PPU, a * PPU, b * PPU,
+                                                    [(start * PPU, end * PPU) for start, end in crossings])
                 if index == 0:
                     part(entity, 'Collider').update(size=[1, bottom - top],
                                                     offset=[0, (top + bottom) / 2 - b])
@@ -638,4 +662,5 @@ def style_level_one(scene):
                     entity['components'] = [p for p in entity['components'] if p['type'] != 'Collider']
                 joined.append(entity)
     scene['entities'] = [entity for entity in keep if entity['id'] not in removed] + joined
+    add_wall_copings(scene)
     scene['settings']['background'] = '#101823ff'

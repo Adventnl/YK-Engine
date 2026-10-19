@@ -48,7 +48,7 @@ void usage() {
         "  --debug-crash <kind>   crash on purpose after a few frames (abort, segv or throw) to "
         "test\n"
         "                         crash reports\n"
-        "In game: F1 physics outlines, F2 collider outlines, F3 stats, Esc quits.");
+        "In game: F1 physics outlines, F2 collider outlines, F3 stats. Close the window to quit.");
 }
 
 std::optional<Options> parse(int argc, char **argv) {
@@ -141,12 +141,7 @@ class PlayerLayer final : public ApplicationLayer {
         return load(options_.scene.empty() ? project_.startScene : options_.scene, renderer);
     }
     bool update(const FrameContext &frame) override {
-        // An active gameplay popup owns Cancel; Escape must close it before quitting.
-        if (frame.input.keyboard.state(Key::Escape).pressed &&
-            session_->runtime().blackboard().number("wire_ui_active") == 0.0 &&
-            session_->runtime().blackboard().number("search_ui_active") == 0.0 &&
-            session_->runtime().blackboard().number("dialogue_active") == 0.0)
-            return false;
+        // The session and game's input map own Escape (pause, cancel and menu navigation).
         InputFrame input = frame.input;
         // Match the letterboxed logical game view after resizing or changing display density.
         Vec2 position;
