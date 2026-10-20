@@ -1409,6 +1409,32 @@ void templatesWork() {
     w.tick(120); // Every template survives simulation.
     CHECK(w.runtime->tick() == 120);
 }
+void feetAnchoredGuardSight() {
+    for (bool blocked : {false, true}) {
+        World w;
+        w.scene->settings.gravity = {};
+        auto &actor = w.body("Explorer", {0, -1}, {.5F, 1}, RigidBodyType::Dynamic, layers::player);
+        actor.get<Collider>()->offset = {0, -.5F};
+        auto &guard = w.box("Guard", {0, 1}, {.5F, 1});
+        guard.get<Collider>()->offset = {0, -.5F};
+        auto &watch = guard.add<PatrolWatch>();
+        watch.actor = actor.id();
+        watch.restrictedMin = {-3, -3};
+        watch.restrictedMax = {3, 3};
+        watch.range = 5;
+        watch.catchSeconds = .1F;
+        watch.returnPosition = {9, 9};
+        if (blocked)
+            w.box("Wall", {0, -.5F}, {2, .25F});
+        w.start();
+        w.tick(20);
+        // The guard's sole sits on its collider boundary. Its own body must
+        // not hide an actor to the north, while an intervening wall still does.
+        CHECK(distance(w.position("Explorer"), blocked ? Vec2{0, -1} : Vec2{9, 9}) < .02F);
+        CHECK(w.happened("guard_caught") == !blocked);
+    }
+}
+
 void inventoryHudUsesProjectCopy() {
     World w;
     auto &hud = w.scene->createEntity("HUD").add<InventoryHud>();
@@ -1438,6 +1464,7 @@ void inventoryHudUsesProjectCopy() {
 } // namespace
 
 int main() {
+    feetAnchoredGuardSight();
     inventoryHudUsesProjectCopy();
     controllerBasics();
     characterAnimation();

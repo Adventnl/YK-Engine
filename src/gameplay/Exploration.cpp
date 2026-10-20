@@ -10,7 +10,10 @@
 namespace yk {
 namespace {
 bool clearReach(GameContext &context, const Entity &actor, const Entity &target) {
-    const Vec2 start = actor.worldPosition();
+    // Feet-anchored actors place their transform on the collider boundary.
+    // Cast from inside the actual shape so an NPC cannot obstruct its own sight.
+    const auto *collider = actor.get<Collider>();
+    const Vec2 start = transformPoint(actor.worldTransform(), collider ? collider->offset : Vec2{});
     physics::QueryFilter filter;
     filter.categoryBits = context.layers().categoryBits("Player");
     filter.maskBits = context.layers().categoryBits("Solid");

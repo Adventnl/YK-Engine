@@ -15,6 +15,7 @@ import subprocess
 import tempfile
 
 from PIL import Image
+from castle_layout import compact_world
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_AUDIT = ROOT.parent.parent / 'build/blackthorn-visual-audit'
@@ -38,7 +39,7 @@ def full_resolution(scene):
     for entity in scene['entities']:
         for component in entity['components']:
             if component['type'] == 'Camera':
-                component['properties']['pixelsPerUnit'] = 0
+                component['properties']['pixelsPerUnit'] = 35
     return scene
 
 
@@ -56,7 +57,7 @@ def fixed_view(scene, bounds, aspect):
             if component['type'] == 'Camera':
                 component['properties'].update(mode='Fixed', orthographicHeight=height,
                                                viewportInset=[0, 0], clampToBounds=False,
-                                               pixelsPerUnit=0)
+                                               pixelsPerUnit=35)
                 entity['transform']['position'] = center
     return scene, dict(center=center, visibleHeight=height,
                        visibleWidth=height * aspect, roomBounds=list(bounds))
@@ -117,25 +118,31 @@ def main():
         workshop = copy.deepcopy(second)
         for entity in workshop['entities']:
             if entity['name'] in ('Explorer', 'Player follow camera'):
-                entity['transform']['position'] = [(560 - 40) / 35, (710 - 25) / 35]
+                entity['transform']['position'] = compact_world([(560 - 40) / 35, (710 - 25) / 35])
         overview = copy.deepcopy(second)
         for entity in overview['entities']:
             entity['components'] = [c for c in entity['components'] if c['type'] != 'InventoryHud']
             for component in entity['components']:
                 if component['type'] == 'Camera':
-                    component['properties'].update(mode='Fixed', orthographicHeight=26.4,
+                    bounds = component['properties']['boundsMax']
+                    component['properties'].update(mode='Fixed', orthographicHeight=bounds[1] + 1.4,
                                                    viewportInset=[0, 0], clampToBounds=False)
-                    entity['transform']['position'] = [1591 / 70, 883 / 70]
+                    entity['transform']['position'] = [v / 2 for v in bounds]
         corridor = copy.deepcopy(second)
         for entity in corridor['entities']:
             if entity['name'] in ('Explorer', 'Player follow camera'):
-                entity['transform']['position'] = [(700 - 40) / 35, (475 - 25) / 35]
+                entity['transform']['position'] = compact_world([(700 - 40) / 35, (475 - 25) / 35])
         utility = copy.deepcopy(second)
         for entity in utility['entities']:
             if entity['name'] in ('Explorer', 'Player follow camera'):
-                entity['transform']['position'] = [(1490 - 40) / 35, (590 - 25) / 35]
+                entity['transform']['position'] = compact_world([(1490 - 40) / 35, (590 - 25) / 35])
+        infirmary = copy.deepcopy(second)
+        for entity in infirmary['entities']:
+            if entity['name'] in ('Explorer', 'Player follow camera'):
+                entity['transform']['position'] = compact_world([(970 - 40) / 35, (750 - 25) / 35])
         for name, scene in [('courtyard', first), ('level2', second), ('workshop', workshop),
-                            ('overview', overview), ('corridor', corridor), ('utility', utility)]:
+                            ('overview', overview), ('corridor', corridor), ('utility', utility),
+                            ('infirmary', infirmary)]:
             (project / 'scenes' / (name + '.ykscene')).write_text(json.dumps(scene, indent=2))
         env = dict(os.environ, SDL_VIDEODRIVER='dummy', SDL_RENDER_DRIVER='software',
                    SDL_AUDIODRIVER='dummy', YK_NO_DIALOGS='1', YK_LOG_DIR=str(work / 'logs'))
@@ -154,6 +161,7 @@ def main():
                                     ('corridor', 'level2-corridor-preview.png'),
                                     ('level2', 'level2-cells-preview.png'),
                                     ('utility', 'level2-utility-preview.png'),
+                                    ('infirmary', 'level2-infirmary-preview.png'),
                                     ('overview', 'level2-overview.png')]:
             capture(scene, ROOT / destination)
         if options.audit is not None:
@@ -162,10 +170,10 @@ def main():
             width, height = options.audit_size
             project_settings['window'].update(width=width, height=height)
             (project / 'project.ykproj').write_text(json.dumps(project_settings, indent=2))
-            manifest = dict(resolution=[width, height], worldPixelsPerUnit=0, frames=options.audit_frames, captures=[])
+            manifest = dict(resolution=[width, height], worldPixelsPerUnit=35, frames=options.audit_frames, captures=[])
             chapters = [(1, 'courtyard', first, list(CHAPTER_ONE_ROOMS), (0, 0, 32, 18)),
                         (2, 'level2', second, list(chapter_two_rooms(second)),
-                         (0, 0, 1591 / 35, 883 / 35))]
+                         (0, 0, *compact_world([1591 / 35, 883 / 35])))]
             for chapter, source, scene, rooms, bounds in chapters:
                 for name, room_bounds in rooms + [('overview', bounds)]:
                     key = 'level' + str(chapter) + '-' + name

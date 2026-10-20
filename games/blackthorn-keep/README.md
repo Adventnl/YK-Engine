@@ -47,39 +47,53 @@ See [LEVEL2.md](LEVEL2.md) for the second chapter's route and artwork details.
 ## Artwork and authoring
 
 `assets/castle/reference/` contains the supplied editable ZIP's PNGs and original manifest.
-The original source art uses 35 pixels per world unit. Both chapters now render directly at
-the display resolution, preserving source detail instead of discarding it into a smaller
-intermediate image. Repaired furniture sprites use four times the source resolution;
-stone materials use four times the source resolution and preserve complete coping and bases.
+Characters, furniture, gates, floors and masonry share a 35-pixels-per-world-unit grid.
+Both chapter cameras use that native raster with nearest sampling; larger windows scale
+the same pixels. Furniture uses a shared 64-color palette and a single orthographic RPG
+view, with visible tops and horizontal front edges. Beds and bedside furniture share that
+view. Repeated objects and all banners have fixed dimensions, independent of their placement.
 The blue corridor runner also has a clean cloth texture without embedded floor patches.
 Floors, walls and props remain separate editable entities.
 
 Ordinary passages are clear openings in the stone walls, with no door artwork or blocking
 components. Locked escape gates use animated `StateGate` leaves and synchronized collision.
-`tools/castle_geometry.py` owns reusable wall lengths, finished returns, furniture dimensions
-and floor footprints for both chapters. Wall runs use tiled nine-slice materials: changing a
-length repeats the stone rather than stretching an image or clipping a wall end. Openings
-split those runs into complete pieces with matching collision. Vertical walls are joined runs with finished free ends;
-their tops meet the horizontal coping rather than the bottom of its brick face. Horizontal
-coping shares the side walls' stone material, including along the south perimeter.
+`tools/castle_masonry.py` builds both chapters from one joined stone plan. Horizontal
+and vertical walls have the same 35-pixel thickness and 49-pixel elevation. The union
+removes internal end caps at corners and T junctions; its surfaces are exported as
+reusable 35 x 35 blocks in two compact atlases under `assets/castle/masonry/`.
+Collision is partitioned from the same plan. Block edges snap together at fractional
+zoom, and exposed south edges receive a face rather than an overlapping column end.
+`tools/castle_geometry.py` shares furniture dimensions, silhouettes and contact shadows.
 Banners share their supporting wall's depth. Clean column tiles and banner silhouettes remove
 the floor scraps baked into the earlier extracted art. Repeated beds, chairs, crates, barrels,
 plants and racks use shared silhouettes and dimensions. The utility machine fits inside its room
-and its collision covers the pipe assembly. Furniture and walls have grounded contact shadows.
+and its collision covers the pipe assembly. Furniture colliders are a merged union of the
+exported opaque pixels, including real openings between legs and pipes. Transparent padding
+is never solid. `castle_layout.py` authors clear aisles and intentional furniture groups;
+the pixel regression test rejects overlapping furnishings in either chapter.
+Chapter two's compact floor plan reduces the overall footprint by about a quarter, with
+wall-mounted storage, grouped seating, adjacent bedside tables and clear passage approaches.
+The final exit frame is aligned to the base of the outer wall.
+Chapter one groups storage against back walls, keeps laundry basins in a work run, and
+clears the circulation strip and east gate. Player collision uses a single 16 x 8-pixel
+feet shape. Runtime tests approach the common-room table from above and beside it,
+rejecting an invisible border larger than three native pixels.
 
 ImageGen masters and their exact prompts are preserved in `assets/castle/source/` and
 `assets/level2/source/hero_idle.*`. Runtime outputs are `assets/castle/doors/`,
-`assets/castle/fixtures/`, `assets/castle/materials/`, `assets/castle/props/` and `assets/level2/hero-polished.*`.
+`assets/castle/pixel/`, `assets/castle/masonry/` and `assets/level2/hero-polished.*`.
+The older extracted and high-resolution masters are retained as source history.
 
 Generated with the built-in image_gen tool:
 
+- [Unified furniture, equipment and domestic sprite atlases and generation prompts](assets/castle/source/pixel-unified/prompts.json).
 - [Standing hero master](assets/level2/source/hero_idle.png) and [prompt](assets/level2/source/hero_idle.prompt.txt).
 - [Detailed gate master](assets/castle/source/repairs/consistency/gate.png) and [prompt](assets/castle/source/repairs/consistency/gate.prompt.txt).
 - [Clean banner master](assets/castle/source/banner-clean.png) and [prompt](assets/castle/source/banner-clean.prompt.txt).
 - [Furniture masters, exact prompts and export notes](assets/castle/source/repairs/README.md).
 - [Fourteen spear-rack style replacements and exact prompts](assets/castle/source/repairs/consistency/README.md).
-- [Detailed masonry masters and exact prompts](assets/castle/source/masonry-hq/README.md),
-  exported by `tools/castle_masonry_art.py`.
+- [Earlier detailed masonry masters and exact prompts](assets/castle/source/masonry-hq/README.md).
+  Shipping blocks reuse the native stone materials through `tools/castle_masonry.py`.
 
 Rebuild both scenes and the door strip without regenerating existing character atlases:
 
@@ -89,6 +103,7 @@ python3 games/blackthorn-keep/tools/build_level2.py
 python3 games/blackthorn-keep/tools/build_frontend.py
 ./build/dev/yk validate games/blackthorn-keep
 ctest --preset dev -R blackthorn
+python3 games/blackthorn-keep/tests/pixel_art_tests.py
 python3 games/blackthorn-keep/tools/capture_previews.py
 python3 games/blackthorn-keep/tools/capture_previews.py --audit
 ```

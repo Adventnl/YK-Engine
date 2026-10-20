@@ -1,22 +1,20 @@
 """Shared, resizable castle objects. Geometry owns rendering, feet and contact shadows.
 
-Wall runs repeat detailed masonry with permanent left/right returns. Props use authored
-floor depths and visible-width limits, so transparent canvas margins never become solid.
+Wall runs repeat native masonry with permanent left/right returns. Props use the
+actual opaque sprite silhouette, so transparent canvas margins never become solid.
 """
 import json
-from functools import lru_cache
 from pathlib import Path
 from PIL import Image, ImageOps
-from castle_prop_repairs import export_prop_repairs, repaired_texture, PROP_SIZES
+from castle_pixel_art import (export_pixel_props, pixel_texture, SIZES, BANNER_SIZE, PPU,
+                              silhouette_bounds, silhouette_colliders)
 from castle_masonry_art import export_masonry_materials
 
 ROOT = Path(__file__).resolve().parents[1]
 REFERENCE = ROOT / 'assets/castle/reference'
 ASSETS = {a['id']: a for a in json.loads((REFERENCE / 'manifest.json').read_text())['assets']}
-PPU = 35
-# Use the actual viewport resolution. A 25px/unit intermediate discarded almost a
-# third of the supplied 35px/unit artwork before magnifying the damage on screen.
-WORLD_DENSITY = 0
+# Actors and scenery share a native raster; window resolution cannot add prop detail.
+WORLD_DENSITY = PPU
 COPING_DEPTH = 26
 
 
@@ -29,7 +27,7 @@ def material(key):
 
 
 def export_wall_materials():
-    export_prop_repairs()
+    export_pixel_props()
     directory = ROOT / 'assets/castle/materials'
     directory.mkdir(exist_ok=True)
     # Borders are fixed-width end returns; the middle and coping repeat without stretching.
@@ -150,7 +148,6 @@ ALIASES = {
     'infirmary_candle_stool': 'workshop_candle_stool', 'south_dorm_candle_stool': 'workshop_candle_stool',
 }
 # Explicit scale choices replace accidental dimensions from extracted image canvases.
-SIZES = PROP_SIZES
 
 
 def prop_definition(key):
@@ -158,84 +155,27 @@ def prop_definition(key):
     asset = ASSETS[canonical]
     width, height = SIZES.get(canonical, (asset['width'], asset['height']))
     if 'banner' in canonical:
-        width, height = 44, 68
+        width, height = BANNER_SIZE
     return canonical, width, height
 
 
 def prop_sprite(key):
     canonical, width, height = prop_definition(key)
-    return dict(texture=repaired_texture(canonical),
+    return dict(texture=pixel_texture(canonical),
                 size=[width / PPU, height / PPU], offset=[0, (-height / 2 + 2) / PPU],
                 layer=10, ySort=True)
 
 
-@lru_cache(maxsize=None)
-def visible_width(key):
-    """Generated objects retain padding; that padding must not become solid."""
-    path = repaired_texture(key)
-    if not path.startswith('assets/castle/props/'):
-        return 1
-    with Image.open(ROOT / path) as image:
-        bounds = image.getchannel('A').point(lambda alpha: 255 if alpha >= 64 else 0).getbbox()
-        return (bounds[2] - bounds[0]) / image.width
-
-
 def footprint(key):
-    """Projected floor contact, independent of the height drawn above it."""
-    canonical, w, h = prop_definition(key)
-    if 'bed' in canonical:
-        depth = h - (18 if 'vertical' in canonical or 'infirmary' in canonical else 22)
-    elif 'dining_set' in canonical:
-        depth = h - 28
-    elif 'energy_device' in canonical:
-        # Full pipe assembly rests on the floor; the old .6-unit box let actors walk through it.
-        depth = h - 34
-    elif canonical in ('utility_green_console', 'utility_box', 'control_console_1',
-                       'control_console_2', 'control_tower', 'infirmary_terminal'):
-        depth = h * .6
-    elif 'table' in canonical or 'workbench' in canonical or 'desk' in canonical:
-        depth = min(32, h * .5)
-    elif 'crate' in canonical or 'barrel' in canonical or 'basin' in canonical:
-        depth = h * .52
-    else:
-        depth = min(24, h * .4)
-    contact_width = min(w - 10, w * visible_width(canonical) - 4)
-    return dict(size=[max(12, contact_width) / PPU, depth / PPU], offset=[0, (-depth / 2 + 2) / PPU],
-                layer='Solid', friction=0)
+    """Envelope for layout clearance only; physical collision uses the opaque union."""
+    return silhouette_bounds(prop_definition(key)[0])
+
+
+def prop_colliders(key):
+    return silhouette_colliders(prop_definition(key)[0])
 
 
 def ground_prop(sprite, collider):
     width, depth = collider['size']
-    sprite.update(shadowSize=[width + .18, max(.22, depth * .48)],
+    sprite.update(shadowSize=[width * .8, max(.18, min(.3, depth * .15))],
                   shadowOffset=[.06, .04], shadowColor='#080e2450')
-
-
-def fence_colliders():
-    """Keep the physical entrance inside the generated fence's visible opening."""
-    key, w, h = prop_definition('yard_exercise_fence')
-    with Image.open(ROOT / repaired_texture(key)) as image:
-        alpha = image.getchannel('A').point(lambda a: 255 if a >= 64 else 0)
-        right = alpha.crop((round(image.width * .88), 0, image.width, image.height))
-        occupied = [right.crop((0, y, right.width, y + 1)).getbbox() is not None
-                    for y in range(image.height)]
-        first, last = occupied.index(True), len(occupied) - occupied[::-1].index(True)
-        holes, start = [], None
-        for y in range(first, last):
-            if not occupied[y] and start is None:
-                start = y
-            elif occupied[y] and start is not None:
-                holes.append((start, y))
-                start = None
-        if not holes:
-            raise ValueError('Exercise fence has no visible entrance')
-        a, b = max(holes, key=lambda band: band[1] - band[0])
-        upper, lower = -h + 2 + a / image.height * h, -h + 2 + b / image.height * h
-    if lower - upper < 24:
-        raise ValueError('Exercise fence entrance is too narrow for an actor')
-    pieces = [(w - 15, 9, 0, -h + 12), (w - 15, 9, 0, -4),
-              (9, h - 18, -w / 2 + 8, -h / 2),
-              (9, upper - (-h + 12), w / 2 - 8, (-h + 12 + upper) / 2),
-              (9, -4 - lower, w / 2 - 8, (lower - 4) / 2)]
-    return [component('Collider', size=[cw / PPU, ch / PPU],
-                      offset=[ox / PPU, oy / PPU], layer='Solid', friction=0)
-            for cw, ch, ox, oy in pieces]

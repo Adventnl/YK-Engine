@@ -6,7 +6,9 @@
 #include "yk/items/Crafting.hpp"
 #include "yk/runtime/GameSession.hpp"
 #include "yk/scene/SceneSerializer.hpp"
+#include <algorithm>
 #include <cmath>
+#include <limits>
 using namespace yk;
 int main() {
     ComponentRegistry registry;
@@ -90,6 +92,35 @@ int main() {
     // Static torches and furniture cannot be pushed. Perimeter and closed gate have no seams.
     CHECK(!object("Fixed wall torch")->has<NpcPath>());
     CHECK(!object("Fixed wall torch")->has<RigidBody>());
+    // Reproduce the reported invisible table border from above and from its
+    // exposed left side. Contact must be within three native pixels of the
+    // visible silhouette after allowing for the player's smaller feet.
+    auto *table = object("Common room table");
+    const auto tableShapes = table->getAll<Collider>();
+    CHECK(session->runtime().bodyShapes(table->id()).size() == tableShapes.size());
+    const auto *boardShape = *std::max_element(tableShapes.begin(), tableShapes.end(), [](auto *a, auto *b) {
+        return a->size.x * a->size.y < b->size.x * b->size.y;
+    });
+    const Vec2 tableCenter = table->worldPosition() + boardShape->offset;
+    float topEdge = std::numeric_limits<float>::max(), leftEdge = topEdge;
+    for (const auto *shape : tableShapes) {
+        const Vec2 center = table->worldPosition() + shape->offset;
+        if (std::abs(center.x - tableCenter.x) < shape->size.x / 2)
+            topEdge = std::min(topEdge, center.y - shape->size.y / 2);
+        if (std::abs(center.y - tableCenter.y) < shape->size.y / 2)
+            leftEdge = std::min(leftEdge, center.x - shape->size.x / 2);
+    }
+    session->runtime().teleport(*actor(), {tableCenter.x, topEdge - .7F});
+    keyboard.set(Key::S, true); tick(70); keyboard.set(Key::S, false); tick(4);
+    const float topGap = topEdge - actor()->worldPosition().y - actor()->get<Collider>()->offset.y -
+                         actor()->get<Collider>()->size.y / 2;
+    CHECK(std::abs(topGap) <= 3.0F / 35);
+    session->runtime().teleport(*actor(), {leftEdge - .7F, tableCenter.y});
+    keyboard.set(Key::D, true); tick(70); keyboard.set(Key::D, false); tick(4);
+    const float leftGap = leftEdge - actor()->worldPosition().x - actor()->get<Collider>()->size.x / 2;
+    CHECK(std::abs(leftGap) <= 3.0F / 35);
+    CHECK(!object("Common room heraldic rug")->has<Collider>());
+    session->runtime().teleport(*actor(), {2, 8.4F}); walkTo({2, 9.5F});
     const Vec2 cabinetAt = object("Locked cabinet")->worldPosition();
     near("Locked cabinet", {0,1.5F}); keyboard.set(Key::W,true); tick(80); keyboard.set(Key::W,false); tick(4);
     CHECK(object("Locked cabinet")->worldPosition() == cabinetAt);
@@ -116,7 +147,9 @@ int main() {
     for (int i=0; dialogue->active() && i<6; ++i) press(Key::E);
     CHECK(board.number("met_mara") == 1);
     // Traverse the workshop doorway. Cancelled actions give no loot or objective credit.
-    session->runtime().teleport(*actor(), {8,10}); walkTo({8,12}); walkTo({3,15.2F});
+    session->runtime().teleport(*actor(), {8,10}); walkTo({8,12});
+    // Approach below the tool rack's complete silhouette, then turn into its aisle.
+    walkTo({4.4F,15.2F}); walkTo({3,15.2F});
     press(Key::E); tick(30); CHECK(board.number("search_ui_busy") == 1);
     CHECK(animation->state() == "search_up");
     CHECK(inventory()->count(ItemId("screwdriver")) == 0);
@@ -126,6 +159,8 @@ int main() {
     CHECK(board.text("search_ui_icon") == "assets/keep/screwdriver.png");
     near("Tool bench"); press(Key::E); tick(190); press(Key::E);
     CHECK(inventory()->count(ItemId("screwdriver")) == 1); // No duplicate rewards.
+    // Leave the tool rack through the work aisle, around the storage run.
+    walkTo({6.4F,14.6F}); walkTo({6.4F,13.3F}); walkTo({8,13.3F});
     walkTo({8,12}); walkTo({8,9.8F}); walkTo({10,8.5F}); walkTo({10,6.2F}); walkTo({9.5F,5.6F});
     search("Locked cabinet"); CHECK(inventory()->count(ItemId("rope")) == 1);
     near("Rope workbench"); press(Key::E);

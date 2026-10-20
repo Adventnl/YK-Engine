@@ -12,14 +12,17 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 from art_import import generated_objects, silhouette
 from castle_geometry import (export_wall_materials, wall_parts, column_parts, add_wall_copings, subtract_interval,
-                             prop_definition, prop_sprite, footprint, ground_prop, fence_colliders, WORLD_DENSITY)
+                             prop_definition, prop_sprite, footprint, ground_prop, prop_colliders, WORLD_DENSITY)
+from castle_pixel_art import pixel_texture, pixel_image, write_pixel, BANNER_SIZE, PPU, silhouette_colliders
+from castle_layout import (PLACEMENTS, OMIT_PROPS, CHAPTER_ONE_PLACEMENTS,
+                           compact_architecture, furnish_compact_rooms, furnish_chapter_one)
+from castle_masonry import build_masonry
 
 ROOT = Path(__file__).resolve().parents[1]
 ART = ROOT / 'assets/castle'
 REFERENCE = ART / 'reference'
 MANIFEST = json.loads((REFERENCE / 'manifest.json').read_text())
 ASSETS = {a['id']: a for a in MANIFEST['assets']}
-PPU = 35
 VIEW_HEIGHT = 11.6
 BOUNDS = [1591 / PPU, 883 / PPU]
 DOOR_FRAMES = 8
@@ -45,6 +48,8 @@ def point(x, y):
 
 
 def texture(asset):
+    if asset.startswith('tile_'):
+        return pixel_texture(asset)
     return 'assets/castle/reference/' + ASSETS[asset]['file']
 
 
@@ -101,9 +106,7 @@ def door_art(width=64, height=72, side=False):
         else:
             face.alpha_composite(jamb)
         sheet.alpha_composite(face, (frame * width, 0))
-    sheet.save(path)
-    Path(str(path) + '.ykmeta').write_text(json.dumps(dict(
-        format='yk.texture', version=1, pixelsPerUnit=140, filter='linear'), indent=2) + '\n')
+    write_pixel(pixel_image(sheet, (sheet.width // density, sheet.height // density)), path)
     return path.relative_to(ROOT).as_posix()
 
 
@@ -136,27 +139,8 @@ def character_art():
     (directory / 'hero-polished.ykanim').write_text(json.dumps(animation, indent=2) + '\n')
 
 
-def banner_art():
-    """Export clean cloth silhouettes; source extractions contain attached floor pixels."""
-    directory = ART / 'fixtures'
-    directory.mkdir(exist_ok=True)
-    master = silhouette(Image.open(ART / 'source/repairs/consistency/banner.png').convert('RGBA'))
-    for key, asset in ASSETS.items():
-        if 'banner' not in key:
-            continue
-        w, h = 44 * 4, 68 * 4
-        scale = min((w - 8) / master.width, (h - 8) / master.height)
-        flag = master.resize((round(master.width * scale), round(master.height * scale)), Image.Resampling.LANCZOS)
-        image = Image.new('RGBA', (w, h))
-        image.alpha_composite(flag, ((w - flag.width) // 2, (h - flag.height) // 2))
-        path = directory / (key + '.png')
-        image.save(path)
-        Path(str(path) + '.ykmeta').write_text(json.dumps(dict(
-            format='yk.texture', version=1, pixelsPerUnit=140, filter='linear'), indent=2) + '\n')
-
-
 def banner_texture(key):
-    return 'assets/castle/fixtures/' + key + '.png'
+    return pixel_texture('control_banner')
 
 
 def set_character(entity, role):
@@ -177,7 +161,9 @@ def set_character(entity, role):
         part(entity, 'Collider')['layer'] = 'Solid'
     else:
         part(entity, 'TopDownController')['speed'] = 3
-    part(entity, 'Collider').update(size=[.62, .32], offset=[0, 0])
+    # Transform anchors the visible soles. Keep the whole feet box above that
+    # anchor; centering it here leaves an invisible four-pixel border in front.
+    part(entity, 'Collider').update(size=[16 / PPU, 8 / PPU], offset=[0, -4 / PPU])
     motion = part(entity, 'CharacterMotion')
     motion.update(idleHeight=.008, stepHeight=0, animateSteps=False, flipWithMovement=False)
     dialogue = part(entity, 'Dialogue')
@@ -215,7 +201,6 @@ def set_door(entity, width, depth=.55, automatic=True, height=None, side=False):
 
 def style_level_two(scene):
     character_art()
-    banner_art()
     old = {e['name']: e for e in scene['entities']}
     used = []
     next_id = max(int(e['id'], 16) for e in scene['entities']) + 1
@@ -310,17 +295,15 @@ def style_level_two(scene):
     terminal = next(e for e in scene['entities'] if part(e, 'WirePuzzle') is not None)
     old['Power terminal'] = terminal
     for asset in MANIFEST['assets']:
-        if asset['category'] != 'props' or asset['id'] == 'green_exit_gate':
+        if asset['category'] != 'props' or asset['id'] == 'green_exit_gate' or asset['id'] in OMIT_PROPS:
             continue
         key = asset['id']
         x, y = asset['origin_px']
-        if key == 'yard_stone_planter':
-            x -= 14
-            y += 66
         original_w, original_h = asset['width'], asset['height']
         canonical, w, h = prop_definition(key)
         x += (original_w - w) / 2
         y += original_h - h
+        x, y = PLACEMENTS.get(key, (x, y))
         banner_base = None
         if 'banner' in key:
             # Attach the entire flag to an actual facade, including its brackets.
@@ -332,13 +315,16 @@ def style_level_two(scene):
                 # The shallow service parapet has no room for a readable banner.
                 # Frame the locked escape gate on the full-height outer facade.
                 source_top = 851
+            if key == 'dormitory_wall_banner':
+                center, source_top = 198, 53
             supports = [(left, top, right, bottom) for left, top, right, bottom in wall_runs
                         if left <= center <= right and top - 20 <= source_top <= bottom + 20]
             if not supports:
                 raise ValueError(f'Banner has no supporting wall: {key}')
             left, top, right, bottom = min(supports, key=lambda r: abs(source_top - (r[1] + 26)))
-            h = min(68, bottom - top - min(26, bottom - top) - 4)
-            w = h * 44 / 68
+            w, h = BANNER_SIZE
+            if bottom - top - min(26, bottom - top) < h + 4:
+                raise ValueError(f'Wall face is too short for a standard banner: {key}')
             center = max(left + w / 2 + 2, min(right - w / 2 - 2, center))
             x, y = center - w / 2, top + min(26, bottom - top) + 2
             banner_base = bottom
@@ -350,16 +336,6 @@ def style_level_two(scene):
             left, top, right, bottom = min(supports, key=lambda r: r[1] - y)
             y = top + 30
             banner_base = bottom
-        # Keep the machine and its pipes inside the utility room at an intentional scale.
-        if key == 'utility_energy_device_pipes':
-            x, y = 1536, 462
-        # Chairs belong beside the beds, never embedded in their mattress silhouettes.
-        if key == 'dorm_chair_nw':
-            x, y = 171, 113
-        elif key == 'dorm_chair_ne_top':
-            x, y = 266, 172
-        if key in ('dorm_bed_nw', 'dorm_bed_ne'):
-            y = 105
         flat = key in ('corridor_runner', 'arena_court_markings')
         hanging = ('banner' in key or key in ('laundry_switch', 'workshop_rack_top_crate'))
         if not flat and not hanging and key != 'yard_exercise_fence':
@@ -379,6 +355,7 @@ def style_level_two(scene):
             for left, top, right, bottom in column_runs:
                 if (y < bottom and y + h > top and x < right and x + w > left):
                     x = left - w - 2 if x + w / 2 < (left + right) / 2 else right + 2
+        x, y = round(x), round(y)
         name = bindings.get(key)
         entity = old.get(name) if name else None
         if entity:
@@ -411,26 +388,23 @@ def style_level_two(scene):
                 rack['origin_px'][1] + rack['height'] - (y + h - 2) + .1) / PPU
         if not flat and not hanging:
             feet = footprint(key)
-            entity['components'].append(c('Collider', **feet))
+            entity['components'].extend(prop_colliders(key))
             ground_prop(part(entity, 'SpriteRenderer'), feet)
-        if key == 'yard_exercise_fence':
-            entity['components'] = [p for p in entity['components'] if p['type'] != 'Collider']
-            entity['components'].extend(fence_colliders())
         if 'candle' in key or key in ('kitchen_fireplace', 'canteen_dining_set_west'):
             entity['components'].append(c('Light2D', color='#ffb945ff', radius=1.15,
                                           intensity=.17, offset=[0, -.6], flicker=.16, layer=12))
 
-    positions = {'Explorer': (172, 196), 'Mara': (313, 488), 'Cook Bram': (776, 264),
+    positions = {'Explorer': (172, 196), 'Mara': (313, 488), 'Cook Bram': (776, 282),
                  'Ada': (1036, 288), 'Tomas': (618, 678), 'Nurse Iona': (947, 775),
-                 'Rowan': (1352, 576), 'Control guard': (1235, 240)}
+                 'Rowan': (1330, 576), 'Control guard': (1235, 240)}
     roles = dict(zip(positions, ['hero', 'companion', 'cook', 'laundry_worker', 'craftsperson',
                                 'nurse', 'yard_worker', 'guard']))
     routes = {'Mara': [(313, 488), (313, 548), (280, 548), (313, 548)],
-              'Cook Bram': [(776, 264), (776, 307), (776, 264), (776, 242)],
+              'Cook Bram': [(776, 282), (776, 307), (776, 282), (776, 270)],
               'Ada': [(1036, 288), (996, 288), (996, 241), (1036, 241)],
               'Tomas': [(618, 678), (660, 678), (660, 646), (618, 646)],
               'Nurse Iona': [(947, 775), (990, 775), (990, 765), (947, 765)],
-              'Rowan': [(1352, 576), (1360, 535), (1370, 535), (1360, 535)],
+              'Rowan': [(1330, 576), (1330, 526), (1320, 526), (1330, 526)],
               'Control guard': [(1235, 240), (1235, 300), (1330, 300), (1330, 455),
                                 (1360, 455), (1330, 455), (1330, 300), (1235, 300)]}
     for name, at in positions.items():
@@ -451,6 +425,9 @@ def style_level_two(scene):
     gate = old['Green exit gate']
     gate['transform']['position'] = point(1519, 850)
     set_door(gate, 74 / PPU, automatic=False, height=2.45)
+    # Bottom-align the frame with the outer facade. The centered 86px gate used
+    # to stop fifteen pixels above the wall base, exposing the black background.
+    part(gate, 'SpriteRenderer')['offset'][1] = 15 / PPU
     part(gate, 'SpriteRenderer')['color'] = '#c4f4d4ff'
     gate['components'].append(c('Light2D', color='#55ed7aff', radius=1.55, intensity=.18, layer=12))
     used.append(gate)
@@ -472,13 +449,15 @@ def style_level_two(scene):
             boundsMin=point(x, y), boundsMax=point(x + asset['width'], y + asset['height'])))
     scene['entities'] = used
     add_wall_copings(scene)
+    compact_architecture(scene)
+    furnish_compact_rooms(scene)
+    build_masonry(scene, 2)
     scene['settings']['background'] = '#101823ff'
     print('Reference keep:', len(used), 'entities, native 35px tiles,', BOUNDS, 'world bounds')
 
 
 def style_level_one(scene):
     character_art()
-    banner_art()
     export_wall_materials()
     entities = scene['entities']
     floor_map = {'floor': 'tile_dormitory_north', 'corridor_floor': 'tile_main_corridor',
@@ -495,6 +474,8 @@ def style_level_one(scene):
                 'wall_south': 'module_outer_south_face'}
     keep = []
     for entity in entities:
+        if entity['name'] in CHAPTER_ONE_PLACEMENTS:
+            entity['transform']['position'] = list(CHAPTER_ONE_PLACEMENTS[entity['name']])
         sprite = part(entity, 'SpriteRenderer')
         if sprite:
             name = Path(sprite.get('texture', '')).stem
@@ -503,7 +484,10 @@ def style_level_one(scene):
             if name in floor_map:
                 sprite.update(texture=texture(floor_map[name]), tileSize=[1, 1])
             elif name == 'drain':
-                sprite['texture'] = 'assets/castle/props/drain_grate.png'
+                sprite.update(texture=pixel_texture('drain_grate'), size=[64 / PPU, 48 / PPU],
+                              offset=[0, -22 / PPU])
+                entity['components'] = [p for p in entity['components'] if p['type'] != 'Collider']
+                entity['components'].extend(silhouette_colliders('drain_grate'))
             elif name in wall_map:
                 # One shared resizable wall object; expose returns only at actual openings.
                 vertical = name == 'wall_vertical'
@@ -525,9 +509,9 @@ def style_level_one(scene):
                         sprite.update(size=[sprite['size'][0], 45 / PPU], drawMode='Sliced', sliceFill='Tile')
                     else:
                         asset = ASSETS['control_banner']
-                        height = 54 / PPU
+                        height = BANNER_SIZE[1] / PPU
                         sprite.update(texture=banner_texture(asset['id']),
-                                      size=[54 * 44 / 68 / PPU, height], offset=[0, .25 - height / 2],
+                                      size=[BANNER_SIZE[0] / PPU, height], offset=[0, .25 - height / 2],
                                       layer=10, ySort=True)
                         entity['transform']['position'][1] = .75
                         sprite['sortOffset'] = .251
@@ -536,8 +520,9 @@ def style_level_one(scene):
                     sprite.update(**prop_sprite(asset))
                     collider = part(entity, 'Collider')
                     if collider:
-                        collider.update(**footprint(asset))
-                        ground_prop(sprite, collider)
+                        ground_prop(sprite, footprint(asset))
+                        entity['components'] = [p for p in entity['components'] if p['type'] != 'Collider']
+                        entity['components'].extend(prop_colliders(asset))
         role = {'Explorer': 'hero', 'Mara': 'companion', 'Old prisoner': 'yard_worker', 'Keep guard': 'guard'}.get(entity['name'])
         if role:
             set_character(entity, role)
@@ -578,7 +563,7 @@ def style_level_one(scene):
     for prop in keep:
         sprite = part(prop, 'SpriteRenderer')
         if (not sprite or not part(prop, 'Collider') or prop['name'].startswith('Masonry ')
-                or not sprite['texture'].startswith(('assets/castle/props/', 'assets/castle/reference/'))):
+                or not sprite['texture'].startswith(('assets/castle/pixel/', 'assets/castle/props/', 'assets/castle/reference/'))):
             continue
         x, y = prop['transform']['position']
         w, h = sprite['size']
@@ -592,6 +577,44 @@ def style_level_one(scene):
             if (y + sprite.get('sortOffset', 0) < depth and x + dx - w / 2 < right
                     and x + dx + w / 2 > left and y + dy - h / 2 < bottom and y + dy + h / 2 > top):
                 y = top - dy - h / 2 - 2 / PPU
+        prop['transform']['position'] = [x, y]
+    # Full silhouettes can reach stone above the old shallow feet boxes. Resolve
+    # their actual compound bounds against physical cells before merging walls.
+    stone = []
+    for wall in keep:
+        if not wall['name'].startswith('Masonry '):
+            continue
+        wx, wy = wall['transform']['position']
+        for shape in wall['components']:
+            if shape['type'] == 'Collider':
+                p = shape['properties']
+                dx, dy = p.get('offset', [0, 0])
+                w, h = p['size']
+                stone.append((wx + dx - w / 2, wy + dy - h / 2,
+                              wx + dx + w / 2, wy + dy + h / 2))
+    for prop in keep:
+        sprite = part(prop, 'SpriteRenderer')
+        if (not sprite or not sprite['texture'].startswith('assets/castle/pixel/')
+                or part(prop, 'StateGate')):
+            continue
+        shapes = [p['properties'] for p in prop['components'] if p['type'] == 'Collider']
+        if not shapes:
+            continue
+        x, y = prop['transform']['position']
+        lo = [min(p.get('offset', [0, 0])[i] - p['size'][i] / 2 for p in shapes) for i in (0, 1)]
+        hi = [max(p.get('offset', [0, 0])[i] + p['size'][i] / 2 for p in shapes) for i in (0, 1)]
+        for _ in range(8):
+            moved = False
+            for left, top, right, bottom in stone:
+                if min(x + hi[0], right) - max(x + lo[0], left) <= .001 or min(y + hi[1], bottom) - max(y + lo[1], top) <= .001:
+                    continue
+                options = [(left - x - hi[0] - 2 / PPU, 0), (right - x - lo[0] + 2 / PPU, 0),
+                           (0, top - y - hi[1] - 2 / PPU), (0, bottom - y - lo[1] + 2 / PPU)]
+                dx, dy = min(options, key=lambda v: abs(v[0]) + abs(v[1]))
+                x, y = x + dx, y + dy
+                moved = True
+            if not moved:
+                break
         prop['transform']['position'] = [x, y]
     # Merge adjacent front-facing cells into extendable runs with one pair of returns.
     rows = {}
@@ -663,4 +686,6 @@ def style_level_one(scene):
                 joined.append(entity)
     scene['entities'] = [entity for entity in keep if entity['id'] not in removed] + joined
     add_wall_copings(scene)
+    furnish_chapter_one(scene)
+    build_masonry(scene, 1)
     scene['settings']['background'] = '#101823ff'

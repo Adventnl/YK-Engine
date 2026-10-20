@@ -4,6 +4,18 @@ yk_add_test(blackthorn_chapter1 tests/exploration_tests.cpp LIBS yk::gameplay TI
     DEFINITIONS YK_EXPLORATION_PROJECT_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 yk_add_test(blackthorn_chapter2 tests/castle_level2_tests.cpp LIBS yk::gameplay TIMEOUT 120
     DEFINITIONS YK_EXPLORATION_PROJECT_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+
+# The art authoring toolchain is optional for engine consumers. When available,
+# validate shipping pixels and baked shapes independently of the exporter.
+find_package(Python3 COMPONENTS Interpreter QUIET)
+if(Python3_Interpreter_FOUND)
+    execute_process(COMMAND "${Python3_EXECUTABLE}" -c "import PIL"
+        RESULT_VARIABLE BLACKTHORN_PIL_RESULT OUTPUT_QUIET ERROR_QUIET)
+    if(BLACKTHORN_PIL_RESULT EQUAL 0)
+        add_test(NAME blackthorn_pixel_art COMMAND "${Python3_EXECUTABLE}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/pixel_art_tests.py")
+    endif()
+endif()
 if(YK_RUNTIME)
     add_test(NAME blackthorn_search_render COMMAND yk_player
         ${CMAKE_CURRENT_SOURCE_DIR} --scene scenes/courtyard.ykscene --fixed --no-audio --frames 520

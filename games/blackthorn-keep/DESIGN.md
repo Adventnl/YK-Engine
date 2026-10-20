@@ -35,7 +35,7 @@ typography:
 rounded:
   square: "0px"
 spacing:
-  tile: "32px"
+  tile: "35px"
   hud-inset: "20px"
   search-inset: "16px"
   result-inset: "24px"
@@ -122,19 +122,23 @@ Pillow's default raster font baked into their plaque textures.
 ## Layout
 
 The game is a native SDL desktop experience. Source materials use 35 pixels per world unit.
-Both chapters use a camera height of 11.6 units and render world art, lights and shadows
-directly at the display resolution. At 1280 × 720 the playfield is 1280 × 580; larger windows
-retain more of the artwork's detail. There is no intermediate raster that discards source
-pixels or quantizes camera motion. HUD and dialogue also use display resolution.
+Both chapters use a camera height of 11.6 units and a 35-pixels-per-unit world raster.
+Nearest sampling scales the same pixel grid to every window size. Characters set the
+detail budget; props use a shared 64-color palette, binary alpha and orthographic RPG
+perspective with visible tops and horizontal front edges. HUD and dialogue use display resolution.
 
-Walls are resizable nine-slice runs: native coping and masonry repeat between finished
-left and right returns. Ordinary openings split the run and its solid footprint; there are
-no clipped facade PNGs or overhead scraps. Vertical walls form joined runs with complete
-free-end faces. Intersections have one visible surface. `tools/castle_geometry.py` owns these materials and the shared
-furniture silhouettes, dimensions, feet and contact shadows used by both chapter builders.
+Walls use a joined planar footprint with the same 35-pixel thickness in both directions
+and a 49-pixel elevation. `tools/castle_masonry.py` partitions the union into reusable
+native blocks and matching solid geometry. Corners and T junctions share one surface;
+only exposed edges have a bevel or front face. Blocks snap their shared screen edges
+at fractional zoom. `tools/castle_geometry.py` owns the shared furniture silhouettes,
+dimensions and contact shadows used by both chapter builders.
 Repeated beds, chairs, crates, barrels, plants and racks use the same canonical assets.
 Equipment has deliberate size limits; the utility machine's pipe assembly has a full
-floor footprint.
+opaque-pixel silhouette. `castle_pixel_art.py` bakes merged compound collision from the
+actual exported alpha; transparent gutters and gaps stay clear. `castle_layout.py` places
+furniture groups with clear routes and keeps chairs away from wall openings. Banners use
+one fixed 24 × 28-pixel canvas rather than shrinking on short walls.
 The HUD reserves 40 pixels above the world and 100 below at 1280 × 720. Interface placement and
 text scale follow the viewport; objectives and supplies never cover the moving game.
 The shared scale unit is `min(viewport width / 1280, viewport height / 720)`.
@@ -155,7 +159,7 @@ add reference-style detail without obstructing the escape route.
 ## Shapes
 
 World tiles are square and UI panels have square corners. Furniture uses distinct, dark-outlined
-silhouettes with solid bases. Character cells are 32 × 40 pixels and tool icons are 32 × 32.
+silhouettes. Character cells are 32 × 44 pixels and tool icons are 32 × 32.
 
 ## Components
 

@@ -108,7 +108,7 @@ prop('East archive desk','desk',27,5,w=2)
 prop('Drain service barrel','barrel',23,13.5)
 # Reference-style furnishing accents stay out of doorways and escape interactions.
 for x,y in [(1.6,10.5),(19,10.5),(11,6),(30,10.8),(22,16.4)]:
-    prop('Terracotta fern','plant',x,y,foot=.45)
+    prop('Stores fern' if (x,y)==(11,6) else 'Terracotta fern','plant',x,y,foot=.45)
 prop('Common room armor','statue',10.8,9.6,foot=.55)
 prop('Tower armor','statue',30,3.5,foot=.55)
 prop('Stores crates','crates',10.8,4.8)

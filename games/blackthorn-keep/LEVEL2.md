@@ -1,10 +1,17 @@
 # Level 2: The Inner Keep
 
 A furnished castle prison assembled from `invisible_castle_level2_editable.zip` in YK Engine.
-The supplied five-layer composition guides the floor plan, wall elevations, prop positions,
-room colors and relative furnishing scale. The previous enlarged corridor is restored to the
-reference proportions. Layout coordinates use 35 pixels per world unit; repaired props
-use 70 pixels per unit and detailed masonry uses 140 pixels per unit.
+The supplied five-layer composition guides the connected rooms, wall elevations and colors.
+The authored plan removes about a quarter of the overall footprint while preserving native
+furniture and character sizes. The canteen, laundry and infirmary lose at least a quarter
+of their floor area. Characters and every world material use 35 pixels per world unit.
+Furniture is exported from three unified pixel-art atlases with one camera view and palette.
+
+Storage and work surfaces form wall runs; the common room has a table and seats instead of
+spare beds. Infirmary nightstands share the beds' head line and sit within four pixels of
+their sides. Extra barrels, chairs and duplicated furnishings are removed. Clear aisles
+connect all eighteen passages, and resident routines follow the compact plan. The final
+gate frame reaches the base of the outer wall without a black strip below it.
 
 ```sh
 ./build/dev/yk_player games/blackthorn-keep
@@ -13,8 +20,8 @@ use 70 pixels per unit and detailed masonry uses 140 pixels per unit.
 Move with **WASD / arrows**, interact with **E**, dismiss or cancel with **Escape**,
 pause with **P**, and restart with **R**. Room and corridor passages have no doors; walk straight through.
 The camera follows the player with an 11.6-unit view and clamps to the keep boundaries.
-At 1280 by 720, the 580-pixel playfield renders at its full 1280 × 580 resolution.
-Larger windows render additional detail; there is no forced low-resolution intermediate.
+The world is rasterized at 35 pixels per unit with nearest sampling at every window size.
+HUD text and dialogue retain display resolution.
 
 ## Escape route
 
@@ -37,7 +44,8 @@ NPC conversations use detailed portraits and give local hints.
 ## Shared visual and collision rules
 
 Both chapters use `assets/level2/` directional character sheets and the supplied castle
-materials in `assets/castle/reference/`. Room name plaques and the HUD's room label are gone.
+materials in `assets/castle/pixel/` and native masonry in `assets/castle/materials/`.
+Room name plaques and the HUD's room label are gone.
 Residents and guards use kinematic bodies with solid feet colliders: they follow their
 routines and cannot be shoved out of place by walking into them. A speaker pauses while
 others continue their routines.
@@ -51,10 +59,10 @@ colliders. Locked escape gates retain their requirements and animated leaves.
 The ImageGen masters in `assets/castle/source/door-simple.png` and `banner-clean.png`
 and their adjacent `.prompt.txt` files remain available for authoring.
 
-Walls are extensible nine-slice objects with tiled masonry, fixed-width end returns and
-matching solid footprints. Doorways split runs instead of cutting holes in large images.
-Vertical walls join into continuous runs, end with finished stone faces at passages,
-and share a single surface with adjoining horizontal facades.
+Walls share a joined footprint with chapter one: 35-pixel thickness in both directions,
+49-pixel elevation, and reusable 35 x 35 blocks. The planar union removes internal end
+caps and overlapping surfaces at corners and T junctions. The same plan supplies solid
+collision, with clear passages and finished faces only on exposed edges.
 Banners sort at their wall's base and have clean transparent silhouettes. The yard planter is
 clear of the utility doorway. The hero's separate `hero-polished` atlas adds four standing and
 blinking directions without changing the existing walk and search cells. Movement stops on
@@ -64,9 +72,12 @@ release, and resolved physics velocity selects walking versus idle when pushing 
 
 The supplied manifest records source origins and pivots. Scenery stays individually editable;
 it is not a flattened background. `tools/castle_reference.py` imports its placements;
-`tools/castle_geometry.py` shares wall materials, furniture sizes and physical footprints
-with chapter one. Oversized equipment is reduced, repeated furniture uses canonical assets,
-and beds and the pipe machine have full floor footprints. Scene
+`tools/castle_masonry.py` builds joined wall blocks; `tools/castle_geometry.py` shares
+furniture sizes and physical footprints
+with chapter one. `tools/castle_pixel_art.py` exports native sprites and bakes exact opaque-pixel
+collision into compound boxes; `tools/castle_layout.py` owns deliberate placements and clear aisles.
+Oversized equipment is reduced, repeated furniture uses canonical assets, and banners always
+use one fixed size. Redundant chairs at wall openings are removed. Scene
 logic still uses reusable engine components for inventories, crafting, patrols, dialogue,
 wire matching and level flow.
 
@@ -83,8 +94,12 @@ re-exporting them. The source door master and original prompts are excluded from
 Gameplay checks verify all eighteen ordinary passages have no doors and physically traverse
 them in both directions. They also cover NPC push resistance and motion, modal dismissal,
 three camera viewport sizes, searches, crafting, guard capture, the wire puzzle, the sealed
-exit, completion and restart. Additional collision checks walk into beds and the machine from
-exposed sides. The renderer test checks actual contact-shadow pixels, optional raster cameras,
+exit, completion and restart. Additional collision checks walk into beds, benches and the machine
+from exposed sides and verify every collider piece exists in the physics world.
+The Python art checks compare shipping collision to texture alpha pixel by pixel, enforce
+native sizes and filters, reject furniture overlaps, and sample every NPC route against
+scenery collision in both chapters.
+The renderer test checks actual contact-shadow pixels, optional raster cameras,
 one-pixel UI details, offset viewports and resizing within an outer render target.
 
 The overview below uses a temporary fixed camera for layout review. Shipping scenes follow
