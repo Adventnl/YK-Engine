@@ -132,17 +132,29 @@ def main():
         for entity in corridor['entities']:
             if entity['name'] in ('Explorer', 'Player follow camera'):
                 entity['transform']['position'] = compact_world([(700 - 40) / 35, (475 - 25) / 35])
+        wall_contact = copy.deepcopy(second)
+        for entity in wall_contact['entities']:
+            if entity['name'] in ('Explorer', 'Player follow camera'):
+                # Stand beside the west corridor return, with the hero's body
+                # overlapping the stone. The complete character must stay visible.
+                entity['transform']['position'] = [275 / 35, 304 / 35]
         utility = copy.deepcopy(second)
         for entity in utility['entities']:
             if entity['name'] in ('Explorer', 'Player follow camera'):
                 entity['transform']['position'] = compact_world([(1490 - 40) / 35, (590 - 25) / 35])
+        wire_terminal = copy.deepcopy(second)
+        terminal = next(e for e in second['entities'] if e['name'] == 'Power terminal')
+        tx, ty = terminal['transform']['position']
+        for entity in wire_terminal['entities']:
+            if entity['name'] in ('Explorer', 'Player follow camera'):
+                entity['transform']['position'] = [tx + 1.2, ty - .45]
         infirmary = copy.deepcopy(second)
         for entity in infirmary['entities']:
             if entity['name'] in ('Explorer', 'Player follow camera'):
                 entity['transform']['position'] = compact_world([(970 - 40) / 35, (750 - 25) / 35])
         for name, scene in [('courtyard', first), ('level2', second), ('workshop', workshop),
-                            ('overview', overview), ('corridor', corridor), ('utility', utility),
-                            ('infirmary', infirmary)]:
+                            ('overview', overview), ('corridor', corridor), ('wall-contact', wall_contact), ('utility', utility),
+                            ('infirmary', infirmary), ('wire-terminal', wire_terminal)]:
             (project / 'scenes' / (name + '.ykscene')).write_text(json.dumps(scene, indent=2))
         env = dict(os.environ, SDL_VIDEODRIVER='dummy', SDL_RENDER_DRIVER='software',
                    SDL_AUDIODRIVER='dummy', YK_NO_DIALOGS='1', YK_LOG_DIR=str(work / 'logs'))
@@ -159,9 +171,11 @@ def main():
         for scene, destination in [('courtyard', 'level1-preview.png'),
                                     ('workshop', 'level2-preview.png'),
                                     ('corridor', 'level2-corridor-preview.png'),
+                                    ('wall-contact', 'level2-wall-contact-preview.png'),
                                     ('level2', 'level2-cells-preview.png'),
                                     ('utility', 'level2-utility-preview.png'),
                                     ('infirmary', 'level2-infirmary-preview.png'),
+                                    ('wire-terminal', 'level2-wire-terminal-preview.png'),
                                     ('overview', 'level2-overview.png')]:
             capture(scene, ROOT / destination)
         if options.audit is not None:

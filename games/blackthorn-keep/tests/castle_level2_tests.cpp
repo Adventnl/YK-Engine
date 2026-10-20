@@ -218,10 +218,11 @@ int main() {
     CHECK(!object("Yard Bench South")); // One bench fits the compact yard's seating zone.
     CHECK(object("Corridor Weapon Rack West")->get<SpriteRenderer>()->texture.path ==
           object("Corridor Weapon Rack East")->get<SpriteRenderer>()->texture.path);
+    // Both controls occupy the service bays above the final anteroom.
+    // clearFurniture above checks their complete silhouettes against the walls.
     for (const char *name : {"Power terminal", "Emergency exit switch"}) {
-        const auto *control = object(name);
-        const auto *art = control->get<SpriteRenderer>();
-        CHECK(control->worldPosition().y + art->offset.y + art->size.y * .5F <= at(0, 714).y - 2 / 35.0F);
+        CHECK(object(name)->worldPosition().y > at(0, 660).y);
+        CHECK(object(name)->worldPosition().y < at(0, 714).y);
     }
     // Walk into opaque parts from exposed sides. Compound rectangles follow the
     // silhouette; their union (not the first rectangle) is the physical object.
@@ -247,7 +248,7 @@ int main() {
             CHECK(found);
             bool bound = false;
             if (found)
-                for (const auto shape : found.value())
+                for (const auto &shape : found.value())
                     bound = bound || session->runtime().entityOfShape(shape) == furniture;
             CHECK(bound); // Every baked opaque rectangle must exist in the physics world.
         }
@@ -339,7 +340,7 @@ int main() {
     CHECK(board.text("current_room") == "INFIRMARY");
     auto *camera = object("Player follow camera")->get<Camera>();
     CHECK(camera->mode == CameraMode::Follow && camera->targets.size() == 1);
-    CHECK(camera->orthographicHeight >= 11 && camera->orthographicHeight <= 12);
+    CHECK(camera->orthographicHeight >= 9 && camera->orthographicHeight <= 9.5F);
     CHECK(camera->viewportInset == Vec2(0, 140));
     // Camera follows actual movement, then clamps against the rendered world aspect.
     teleport(at(700, 475));

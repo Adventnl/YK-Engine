@@ -26,7 +26,6 @@ CHAPTER_ONE_PLACEMENTS = {
     'Stores fern': (11.2, 4.4),
     'Office shelves': (13.9, 2.6), 'Warden desk': (16.5, 2.35),
     'Office chest': (19, 1.85),
-    'Common room table': (4, 9.4),
     'Tool bench': (3, 13.65), 'Workshop shelf': (5.2, 13.65),
     'Rope workbench': (7.85, 15.3), 'Workshop barrel': (1.6, 15.4),
     'Workshop crates': (9.48, 15.4), 'Laundry chest': (12.5, 15.2),
@@ -40,7 +39,7 @@ CHAPTER_ONE_PLACEMENTS = {
 def furnish_chapter_one(scene):
     """Wall storage, a serving corner, work aisles and an unobstructed east gate."""
     scene['entities'] = [e for e in scene['entities']
-                         if e['name'] not in ('Terracotta fern', 'Common room armor')]
+                         if e['name'] not in ('Terracotta fern', 'Common room armor', 'Common room table')]
     basins = iter((11.8, 15, 18.8))
     for entity in scene['entities']:
         name = entity['name']
@@ -51,7 +50,7 @@ def furnish_chapter_one(scene):
         if name == 'Common room heraldic rug':
             entity['transform']['position'] = [4, 9.1]
             next(p['properties'] for p in entity['components']
-                 if p['type'] == 'SpriteRenderer')['size'] = [4.9, .9]
+                 if p['type'] == 'SpriteRenderer')['size'] = [4.9, 45 / 35]
         if name == 'Office heraldic rug':
             entity['transform']['position'] = [16.5, 2.65]
 
@@ -148,6 +147,8 @@ def compact_architecture(scene):
                 p['size'] = [bottom - top, right - left] if rotated else [right - left, bottom - top]
                 p['offset'] = [offset[1], -offset[0]] if rotated else offset
                 if entity['name'] == 'Corridor Runner':
+                    # Keep the complete top and bottom cloth pattern after compaction.
+                    p['size'][1] = 45 / 35
                     p.update(drawMode='Sliced', sliceFill='Tile')
             if component['type'] == 'SpriteRenderer' and p.get('ySort'):
                 depth = compact_world([old_position[0], old_position[1] + p.get('sortOffset', 0)])
@@ -175,7 +176,7 @@ def furnish_compact_rooms(scene):
     _, common = mapped(76, 289)
     _, south_cell = mapped(76, 685)
     _, south = mapped(425, 601)
-    _, service = mapped(1446, 660)
+    _, service_bay = mapped(1446, 660)
     _, yard = mapped(1162, 429)
     positions = {
         'Dorm Bed Nw': (west + 2, north + 3),
@@ -244,8 +245,8 @@ def furnish_compact_rooms(scene):
         'Arena Court Markings': (control + 18, yard + 144),
         'Utility Energy Device Pipes': (stores + 96, yard + 2),
         'Utility Crate': (stores + 2, yard + 90),
-        'Power terminal': (stores + 2, service + 2),
-        'Emergency exit switch': (stores + 113, service + 2),
+        'Power terminal': (stores + 2, service_bay + 2),
+        'Emergency exit switch': (stores + 113, service_bay + 2),
     }
     for entity in scene['entities']:
         if entity['name'] not in positions:

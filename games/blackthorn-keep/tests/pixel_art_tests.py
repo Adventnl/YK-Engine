@@ -60,12 +60,24 @@ class CastlePixelArtTests(unittest.TestCase):
             w, h = sprite['size']
             return (x + dx - w / 2, y + dy - h / 2, x + dx + w / 2, y + dy + h / 2)
 
-        # Keep the actual room-area saving, independent of how builders implement it.
+        # Measure exposed floor, excluding the material continued under walls
+        # so doorway thresholds can share their room's texture.
         for name, original_area in [('Floor Infirmary', 308 * 225),
                                     ('Floor Canteen', 367 * 241),
                                     ('Floor Laundry', 308 * 241)]:
             left, top, right, bottom = edges(name)
-            self.assertLess((right - left) * (bottom - top) * PPU ** 2, original_area * .75)
+            visible = Image.new('L', (round((right - left) * PPU), round((bottom - top) * PPU)), 255)
+            draw = ImageDraw.Draw(visible)
+            for wall in scene['entities']:
+                if 'wall_solid' not in wall.get('tags', []):
+                    continue
+                x, y = wall['transform']['position']
+                for shape in properties(wall, 'Collider'):
+                    w, h = shape['size']
+                    a, b, c, d = [round(v * PPU) for v in
+                        (x - w / 2 - left, y - h / 2 - top, x + w / 2 - left, y + h / 2 - top)]
+                    draw.rectangle((a, b, c - 1, d - 1), fill=0)
+            self.assertLess(visible.histogram()[255], original_area * .80)
         west_bed, east_bed = edges('Infirmary Bed West'), edges('Infirmary Bed East')
         west_table, east_table = edges('Infirmary Nightstand West'), edges('Infirmary Nightstand East')
         self.assertLessEqual((west_table[0] - west_bed[2]) * PPU, 4)
@@ -81,6 +93,31 @@ class CastlePixelArtTests(unittest.TestCase):
                             for e in scene['entities'] if 'wall_solid' in e.get('tags', [])
                             for p in properties(e, 'Collider'))
         self.assertLessEqual(abs(gate_bottom - facade_bottom) * PPU, 1)
+
+    def test_room_floors_meet_at_wall_fronts(self):
+        scene = self.scenes['level2']
+        entities = {e['name']: e for e in scene['entities']}
+
+        def bounds(name):
+            entity = entities[name]
+            sprite = properties(entity, 'SpriteRenderer')[0]
+            x, y = entity['transform']['position']
+            dx, dy = sprite.get('offset', [0, 0])
+            w, h = sprite['size']
+            return x + dx - w / 2, y + dy - h / 2, x + dx + w / 2, y + dy + h / 2
+
+        front = bounds('Floor Main Corridor')[1]
+        for name in ('Floor Canteen', 'Floor Laundry', 'Floor Control Room', 'Floor Store Room'):
+            self.assertAlmostEqual(bounds(name)[3], front, places=5)
+        for name in ('Floor Exercise Yard', 'Floor Utility Room'):
+            self.assertAlmostEqual(bounds(name)[1], front, places=5)
+        for index in range(4):
+            passage = entities[f'Stone passage {index}']
+            self.assertAlmostEqual(bounds(passage['name'])[1], front, places=5,
+                                   msg='Side openings must not notch the wall face above the corridor')
+        for index in range(8):
+            self.assertLess(properties(entities[f'Stone passage {index}'], 'SpriteRenderer')[0]['layer'], -30,
+                            'Passage patches must never repaint an adjoining room')
 
     def test_collision_covers_exactly_the_exported_silhouette(self):
         tested = 0
@@ -115,6 +152,8 @@ class CastlePixelArtTests(unittest.TestCase):
 
     def test_wall_blocks_join_without_overlaps_and_match_the_solid_plan(self):
         for chapter, scene in self.scenes.items():
+            actor = next(e for e in scene['entities'] if e['name'] == 'Explorer')
+            actor_layer = properties(actor, 'SpriteRenderer')[0]['layer']
             # One native pixel per cell, including the projected north perimeter.
             masks = {kind: Image.new('L', (1800, 1200)) for kind in ('top', 'face', 'solid')}
             for entity in scene['entities']:
@@ -131,6 +170,8 @@ class CastlePixelArtTests(unittest.TestCase):
                         draw.rectangle((left, top, right - 1, bottom - 1), fill=255)
                     continue
                 sprite = properties(entity, 'SpriteRenderer')[0]
+                self.assertLess(sprite['layer'], actor_layer,
+                                'Characters must remain visible over every wall block')
                 self.assertEqual(sprite['size'], [1, 1])
                 self.assertEqual(entity['transform'].get('rotation', 0), 0)
                 self.assertEqual(sprite['drawMode'], 'Tiled', 'Joined edges must snap at fractional zoom')
@@ -146,15 +187,32 @@ class CastlePixelArtTests(unittest.TestCase):
                 self.assertIsNone(ImageChops.multiply(before, alpha).getbbox(),
                                   f'{chapter}: overlapping {kind} at {entity["name"]}')
                 masks[kind].paste(ImageChops.lighter(before, alpha), (left, top))
+            # Cross-sections through unbroken perimeter coping: its top view
+            # must have the same width on north and west walls.
+            def first_run(values):
+                start = next(i for i, value in enumerate(values) if value)
+                return next((i - start for i in range(start, len(values)) if not values[i]),
+                            len(values) - start)
+            top_pixels = masks['top'].load()
+            self.assertEqual(first_run([top_pixels[x, 450] for x in range(1800)]), 35)
+            self.assertEqual(first_run([top_pixels[580, y] for y in range(1200)]), 35)
             self.assertIsNone(ImageChops.multiply(masks['top'], masks['face']).getbbox(),
                               'Caps must join the face at an edge, never cover another wall')
-            projected_top = Image.new('L', masks['solid'].size)
-            projected_top.paste(masks['solid'], (0, -49))
-            self.assertIsNone(ImageChops.difference(projected_top, masks['top']).getbbox(),
-                              'Every wall surface must correspond to its real collision footprint')
+            visible = ImageChops.lighter(masks['top'], masks['face'])
+            self.assertIsNone(ImageChops.difference(masks['solid'], visible).getbbox(),
+                              'Every visible wall pixel must block the player, including its face')
+            expected = Image.new('L', visible.size)
+            for shift in range(29):
+                moved = Image.new('L', visible.size)
+                moved.paste(masks['top'], (0, shift))
+                expected = ImageChops.lighter(expected, moved)
+            self.assertIsNone(ImageChops.subtract(visible, expected).getbbox(),
+                              'Exposed brick faces may extend at most 28 native pixels below the top')
             for entity, sprite in scenery(scene):
                 if not sprite['texture'].endswith(('/control_banner.png', '/laundry_switch.png')):
                     continue
+                self.assertLess(sprite['layer'], actor_layer,
+                                'Wall fixtures must not conceal characters')
                 with Image.open(ROOT / sprite['texture']) as image:
                     alpha = image.getchannel('A')
                 x, y = entity['transform']['position']
@@ -165,11 +223,22 @@ class CastlePixelArtTests(unittest.TestCase):
                 self.assertIsNone(ImageChops.subtract(alpha, support).getbbox(),
                                   f'{chapter}: fixture lacks a supporting face: {entity["name"]}')
 
+    def test_runners_keep_the_complete_vertical_pattern(self):
+        for chapter, scene in self.scenes.items():
+            for entity in scene['entities']:
+                for sprite in properties(entity, 'SpriteRenderer'):
+                    if not sprite['texture'].endswith('/corridor_runner.png'):
+                        continue
+                    with Image.open(ROOT / sprite['texture']) as image:
+                        self.assertAlmostEqual(sprite['size'][1] * PPU, image.height,
+                            msg=f'{chapter}: {entity["name"]} must show both halves of the carpet')
+
     def test_level_one_furniture_has_purpose_and_clear_aisles(self):
         scene = self.scenes['courtyard']
         names = {e['name'] for e in scene['entities']}
         self.assertNotIn('Terracotta fern', names)
         self.assertNotIn('Common room armor', names)
+        self.assertNotIn('Common room table', names)
         basins = [e['transform']['position'] for e in scene['entities'] if e['name'] == 'Folded linen']
         self.assertEqual(len(basins), 3)
         self.assertEqual(len({p[1] for p in basins}), 1)

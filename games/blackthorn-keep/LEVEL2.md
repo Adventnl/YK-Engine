@@ -19,7 +19,7 @@ gate frame reaches the base of the outer wall without a black strip below it.
 
 Move with **WASD / arrows**, interact with **E**, dismiss or cancel with **Escape**,
 pause with **P**, and restart with **R**. Room and corridor passages have no doors; walk straight through.
-The camera follows the player with an 11.6-unit view and clamps to the keep boundaries.
+The camera follows the player with a closer 9.2-unit view and clamps to the keep boundaries.
 The world is rasterized at 35 pixels per unit with nearest sampling at every window size.
 HUD text and dialogue retain display resolution.
 
@@ -59,11 +59,17 @@ colliders. Locked escape gates retain their requirements and animated leaves.
 The ImageGen masters in `assets/castle/source/door-simple.png` and `banner-clean.png`
 and their adjacent `.prompt.txt` files remain available for authoring.
 
-Walls share a joined footprint with chapter one: 35-pixel thickness in both directions,
-49-pixel elevation, and reusable 35 x 35 blocks. The planar union removes internal end
-caps and overlapping surfaces at corners and T junctions. The same plan supplies solid
-collision, with clear passages and finished faces only on exposed edges.
-Banners sort at their wall's base and have clean transparent silhouettes. The yard planter is
+Walls share a joined footprint with chapter one: 35-pixel coping width in both directions,
+a shorter 28-pixel brick face, and reusable 35 x 35 blocks. Collision covers the complete
+visible wall silhouette. Passage cuts clear artwork and physics together, including the
+small connecting cell passages. Walls and fixtures draw below characters so the player
+cannot disappear behind them. The planar union removes internal end caps and overlapping
+surfaces at corners and T junctions. Banners stay on uncut masonry faces. Carpets retain
+both halves of their native 45-pixel pattern. Room floor materials reach the front edge
+of each doorway, where the next room begins. Side passages align with the wall face.
+The wire terminal and exit switch sit in the two service bays above the final anteroom;
+the lower divider gives both controls room while keeping the central exit aisle clear.
+The yard planter is
 clear of the utility doorway. The hero's separate `hero-polished` atlas adds four standing and
 blinking directions without changing the existing walk and search cells. Movement stops on
 release, and resolved physics velocity selects walking versus idle when pushing against walls.

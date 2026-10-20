@@ -92,33 +92,11 @@ int main() {
     // Static torches and furniture cannot be pushed. Perimeter and closed gate have no seams.
     CHECK(!object("Fixed wall torch")->has<NpcPath>());
     CHECK(!object("Fixed wall torch")->has<RigidBody>());
-    // Reproduce the reported invisible table border from above and from its
-    // exposed left side. Contact must be within three native pixels of the
-    // visible silhouette after allowing for the player's smaller feet.
-    auto *table = object("Common room table");
-    const auto tableShapes = table->getAll<Collider>();
-    CHECK(session->runtime().bodyShapes(table->id()).size() == tableShapes.size());
-    const auto *boardShape = *std::max_element(tableShapes.begin(), tableShapes.end(), [](auto *a, auto *b) {
-        return a->size.x * a->size.y < b->size.x * b->size.y;
-    });
-    const Vec2 tableCenter = table->worldPosition() + boardShape->offset;
-    float topEdge = std::numeric_limits<float>::max(), leftEdge = topEdge;
-    for (const auto *shape : tableShapes) {
-        const Vec2 center = table->worldPosition() + shape->offset;
-        if (std::abs(center.x - tableCenter.x) < shape->size.x / 2)
-            topEdge = std::min(topEdge, center.y - shape->size.y / 2);
-        if (std::abs(center.y - tableCenter.y) < shape->size.y / 2)
-            leftEdge = std::min(leftEdge, center.x - shape->size.x / 2);
-    }
-    session->runtime().teleport(*actor(), {tableCenter.x, topEdge - .7F});
-    keyboard.set(Key::S, true); tick(70); keyboard.set(Key::S, false); tick(4);
-    const float topGap = topEdge - actor()->worldPosition().y - actor()->get<Collider>()->offset.y -
-                         actor()->get<Collider>()->size.y / 2;
-    CHECK(std::abs(topGap) <= 3.0F / 35);
-    session->runtime().teleport(*actor(), {leftEdge - .7F, tableCenter.y});
-    keyboard.set(Key::D, true); tick(70); keyboard.set(Key::D, false); tick(4);
-    const float leftGap = leftEdge - actor()->worldPosition().x - actor()->get<Collider>()->size.x / 2;
-    CHECK(std::abs(leftGap) <= 3.0F / 35);
+    // The removed table must leave a direct route from the actual spawn,
+    // through the cell opening and into the common room.
+    CHECK(!object("Common room table"));
+    session->runtime().teleport(*actor(), {3.5F, 4.5F});
+    walkTo({3.5F, 9.5F});
     CHECK(!object("Common room heraldic rug")->has<Collider>());
     session->runtime().teleport(*actor(), {2, 8.4F}); walkTo({2, 9.5F});
     const Vec2 cabinetAt = object("Locked cabinet")->worldPosition();
@@ -129,9 +107,15 @@ int main() {
     CHECK(actor()->worldPosition().y > cabinetAt.y + cabinetFoot->offset.y +
                                            cabinetFoot->size.y * .5F +
                                            actor()->get<Collider>()->size.y * .5F - .04F);
-    for (float y : {8.8F,9.3F,10.0F,10.7F,11.2F}) {
+    for (float y : {8.8F,9.3F,10.0F}) {
         session->runtime().teleport(*actor(), {19.4F,y}); keyboard.set(Key::D,true); tick(50); keyboard.set(Key::D,false); tick(3);
         CHECK(actor()->worldPosition().x < 19.8F);
+    }
+    // The restored south return joins the corridor wall. Its west side is
+    // solid stone, so approach its exposed east edge instead of spawning inside it.
+    for (float y : {10.7F,11.2F}) {
+        session->runtime().teleport(*actor(), {21.6F,y}); keyboard.set(Key::A,true); tick(50); keyboard.set(Key::A,false); tick(3);
+        CHECK(actor()->worldPosition().x > 21.2F);
     }
     // Searching through the stores' wall is refused.
     session->runtime().teleport(*actor(), {12.7F,4.7F}); tick();

@@ -122,13 +122,17 @@ Pillow's default raster font baked into their plaque textures.
 ## Layout
 
 The game is a native SDL desktop experience. Source materials use 35 pixels per world unit.
-Both chapters use a camera height of 11.6 units and a 35-pixels-per-unit world raster.
+Both chapters use a camera height of 9.2 units and a 35-pixels-per-unit world raster.
 Nearest sampling scales the same pixel grid to every window size. Characters set the
 detail budget; props use a shared 64-color palette, binary alpha and orthographic RPG
 perspective with visible tops and horizontal front edges. HUD and dialogue use display resolution.
 
 Walls use a joined planar footprint with the same 35-pixel thickness in both directions
-and a 49-pixel elevation. `tools/castle_masonry.py` partitions the union into reusable
+and a short 28-pixel front face. Coping is 35 pixels wide in both directions.
+Collision covers the complete visible wall outline, including the front face. Explicit
+passage cuts apply to both artwork and collision; carpets retain their full 45-pixel height.
+Masonry renders on layer 4 and its fixtures on layer 5, beneath characters on layer 10,
+so a wall cannot hide the player. `tools/castle_masonry.py` partitions the union into reusable
 native blocks and matching solid geometry. Corners and T junctions share one surface;
 only exposed edges have a bevel or front face. Blocks snap their shared screen edges
 at fractional zoom. `tools/castle_geometry.py` owns the shared furniture silhouettes,

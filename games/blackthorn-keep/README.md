@@ -23,7 +23,7 @@ returns to the title. Restart and menu shortcuts also work on completion screens
 Ordinary room and corridor passages have no doors; walk straight through.
 Locked escape gates retain their key, tool or puzzle requirement.
 
-The 11.6-unit camera view shows more of the surrounding rooms and passages.
+The 9.2-unit camera view keeps the player and nearby passages close, about 26% larger than before.
 Room plaques and the current-room header have been removed. Characters use the same
 level-two directional sheets in both chapters, with grounded contact shadows. The hero has
 separate standing and blinking frames in every direction. Releasing movement stops immediately;
@@ -57,11 +57,17 @@ Floors, walls and props remain separate editable entities.
 
 Ordinary passages are clear openings in the stone walls, with no door artwork or blocking
 components. Locked escape gates use animated `StateGate` leaves and synchronized collision.
+Chapter one's east gate fits entirely inside its small side opening, with a brass
+padlock facing the west approach. The south stone return joins the corridor wall;
+unlocking retracts the iron grille into the north jamb.
 `tools/castle_masonry.py` builds both chapters from one joined stone plan. Horizontal
-and vertical walls have the same 35-pixel thickness and 49-pixel elevation. The union
+and vertical coping have the same 35-pixel width, with a shorter 28-pixel brick face.
+Collision follows every visible stone pixel, including the face. Doorway and gate cuts
+clear both the artwork and physics. Masonry and mounted fixtures
+render below characters so the player stays visible beside and behind walls. The union
 removes internal end caps at corners and T junctions; its surfaces are exported as
 reusable 35 x 35 blocks in two compact atlases under `assets/castle/masonry/`.
-Collision is partitioned from the same plan. Block edges snap together at fractional
+Collision is partitioned from the visible wall mask. Block edges snap together at fractional
 zoom, and exposed south edges receive a face rather than an overlapping column end.
 `tools/castle_geometry.py` shares furniture dimensions, silhouettes and contact shadows.
 Banners share their supporting wall's depth. Clean column tiles and banner silhouettes remove
@@ -76,8 +82,13 @@ wall-mounted storage, grouped seating, adjacent bedside tables and clear passage
 The final exit frame is aligned to the base of the outer wall.
 Chapter one groups storage against back walls, keeps laundry basins in a work run, and
 clears the circulation strip and east gate. Player collision uses a single 16 x 8-pixel
-feet shape. Runtime tests approach the common-room table from above and beside it,
-rejecting an invisible border larger than three native pixels.
+feet shape. The common-room table is removed so the starting cell has a direct exit.
+Runtime tests walk this route and approach walls from every direction. Carpets keep
+their full 45-pixel height so neither half of the pattern is cropped. Room floors continue
+through their doorways to the wall front; corridor patches stay beneath room surfaces.
+Side passages meet that same front edge without cutting notches into the wall face.
+The wire terminal and exit switch occupy the two service bays above the final anteroom,
+with room for their complete silhouettes and a clear central exit aisle.
 
 ImageGen masters and their exact prompts are preserved in `assets/castle/source/` and
 `assets/level2/source/hero_idle.*`. Runtime outputs are `assets/castle/doors/`,
@@ -89,6 +100,7 @@ Generated with the built-in image_gen tool:
 - [Unified furniture, equipment and domestic sprite atlases and generation prompts](assets/castle/source/pixel-unified/prompts.json).
 - [Standing hero master](assets/level2/source/hero_idle.png) and [prompt](assets/level2/source/hero_idle.prompt.txt).
 - [Detailed gate master](assets/castle/source/repairs/consistency/gate.png) and [prompt](assets/castle/source/repairs/consistency/gate.prompt.txt).
+- [Compact locked side gate](assets/castle/source/repairs/consistency/gate-locked-side.png) and [prompt](assets/castle/source/repairs/consistency/gate-locked-side.prompt.txt).
 - [Clean banner master](assets/castle/source/banner-clean.png) and [prompt](assets/castle/source/banner-clean.prompt.txt).
 - [Furniture masters, exact prompts and export notes](assets/castle/source/repairs/README.md).
 - [Fourteen spear-rack style replacements and exact prompts](assets/castle/source/repairs/consistency/README.md).

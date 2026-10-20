@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 from build_frontend import HUD_DEFAULTS, decorate_level
+from castle_masonry import ELEVATION
+from castle_pixel_art import PPU
 
 ROOT = Path(__file__).resolve().parents[1]
 ART = ROOT/'assets/keep'
@@ -73,8 +75,11 @@ for x,y in sorted(wall_cells):
     vertical=(x in (0,6,12,20,31) or (x==10 and y>=12)) and y not in (0,7,11,17)
     art='wall_vertical' if vertical else ('wall_south' if y==17 else 'wall')
     add('Masonry %d %d'%(x,y),x+.5,y+.5,sprite(art,1,1,layerOverride=4),solid(1,1))
+# The south coping projects into the side passage. Preserve that stone return
+# and fit the gate to the remaining opening, level with the corridor wall.
+gate_height = 2 - ELEVATION / PPU
 # Flush gold doorway thresholds sit beneath actors, without changing collision.
-for x,y,w,h in [(3,7,2,1),(9,7,2,1),(16,7,2,1),(7,11,2,1),(15,11,2,1),(25,7,2,1),(20,9,1,2)]:
+for x,y,w,h in [(3,7,2,1),(9,7,2,1),(16,7,2,1),(7,11,2,1),(15,11,2,1),(25,7,2,1),(20,9,1,gate_height)]:
     add('Brass doorway threshold',x+w/2,y+h/2,c('SpriteRenderer',texture='assets/keep/threshold.png',size=[w,h],layer=-16,drawMode='Tiled',tileSize=[1,1]))
 add('Common room heraldic rug',4,9.5,sprite('rug',5,2.5,layerOverride=-15))
 add('Office heraldic rug',17,3.8,sprite('rug',4.5,3,layerOverride=-15))
@@ -127,7 +132,7 @@ add('Mara',8,9.6,sprite('mara',1,1.25,offset=[0,-.375],ySort=True),c('AnimatedSp
 add('Old prisoner',5.7,9.3,sprite('old_prisoner',1,1.25,offset=[0,-.375],ySort=True),c('AnimatedSprite',animation='assets/keep/old_prisoner.ykanim',clip='idle_right',flipParameter=''),solid(.5,.35),c('Interactable',prompt='E - TALK TO ELIAS',range=1.3),c('Dialogue',speaker='Elias',pages=['We were locked up for refusing the warden\'s taxes. Mara found a way out. The workshop door is south of the common room.', 'The guard watches the office. If he spots you, leave before the warning fills. He cannot search the supplies hidden in your clothes.'],charactersPerSecond=0))
 points=[add('Guard patrol '+str(i),x,y) for i,(x,y) in enumerate([(14.5,5.4),(18.5,5.4),(17,5.4),(17,9.4),(12,9.4),(17,9.4),(17,5.4)])]
 add('Keep guard',14.5,5.4,sprite('guard',1,1.25,offset=[0,-.375],ySort=True),c('AnimatedSprite',animation='assets/keep/guard.ykanim',clip='idle_down',flipParameter=''),c('NpcPath',waypoints=points,speed=1.65,waitSeconds=1.2),c('RigidBody',type='Kinematic',gravityScale=0,fixedRotation=True),c('Collider',size=[.5,.35],layer='Solid',friction=0),c('PatrolWatch', caughtText='Caught! Back to your cell. Your hidden supplies are safe.',actor=hero,restrictedMin=[13,1],restrictedMax=[20,7],returnPosition=[3.5,4.5],range=3.1,catchSeconds=2.8))
-add('Castle gate',20.5,10,sprite('gate',1,2),solid(1,2),c('StateGate',startsLocked=True,unlockFlag='key_found',persistFlag='gate_open'),c('Interactable',prompt='E - UNLOCK EAST GATE / BRASS KEY',range=1.8))
+add('Castle gate',20.5,9+gate_height/2,sprite('gate',1,gate_height),solid(1,gate_height),c('StateGate',startsLocked=True,unlockFlag='key_found',persistFlag='gate_open'),c('Interactable',prompt='E - UNLOCK EAST GATE / BRASS KEY',range=1.8))
 prop('Drain grate','drain',28.5,15,w=2,h=1.5,parts=[c('Interactable',prompt='E - OPEN DRAIN / SCREWDRIVER + GRAPPLING LINE',range=1.8),c('SearchAction',title='ESCAPE THROUGH THE DRAIN',verb='LOOSENING THE GRATE AND SECURING YOUR ROPE',requiredItems=['screwdriver','grappling_line'],lockedText='Bring a screwdriver and a crafted grappling line.',duration=3,successFlag='drain_open',successText='Grate opened. Step into the passage behind it.',emptyText='The passage is open. Walk down the rope to escape.')])
 add('Escape passage',28.5,16.65,c('Collider',size=[1.5,.5],isTrigger=True,layer='Sensor'),c('Goal',requiredTag='player',requiredFlag='drain_open',enterOnComplete=True))
 add('Escape story',0,0,c('ObjectiveList',flags=['met_mara','tool_found','rope_found','hook_found','line_made','key_found','gate_open','drain_open'],instructions=['Talk to Mara in the common room.','Search the tool bench in the south workshop.','Pry open the locked cabinet in the north stores.','Search the chest in the south laundry.','Make a grappling line at the workshop workbench.','Steal the brass key from the warden desk. Avoid the guard.','Unlock the iron gate to the east tower.','Unscrew the drain grate and secure your grappling line.'],completeText='Walk into the open drainage passage to escape.'),c('InventoryHud', **HUD_DEFAULTS,actor=hero),c('LevelFlow',goals=[entities[-1]['id']],introDuration=0,restartOnDeath=False,completeDelay=30,completeMessage='YOU ESCAPED BLACKTHORN KEEP',nextScene='scenes/level2.ykscene',continueAction='Continue'))

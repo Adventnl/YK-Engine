@@ -23,7 +23,7 @@ ART = ROOT / 'assets/castle'
 REFERENCE = ART / 'reference'
 MANIFEST = json.loads((REFERENCE / 'manifest.json').read_text())
 ASSETS = {a['id']: a for a in MANIFEST['assets']}
-VIEW_HEIGHT = 11.6
+VIEW_HEIGHT = 9.2
 BOUNDS = [1591 / PPU, 883 / PPU]
 DOOR_FRAMES = 8
 FRONT_DOORS = [('North cell door', 148, 260, 69, 60), ('North east cell door', 321, 260, 63, 60),
@@ -53,11 +53,35 @@ def texture(asset):
     return 'assets/castle/reference/' + ASSETS[asset]['file']
 
 
+SIDE_GATE_WIDTH = 18
+
+
+def side_door_art(depth):
+    """Compact locked grille entirely contained in a vertical wall opening."""
+    path = ART / 'doors' / f'locked-side-{depth}.png'
+    master = Image.open(ART / 'source/repairs/consistency/gate-locked-side.png').convert('RGBA')
+    bounds = master.getchannel('A').point(lambda a: 255 if a >= 128 else 0).getbbox()
+    height = depth
+    closed = pixel_image(master.crop(bounds), (SIDE_GATE_WIDTH, height))
+    sheet = Image.new('RGBA', (SIDE_GATE_WIDTH * DOOR_FRAMES, height))
+    # Slide into the north wall pocket without squashing the bars or padlock.
+    # The final cell is empty: unlocking clears the complete passage.
+    for frame in range(DOOR_FRAMES):
+        shift = round(height * frame / (DOOR_FRAMES - 1))
+        if shift < height:
+            sheet.alpha_composite(closed.crop((0, shift, SIDE_GATE_WIDTH, height)),
+                                  (frame * SIDE_GATE_WIDTH, 0))
+    write_pixel(sheet, path)
+    return path.relative_to(ROOT).as_posix()
+
+
 def door_art(width=64, height=72, side=False):
-    """Bake detailed gates at 140px/unit, retaining fixed jambs and animated leaves."""
+    """Bake gates on the native grid, retaining fixed jambs and animated leaves."""
     output = ART / 'doors'
     output.mkdir(exist_ok=True)
-    path = output / f'{"side" if side else "front"}-{width}x{height}.png'
+    if side:
+        return side_door_art(height)
+    path = output / f'front-{width}x{height}.png'
     density = 4
     width, height = width * density, height * density
     master = Image.open(ART / 'source/repairs/consistency/gate.png').convert('RGBA')
@@ -66,45 +90,26 @@ def door_art(width=64, height=72, side=False):
     # The new master's jambs are eight pixels wide, with a nine-pixel lintel.
     panel = master.crop((9 * density, 10 * density, 55 * density, 63 * density))
     jamb = Image.new('RGBA', (width, height))
-    if side:
-        cap = Image.open(REFERENCE / ASSETS['module_inner_cap']['file']).convert('RGBA')
-        cap = cap.resize((width, 9 * density), Image.Resampling.LANCZOS)
-        jamb.alpha_composite(cap)
-        jamb.alpha_composite(cap, (0, height - 9 * density))
-        interior = (0, 9 * density, width, height - 9 * density)
-    else:
-        jamb.alpha_composite(master.crop((0, 0, 64 * density, 9 * density)).resize(
-            (width, 9 * density), Image.Resampling.LANCZOS))
-        for left, x in [(True, 0), (False, width - 8 * density)]:
-            strip = master.crop((0 if left else 56 * density, 9 * density,
-                                 8 * density if left else 64 * density, 64 * density))
-            jamb.alpha_composite(strip.resize((8 * density, height - 9 * density),
-                                              Image.Resampling.LANCZOS), (x, 9 * density))
-        interior = (8 * density, 9 * density, width - 8 * density, height)
+    jamb.alpha_composite(master.crop((0, 0, 64 * density, 9 * density)).resize(
+        (width, 9 * density), Image.Resampling.LANCZOS))
+    for left, x in [(True, 0), (False, width - 8 * density)]:
+        strip = master.crop((0 if left else 56 * density, 9 * density,
+                             8 * density if left else 64 * density, 64 * density))
+        jamb.alpha_composite(strip.resize((8 * density, height - 9 * density),
+                                          Image.Resampling.LANCZOS), (x, 9 * density))
+    interior = (8 * density, 9 * density, width - 8 * density, height)
     x1, y1, x2, y2 = interior
     iw, ih = x2 - x1, y2 - y1
     closed = panel.resize((iw, ih), Image.Resampling.LANCZOS)
-    # Side frames are separate scene pieces so the top jamb shares the supporting
-    # wall's depth instead of covering banners with a whole doorway-sized quad.
-    frame_height = ih if side else height
-    sheet = Image.new('RGBA', (width * DOOR_FRAMES, frame_height))
+    sheet = Image.new('RGBA', (width * DOOR_FRAMES, height))
     for frame in range(DOOR_FRAMES):
         amount = frame / (DOOR_FRAMES - 1)
         face = Image.new('RGBA', (width, height))
-        if side:
-            extent = max(1, round(ih / 2 * math.cos(amount * math.pi / 2)))
-            for leaf, y in [(closed.crop((0, 0, iw, ih // 2)), y1),
-                            (closed.crop((0, ih // 2, iw, ih)), y2 - extent)]:
-                face.alpha_composite(leaf.resize((iw, extent), Image.Resampling.LANCZOS), (x1, y))
-        else:
-            extent = max(1, round(iw / 2 * math.cos(amount * math.pi / 2)))
-            for leaf, x in [(closed.crop((0, 0, iw // 2, ih)), x1),
-                            (closed.crop((iw // 2, 0, iw, ih)), x2 - extent)]:
-                face.alpha_composite(leaf.resize((extent, ih), Image.Resampling.LANCZOS), (x, y1))
-        if side:
-            face = face.crop((0, y1, width, y2))
-        else:
-            face.alpha_composite(jamb)
+        extent = max(1, round(iw / 2 * math.cos(amount * math.pi / 2)))
+        for leaf, x in [(closed.crop((0, 0, iw // 2, ih)), x1),
+                        (closed.crop((iw // 2, 0, iw, ih)), x2 - extent)]:
+            face.alpha_composite(leaf.resize((extent, ih), Image.Resampling.LANCZOS), (x, y1))
+        face.alpha_composite(jamb)
         sheet.alpha_composite(face, (frame * width, 0))
     write_pixel(pixel_image(sheet, (sheet.width // density, sheet.height // density)), path)
     return path.relative_to(ROOT).as_posix()
@@ -182,9 +187,14 @@ def set_door(entity, width, depth=.55, automatic=True, height=None, side=False):
     sprite = part(entity, 'SpriteRenderer')
     sprite.clear()
     pixels = [round(width * PPU), round((height or 1.9) * PPU)]
-    sprite.update(texture=door_art(*pixels, side=side), size=[pixels[0] / PPU, (pixels[1] - 18 if side else pixels[1]) / PPU],
+    sprite.update(texture=door_art(*pixels, side=side), size=[pixels[0] / PPU, pixels[1] / PPU],
                   layer=10, offset=[0, 0], sortOffset=0 if side else pixels[1] / PPU / 2,
                   columns=DOOR_FRAMES, ySort=True)
+    if side:
+        # Keep the edge and west-facing lock inside the actual gap. Stone
+        # above and below owns the depth; the gate needs no extra elevation.
+        sprite.update(size=[SIDE_GATE_WIDTH / PPU, pixels[1] / PPU],
+                      offset=[(SIDE_GATE_WIDTH - pixels[0]) / (2 * PPU), 0])
     collider = part(entity, 'Collider')
     collider.update(size=[width, pixels[1] / PPU if side else depth], offset=[0, 0], layer='Solid', friction=0)
     gate = part(entity, 'StateGate')
@@ -215,8 +225,8 @@ def style_level_two(scene):
         return entity
 
     # Door cuts are explicit physical passages through the supplied reconstructed masonry.
-    cuts = [(394, 423, 426, 511), (791, 423, 825, 511),
-            (1130, 423, 1163, 511), (1413, 423, 1447, 511),
+    cuts = [(394, 429, 426, 511), (791, 429, 825, 511),
+            (1130, 429, 1163, 511), (1413, 429, 1447, 511),
             (1298, 336, 1362, 430), (1494, 336, 1552, 430),
             (231, 158, 262, 216), (223, 735, 254, 793)]
     front_cuts = [(x - DOOR_SIZE[0] // 2, math.ceil(y + h / 2) - DOOR_SIZE[1],
@@ -227,7 +237,7 @@ def style_level_two(scene):
             c('SpriteRenderer', texture=texture('tile_dormitory_north' if i == 6 else
                                                'tile_dormitory_south' if i == 7 else
                                                'tile_west_common_room' if i == 0 else 'tile_main_corridor'),
-              size=[(x2 - x1) / PPU, (y2 - y1) / PPU], layer=-29,
+              size=[(x2 - x1) / PPU, (y2 - y1) / PPU], layer=-31,
               drawMode='Tiled', tileSize=[1, 1]))
     export_wall_materials()
     # Floors repeat on the shared native grid rather than stretching extracted room canvases.
@@ -236,6 +246,16 @@ def style_level_two(scene):
             continue
         x, y = asset['origin_px']
         w, h = asset['width'], asset['height']
+        # Room materials continue through their north/south doorway to the
+        # front edge of the shared wall. The corridor begins at that edge,
+        # rather than painting strips and fingers into the adjoining rooms.
+        if asset['id'] in ('floor_canteen', 'floor_laundry',
+                           'floor_control_room', 'floor_store_room'):
+            h = 429 - y
+        elif asset['id'] == 'floor_main_corridor':
+            y, h = 429, 601 - 429
+        elif asset['id'] in ('floor_exercise_yard', 'floor_utility_room'):
+            y, h = 429, y + h - 429
         tile = 'tile_' + asset['id'][6:]
         if tile not in ASSETS:
             tile = 'tile_main_corridor'
@@ -253,6 +273,10 @@ def style_level_two(scene):
             continue
         x, y = asset['origin_px']
         w, h = asset['width'], asset['height']
+        if asset['id'].startswith('wall_exit_anteroom_wall_'):
+            # Move this divider's finished front edge south, making both
+            # service bays deep enough for the complete 42px terminal.
+            h += 24
         is_column = (asset['id'] in ('wall_outer_west', 'wall_outer_east', 'wall_control_room_pier')
                      or 'divider_' in asset['id'] or '_partition_' in asset['id'])
         group, key, span = ((vertical, (x, w), (y, y + h)) if is_column

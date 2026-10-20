@@ -1,8 +1,9 @@
 """Build both keeps from joined stone footprints on one native pixel grid.
 
 The plan is a union, so a T junction has one surface and no internal end caps.
-Every coping is 35px wide and every wall projects 49px upward. Export small,
-reusable native tiles; collision is partitioned from that same plan.
+The stone top is 35px wide in either direction, with a short 28px front face.
+Collision covers the complete visible outline, including the projected face.
+Characters draw above masonry so no wall can conceal them.
 """
 import hashlib
 import math
@@ -13,7 +14,8 @@ from castle_geometry import ROOT, PPU, component, material
 from castle_pixel_art import write_pixel
 
 THICKNESS = 35
-ELEVATION = 49
+ELEVATION = 28
+WALL_LAYER = 4
 OUTPUT = ROOT / 'assets/castle/masonry'
 
 
@@ -84,7 +86,7 @@ def build_masonry(scene, chapter):
         bottom = (y + dy + h / 2) * PPU
         candidates = [d - THICKNESS - ELEVATION for a, b, c, d in horizontal
                       if min((x + dx + w / 2) * PPU, c) > max((x + dx - w / 2) * PPU, a)
-                      and 0 < d - THICKNESS - ELEVATION - bottom <= 12]
+                      and 0 < d - THICKNESS - ELEVATION - bottom <= 49]
         if candidates:
             extension = (max(candidates) + 1 - bottom) / PPU
             sprite['size'][1] += extension
@@ -100,22 +102,34 @@ def build_masonry(scene, chapter):
                 bottom = d
         plan.append((left, top, right, bottom))
 
-    # A side gate occupies the same raised plane as the adjoining column.
-    # Keeping its leaves at floor level hid them behind the south wall, leaving
-    # only the red strip visible in the reported east-gate screenshot.
+    # Openings cut the projected artwork as well as the floor footprint.
+    # Otherwise the lower column's raised top intrudes into an open passage.
+    apertures = []
     for entity in scene['entities']:
-        if 'gate' not in entity.get('tags', []):
-            continue
-        collider = next(p['properties'] for p in entity['components'] if p['type'] == 'Collider')
-        w, h = collider['size']
-        if h <= w:
-            continue
-        x, y = entity['transform']['position']
-        left, top, right, bottom = [round(v * PPU) for v in
-                                   (x - w / 2, y - h / 2, x + w / 2, y + h / 2)]
-        plan.extend([(left, top, right, top + 9), (left, bottom - 9, right, bottom)])
-        sprite = next(p['properties'] for p in entity['components'] if p['type'] == 'SpriteRenderer')
-        sprite['offset'][1] -= ELEVATION / PPU
+        if entity['name'].startswith('Stone passage '):
+            sprite = next(p['properties'] for p in entity['components'] if p['type'] == 'SpriteRenderer')
+            x, y = entity['transform']['position']
+            dx, dy = sprite.get('offset', [0, 0])
+            x, y = x + dx, y + dy
+            w, h = sprite['size']
+            w = max(w * PPU, THICKNESS)
+            apertures.append((round(x * PPU - w / 2) - 2, round((y - h / 2) * PPU),
+                              round(x * PPU + w / 2) + 2, round((y + h / 2) * PPU)))
+        elif chapter == 1 and entity['name'] == 'Escape passage':
+            # Recess the south coping around the drain landing, retaining the
+            # perimeter beyond it. The escape trigger stays on visible floor.
+            shape = next(p['properties'] for p in entity['components'] if p['type'] == 'Collider')
+            x, y = entity['transform']['position']
+            w, h = shape['size']
+            apertures.append(tuple(round(v * PPU) for v in
+                (x - w / 2, y - h / 2 - ELEVATION / PPU, x + w / 2, y + h / 2 + .1)))
+        elif 'gate' in entity.get('tags', []):
+            shape = next(p['properties'] for p in entity['components'] if p['type'] == 'Collider')
+            w, h = shape['size']
+            if h <= w:
+                continue
+            x, y = entity['transform']['position']
+            apertures.append(tuple(round(v * PPU) for v in (x - w / 2, y - h / 2, x + w / 2, y + h / 2)))
 
     # Mount whole fixtures on the exposed face, below the shared 35px coping.
     # Original art used a 26px coping, which left brackets buried in the stone.
@@ -136,7 +150,23 @@ def build_masonry(scene, chapter):
                 key=lambda r: abs(r[3] - ELEVATION / 2 - (y + dy) * PPU))
             if abs(bottom - ELEVATION / 2 - (y + dy) * PPU) < 2 * PPU:
                 entity['transform']['position'][1] = (bottom - ELEVATION / 2) / PPU - dy
+                # Doorway cuts can shorten the supporting face. Keep the
+                # whole fixture on an uncut span instead of hanging over floor.
+                holes = [(a, c) for a, b, c, d in apertures
+                         if b < bottom and d > bottom - ELEVATION]
+                native_w = w * PPU
+                candidates = [left + 2, right - native_w - 2]
+                for a, b in holes:
+                    candidates.extend((a - native_w - 2, b + 2))
+                current_left = (x + dx - w / 2) * PPU
+                candidates.append(current_left)
+                candidates = [a for a in candidates if left + 1 <= a and a + native_w <= right - 1
+                              and all(a + native_w <= b or a >= c for b, c in holes)]
+                if candidates:
+                    new_left = min(candidates, key=lambda a: abs(a - current_left))
+                    entity['transform']['position'][0] = (new_left + native_w / 2) / PPU - dx
                 sprite['sortOffset'] = bottom / PPU - entity['transform']['position'][1] + .01
+        sprite.update(layer=WALL_LAYER + 1, ySort=False, sortOffset=0)
 
     origin_x = math.floor(min(r[0] for r in plan) / PPU) * PPU
     origin_y = math.floor((min(r[1] for r in plan) - ELEVATION) / PPU) * PPU
@@ -154,6 +184,13 @@ def build_masonry(scene, chapter):
         moved = Image.new('L', solid.size)
         moved.paste(top_mask, (0, shift))
         projected = ImageChops.lighter(projected, moved)
+    for mask in (top_mask, projected):
+        cut = ImageDraw.Draw(mask)
+        for left, top, right, bottom in apertures:
+            cut.rectangle((left - origin_x, top - origin_y,
+                           right - origin_x - 1, bottom - origin_y - 1), fill=0)
+    # The full-width top joins in both directions. Only exposed south edges
+    # receive the short brick face; no internal faces cross a junction.
     face_mask = ImageChops.subtract(projected, top_mask)
 
     # The same stone courses run through corners in either direction. Only the
@@ -197,7 +234,7 @@ def build_masonry(scene, chapter):
             components=parts, tags=['masonry', tag]))
         next_id += 1
 
-    for kind, canvas, depth in [('top', coping, ELEVATION), ('face', facade, 0)]:
+    for kind, canvas in [('top', coping), ('face', facade)]:
         for y in range(0, height, PPU):
             for x in range(0, width, PPU):
                 tile = canvas.crop((x, y, x + PPU, y + PPU))
@@ -210,8 +247,8 @@ def build_masonry(scene, chapter):
                 add(f'Masonry {kind} block {x // PPU} {y // PPU}',
                     [(origin_x + x + PPU / 2) / PPU, (origin_y + y + PPU) / PPU],
                     [component('SpriteRenderer', texture=texture_path.relative_to(ROOT).as_posix(),
-                        size=[1, 1], offset=[0, -.5], layer=10, ySort=True,
-                        sortOffset=depth / PPU, drawMode='Tiled', tileSize=[1, 1],
+                        size=[1, 1], offset=[0, -.5], layer=WALL_LAYER, ySort=False,
+                        drawMode='Tiled', tileSize=[1, 1],
                         columns=columns, rows=1, frame=tile_indices[digest])], 'wall_' + kind)
     rows = math.ceil(len(tiles) / columns)
     atlas = Image.new('RGBA', (columns * PPU, rows * PPU))
@@ -224,7 +261,7 @@ def build_masonry(scene, chapter):
         for part in entity['components']:
             if part['type'] == 'SpriteRenderer':
                 part['properties']['rows'] = rows
-    for index, (left, top, right, bottom) in enumerate(rectangles(solid)):
+    for index, (left, top, right, bottom) in enumerate(rectangles(projected)):
         add(f'Masonry solid {index}',
             [(origin_x + (left + right) / 2) / PPU,
              (origin_y + (top + bottom) / 2) / PPU],
