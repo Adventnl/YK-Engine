@@ -28,7 +28,8 @@ void PauseMenu::describe(TypeBuilder<PauseMenu> &type) {
 }
 Rect PauseMenu::buttonRect(Vec2 viewport, int row) {
     const float unit = std::min(viewport.x / 1280.0F, viewport.y / 720.0F);
-    return {viewport * 0.5F + Vec2{-210, -82 + row * 62.0F} * unit, Vec2{420, 50} * unit};
+    return {viewport * 0.5F + Vec2{-210, -82 + static_cast<float>(row) * 62.0F} * unit,
+            Vec2{420, 50} * unit};
 }
 Vec2 uiTopLeft(UiAnchor anchor, Vec2 viewport, Vec2 size, Vec2 offset) {
     const int index = static_cast<int>(anchor);
