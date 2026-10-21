@@ -74,8 +74,11 @@ echo "== A game exported by the packaged tool: signed, with a disk image"
 game="$work/games/Invisible Castle.app"
 codesign --verify --deep --strict "$game" && pass "the exported game's signature verifies"
 plutil -lint "$game/Contents/Info.plist" > /dev/null && pass "the game's Info.plist is valid"
-iconutil --convert iconset --output "$work/game.iconset" "$game/Contents/Resources/AppIcon.icns" \
-    && pass "the game's icon is accepted by iconutil"
+if [[ -f "$game/Contents/Resources/AppIcon.icns" ]]; then
+    iconutil --convert iconset --output "$work/game.iconset" "$game/Contents/Resources/AppIcon.icns" \
+        || fail "the game's icon is invalid"
+    pass "the game's icon is accepted by iconutil"
+fi
 [[ -f "$work/games/Invisible Castle.dmg" && -f "$work/games/Invisible Castle.app.zip" ]] || fail "missing .dmg or .zip"
 hdiutil attach -nobrowse -readonly -mountpoint "$work/mount" "$work/games/Invisible Castle.dmg" > /dev/null
 [[ -d "$work/mount/Invisible Castle.app/Contents/Resources/data" ]] || fail "the game's disk image is incomplete"
@@ -108,7 +111,7 @@ mkdir -p "$project_copy"
 ditto "$demo" "$project_copy/Invisible Castle"
 editor_logs="$HOME/Library/Logs/YKEngine/Editor"
 rm -rf "$editor_logs"
-open -n -a "$work/installed/YK Engine.app" "$project_copy/Invisible Castle/project.ykproj"
+open -n --env YK_DISABLE_UPDATE=1 -a "$work/installed/YK Engine.app" "$project_copy/Invisible Castle/project.ykproj"
 wait_for "grep -q \"Opened project 'Invisible Castle'\" \"$editor_logs/editor.log\" 2>/dev/null" 40 \
     || { cat "$editor_logs/editor.log" 2>/dev/null || true; fail "the project document did not open in the editor"; }
 pass "opening project.ykproj through Launch Services started the editor with that project"

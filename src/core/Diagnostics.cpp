@@ -205,7 +205,7 @@ void installSignalHandlers() {
     backtrace(warm,
               4); // The first call may load libgcc and allocate; do it now, not while crashing.
 #endif
-    struct sigaction action{};
+    struct sigaction action = {};
     action.sa_sigaction = onFatalSignal;
     sigemptyset(&action.sa_mask);
     // glibc defines SA_RESETHAND as an unsigned constant, the field is an int.
