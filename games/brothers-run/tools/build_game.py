@@ -1,8 +1,8 @@
 """Shared, grid-aligned authoring for both co-op levels and the front end.
 
-Only clean pieces of the original reference kit are reused: switches, pickups,
-collision surfaces and moving platforms are independent objects, never baked
-into terrain. Coordinates are pixels on the original 1672 x 941 canvas.
+Level 1 uses clean pieces of the original reference kit; Level 2 uses generated
+classroom terrain. Switches, pickups and moving platforms are independent
+objects, never baked into terrain. Coordinates use the original 1672 x 941 canvas.
 """
 import json
 from pathlib import Path
@@ -50,7 +50,8 @@ def prepare_kit():
 
 def sprite(name, texture, x, y, w, h, layer=10, **extra):
     return Node(name, xy(x + w / 2, y + h / 2)).add(
-        "SpriteRenderer", texture="assets/reference/" + texture,
+        "SpriteRenderer", texture=(texture if texture.startswith("assets/")
+                                   else "assets/reference/" + texture),
         size=xy(w, h), layer=layer, **extra)
 
 
@@ -254,8 +255,46 @@ def level_one():
     level.finish((176 + 336 / 2, 280), 824)
 
 
+class ClassroomLevel(Level):
+    """Classroom visuals on the same solid surfaces and mechanisms as before."""
+
+    ART = "assets/classroom/generated/"
+
+    def __init__(self):
+        from classroom_art import prepare_classroom_art
+        prepare_classroom_art()
+        super().__init__(2)
+        self.scene.set_property("Room Background", "SpriteRenderer",
+                                texture=self.ART + "background.png")
+
+    def deck(self, name, x, y, w, rows=1, one_way=False):
+        self.solid(name, x, y, w, rows * 40, one_way)
+        # Cabinets form the floor; shallow cupboards and books form the upper
+        # lanes. Every visual stays inside its original collision rectangle.
+        if rows > 1:
+            pieces = [("desk", min(w, 384))]
+            remaining = w - pieces[0][1]
+            while remaining:
+                width = min(96, remaining)
+                pieces.append(("bookcase", width))
+                remaining -= width
+        else:
+            material = "desk" if name in ("Upper Left Landing", "Upper Right Landing", "Exit Deck") else "books"
+            pieces = [(material, min(192, w - start)) for start in range(0, w, 192)]
+        offset = 0
+        for index, (material, width) in enumerate(pieces):
+            self.scene.add(sprite(f"{name} Classroom {index}",
+                self.ART + material + ".png", x + offset, y, width, rows * 40),
+                parent="Terrain")
+            offset += width
+
+    def mover(self, name, x, y, w, travel, speed=1.6):
+        super().mover(name, x, y, w, travel, speed)
+        self.scene.set_property(name, "SpriteRenderer", texture=self.ART + "books.png")
+
+
 def level_two():
-    level = Level(2)
+    level = ClassroomLevel()
     # Three distinct lanes: cross right, return left, then climb to the exit.
     # The long crossings exceed a full running jump, so their controls matter.
     level.deck("Starting Floor", 32, 824, 480, rows=2, one_way=False)

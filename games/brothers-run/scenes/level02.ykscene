@@ -52,7 +52,7 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/room.png",
+            "texture": "assets/classroom/generated/background.png",
             "size": [
               33.44,
               18.82
@@ -201,13 +201,13 @@
       ]
     },
     {
-      "id": "2a0821bd400baa85",
-      "name": "Starting Floor Block 0-0",
+      "id": "852f7df5a31bbf01",
+      "name": "Starting Floor Classroom 0",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          1.12,
-          16.88
+          4.48,
+          17.28
         ],
         "rotation": 0,
         "scale": [
@@ -219,10 +219,10 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_0.png",
+            "texture": "assets/classroom/generated/desk.png",
             "size": [
-              0.96,
-              0.8
+              7.68,
+              1.6
             ],
             "layer": 10
           }
@@ -230,13 +230,13 @@
       ]
     },
     {
-      "id": "d3aa71431250a950",
-      "name": "Starting Floor Block 0-1",
+      "id": "a1819edce0c6061f",
+      "name": "Starting Floor Classroom 1",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          2.08,
-          16.88
+          9.28,
+          17.28
         ],
         "rotation": 0,
         "scale": [
@@ -248,532 +248,10 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_1.png",
+            "texture": "assets/classroom/generated/bookcase.png",
             "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "f25c1bc0b22cc8ab",
-      "name": "Starting Floor Block 0-2",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          3.04,
-          16.88
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_2.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "a7ea214f496cef57",
-      "name": "Starting Floor Block 0-3",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          4.0,
-          16.88
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_3.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "f4f92240e5d5307f",
-      "name": "Starting Floor Block 0-4",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          4.96,
-          16.88
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_4.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "8a66a87eaeb1537f",
-      "name": "Starting Floor Block 0-5",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          5.92,
-          16.88
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_0.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "aa84026eeb6e21ee",
-      "name": "Starting Floor Block 0-6",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          6.88,
-          16.88
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_1.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "af65dfc8c433ce2b",
-      "name": "Starting Floor Block 0-7",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          7.84,
-          16.88
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_2.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "314e41737d8f4827",
-      "name": "Starting Floor Block 0-8",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          8.8,
-          16.88
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_3.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "3f76b7bce6c6c5b7",
-      "name": "Starting Floor Block 0-9",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          9.76,
-          16.88
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_4.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "49a609b1b00b90da",
-      "name": "Starting Floor Block 1-0",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          1.12,
-          17.68
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_2.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "a29f6d599d548885",
-      "name": "Starting Floor Block 1-1",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          2.08,
-          17.68
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_3.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "2af33f7b77428630",
-      "name": "Starting Floor Block 1-2",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          3.04,
-          17.68
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_4.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "d51a87446cca328a",
-      "name": "Starting Floor Block 1-3",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          4.0,
-          17.68
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_0.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "9860fdb0bcfd07c4",
-      "name": "Starting Floor Block 1-4",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          4.96,
-          17.68
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_1.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "4f6f89705880f886",
-      "name": "Starting Floor Block 1-5",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          5.92,
-          17.68
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_2.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "a99ff6e3f7682f2b",
-      "name": "Starting Floor Block 1-6",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          6.88,
-          17.68
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_3.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "e04c48f9c076a249",
-      "name": "Starting Floor Block 1-7",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          7.84,
-          17.68
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_4.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "95b1234ef2bfe6c3",
-      "name": "Starting Floor Block 1-8",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          8.8,
-          17.68
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_0.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "747ad6700b035529",
-      "name": "Starting Floor Block 1-9",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          9.76,
-          17.68
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_1.png",
-            "size": [
-              0.96,
-              0.8
+              1.92,
+              1.6
             ],
             "layer": 10
           }
@@ -811,12 +289,12 @@
       ]
     },
     {
-      "id": "774cbba0d4db4894",
-      "name": "Long Green Pool Basin Block 0-0",
+      "id": "5e40645ae55f4d01",
+      "name": "Long Green Pool Basin Classroom 0",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          10.72,
+          12.16,
           17.84
         ],
         "rotation": 0,
@@ -829,9 +307,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_0.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
-              0.96,
+              3.84,
               0.8
             ],
             "layer": 10
@@ -840,12 +318,12 @@
       ]
     },
     {
-      "id": "10dffa1e33aca656",
-      "name": "Long Green Pool Basin Block 0-1",
+      "id": "67b581b8e1083b57",
+      "name": "Long Green Pool Basin Classroom 1",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          11.68,
+          16.0,
           17.84
         ],
         "rotation": 0,
@@ -858,9 +336,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_1.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
-              0.96,
+              3.84,
               0.8
             ],
             "layer": 10
@@ -869,12 +347,12 @@
       ]
     },
     {
-      "id": "665c8f4b08c813c2",
-      "name": "Long Green Pool Basin Block 0-2",
+      "id": "96e6d1a559013e83",
+      "name": "Long Green Pool Basin Classroom 2",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          12.64,
+          19.84,
           17.84
         ],
         "rotation": 0,
@@ -887,9 +365,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_2.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
-              0.96,
+              3.84,
               0.8
             ],
             "layer": 10
@@ -898,269 +376,8 @@
       ]
     },
     {
-      "id": "66ef3d8fee07c815",
-      "name": "Long Green Pool Basin Block 0-3",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          13.6,
-          17.84
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_3.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "7bf43bc51d662c1d",
-      "name": "Long Green Pool Basin Block 0-4",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          14.56,
-          17.84
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_4.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "dff08720666976ae",
-      "name": "Long Green Pool Basin Block 0-5",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          15.52,
-          17.84
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_0.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "19fe7fa24d3d71e9",
-      "name": "Long Green Pool Basin Block 0-6",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          16.48,
-          17.84
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_1.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "08f3e2d4f5919c0b",
-      "name": "Long Green Pool Basin Block 0-7",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          17.44,
-          17.84
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_2.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "0a3b088d306fe767",
-      "name": "Long Green Pool Basin Block 0-8",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          18.4,
-          17.84
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_3.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "c2e6a198a17cd53d",
-      "name": "Long Green Pool Basin Block 0-9",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          19.36,
-          17.84
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_4.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "46e50a5277f2a287",
-      "name": "Long Green Pool Basin Block 0-10",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          20.32,
-          17.84
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_0.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "284c1ffc16e56ef4",
-      "name": "Long Green Pool Basin Block 0-11",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          21.28,
-          17.84
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_1.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "9b8be477e4b75ee4",
-      "name": "Long Green Pool Basin Block 0-12",
+      "id": "3680ed293b74f833",
+      "name": "Long Green Pool Basin Classroom 3",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
@@ -1177,7 +394,7 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_2.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
               0.96,
               0.8
@@ -1273,71 +490,13 @@
       ]
     },
     {
-      "id": "20727c83101aec59",
-      "name": "Lift Landing Block 0-0",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          23.2,
-          16.88
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_0.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "7fb87e07eb04267b",
-      "name": "Lift Landing Block 0-1",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          24.16,
-          16.88
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_1.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "4f7e1efc28034e22",
-      "name": "Lift Landing Block 0-2",
+      "id": "d96ff367faae1654",
+      "name": "Lift Landing Classroom 0",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
           25.12,
-          16.88
+          17.28
         ],
         "rotation": 0,
         "scale": [
@@ -1349,213 +508,10 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_2.png",
+            "texture": "assets/classroom/generated/desk.png",
             "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "c6c6c303de3ab562",
-      "name": "Lift Landing Block 0-3",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          26.08,
-          16.88
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_3.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "2e93404a28c3c8b7",
-      "name": "Lift Landing Block 0-4",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          27.04,
-          16.88
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_4.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "a70277e3e1c55e75",
-      "name": "Lift Landing Block 1-0",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          23.2,
-          17.68
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_2.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "f9e167444187a491",
-      "name": "Lift Landing Block 1-1",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          24.16,
-          17.68
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_3.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "8c48cc00208cd049",
-      "name": "Lift Landing Block 1-2",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          25.12,
-          17.68
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_4.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "d3582e78a84bc78e",
-      "name": "Lift Landing Block 1-3",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          26.08,
-          17.68
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_0.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "a1470e7ef6d9984b",
-      "name": "Lift Landing Block 1-4",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          27.04,
-          17.68
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_1.png",
-            "size": [
-              0.96,
-              0.8
+              4.8,
+              1.6
             ],
             "layer": 10
           }
@@ -1593,13 +549,13 @@
       ]
     },
     {
-      "id": "177c6dc0d7925cfd",
-      "name": "Lift Far Bank Block 0-0",
+      "id": "2606c61057e4b13b",
+      "name": "Lift Far Bank Classroom 0",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
           31.84,
-          16.88
+          17.28
         ],
         "rotation": 0,
         "scale": [
@@ -1611,39 +567,10 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_0.png",
+            "texture": "assets/classroom/generated/desk.png",
             "size": [
               0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "2969e1b490ed8de1",
-      "name": "Lift Far Bank Block 1-0",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          31.84,
-          17.68
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_2.png",
-            "size": [
-              0.96,
-              0.8
+              1.6
             ],
             "layer": 10
           }
@@ -1669,7 +596,7 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/platform.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
               3.84,
               0.56
@@ -2002,7 +929,7 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/platform.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
               3.84,
               0.56
@@ -2125,12 +1052,12 @@
       ]
     },
     {
-      "id": "3619b454481d4a87",
-      "name": "Upper Right Landing Block 0-0",
+      "id": "1034bf40ff6e34b8",
+      "name": "Upper Right Landing Classroom 0",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          23.2,
+          24.64,
           10.16
         ],
         "rotation": 0,
@@ -2143,96 +1070,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_0.png",
+            "texture": "assets/classroom/generated/desk.png",
             "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "21163460da2b3bb7",
-      "name": "Upper Right Landing Block 0-1",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          24.16,
-          10.16
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_1.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "9ec224490685c6e7",
-      "name": "Upper Right Landing Block 0-2",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          25.12,
-          10.16
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_2.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "22c3b5c2761b13a4",
-      "name": "Upper Right Landing Block 0-3",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          26.08,
-          10.16
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_3.png",
-            "size": [
-              0.96,
+              3.84,
               0.8
             ],
             "layer": 10
@@ -2271,12 +1111,12 @@
       ]
     },
     {
-      "id": "a533f90c6e04ac42",
-      "name": "Upper Blue Pool Basin Block 0-0",
+      "id": "3247f71a6fcb8f83",
+      "name": "Upper Blue Pool Basin Classroom 0",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          10.72,
+          12.16,
           11.12
         ],
         "rotation": 0,
@@ -2289,9 +1129,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_0.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
-              0.96,
+              3.84,
               0.8
             ],
             "layer": 10
@@ -2300,12 +1140,12 @@
       ]
     },
     {
-      "id": "28e5496359fb26ab",
-      "name": "Upper Blue Pool Basin Block 0-1",
+      "id": "16246237f2e07df3",
+      "name": "Upper Blue Pool Basin Classroom 1",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          11.68,
+          16.0,
           11.12
         ],
         "rotation": 0,
@@ -2318,9 +1158,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_1.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
-              0.96,
+              3.84,
               0.8
             ],
             "layer": 10
@@ -2329,12 +1169,12 @@
       ]
     },
     {
-      "id": "02b0410ba186c4ea",
-      "name": "Upper Blue Pool Basin Block 0-2",
+      "id": "29fe1967df6d247a",
+      "name": "Upper Blue Pool Basin Classroom 2",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          12.64,
+          19.84,
           11.12
         ],
         "rotation": 0,
@@ -2347,9 +1187,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_2.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
-              0.96,
+              3.84,
               0.8
             ],
             "layer": 10
@@ -2358,269 +1198,8 @@
       ]
     },
     {
-      "id": "ed8eded3b9e536ad",
-      "name": "Upper Blue Pool Basin Block 0-3",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          13.6,
-          11.12
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_3.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "e6016dbf04565d4e",
-      "name": "Upper Blue Pool Basin Block 0-4",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          14.56,
-          11.12
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_4.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "93e01e04bb34cdab",
-      "name": "Upper Blue Pool Basin Block 0-5",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          15.52,
-          11.12
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_0.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "cbaa1e00b8a5cd27",
-      "name": "Upper Blue Pool Basin Block 0-6",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          16.48,
-          11.12
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_1.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "077c77c23366dcd9",
-      "name": "Upper Blue Pool Basin Block 0-7",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          17.44,
-          11.12
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_2.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "649edf0db6dc722f",
-      "name": "Upper Blue Pool Basin Block 0-8",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          18.4,
-          11.12
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_3.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "bbfa05d87f0b6ec1",
-      "name": "Upper Blue Pool Basin Block 0-9",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          19.36,
-          11.12
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_4.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "41f89ad7b5bc71c4",
-      "name": "Upper Blue Pool Basin Block 0-10",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          20.32,
-          11.12
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_0.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "8f922276d6ff972f",
-      "name": "Upper Blue Pool Basin Block 0-11",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          21.28,
-          11.12
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_1.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "28bf2151229b5b86",
-      "name": "Upper Blue Pool Basin Block 0-12",
+      "id": "89d58f90abefcce0",
+      "name": "Upper Blue Pool Basin Classroom 3",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
@@ -2637,7 +1216,7 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_2.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
               0.96,
               0.8
@@ -2735,12 +1314,12 @@
       ]
     },
     {
-      "id": "15df10125f4f7860",
-      "name": "Upper Left Landing Block 0-0",
+      "id": "703c902c7a9f3099",
+      "name": "Upper Left Landing Classroom 0",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          4.96,
+          6.4,
           10.16
         ],
         "rotation": 0,
@@ -2753,9 +1332,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_0.png",
+            "texture": "assets/classroom/generated/desk.png",
             "size": [
-              0.96,
+              3.84,
               0.8
             ],
             "layer": 10
@@ -2764,12 +1343,12 @@
       ]
     },
     {
-      "id": "0002c6817db46beb",
-      "name": "Upper Left Landing Block 0-1",
+      "id": "8805b95ceb8dc1bd",
+      "name": "Upper Left Landing Classroom 1",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          5.92,
+          9.28,
           10.16
         ],
         "rotation": 0,
@@ -2782,125 +1361,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_1.png",
+            "texture": "assets/classroom/generated/desk.png",
             "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "8cbbc76bfe828ec3",
-      "name": "Upper Left Landing Block 0-2",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          6.88,
-          10.16
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_2.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "61b7d9e394626be2",
-      "name": "Upper Left Landing Block 0-3",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          7.84,
-          10.16
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_3.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "d50844d50e399576",
-      "name": "Upper Left Landing Block 0-4",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          8.8,
-          10.16
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_4.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "4e999e6591a47404",
-      "name": "Upper Left Landing Block 0-5",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          9.76,
-          10.16
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_0.png",
-            "size": [
-              0.96,
+              1.92,
               0.8
             ],
             "layer": 10
@@ -2927,7 +1390,7 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/platform.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
               3.84,
               0.56
@@ -3461,7 +1924,7 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/platform.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
               3.84,
               0.56
@@ -3632,12 +2095,12 @@
       ]
     },
     {
-      "id": "139042966f3c436c",
-      "name": "Final Approach Block 0-0",
+      "id": "9b2dfdfe002be7d5",
+      "name": "Final Approach Classroom 0",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          5.92,
+          7.36,
           5.36
         ],
         "rotation": 0,
@@ -3650,9 +2113,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_0.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
-              0.96,
+              3.84,
               0.8
             ],
             "layer": 10
@@ -3661,95 +2124,8 @@
       ]
     },
     {
-      "id": "5159bb12930428f7",
-      "name": "Final Approach Block 0-1",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          6.88,
-          5.36
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_1.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "5e0b62e27d40e102",
-      "name": "Final Approach Block 0-2",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          7.84,
-          5.36
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_2.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "d2c88c54e2d165a7",
-      "name": "Final Approach Block 0-3",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          8.8,
-          5.36
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_3.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "691c0b4bb97977db",
-      "name": "Final Approach Block 0-4",
+      "id": "062192ae11f43257",
+      "name": "Final Approach Classroom 1",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
@@ -3766,7 +2142,7 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_4.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
               0.96,
               0.8
@@ -3807,12 +2183,12 @@
       ]
     },
     {
-      "id": "fa17f90c1717c292",
-      "name": "Upper Red Pool Basin Block 0-0",
+      "id": "537d9b890e4973f5",
+      "name": "Upper Red Pool Basin Classroom 0",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          10.72,
+          12.16,
           6.32
         ],
         "rotation": 0,
@@ -3825,9 +2201,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_0.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
-              0.96,
+              3.84,
               0.8
             ],
             "layer": 10
@@ -3836,12 +2212,12 @@
       ]
     },
     {
-      "id": "3ffc0c5a4dbf03f0",
-      "name": "Upper Red Pool Basin Block 0-1",
+      "id": "1f40be79117de26d",
+      "name": "Upper Red Pool Basin Classroom 1",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          11.68,
+          16.0,
           6.32
         ],
         "rotation": 0,
@@ -3854,183 +2230,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_1.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "f4e3d3b18eabebd6",
-      "name": "Upper Red Pool Basin Block 0-2",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          12.64,
-          6.32
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_2.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "2ea80e0202163f20",
-      "name": "Upper Red Pool Basin Block 0-3",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          13.6,
-          6.32
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_3.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "314cd5531122a66a",
-      "name": "Upper Red Pool Basin Block 0-4",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          14.56,
-          6.32
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_4.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "b5c34774d4771510",
-      "name": "Upper Red Pool Basin Block 0-5",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          15.52,
-          6.32
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_0.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "67e1d8380483e64e",
-      "name": "Upper Red Pool Basin Block 0-6",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          16.48,
-          6.32
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_1.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "b6cdafa206bc2555",
-      "name": "Upper Red Pool Basin Block 0-7",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          17.44,
-          6.32
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_2.png",
-            "size": [
-              0.96,
+              3.84,
               0.8
             ],
             "layer": 10
@@ -4126,12 +2328,12 @@
       ]
     },
     {
-      "id": "0f74596b3a2a3a06",
-      "name": "Exit Deck Block 0-0",
+      "id": "b648eff07f75985a",
+      "name": "Exit Deck Classroom 0",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          18.4,
+          19.84,
           5.36
         ],
         "rotation": 0,
@@ -4144,9 +2346,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_0.png",
+            "texture": "assets/classroom/generated/desk.png",
             "size": [
-              0.96,
+              3.84,
               0.8
             ],
             "layer": 10
@@ -4155,12 +2357,12 @@
       ]
     },
     {
-      "id": "02a5a2084c97b963",
-      "name": "Exit Deck Block 0-1",
+      "id": "46243d5437ea4071",
+      "name": "Exit Deck Classroom 1",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          19.36,
+          23.68,
           5.36
         ],
         "rotation": 0,
@@ -4173,9 +2375,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_1.png",
+            "texture": "assets/classroom/generated/desk.png",
             "size": [
-              0.96,
+              3.84,
               0.8
             ],
             "layer": 10
@@ -4184,12 +2386,12 @@
       ]
     },
     {
-      "id": "9b4843de0cfa0c2c",
-      "name": "Exit Deck Block 0-2",
+      "id": "f9005e816a3b7bb6",
+      "name": "Exit Deck Classroom 2",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          20.32,
+          26.56,
           5.36
         ],
         "rotation": 0,
@@ -4202,212 +2404,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_2.png",
+            "texture": "assets/classroom/generated/desk.png",
             "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "ae2db0db2cd08e02",
-      "name": "Exit Deck Block 0-3",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          21.28,
-          5.36
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_3.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "5fd06daeb8263647",
-      "name": "Exit Deck Block 0-4",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          22.24,
-          5.36
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_4.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "5efd3b7c455a8451",
-      "name": "Exit Deck Block 0-5",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          23.2,
-          5.36
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_0.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "90a22f63b69520b2",
-      "name": "Exit Deck Block 0-6",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          24.16,
-          5.36
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_1.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "f137d222bd86a68d",
-      "name": "Exit Deck Block 0-7",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          25.12,
-          5.36
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_2.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "55506169b04a41c9",
-      "name": "Exit Deck Block 0-8",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          26.08,
-          5.36
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_3.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "7f1606c27184e18a",
-      "name": "Exit Deck Block 0-9",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          27.04,
-          5.36
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_4.png",
-            "size": [
-              0.96,
+              1.92,
               0.8
             ],
             "layer": 10
@@ -4434,7 +2433,7 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/platform.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
               2.88,
               0.56
@@ -5722,37 +3721,8 @@
       ]
     },
     {
-      "id": "7da567268a7e815c",
-      "name": "Left Corner Block 0-0",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          0.32,
-          16.88
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_0.png",
-            "size": [
-              0.64,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "8d30215612d983e7",
-      "name": "Left Corner Block 1-0",
+      "id": "b838c505df97bfb9",
+      "name": "Left Corner Classroom 0",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
@@ -5769,39 +3739,10 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_2.png",
+            "texture": "assets/classroom/generated/desk.png",
             "size": [
               0.64,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "69f9eebeac71aef2",
-      "name": "Left Corner Block 2-0",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          0.32,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_4.png",
-            "size": [
-              0.64,
-              0.8
+              2.4
             ],
             "layer": 10
           }
@@ -5839,70 +3780,12 @@
       ]
     },
     {
-      "id": "2d62abaacfe07314",
-      "name": "Right Corner Block 0-0",
+      "id": "40b3129860108aaf",
+      "name": "Right Corner Classroom 0",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          32.8,
-          16.88
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_0.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "601a4a4c0291acf3",
-      "name": "Right Corner Block 0-1",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          33.36,
-          16.88
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_1.png",
-            "size": [
-              0.16,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "817795a594c45abd",
-      "name": "Right Corner Block 1-0",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          32.8,
+          32.88,
           17.68
         ],
         "rotation": 0,
@@ -5915,97 +3798,10 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_2.png",
+            "texture": "assets/classroom/generated/desk.png",
             "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "84dd4c38021b2935",
-      "name": "Right Corner Block 1-1",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          33.36,
-          17.68
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_3.png",
-            "size": [
-              0.16,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "3b555793b03cf2fe",
-      "name": "Right Corner Block 2-0",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          32.8,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_4.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "bfcceda8f127cb54",
-      "name": "Right Corner Block 2-1",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          33.36,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_0.png",
-            "size": [
-              0.16,
-              0.8
+              1.12,
+              2.4
             ],
             "layer": 10
           }
@@ -6043,12 +3839,12 @@
       ]
     },
     {
-      "id": "e722c01857a734ee",
-      "name": "Foundation Block 0-0",
+      "id": "f203bc5a7c0c9c14",
+      "name": "Foundation Classroom 0",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          0.48,
+          1.92,
           18.48
         ],
         "rotation": 0,
@@ -6061,9 +3857,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_0.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
-              0.96,
+              3.84,
               0.8
             ],
             "layer": 10
@@ -6072,12 +3868,12 @@
       ]
     },
     {
-      "id": "233b97b7a38e75ec",
-      "name": "Foundation Block 0-1",
+      "id": "bdabea376de427d4",
+      "name": "Foundation Classroom 1",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          1.44,
+          5.76,
           18.48
         ],
         "rotation": 0,
@@ -6090,9 +3886,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_1.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
-              0.96,
+              3.84,
               0.8
             ],
             "layer": 10
@@ -6101,12 +3897,12 @@
       ]
     },
     {
-      "id": "11247ff136f8931f",
-      "name": "Foundation Block 0-2",
+      "id": "e8a617e73fa468a7",
+      "name": "Foundation Classroom 2",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          2.4,
+          9.6,
           18.48
         ],
         "rotation": 0,
@@ -6119,9 +3915,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_2.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
-              0.96,
+              3.84,
               0.8
             ],
             "layer": 10
@@ -6130,12 +3926,12 @@
       ]
     },
     {
-      "id": "3e3a2b07e7b7ab1c",
-      "name": "Foundation Block 0-3",
+      "id": "61e84d4c0367c37e",
+      "name": "Foundation Classroom 3",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          3.36,
+          13.44,
           18.48
         ],
         "rotation": 0,
@@ -6148,9 +3944,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_3.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
-              0.96,
+              3.84,
               0.8
             ],
             "layer": 10
@@ -6159,12 +3955,12 @@
       ]
     },
     {
-      "id": "1aaf283a89c77fbf",
-      "name": "Foundation Block 0-4",
+      "id": "8ad7c5ead5f15085",
+      "name": "Foundation Classroom 4",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          4.32,
+          17.28,
           18.48
         ],
         "rotation": 0,
@@ -6177,9 +3973,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_4.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
-              0.96,
+              3.84,
               0.8
             ],
             "layer": 10
@@ -6188,12 +3984,12 @@
       ]
     },
     {
-      "id": "4c3404c3fc15d664",
-      "name": "Foundation Block 0-5",
+      "id": "1dc2feb409b02364",
+      "name": "Foundation Classroom 5",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          5.28,
+          21.12,
           18.48
         ],
         "rotation": 0,
@@ -6206,9 +4002,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_0.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
-              0.96,
+              3.84,
               0.8
             ],
             "layer": 10
@@ -6217,12 +4013,12 @@
       ]
     },
     {
-      "id": "966d1f0cb2908afc",
-      "name": "Foundation Block 0-6",
+      "id": "fae86beb42e4283e",
+      "name": "Foundation Classroom 6",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          6.24,
+          24.96,
           18.48
         ],
         "rotation": 0,
@@ -6235,9 +4031,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_1.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
-              0.96,
+              3.84,
               0.8
             ],
             "layer": 10
@@ -6246,12 +4042,12 @@
       ]
     },
     {
-      "id": "1a06300c9e0c9383",
-      "name": "Foundation Block 0-7",
+      "id": "f2e41cb8f2513cf2",
+      "name": "Foundation Classroom 7",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          7.2,
+          28.8,
           18.48
         ],
         "rotation": 0,
@@ -6264,9 +4060,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_2.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
-              0.96,
+              3.84,
               0.8
             ],
             "layer": 10
@@ -6275,12 +4071,12 @@
       ]
     },
     {
-      "id": "de912db2a146c27f",
-      "name": "Foundation Block 0-8",
+      "id": "a8d7698ec89f1810",
+      "name": "Foundation Classroom 8",
       "parent": "8e971db2241c840d",
       "transform": {
         "position": [
-          8.16,
+          32.08,
           18.48
         ],
         "rotation": 0,
@@ -6293,763 +4089,9 @@
         {
           "type": "SpriteRenderer",
           "properties": {
-            "texture": "assets/reference/kit/block_3.png",
+            "texture": "assets/classroom/generated/books.png",
             "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "cdae84a8818287cc",
-      "name": "Foundation Block 0-9",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          9.12,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_4.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "0167d56f0867d27e",
-      "name": "Foundation Block 0-10",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          10.08,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_0.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "c11197e5724aab7c",
-      "name": "Foundation Block 0-11",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          11.04,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_1.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "8a2738314b726921",
-      "name": "Foundation Block 0-12",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          12.0,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_2.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "7b6b7e66f5f8a4e7",
-      "name": "Foundation Block 0-13",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          12.96,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_3.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "e804572d2c96a7bd",
-      "name": "Foundation Block 0-14",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          13.92,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_4.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "a2166c332d1a96d5",
-      "name": "Foundation Block 0-15",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          14.88,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_0.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "16c5d6c38d788a62",
-      "name": "Foundation Block 0-16",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          15.84,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_1.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "6306fbd4ec494b0e",
-      "name": "Foundation Block 0-17",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          16.8,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_2.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "1dd6e7616146d18d",
-      "name": "Foundation Block 0-18",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          17.76,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_3.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "f2aec238723e18ac",
-      "name": "Foundation Block 0-19",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          18.72,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_4.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "2cba629b5a6844a0",
-      "name": "Foundation Block 0-20",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          19.68,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_0.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "e8f9f0744f439609",
-      "name": "Foundation Block 0-21",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          20.64,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_1.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "2d8e4e6a3c0cb92a",
-      "name": "Foundation Block 0-22",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          21.6,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_2.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "a4f6c859bb786ba9",
-      "name": "Foundation Block 0-23",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          22.56,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_3.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "e28a55a6f73afc66",
-      "name": "Foundation Block 0-24",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          23.52,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_4.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "2d67636fd8720bd8",
-      "name": "Foundation Block 0-25",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          24.48,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_0.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "1edda30f515fbad4",
-      "name": "Foundation Block 0-26",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          25.44,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_1.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "47cee77043f0aa59",
-      "name": "Foundation Block 0-27",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          26.4,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_2.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "9dc226b43a168e94",
-      "name": "Foundation Block 0-28",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          27.36,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_3.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "71bf0db35331a299",
-      "name": "Foundation Block 0-29",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          28.32,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_4.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "c32d77e0090a1079",
-      "name": "Foundation Block 0-30",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          29.28,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_0.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "1ae2ddd93e1e7511",
-      "name": "Foundation Block 0-31",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          30.24,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_1.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "8a9581835a850eb8",
-      "name": "Foundation Block 0-32",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          31.2,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_2.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "fc851a869048e87b",
-      "name": "Foundation Block 0-33",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          32.16,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_3.png",
-            "size": [
-              0.96,
-              0.8
-            ],
-            "layer": 10
-          }
-        }
-      ]
-    },
-    {
-      "id": "869c2fca3df22bfb",
-      "name": "Foundation Block 0-34",
-      "parent": "8e971db2241c840d",
-      "transform": {
-        "position": [
-          33.04,
-          18.48
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ]
-      },
-      "components": [
-        {
-          "type": "SpriteRenderer",
-          "properties": {
-            "texture": "assets/reference/kit/block_4.png",
-            "size": [
-              0.8,
+              2.72,
               0.8
             ],
             "layer": 10

@@ -10,6 +10,7 @@
 #include <cmath>
 #include <cstdio>
 #include <source_location>
+#include <string_view>
 
 using namespace yk;
 
@@ -249,7 +250,8 @@ void buttonsAndClearance() {
                                        std::pair{"scenes/level02.ykscene", "Shuttle Button"}}) {
         Game game(file);
         CHECK(game.entity("Room Background").get<SpriteRenderer>()->texture.path ==
-              "assets/reference/room.png");
+              (std::string_view(file) == "scenes/level02.ykscene"
+                   ? "assets/classroom/generated/background.png" : "assets/reference/room.png"));
         auto &base = game.entity(button);
         auto *plate = base.get<PressurePlate>();
         auto *cap = game.runtime->scene().find(plate->pad);

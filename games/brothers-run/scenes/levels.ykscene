@@ -112,7 +112,7 @@
         {
           "type": "UiText",
           "properties": {
-            "text": "THE WORKSHOP  /  A CO-OP ADVENTURE",
+            "text": "EMBER AND TIDE  /  TWO BROTHERS. ONE RACE.",
             "anchor": "Center",
             "offset": [
               0,
@@ -1228,7 +1228,7 @@
         {
           "type": "UiImage",
           "properties": {
-            "texture": "assets/reference/room.png",
+            "texture": "assets/classroom/generated/background.png",
             "anchor": "Center",
             "offset": [
               246,
@@ -1889,7 +1889,7 @@
         {
           "type": "UiText",
           "properties": {
-            "text": "02  THE MACHINE ROOM",
+            "text": "02  THE CLASSROOM",
             "anchor": "Center",
             "offset": [
               246,
@@ -1920,7 +1920,7 @@
         {
           "type": "UiText",
           "properties": {
-            "text": "LIFTS / SHUTTLES / SECURITY GATE",
+            "text": "BOOKS / DESKS / LIFTS",
             "anchor": "Center",
             "offset": [
               246,
@@ -2165,7 +2165,7 @@
         {
           "type": "UiText",
           "properties": {
-            "text": "ONE EXIT  /  EITHER PLAYER REACHES IT, BOTH WIN",
+            "text": "ONE EXIT  /  FIRST BROTHER TO REACH IT WINS THE RACE",
             "anchor": "Center",
             "offset": [
               0,

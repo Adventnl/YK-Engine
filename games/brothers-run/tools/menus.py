@@ -46,7 +46,10 @@ def shortcut(scene, name, action, destination):
 
 def miniature(scene, project, number, x, y):
     """Draw the actual authored solid layout, rather than an unrelated stock thumbnail."""
-    image(scene, f"Map {number} Room", "room.png", x, y, 414, 218, 4, color="#ffffff88")
+    background = ("assets/classroom/generated/background.png" if number == 2
+                  else "assets/reference/room.png")
+    scene.add(Node(f"Map {number} Room").add("UiImage", texture=background,
+        anchor="Center", offset=[x, y], size=[414, 218], layer=4, color="#ffffff88"))
     data = json.loads((project / f"scenes/level0{number}.ykscene").read_text())
     factor = 414 / 1672
     for entity in data["entities"]:
@@ -80,7 +83,7 @@ def build_menus(project):
             label(scene, "Intro", "TWO ROUTES. TWO PLAYERS. ONE WAY OUT TOGETHER.", 0, -170, 1.5, MUTED)
             for number, x, title, detail, accent in (
                     (1, -246, "01  THE CROSSINGS", "POOLS / SWITCHES / THE CLIMB", FIRE),
-                    (2, 246, "02  THE MACHINE ROOM", "LIFTS / SHUTTLES / SECURITY GATE", WATER)):
+                    (2, 246, "02  THE CLASSROOM", "BOOKS / DESKS / LIFTS", WATER)):
                 destination = f"scenes/level0{number}.ykscene"
                 button(scene, f"Level {number} Card", "", x, 40, 460, 358, destination, accent)
                 miniature(scene, project, number, x, -22)
@@ -94,7 +97,7 @@ def build_menus(project):
         else:
             label(scene, "Fire Title", "BROTHERS", -238, -180, 5.5, FIRE)
             label(scene, "Water Title", "RUN", -238, -119, 4.5, WATER)
-            label(scene, "Tagline", "TWO BROTHERS RACE THROUGH THE WORKSHOP.", -238, -50, 1.5, MUTED)
+            label(scene, "Tagline", "TWO BROTHERS. TWO ROOMS. ONE RACE.", -238, -50, 1.5, MUTED)
             label(scene, "Tagline Two", "DODGE THE POOLS. BE FIRST TO THE EXIT.", -238, -24, 1.5, MUTED)
             button(scene, "Play Button", "START THE RACE  >", -238, 66, 430, 78,
                    "scenes/levels.ykscene", FIRE)

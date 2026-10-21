@@ -1,8 +1,9 @@
 # Brothers Run
 
-A local two-player racing platformer starring the brothers Ember and Tide with two levels built from the original coloured
-block, striped platform, switch, gem and door kit. Both levels use the furnished
-room background. Every block and moving deck is solid on all sides. The floor
+A local two-player racing platformer starring the brothers Ember and Tide. Level 1 uses the original coloured
+block kit in the furnished room; Level 2 is a classroom with original generated
+wooden desk cabinets, bookcases, textbook platforms and a chalkboard backdrop.
+Both retain the same switch, gem, hazard and door language. Every block and moving deck is solid on all sides. The floor
 reaches the screen edges and continues below the view. Buttons have
 a fixed housing and a solid moving cap that carries the player down.
 
@@ -30,7 +31,7 @@ lever to start the green crossing, then take the left stair to the exit deck.
 Levers visibly throw from left to right when switched. The small left ledge holds
 an optional Tide gem. Completion advances to Level 2.
 
-**Level 2** follows three lanes through the same room as Level 1. The starting
+**Level 2** follows three lanes through the classroom. The starting
 button starts a shuttle wide enough for both players to cross the green channel
 together. On the far bank, use the lever and board the lift at its lower stop.
 The first elevator boards at floor height and rises to the middle landing.
@@ -53,6 +54,16 @@ python games/brothers-run/tools/build_game.py
 `build_level.py` also reimports the original art and character poses, then rebuilds
 the whole game. `build_level2.py` rebuilds only Level 2. These scripts require
 Pillow; playing and exporting require no Python or source asset folders.
+
+Classroom art uses the built-in ImageGen tool. The generation originals and exact
+four prompts are in `source/classroom-generated/`; `tools/classroom_art.py`
+exports the playable textures into `assets/classroom/generated/`. Cabinets are
+384x80, bookcases 96x80, book platforms 192x28, and the background 1672x941,
+matching Level 1's canvas. Exports crop transparent padding and resize with
+nearest-neighbour sampling; all texture metadata uses nearest filtering at
+50 pixels per unit. Rebuilding either the full game or Level 2 re-exports these
+assets without calling an image service. The gameplay collision and route
+dimensions are unchanged.
 
 The `brothers_run` test plays both routes with each character through real
 physics, verifies either can finish alone at the single shared exit, checks mouse and

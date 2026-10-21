@@ -1,4 +1,4 @@
-"""Rebuild Level 2 using the same component kit as Level 1."""
+"""Rebuild Level 2 with its generated classroom terrain and book platforms."""
 from build_game import level_two
 
 if __name__ == "__main__":
