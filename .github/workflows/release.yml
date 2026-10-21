@@ -53,7 +53,7 @@ jobs:
           if (!(Test-Path (Join-Path $nsis 'makensis.exe'))) { throw 'NSIS was not installed' }
           $nsis | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
       - name: Configure with a static C++ runtime
-        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DBUILD_TESTING=ON -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded "-DYK_RELEASE_VERSION=$env:RELEASE_VERSION"
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DBUILD_TESTING=ON -DYK_BUILD_GAMES=ON -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded "-DYK_RELEASE_VERSION=$env:RELEASE_VERSION"
       - name: Build
         run: cmake --build build --config Release --parallel
       - name: Test
@@ -66,9 +66,8 @@ jobs:
           $installer = Get-ChildItem build/windows-dist/YKEngine-*-windows-x64.exe
           if (@($installer).Count -ne 1) { throw 'Expected one Windows installer' }
           $installPath = Join-Path $env:RUNNER_TEMP 'YKEngineInstallerSmoke'
-          & $installer.FullName /S "/D=$installPath"
-          if ($LASTEXITCODE -ne 0) { throw 'Windows installer failed' }
-          Start-Sleep -Seconds 5
+          $process = Start-Process -FilePath $installer.FullName -ArgumentList @('/S', "/D=$installPath") -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw 'Windows installer failed' }
           $installRoots = @($installPath, (Join-Path $env:ProgramFiles 'YK Engine'),
             (Join-Path ${env:ProgramFiles(x86)} 'YK Engine'))
           $actualRoot = $installRoots | Where-Object {
@@ -83,17 +82,24 @@ jobs:
           foreach ($name in 'yk_editor.exe', 'yk_player.exe', 'yk.exe') {
             if (!(Test-Path (Join-Path $actualRoot "bin/$name"))) { throw "Installer omitted $name" }
           }
-          & (Join-Path $actualRoot 'bin/yk.exe') validate (Join-Path $actualRoot 'share/yk-engine/games/blackthorn-keep')
-          if ($LASTEXITCODE -ne 0) { throw 'The installed engine cannot validate its sample' }
-          $newGame = Join-Path $actualRoot 'share/yk-engine/games/fireboy-watergirl'
-          if (!(Test-Path (Join-Path $newGame 'project.ykproj'))) { throw 'Installer omitted Fireboy and Watergirl' }
-          & (Join-Path $actualRoot 'bin/yk.exe') validate $newGame
-          if ($LASTEXITCODE -ne 0) { throw 'The installed engine cannot validate Fireboy and Watergirl' }
+          if (Test-Path (Join-Path $actualRoot 'share/yk-engine/games')) {
+            throw 'Engine installer must not contain demo games'
+          }
+          & cmake "-DEDITOR=$actualRoot/bin/yk_editor.exe" `
+            "-DSCRIPT=$pwd/tests/install/blank_engine.ykscript" `
+            "-DWORK=$env:RUNNER_TEMP/blank-engine" -P tests/editor/run_script.cmake
+          if ($LASTEXITCODE -ne 0) { throw 'Blank installed engine failed' }
           Get-FileHash $installer.FullName -Algorithm SHA256 | Format-List
+      - name: Build and verify separate demo game installers
+        shell: pwsh
+        run: |
+          python scripts/package-demos.py --build-dir build --out build/windows-dist --version "$env:RELEASE_VERSION"
+          if ($LASTEXITCODE -ne 0) { throw 'Demo packaging failed' }
+          & scripts/verify-demo-installers.ps1 -Dist build/windows-dist
       - uses: actions/upload-artifact@v4
         with:
           name: windows-installer
-          path: build/windows-dist/YKEngine-*-windows-x64.exe
+          path: build/windows-dist/*-windows-x64.exe
           if-no-files-found: error
 
   macos:
@@ -115,6 +121,8 @@ jobs:
         run: ctest --preset release
       - name: Build macOS installers
         run: scripts/package-macos.sh --no-build
+      - name: Build separate demo game installers
+        run: python3 scripts/package-demos.py --build-dir build/release --out build/macos-dist --version "$RELEASE_VERSION"
       - name: Verify the packaged application and installers
         run: scripts/verify-macos-app.sh
       - uses: actions/upload-artifact@v4
@@ -143,15 +151,17 @@ jobs:
           RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
         run: |
           set -euo pipefail
-          test "$(find installers -maxdepth 1 -name '*.exe' | wc -l)" -eq 1
-          test "$(find installers -maxdepth 1 -name '*.dmg' | wc -l)" -eq 1
-          test "$(find installers -maxdepth 1 -name '*.pkg' | wc -l)" -eq 1
+          test "$(find installers -maxdepth 1 -name '*.exe' | wc -l)" -eq 3
+          test "$(find installers -maxdepth 1 -name '*.dmg' | wc -l)" -eq 3
+          test "$(find installers -maxdepth 1 -name '*.pkg' | wc -l)" -eq 3
           (cd installers && sha256sum *.exe *.dmg *.pkg > SHA256SUMS.txt)
+          python3 scripts/release-notes.py "$RELEASE_VERSION" > installers/RELEASE_NOTES.md
           tag="v$RELEASE_VERSION"
           if gh release view "$tag" >/dev/null 2>&1; then
-            gh release upload "$tag" installers/* --clobber
+            gh release upload "$tag" installers/*.exe installers/*.dmg installers/*.pkg installers/SHA256SUMS.txt --clobber
           else
-            gh release create "$tag" installers/* --target "$GITHUB_SHA" --title "YK Engine $RELEASE_VERSION" \
-              --generate-notes --draft
+            gh release create "$tag" installers/*.exe installers/*.dmg installers/*.pkg installers/SHA256SUMS.txt --target "$GITHUB_SHA" --title "YK Engine $RELEASE_VERSION" \
+              --notes-file installers/RELEASE_NOTES.md --draft
           fi
-          gh release edit "$tag" --draft=false --latest
+          gh release edit "$tag" --notes-file installers/RELEASE_NOTES.md --draft=false --latest
+          python3 scripts/label-release-assets.py "$tag"

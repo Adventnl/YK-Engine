@@ -283,7 +283,7 @@ int main(int argc, char **argv) {
         Uint8 shadowR{}, shadowG{}, shadowB{}, shadowA{};
         CHECK(SDL_ReadSurfacePixel(image, 110, 240, &shadowR, &shadowG, &shadowB, &shadowA));
         CHECK(shadowR < leftClear.r && shadowG < leftClear.g && shadowB < leftClear.b);
-        CHECK(pixelIs(image, 200, 60, leftClear));  // Inactive entity at world y=-3 is not drawn.
+        CHECK(pixelIs(image, 200, 60, leftClear)); // Inactive entity at world y=-3 is not drawn.
         CHECK(pixelIs(image, 20, 150,
                       {255, 128, 0, 255})); // Mirrored (negative scale) sprite still draws.
         // Right pass: 60 px per unit, camera at (3,0): world (3,0) is pixel (600, 150).

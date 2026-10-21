@@ -1,9 +1,5 @@
-# Run by check_install.cmake against the *installed* editor, from its welcome screen: the sample
-# project must be found in the installation's data folder, opened, and played.
-# ${SAMPLE_DIR} is the sample project inside the installation.
-expect widget "welcome/game/blackthorn-keep"
-click "welcome/game/blackthorn-keep"
-expect project "Blackthorn Keep"
+# Installed editor opens an external project passed on the command line.
+expect project "Invisible Castle"
 expect project-root "${SAMPLE_DIR}"
 expect scene scenes/menu.ykscene
 expect entity "Play Button"

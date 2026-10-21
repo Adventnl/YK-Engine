@@ -5,17 +5,17 @@
 A C++20 2D game engine and editor. Build scenes from reusable components, press **F5** to play,
 and export a standalone desktop game. The editor, player and command line share the same runtime.
 
-The repository contains exactly two independent games:
+The repository contains two independent demo games:
 
 | Game | Project | Play |
 |---|---|---|
-| **Fireboy and Watergirl** | [games/fireboy-watergirl](games/fireboy-watergirl/README.md) | Title screen, level selection and two co-op platforming levels. |
-| **Blackthorn Keep** | [games/blackthorn-keep](games/blackthorn-keep/README.md) | Two castle escape chapters with NPCs, inventories, searches, crafting and patrols. Title screen, chapter selection, controls and pause menu. |
+| **Brothers Run** | [games/brothers-run](games/brothers-run/README.md) | Two brothers, Ember and Tide, race through two platforming levels. |
+| **Invisible Castle** | [games/invisible-castle](games/invisible-castle/README.md) | Two castle escape chapters with NPCs, inventories, searches, crafting and patrols. Title screen, chapter selection, controls and pause menu. |
 
 All scenes, assets, dialogue, game text, original art imports, authoring scripts and game-specific
 checks belong under `games/`. Engine code in `src/` and `include/` supplies reusable systems;
 it has no dependency on either game. The editor discovers ordinary `project.ykproj` files under
-`games/` and lists their names on its welcome screen.
+`games/` and lists their names on its welcome screen and Games menu.
 
 ## Build and play
 
@@ -28,17 +28,17 @@ cmake --build --preset dev
 ctest --preset dev --output-on-failure
 
 ./build/dev/yk_editor
-./build/dev/yk_player games/blackthorn-keep
-./build/dev/yk_player games/fireboy-watergirl
+./build/dev/yk_player games/invisible-castle
+./build/dev/yk_player games/brothers-run
 ```
 
 Open either project from the welcome screen and press **F5** to play in the editor.
-Blackthorn Keep starts at its title screen. Choose either chapter with the mouse or **1 / 2**.
+Invisible Castle starts at its title screen. Choose either chapter with the mouse or **1 / 2**.
 Use **WASD / arrows** to move, **E** to interact, **Escape** to close a popup or pause,
-**P** to pause, **R** to restart, **M** for the main menu and **Tab** for chapter selection. Fireboy uses **A/D/W** and Watergirl uses the **arrow keys**;
+**P** to pause, **R** to restart, **M** for the main menu and **Tab** for chapter selection. Ember uses **A/D/W** and Tide uses the **arrow keys**;
 its existing title screen and level selection are preserved.
 
-For an engine build without bundled games or their checks:
+A plain CMake configuration builds only the engine. Development presets also enable demo checks; games never enter an engine installer:
 
 ```sh
 cmake -S . -B build/engine-only -G Ninja -DYK_BUILD_GAMES=OFF
@@ -51,13 +51,21 @@ The engine also supports projects anywhere outside this repository:
 ```sh
 ./build/dev/yk new ~/Games/MyGame --name "My Game"
 ./build/dev/yk_editor ~/Games/MyGame
-./build/dev/yk export games/blackthorn-keep --target macos --out dist --zip
+./build/dev/yk export games/invisible-castle --target macos --out dist --zip
 ```
 
 ## Download and install
 
 [GitHub Releases](https://github.com/Adventnl/YK-Engine/releases) provides Windows x64 and macOS
-installers. Downloads include the editor, player, command line, games and dependency notices.
+installers with three separate downloads for each platform:
+
+- **YK Engine**: editor, player and command line. Starts with a blank welcome page and no game loaded.
+- **Invisible Castle — Demo game**: standalone castle escape game.
+- **Brothers Run — Demo game**: standalone race between the brothers Ember and Tide.
+
+Demo installers contain one game each. To edit them, clone/download this repository and choose a
+project from **Games**, or use **Open Project** on its folder. You can also open an installed demo's
+`data` folder (`Contents/Resources/data` inside a macOS app). Press **F5** to play in the editor.
 No compiler is needed to play or edit. Installed editors check for release updates on startup.
 
 ## Repository layout

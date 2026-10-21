@@ -1,12 +1,12 @@
 # Build plan: from a platformer engine to a simulation-adventure engine
 
-**Goal.** YK Engine keeps everything it can do today (Fireboy & Watergirl-style puzzle platformers,
+**Goal.** YK Engine keeps everything it can do today (Ember & Tide-style puzzle platformers,
 see *Cinder Vale*) and gains the reusable tools and runtime systems from which an entire
 *Escapists 2*-class game (top-down / 2.5D, multi-floor, NPC routines, inventory and crafting
 stealth, combat, quests, save games, one to four players) could be authored as a **separate YK
 project**. The test of success is not "does this repository run something similar to a prison
 game" but "does the engine contain generic tools so that such a game is *content*, not engine
-code". The reference project (`games/blackthorn-keep/`, an original facility with original
+code". The reference project (`games/invisible-castle/`, an original facility with original
 placeholder art) exists to prove exactly that.
 
 This file is the roadmap. Current truth is in [STATUS.md](STATUS.md) (what is real and how it was
@@ -17,7 +17,7 @@ verified), the next steps are in [NEXT.md](NEXT.md), known problems in
 ## Ground rules (from the brief, restated as constraints)
 
 1. **Engine and game stay separate.** Nothing in `include/yk`, `src/`, `editor/` names a game
-   (no `Prisoner`, `Guard`, `Fireboy`). Generic vocabulary only: `NavigationAgent`, `Inventory`,
+   (no `Prisoner`, `Guard`, `Ember`). Generic vocabulary only: `NavigationAgent`, `Inventory`,
    `Schedule`, `Faction`, `AccessPolicy`, `Zone`, `Perception`, `AIController`, `Combatant`,
    `Objective`, `WorldLayer`, `SecurityState`, `DialogueGraph`, `SaveGame`, `Script`.
 2. **Extend, never fork.** The component registry, reflection, scenes, prefabs, runtime, editor
@@ -55,7 +55,7 @@ yk_gameplay (include/yk/gameplay, src/gameplay)   components built on the above
   + CharacterMotor, NavigationAgent, AIController, Perception, Inventory, Container, ...
 editor/core + editor/ui                    tools: tilemap, navigation overlay, AI debug, definition editors
 player/ tools/yk/                          yk_player, `yk` (validate, nav-check, script-check, pack, ...)
-games/fireboy-watergirl/  games/blackthorn-keep/  games/blackthorn-keep/   projects (data), consume the engine
+games/brothers-run/  games/invisible-castle/  games/invisible-castle/   projects (data), consume the engine
 ```
 
 Dependency direction never reverses: `world`, `navigation`, `rules`, `stats`, `items`, `sim`,
@@ -101,7 +101,7 @@ better, with tests named. "Where" lists the main directories.
 | **L** | Tool actions, durability, breakable/diggable/cuttable, vents, underground, hiding, search | `src/gameplay/World*.cpp` | `world_modification` suite; nav updates after break |
 | **M** | Save game: persistent ids, Saveable, slots, migration, validation | `src/save`, `src/gameplay/Save.cpp` | `save` suite (round trip of a substantial world) |
 | **N** | Runtime UI framework and screens; minimap; settings; rebinding | `src/graphics/Ui*`, `src/gameplay/Ui*.cpp` | UI tests incl. flows (pickup, container, equip, craft, drop, save, reload) |
-| **O** | Reference simulation project (data + Lua only) | `games/blackthorn-keep/` | headless playthrough of both escape routes |
+| **O** | Reference simulation project (data + Lua only) | `games/invisible-castle/` | headless playthrough of both escape routes |
 | **P** | Local multiplayer: `PlayerManager`, 1-4 players, cameras, per-player UI | `src/gameplay/Players.cpp` | 2-player cooperative objective test |
 | **Q** | Networking: transport, identity, replication, host/client | `src/network`, `third_party/enet` | automated host/client test |
 | **R** | Authoring: specialized editors, asset browser, validation, CLI, content packages | `editor/`, `tools/yk` | `yk validate` catches the broken-reference matrix |
@@ -125,7 +125,7 @@ rather than scanning all entities.
 
 ## Reference project (original content, no borrowed art or names)
 
-`games/blackthorn-keep/`: a compact facility with Floor 0, Floor 1, Roof, a vent layer and an
+`games/invisible-castle/`: a compact facility with Floor 0, Floor 1, Roof, a vent layer and an
 underground area; 8-15 actors; routines (wake, roll call, breakfast, work, free time, dinner,
 curfew) that travel by navigation; items (normal, contraband, tool, weapon, disguise, key,
 ingredients, crafted, consumable); two substantially different victory routes assembled from

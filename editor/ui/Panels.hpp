@@ -15,6 +15,8 @@ void drawMenus(EditorState &state);
 void handleShortcuts(EditorState &state);
 // The start page shown in the editor area while no project is open.
 void welcomePage(EditorState &state);
+// Projects discovered from manifests beside the executable or in a repository checkout.
+void gamesMenu(EditorState &state);
 // Clipboard commands shared by the menus, shortcuts and context menus.
 void copySelection(EditorState &state, bool cut);
 void pasteClipboard(EditorState &state);

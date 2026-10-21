@@ -1,10 +1,18 @@
 # Both distinct game structures are available from the editor's start page.
 timeout 120
-expect widget "welcome/game/fireboy-watergirl"
-expect widget "welcome/game/blackthorn-keep"
-click "welcome/game/blackthorn-keep"
-expect project "Blackthorn Keep"
+expect widget "welcome/game/brothers-run"
+expect widget "welcome/game/invisible-castle"
+click "welcome/game/invisible-castle"
+expect project "Invisible Castle"
 expect scene scenes/menu.ykscene
 expect entity "Play Button"
 expect problems 0
+click "menu/Games"
+click "menu/Games/brothers-run"
+expect project "Brothers Run"
+expect scene scenes/menu.ykscene
+key f5
+expect playing
+key shift+f5
+expect editing
 quit

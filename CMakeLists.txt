@@ -32,7 +32,7 @@ include(YkGame)
 yk_sanitize(box2d)
 
 # Games are independent project data; engine libraries never compile their files.
-option(YK_BUILD_GAMES "Include games, their checks and packaged projects" ${PROJECT_IS_TOP_LEVEL})
+option(YK_BUILD_GAMES "Build independent demo game checks (never bundled in the engine)" OFF)
 set(YK_GAMES_DIR "")
 if(YK_BUILD_GAMES)
     set(YK_GAMES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/games")
@@ -264,11 +264,6 @@ if(YK_RUNTIME AND PROJECT_IS_TOP_LEVEL)
     if(WIN32)
         install(FILES packaging/update/windows.ps1 DESTINATION ${CMAKE_INSTALL_DATADIR}/yk-engine/update)
     endif()
-    if(YK_BUILD_GAMES)
-        install(DIRECTORY "${YK_GAMES_DIR}/" DESTINATION ${CMAKE_INSTALL_DATADIR}/yk-engine/games
-            PATTERN "tools" EXCLUDE PATTERN "tests" EXCLUDE PATTERN "source" EXCLUDE
-            PATTERN "CMakeLists.txt" EXCLUDE PATTERN "__pycache__" EXCLUDE PATTERN ".DS_Store" EXCLUDE)
-    endif()
     install(DIRECTORY docs/ DESTINATION ${CMAKE_INSTALL_DOCDIR})
     install(DIRECTORY LICENSES/ DESTINATION ${CMAKE_INSTALL_DOCDIR}/licenses)
     install(FILES README.md THIRD_PARTY.md DESTINATION ${CMAKE_INSTALL_DOCDIR})
@@ -303,7 +298,7 @@ if(APPLE AND YK_RUNTIME AND PROJECT_IS_TOP_LEVEL)
         COMMAND ${CMAKE_COMMAND} "-DOUT=${CMAKE_BINARY_DIR}/YK Engine.app"
             -DEDITOR=$<TARGET_FILE:yk_editor> -DPLAYER=$<TARGET_FILE:yk_player>
             -DTOOL=$<TARGET_FILE:yk> -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
-            -DVERSION=${PROJECT_VERSION} -DGAMES_DIR=${YK_GAMES_DIR}
+            -DVERSION=${PROJECT_VERSION}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/packaging/macos/assemble-app.cmake
         DEPENDS yk_editor yk_player yk
         COMMENT "Assembling YK Engine.app" VERBATIM)

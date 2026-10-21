@@ -67,6 +67,22 @@ bool startAction(const char *id, Icon icon, const char *title, const char *descr
 }
 } // namespace
 
+void gamesMenu(EditorState &state) {
+    const auto projects = availableProjects();
+    if (projects.empty())
+        return;
+    const bool open = ImGui::BeginMenu("Games");
+    markItem("menu/Games");
+    if (open) {
+        for (const auto &project : projects) {
+            if (ImGui::MenuItem(project.name.c_str()))
+                state.guarded([&state, root = project.root] { state.openProject(root); });
+            markItem("menu/Games/" + project.root.filename().string());
+        }
+        ImGui::EndMenu();
+    }
+}
+
 void welcomePage(EditorState &state) {
     const ImVec2 avail = ImGui::GetContentRegionAvail();
     ImDrawList &list = *ImGui::GetWindowDrawList();
@@ -91,11 +107,11 @@ void welcomePage(EditorState &state) {
     if (startAction("welcome/Open Project", Icon::FolderOpen, "Open Project...",
                     "Open a folder that holds a project.ykproj"))
         showDialog(state, DialogKind::OpenProject);
-    static const auto projects = availableProjects();
+    const auto projects = availableProjects();
     if (!projects.empty()) {
         ImGui::Dummy({1.0F, 14.0F});
         ImGui::PushFont(fonts().semibold, 16.0F);
-        ImGui::TextUnformatted("Games");
+        ImGui::TextUnformatted("Demo games");
         ImGui::PopFont();
         for (const auto &project : projects) {
             const auto id = "welcome/game/" + project.root.filename().string();

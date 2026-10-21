@@ -143,7 +143,9 @@ void logFiles() {
 
     // An unwritable place is an error the caller can report, not a crash.
     const fs::path blocker = folder / "not-a-folder";
-    { std::ofstream(blocker) << "x"; }
+    {
+        std::ofstream(blocker) << "x";
+    }
     CHECK(!openLogFile({blocker / "sub" / "x.log"}));
     setLogStderrEnabled(true);
 }
@@ -169,8 +171,12 @@ void sessionMarker() {
 
     // A marker of a process that is gone, and its report: the next start reports a crash once.
     const std::string deadPid = "2000000000";
-    { std::ofstream(folder / ("app-" + deadPid + ".session")) << "started\n"; }
-    { std::ofstream(folder / ("crash-app-" + deadPid + "-1700000000.txt")) << "report\n"; }
+    {
+        std::ofstream(folder / ("app-" + deadPid + ".session")) << "started\n";
+    }
+    {
+        std::ofstream(folder / ("crash-app-" + deadPid + "-1700000000.txt")) << "report\n";
+    }
     {
         DiagnosticsSession second(info);
         CHECK(second.previousEndedUncleanly());
@@ -184,14 +190,18 @@ void sessionMarker() {
     }
     // A marker without a report (the process was killed).
     const std::string killedPid = "2000000001";
-    { std::ofstream(folder / ("app-" + killedPid + ".session")) << "started\n"; }
+    {
+        std::ofstream(folder / ("app-" + killedPid + ".session")) << "started\n";
+    }
     {
         DiagnosticsSession fourth(info);
         CHECK(fourth.previousEndedUncleanly());
         CHECK(fourth.previousCrashReport().empty());
     }
     // Another program's markers are not ours, and a running program is not a crash.
-    { std::ofstream(folder / ("other-" + deadPid + ".session")) << "started\n"; }
+    {
+        std::ofstream(folder / ("other-" + deadPid + ".session")) << "started\n";
+    }
     {
         DiagnosticsSession fifth(info);
         CHECK(!fifth.previousEndedUncleanly());

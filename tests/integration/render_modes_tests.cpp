@@ -182,16 +182,15 @@ class ModesLayer final : public ApplicationLayer {
                 if (variant >= 2) {
                     const float zoom = c.region.size.y / c.visibleHeight;
                     // Put the first interior tile edge exactly halfway between pixels.
-                    const float xEdge = regionWidth / 2.0F +
-                                        (-16.33F / 2 + (sliced ? 1.0F : .97142857F)) * zoom;
-                    const float yEdge = regionHeight / 2.0F +
-                                        (-8.77F / 2 + (sliced ? 1.0F : 1.1142857F)) * zoom;
+                    const float xEdge =
+                        regionWidth / 2.0F + (-16.33F / 2 + (sliced ? 1.0F : .97142857F)) * zoom;
+                    const float yEdge =
+                        regionHeight / 2.0F + (-8.77F / 2 + (sliced ? 1.0F : 1.1142857F)) * zoom;
                     c.coverageOffset = {(std::floor(xEdge) + .5F - xEdge) / zoom,
                                         (std::floor(yEdge) + .5F - yEdge) / zoom};
                 }
                 auto &s = sprite(c, "Fractional joins", c.center + c.coverageOffset,
-                                 {16.33F, 8.77F},
-                                 sliced ? "assets/frame.bmp" : "assets/tile.bmp");
+                                 {16.33F, 8.77F}, sliced ? "assets/frame.bmp" : "assets/tile.bmp");
                 s.drawMode = sliced ? SpriteDrawMode::Sliced : SpriteDrawMode::Tiled;
                 s.sliceFill = SpriteFill::Tile;
                 s.tileSize = {.97142857F, 1.1142857F};

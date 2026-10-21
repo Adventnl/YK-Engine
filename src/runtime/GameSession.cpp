@@ -1,6 +1,6 @@
 #include "yk/runtime/GameSession.hpp"
-#include "yk/core/Log.hpp"
 #include "yk/components/Components.hpp"
+#include "yk/core/Log.hpp"
 
 namespace yk {
 Result<std::unique_ptr<GameSession>> GameSession::create(std::unique_ptr<Scene> scene,
@@ -75,8 +75,10 @@ bool GameSession::update(double seconds, const InputFrame &input) {
         return followSceneChange();
     }
     if (paused_ && menu && !toggled) {
-        if (pressed("PauseUp")) menu->selected = (menu->selected + 3) % 4;
-        if (pressed("PauseDown")) menu->selected = (menu->selected + 1) % 4;
+        if (pressed("PauseUp"))
+            menu->selected = (menu->selected + 3) % 4;
+        if (pressed("PauseDown"))
+            menu->selected = (menu->selected + 1) % 4;
         int hovered = -1;
         for (int row = 0; row < 4; ++row) {
             const auto box = PauseMenu::buttonRect(runtime_->viewportSize(), row);
@@ -85,19 +87,26 @@ bool GameSession::update(double seconds, const InputFrame &input) {
                 point.x < box.position.x + box.size.x && point.y < box.position.y + box.size.y)
                 hovered = row;
         }
-        if (hovered >= 0 && (input.pointer.position != menu->pointerPosition || input.pointer.primary.pressed))
+        if (hovered >= 0 &&
+            (input.pointer.position != menu->pointerPosition || input.pointer.primary.pressed))
             menu->selected = hovered;
         menu->pointerPosition = input.pointer.position;
-        if (input.pointer.primary.pressed) menu->armed = hovered;
+        if (input.pointer.primary.pressed)
+            menu->armed = hovered;
         int chosen = pressed("Continue") ? menu->selected : -1;
         if (input.pointer.primary.released) {
-            if (menu->armed >= 0 && menu->armed == hovered) chosen = hovered;
+            if (menu->armed >= 0 && menu->armed == hovered)
+                chosen = hovered;
             menu->armed = -1;
         }
-        if (pressed("Restart")) chosen = 1;
-        if (pressed("LevelSelect")) chosen = 2;
-        if (pressed("Menu")) chosen = 3;
-        if (chosen == 0) setPaused(false);
+        if (pressed("Restart"))
+            chosen = 1;
+        if (pressed("LevelSelect"))
+            chosen = 2;
+        if (pressed("Menu"))
+            chosen = 3;
+        if (chosen == 0)
+            setPaused(false);
         if (chosen == 1) {
             setPaused(false);
             if (auto status = restart(); !status)

@@ -30,7 +30,7 @@ endfunction()
 
 set(app "${WORK}/Some Folder/YK Engine.app")
 run("assembling the bundle" "${CMAKE_COMMAND}" "-DOUT=${app}" "-DEDITOR=${EDITOR}" "-DPLAYER=${PLAYER}"
-    "-DTOOL=${TOOL}" "-DSOURCE_DIR=${SOURCE_DIR}" "-DVERSION=${VERSION}" "-DGAMES_DIR=${SOURCE_DIR}/games"
+    "-DTOOL=${TOOL}" "-DSOURCE_DIR=${SOURCE_DIR}" "-DVERSION=${VERSION}"
     -P "${SOURCE_DIR}/packaging/macos/assemble-app.cmake")
 
 get_filename_component(editor_name "${EDITOR}" NAME)
@@ -41,15 +41,14 @@ set(resources "${app}/Contents/Resources")
 foreach(required
         "${app}/Contents/Info.plist" "${macos}/${editor_name}" "${macos}/${player_name}"
         "${macos}/${tool_name}" "${resources}/AppIcon.icns" "${resources}/macos.sh"
-        "${resources}/games/blackthorn-keep/project.ykproj"
         "${resources}/licenses/SDL3.txt" "${resources}/licenses/Box2D-MIT.txt"
         "${resources}/docs/EDITOR.md" "${resources}/docs/THIRD_PARTY.md")
     if(NOT EXISTS "${required}")
         message(FATAL_ERROR "The bundle lacks ${required}")
     endif()
 endforeach()
-if(EXISTS "${resources}/games/blackthorn-keep/tools")
-    message(FATAL_ERROR "Development tools of the demo game ship in the bundle")
+if(EXISTS "${resources}/games")
+    message(FATAL_ERROR "Engine app must not bundle game projects")
 endif()
 
 # Info.plist: filled in, names the program that is really there, and no template marker is left.
@@ -81,29 +80,29 @@ string(FIND "${last_output}" "${resources}/licenses" found)
 if(found EQUAL -1)
     message(FATAL_ERROR "yk targets did not find the licenses in Resources:\n${last_output}")
 endif()
-run("yk validate" "${macos}/${tool_name}" validate "${resources}/games/blackthorn-keep")
-if(EXISTS "${SOURCE_DIR}/games/blackthorn-keep/project.ykproj")
+run("yk validate" "${macos}/${tool_name}" validate "${SOURCE_DIR}/games/invisible-castle")
+if(EXISTS "${SOURCE_DIR}/games/invisible-castle/project.ykproj")
     run("yk validate exploration" "${macos}/${tool_name}" validate
-        "${resources}/games/blackthorn-keep")
+        "${SOURCE_DIR}/games/invisible-castle")
 endif()
 
 # An export for macOS made by the bundle's own tool: an app with Info.plist, the icon, the data in
 # Resources/data and the notices. The player inside is this system's player (the only one there is
 # here), which finds its data from a bundle-shaped folder exactly as it will on a Mac.
-run("the bundle's yk export (macOS layout)" "${macos}/${tool_name}" export "${resources}/games/blackthorn-keep"
+run("the bundle's yk export (macOS layout)" "${macos}/${tool_name}" export "${SOURCE_DIR}/games/invisible-castle"
     --target macos --player "${macos}/${player_name}" --out "${WORK}/exported" --zip)
-set(game "${WORK}/exported/Blackthorn Keep.app")
-foreach(required "${game}/Contents/MacOS/BlackthornKeep" "${game}/Contents/Info.plist"
+set(game "${WORK}/exported/Invisible Castle.app")
+foreach(required "${game}/Contents/MacOS/InvisibleCastle" "${game}/Contents/Info.plist"
         "${game}/Contents/Resources/data/project.ykproj"
         "${game}/Contents/Resources/data/scenes/level2.ykscene"
         "${game}/Contents/Resources/licenses/SDL3.txt" "${game}/Contents/Resources/README.txt"
-        "${WORK}/exported/Blackthorn Keep.app.zip")
+        "${WORK}/exported/Invisible Castle.app.zip")
     if(NOT EXISTS "${required}")
         message(FATAL_ERROR "The exported bundle lacks ${required}")
     endif()
 endforeach()
 file(READ "${game}/Contents/Info.plist" game_plist)
-foreach(expected "<string>BlackthornKeep</string>" "<string>Blackthorn Keep</string>")
+foreach(expected "<string>InvisibleCastle</string>" "<string>Invisible Castle</string>")
     string(FIND "${game_plist}" "${expected}" found)
     if(found EQUAL -1)
         message(FATAL_ERROR "The game's Info.plist lacks ${expected}:\n${game_plist}")
@@ -115,12 +114,12 @@ list(LENGTH game_programs program_count)
 if(NOT program_count EQUAL 1)
     message(FATAL_ERROR "A game should carry one program, found: ${game_programs}")
 endif()
-run("the exported bundle" "${game}/Contents/MacOS/BlackthornKeep" --frames 60 --fixed --no-audio)
+run("the exported bundle" "${game}/Contents/MacOS/InvisibleCastle" --frames 60 --fixed --no-audio)
 
 # The editor, from inside the bundle: its welcome screen finds the demo game in Resources.
-file(REAL_PATH "${resources}/games/blackthorn-keep" sample)
+file(REAL_PATH "${SOURCE_DIR}/games/invisible-castle" sample)
 set(ENV{SAMPLE_DIR} "${sample}")
 run("the bundled editor" "${CMAKE_COMMAND}" "-DEDITOR=${macos}/${editor_name}"
-    "-DSCRIPT=${SOURCE_DIR}/tests/install/open_sample.ykscript" "-DWORK=${WORK}/editor"
+    "-DSCRIPT=${SOURCE_DIR}/tests/install/open_sample.ykscript" "-DWORK=${WORK}/editor" "-DRAW_PROJECT=${sample}"
     -P "${SOURCE_DIR}/tests/editor/run_script.cmake")
 message(STATUS "Bundle check passed: ${app}")

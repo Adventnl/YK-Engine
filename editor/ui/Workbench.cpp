@@ -215,13 +215,12 @@ void titleBar(EditorState &state, Rect rect) {
     const float bar = rect.size.y;
     const float pad = std::max(4.0F, (bar - ImGui::GetFontSize()) * 0.5F);
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {dp(9.0F), pad});
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0F, 0.0F});
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {dp(12.0F), 0.0F});
     ImGui::SetNextWindowPos(im(rect.position));
     ImGui::SetNextWindowSize(im(rect.size));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0F, 0.0F});
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0F);
     const bool open = ImGui::Begin("##titlebar", nullptr, regionFlags | ImGuiWindowFlags_MenuBar);
-    ImGui::PopStyleVar(4);
     if (open && ImGui::BeginMenuBar()) {
         markWindow("panel/TitleBar");
         ImDrawList &list = *ImGui::GetWindowDrawList();
@@ -284,6 +283,7 @@ void titleBar(EditorState &state, Rect rect) {
         ImGui::EndMenuBar();
     }
     ImGui::End();
+    ImGui::PopStyleVar(4);
 }
 
 // -------------------------------------------------------------------------------- activity bar

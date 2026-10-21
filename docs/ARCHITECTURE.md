@@ -1,7 +1,7 @@
 # Architecture
 
 YK Engine is a C++20 2D engine with an editor. Games are independent project folders under
-`games/`: Fireboy and Watergirl and Blackthorn Keep. Their scenes, art, dialogue, story text,
+`games/`: Brothers Run and Invisible Castle. Their scenes, art, dialogue, story text,
 authoring tools and project checks stay there. Engine libraries never compile game files.
 The editor discovers manifests under a `games/` directory beside the checkout or installation,
 including `Contents/Resources/games/` in a macOS app. It has no built-in game names.
@@ -106,7 +106,7 @@ never writes into a real home).
 
 `YK Engine.app` is assembled by one CMake script (`assemble-app.cmake`: plain file copying, so a test
 runs it on any system): `Contents/MacOS/{yk_editor,yk_player,yk}`, `Contents/Resources/{AppIcon.icns,
-games/fireboy-watergirl, licenses, docs}` and an `Info.plist` from the template (bundle id, version, a document
+games/brothers-run, licenses, docs}` and an `Info.plist` from the template (bundle id, version, a document
 type so a `.ykproj` opens in the editor). `scripts/package-macos.sh` signs it and writes the `.dmg`;
 an exported game is the same layout with the game's player as its only program and its project in
 `Contents/Resources/data`. `SDL_GetBasePath()` reports `Contents/Resources` inside a bundle, which is

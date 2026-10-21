@@ -5,12 +5,12 @@
 #
 #   cmake -DOUT=<path of the .app> -DEDITOR=<yk_editor> -DPLAYER=<yk_player> -DTOOL=<yk>
 #         -DSOURCE_DIR=<repository> -DVERSION=<x.y.z> [-DBUNDLE_ID=com.yk.engine]
-#         [-DGAMES_DIR=<games folder>] -P assemble-app.cmake
+#         -P assemble-app.cmake
 #
 # Layout (the bundle's Contents):
 #   MacOS/yk_editor yk_player yk     the programs (the player is what the editor exports games with)
 #   Resources/AppIcon.icns
-#   Resources/games/ (optional projects), licenses, docs
+#   Resources/licenses, docs
 #   Info.plist
 foreach(variable OUT EDITOR PLAYER TOOL SOURCE_DIR VERSION)
     if(NOT ${variable})
@@ -33,11 +33,6 @@ endforeach()
 configure_file("${SOURCE_DIR}/packaging/macos/Info.plist.in" "${OUT}/Contents/Info.plist" @ONLY)
 file(COPY "${SOURCE_DIR}/packaging/icons/YKEngine.icns" DESTINATION "${OUT}/Contents/Resources")
 file(RENAME "${OUT}/Contents/Resources/YKEngine.icns" "${OUT}/Contents/Resources/AppIcon.icns")
-if(GAMES_DIR AND IS_DIRECTORY "${GAMES_DIR}")
-    file(COPY "${GAMES_DIR}/" DESTINATION "${OUT}/Contents/Resources/games"
-        PATTERN "tools" EXCLUDE PATTERN "tests" EXCLUDE PATTERN "source" EXCLUDE
-        PATTERN "CMakeLists.txt" EXCLUDE PATTERN "__pycache__" EXCLUDE PATTERN ".DS_Store" EXCLUDE)
-endif()
 file(COPY "${SOURCE_DIR}/LICENSES/" DESTINATION "${OUT}/Contents/Resources/licenses")
 file(COPY "${SOURCE_DIR}/README.md" "${SOURCE_DIR}/THIRD_PARTY.md" DESTINATION
     "${OUT}/Contents/Resources/docs")

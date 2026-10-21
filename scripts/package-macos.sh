@@ -81,9 +81,11 @@ trap 'rm -rf "$stage" "$pkgstage"' EXIT
 ditto "$app" "$pkgstage/YK Engine.app"
 if [[ -n "$installer_identity" ]]; then
     pkgbuild --root "$pkgstage" --install-location /Applications \
+        --scripts packaging/macos/installer-scripts \
         --identifier com.yk.engine --version "$version" --sign "$installer_identity" "$pkg"
 else
     pkgbuild --root "$pkgstage" --install-location /Applications \
+        --scripts packaging/macos/installer-scripts \
         --identifier com.yk.engine --version "$version" "$pkg"
 fi
 

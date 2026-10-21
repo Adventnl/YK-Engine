@@ -1,0 +1,7 @@
+# A new engine installation has no demo content or preloaded project.
+expect widget "welcome/New Project"
+expect widget "welcome/Open Project"
+expect no-widget "menu/Games"
+expect no-widget "welcome/game/invisible-castle"
+expect no-widget "welcome/game/brothers-run"
+quit

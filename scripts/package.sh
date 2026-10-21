@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Builds the release preset and packs the editor, player, sample project, docs and license notices
+# Builds the release preset and packs the editor, player, command line, docs and license notices
 # with CPack: build/package/YKEngine-<version>-<system>.tar.gz (a .zip on Windows).
 #
 #   scripts/package.sh

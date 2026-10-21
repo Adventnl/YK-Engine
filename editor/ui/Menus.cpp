@@ -368,7 +368,7 @@ void drawMenus(EditorState &state) {
         {"File", menuFile},   {"Edit", menuEdit},     {"View", menuView},
         {"Scene", menuScene}, {"Entity", menuEntity}, {"Component", menuComponent},
         {"Build", menuBuild}, {"Debug", menuDebug},   {"Help", menuHelp}};
-    for (const Entry &entry : entries) {
+    const auto drawEntry = [&](const Entry &entry) {
         const bool open = ImGui::BeginMenu(entry.id);
         markItem(std::string("menu/") + entry.id);
         if (open) {
@@ -378,6 +378,25 @@ void drawMenus(EditorState &state) {
             }
             ImGui::EndMenu();
         }
+    };
+    // Preserve the project/play controls at larger display scales. Extra menus remain available
+    // under More rather than running into the toolbar or disappearing off the window edge.
+    const float menuRight = ImGui::GetWindowPos().x + ImGui::GetWindowWidth() - dp(440.0F);
+    for (std::size_t index = 0; index < std::size(entries); ++index) {
+        const Entry &entry = entries[index];
+        const float nextWidth = ImGui::CalcTextSize(entry.id).x + dp(32.0F);
+        if (index > 1 && ImGui::GetCursorScreenPos().x + nextWidth > menuRight) {
+            if (ImGui::BeginMenu("More")) {
+                for (; index < std::size(entries); ++index)
+                    drawEntry(entries[index]);
+                ImGui::EndMenu();
+            }
+            markItem("menu/More");
+            break;
+        }
+        drawEntry(entry);
+        if (index == 0)
+            gamesMenu(state);
     }
 }
 } // namespace yk::editor::ui

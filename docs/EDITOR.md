@@ -27,8 +27,8 @@ earlier runs as `editor.1.log` ...; `crash-editor-*.txt`) and `~/Library/Applica
 folder. If the last session did not end normally, the next start says so once, names the crash
 report and offers to open the folder.
 
-The welcome screen discovers the projects in `games/`. Open **Blackthorn Keep** or
-**Fireboy and Watergirl**, then press **F5**. Each is an ordinary project, with its scenes,
+The welcome screen discovers the projects in `games/`. Open **Invisible Castle** or
+**Brothers Run**, then press **F5**. Each is an ordinary project, with its scenes,
 assets and authoring tools kept together. New Project starts with an empty scene and camera.
 
 ## The workbench

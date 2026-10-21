@@ -45,7 +45,7 @@ which commands to run. Written at the end of every pass; the newest pass is firs
 5. Phase M: `SaveGame` assembled from the component and service contract, slots, migration.
 6. Phase N: runtime UI framework with reference-resolution scaling, inventory/container/crafting
    screens, HUD, minimap.
-7. Phase O: `games/blackthorn-keep/` and its two escape routes as headless tests.
+7. Phase O: `games/invisible-castle/` and its two escape routes as headless tests.
 8. Phases P-S: local multiplayer, networking, authoring tools, packages, installer, CI.
 
 ### Files that matter

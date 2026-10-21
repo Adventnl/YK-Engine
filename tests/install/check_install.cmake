@@ -19,7 +19,7 @@ endif()
 
 function(run description)
     execute_process(COMMAND ${ARGN} RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE errors
-        TIMEOUT 540)
+        TIMEOUT 540 WORKING_DIRECTORY "${WORK}")
     if(NOT result EQUAL 0)
         message(FATAL_ERROR "${description} failed (${result}):\n${output}\n${errors}")
     endif()
@@ -31,23 +31,14 @@ set(exe "")
 if(WIN32)
     set(exe ".exe")
 endif()
-set(sample "${prefix}/share/yk-engine/games/blackthorn-keep")
-set(exploration_sample "${prefix}/share/yk-engine/games/blackthorn-keep")
-set(fireboy_sample "${prefix}/share/yk-engine/games/fireboy-watergirl")
+set(sample "${SOURCE_DIR}/games/invisible-castle")
+set(brothers_sample "${SOURCE_DIR}/games/brothers-run")
+if(EXISTS "${prefix}/share/yk-engine/games")
+    message(FATAL_ERROR "Engine installer must never contain demo games")
+endif()
 set(docs "${prefix}/share/doc/YKEngine")
 foreach(required
         "${prefix}/bin/yk_editor${exe}" "${prefix}/bin/yk_player${exe}" "${prefix}/bin/yk${exe}"
-        "${sample}/project.ykproj" "${sample}/scenes/level2.ykscene"
-        "${sample}/scenes/menu.ykscene" "${sample}/scenes/levels.ykscene"
-        "${sample}/scenes/controls.ykscene" "${sample}/assets/ui/keep-preview.png"
-        "${sample}/assets/ui/hall-preview.png"
-        "${exploration_sample}/project.ykproj" "${exploration_sample}/scenes/courtyard.ykscene"
-        "${fireboy_sample}/project.ykproj" "${fireboy_sample}/scenes/menu.ykscene"
-        "${fireboy_sample}/scenes/levels.ykscene" "${fireboy_sample}/scenes/level01.ykscene"
-        "${fireboy_sample}/scenes/level02.ykscene"
-        "${fireboy_sample}/assets/reference/room.png"
-        "${fireboy_sample}/assets/reference/kit/button_cap.png"
-        "${fireboy_sample}/assets/reference/kit/button_housing.png"
         "${docs}/README.md" "${docs}/THIRD_PARTY.md" "${docs}/EDITOR.md" "${docs}/ARCHITECTURE.md"
         "${docs}/BUILDING.md" "${docs}/PROJECT_FORMAT.md" "${docs}/STATUS.md"
         "${docs}/EXPLORATION.md"
@@ -81,14 +72,17 @@ if(headers OR libraries)
     message(FATAL_ERROR "The installation contains headers or libraries: ${headers} ${libraries}")
 endif()
 
+run("the empty installed editor" "${CMAKE_COMMAND}" -DEDITOR=${prefix}/bin/yk_editor${exe}
+    -DSCRIPT=${SOURCE_DIR}/tests/install/blank_engine.ykscript -DWORK=${WORK}/blank-editor
+    -P ${SOURCE_DIR}/tests/editor/run_script.cmake)
+
 # The installed command line validates, and the installed player runs, the installed demo project.
 set(ENV{YK_LOG_DIR} "${WORK}/logs")
 set(ENV{SDL_VIDEODRIVER} dummy)
 set(ENV{SDL_RENDER_DRIVER} software)
 set(ENV{SDL_AUDIODRIVER} dummy)
 run("the installed yk validate" "${prefix}/bin/yk${exe}" validate "${sample}")
-run("the installed exploration validate" "${prefix}/bin/yk${exe}" validate "${exploration_sample}")
-run("the installed Fireboy and Watergirl validate" "${prefix}/bin/yk${exe}" validate "${fireboy_sample}")
+run("the installed Brothers Run validate" "${prefix}/bin/yk${exe}" validate "${brothers_sample}")
 run("the installed player" "${prefix}/bin/yk_player${exe}" --frames 90 --fixed --no-audio
     --capture "${WORK}/player.bmp" "${sample}")
 if(NOT EXISTS "${WORK}/player.bmp")
@@ -108,13 +102,13 @@ endif()
 run("the installed yk export" "${prefix}/bin/yk${exe}" export "${sample}" --target ${target}
     --out "${WORK}/exported" --zip)
 if(target STREQUAL "macos")
-    set(game_root "${WORK}/exported/Blackthorn Keep.app/Contents/Resources")
-    set(game "${WORK}/exported/Blackthorn Keep.app/Contents/MacOS/BlackthornKeep")
-    set(game_archive "${WORK}/exported/Blackthorn Keep.app.zip")
+    set(game_root "${WORK}/exported/Invisible Castle.app/Contents/Resources")
+    set(game "${WORK}/exported/Invisible Castle.app/Contents/MacOS/InvisibleCastle")
+    set(game_archive "${WORK}/exported/Invisible Castle.app.zip")
 else()
-    set(game_root "${WORK}/exported/Blackthorn-Keep-${target}")
-    set(game "${game_root}/BlackthornKeep${exe}")
-    set(game_archive "${WORK}/exported/Blackthorn-Keep-${target}.zip")
+    set(game_root "${WORK}/exported/Invisible-Castle-${target}")
+    set(game "${game_root}/InvisibleCastle${exe}")
+    set(game_archive "${WORK}/exported/Invisible-Castle-${target}.zip")
 endif()
 foreach(required "${game}" "${game_archive}" "${game_root}/data/project.ykproj"
         "${game_root}/data/scenes/level2.ykscene" "${game_root}/README.txt"
@@ -134,6 +128,7 @@ run("the exported game" "${game}" --frames 60 --fixed --no-audio)
 set(ENV{SAMPLE_DIR} "${sample}")
 run("the installed editor" "${CMAKE_COMMAND}" -DEDITOR=${prefix}/bin/yk_editor${exe}
     -DSCRIPT=${SOURCE_DIR}/tests/install/open_sample.ykscript -DWORK=${WORK}/editor
+    -DRAW_PROJECT=${sample}
     -P ${SOURCE_DIR}/tests/editor/run_script.cmake)
 
 # CPack produces an archive of the same installation.

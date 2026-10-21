@@ -190,7 +190,7 @@ int runEditor(int argc, char **argv, const RegisterComponents &registerGame) {
     }
 
     ApplicationConfig config;
-    config.title = "YK Editor";
+    config.title = "YK Engine";
     config.width = options->width;
     config.height = options->height;
     config.logicalWidth = 0; // Native resolution: the editor lays out in real pixels.

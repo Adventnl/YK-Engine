@@ -112,7 +112,8 @@ Status drawAsPlayed(Renderer &renderer, SceneRenderer &sceneRenderer, const Scen
         for (const auto id : scene.orderedIds()) {
             const auto *entity = scene.find(id);
             if (entity && entity->activeInHierarchy())
-                if (const auto *candidate = entity->get<PauseMenu>(); candidate && candidate->enabled) {
+                if (const auto *candidate = entity->get<PauseMenu>();
+                    candidate && candidate->enabled) {
                     menu = candidate;
                     break;
                 }
@@ -130,7 +131,8 @@ Status drawAsPlayed(Renderer &renderer, SceneRenderer &sceneRenderer, const Scen
         drawn = renderer.submit(dim);
         const std::string word = menu ? menu->title : "PAUSED";
         const float unit = std::min(viewport.size.x / 1280.0F, viewport.size.y / 720.0F);
-        const float scale = menu ? 4.0F * unit : std::clamp(std::floor(viewport.size.y / 120.0F), 3.0F, 10.0F);
+        const float scale =
+            menu ? 4.0F * unit : std::clamp(std::floor(viewport.size.y / 120.0F), 3.0F, 10.0F);
         const Vec2 size = BitmapFont::measure(word, scale);
         const Vec2 origin = (viewport.size - size) * 0.5F + Vec2{0, menu ? -157.0F * unit : 0};
         if (menu) {
@@ -139,7 +141,8 @@ Status drawAsPlayed(Renderer &renderer, SceneRenderer &sceneRenderer, const Scen
             panel.transform.position = (viewport.size - panel.size) * 0.5F;
             panel.tint = {18, 31, 46, 255};
             panel.layer = 9401;
-            if (drawn) drawn = renderer.submit(panel);
+            if (drawn)
+                drawn = renderer.submit(panel);
             const char *labels[]{"RESUME", "RESTART LEVEL", "LEVEL SELECT", "MAIN MENU"};
             for (int row = 0; row < 4 && drawn; ++row) {
                 const auto box = PauseMenu::buttonRect(viewport.size, row);
@@ -147,19 +150,27 @@ Status drawAsPlayed(Renderer &renderer, SceneRenderer &sceneRenderer, const Scen
                 button.size = box.size;
                 button.transform.position = box.position;
                 button.layer = 9402;
-                button.tint = row == menu->selected ? Color{70, 96, 119, 255} : Color{30, 49, 68, 255};
-                if (row == menu->armed) button.tint = {90, 116, 139, 255};
+                button.tint =
+                    row == menu->selected ? Color{70, 96, 119, 255} : Color{30, 49, 68, 255};
+                if (row == menu->armed)
+                    button.tint = {90, 116, 139, 255};
                 drawn = renderer.submit(button);
                 const Vec2 labelSize = BitmapFont::measure(labels[row], 2.5F * unit);
-                if (drawn) drawn = sceneRenderer.font().draw(renderer, labels[row],
-                    box.position + (box.size - labelSize) * 0.5F, 2.5F * unit,
-                    row == menu->selected ? Color{245, 204, 125, 255} : Color{231, 237, 243, 255}, 9411);
+                if (drawn)
+                    drawn = sceneRenderer.font().draw(
+                        renderer, labels[row], box.position + (box.size - labelSize) * 0.5F,
+                        2.5F * unit,
+                        row == menu->selected ? Color{245, 204, 125, 255}
+                                              : Color{231, 237, 243, 255},
+                        9411);
             }
             const std::string hint = "ARROWS + ENTER / CLICK TO CHOOSE\nESC OR P TO RESUME";
             const auto hintSize = BitmapFont::measure(hint, 1.5F * unit);
-            if (drawn) drawn = sceneRenderer.font().draw(renderer, hint,
-                Vec2{(viewport.size.x - hintSize.x) * 0.5F, viewport.size.y * 0.5F + 190 * unit},
-                1.5F * unit, {173, 196, 216, 255}, 9411);
+            if (drawn)
+                drawn = sceneRenderer.font().draw(renderer, hint,
+                                                  Vec2{(viewport.size.x - hintSize.x) * 0.5F,
+                                                       viewport.size.y * 0.5F + 190 * unit},
+                                                  1.5F * unit, {173, 196, 216, 255}, 9411);
         }
         if (drawn)
             drawn = sceneRenderer.font().draw(renderer, word, origin + Vec2{scale, scale}, scale,

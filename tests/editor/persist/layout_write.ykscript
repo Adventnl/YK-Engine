@@ -1,6 +1,6 @@
 # First half of the layout persistence check: rearrange the workbench and let it be written.
 timeout 300
-expect project "Blackthorn Keep"
+expect project "Invisible Castle"
 click activity/Prefabs
 expect side-view prefabs
 drag sash/side px:426,300

@@ -83,12 +83,13 @@ int main() {
     scene.createEntity("Camera").add<Camera>();
     scene.createEntity("Input probe").add<EscapeProbe>();
     CHECK(saveScene(scene, root / project.startScene));
-    std::vector<std::string> words = {"yk_player", "--project", root.string(), "--fixed",
-                                      "--no-audio", "--frames", "10"};
+    std::vector<std::string> words = {"yk_player",  "--project", root.string(), "--fixed",
+                                      "--no-audio", "--frames",  "10"};
     std::vector<char *> arguments;
     for (auto &word : words)
         arguments.push_back(word.data());
-    CHECK(host::runPlayer(static_cast<int>(arguments.size()), arguments.data(), registerProbe) == 0);
+    CHECK(host::runPlayer(static_cast<int>(arguments.size()), arguments.data(), registerProbe) ==
+          0);
     CHECK(sawEscape);
     CHECK(ticks == 3); // Escape keeps running; the window close event still quits.
     std::filesystem::remove_all(root);

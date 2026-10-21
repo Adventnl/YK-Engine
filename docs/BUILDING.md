@@ -8,7 +8,7 @@
   configure prints what SDL could not find. Nothing else is installed system-wide: Box2D, SDL3,
   Dear ImGui and stb_image are built from pinned sources.
 - Python 3 with Pillow and numpy only to regenerate the games' art and levels
-  (`games/fireboy-watergirl/tools/`); the games' generated files are checked in, so building and testing need
+  (`games/brothers-run/tools/`); the games' generated files are checked in, so building and testing need
   no Python.
 
 The first configure downloads Box2D 3.1.1 and SDL 3.2.28 (SHA-256 checked) and Dear ImGui 1.92.9
@@ -59,13 +59,13 @@ Programs, in the build folder:
 | Program | What it does |
 |---|---|
 | `yk_editor` | The editor ([EDITOR.md](EDITOR.md)). |
-| `yk_player` | Runs a project as a game: `yk_player games/fireboy-watergirl`. `--fixed --frames 120 --capture shot.bmp` runs deterministically for a while and saves the last frame. |
+| `yk_player` | Runs a project as a game: `yk_player games/brothers-run`. `--fixed --frames 120 --capture shot.bmp` runs deterministically for a while and saves the last frame. |
 | `yk` | Command line: `yk new`, `yk validate`, `yk format [--check]`, `yk info`, `yk components`, `yk export`, `yk targets`. Headless. |
 
 ```sh
 ./build/dev/yk_editor                        # the welcome screen discovers projects under games/
-./build/dev/yk_player games/fireboy-watergirl            # play it: Ember A/D/W/S, Tide arrows
-./build/dev/yk validate games/fireboy-watergirl
+./build/dev/yk_player games/brothers-run            # play it: Ember A/D/W/S, Tide arrows
+./build/dev/yk validate games/brothers-run
 ./build/dev/yk new ~/Games/MyGame --name "My Game"    # a new project anywhere; edit it with yk_editor
 ```
 
@@ -102,9 +102,9 @@ Settings that are read at build or run time (all optional):
 - **`game_module*`** build a small example game module (`tests/game_module`) with
   `yk_add_game_hosts` and check its own command line, player, export and editor (see
   [Game modules](#game-modules-custom-c-components)).
-- **`fireboy_watergirl`**, **`blackthorn_chapter1`** and **`blackthorn_chapter2`** exercise the
+- **`brothers_run`**, **`invisible_castle_chapter1`** and **`invisible_castle_chapter2`** exercise the
   independent games' routes, interactions, menus and restart. Their code lives in `games/*/tests/`.
-- **`blackthorn_search_render`** captures the real search popup, including its zero-progress frame.
+- **`invisible_castle_search_render`** captures the real search popup, including its zero-progress frame.
 - **`diagnostics`** covers paths, rotated log files, the running marker and crash reports;
   **`diagnostics_crash`** runs the real editor and crashes it on purpose, checks the report and that
   the next start says the session ended badly (not on Windows: the crash reporter is POSIX-only).
@@ -116,7 +116,7 @@ Settings that are read at build or run time (all optional):
   and an umlaut) far from the source tree, then validates, plays and exports them from other working
   directories and runs the export from yet another, checking that its log went to the log folder.
 - **`editor_*`** drive the real editor through an empty-project workflow, game discovery,
-  Blackthorn Keep playback, a custom component, layout persistence and a missing-project error.
+  Invisible Castle playback, a custom component, layout persistence and a missing-project error.
   Failure screenshots are saved in `build/<preset>/editor-tests/<name>/shots`.
 - **`install`** installs the build into a scratch folder, packs it with CPack and checks the
   contents, the absence of the private dependencies' headers, and that the installed programs
@@ -146,15 +146,13 @@ cmake --install build/release --prefix /opt/yk-engine    # bin/, share/yk-engine
 scripts/package.sh                                        # build/package/YKEngine-<version>-<system>.tar.gz (.zip on Windows)
 ```
 
-An installation contains `yk_editor`, `yk_player`, `yk`, the optional games
-(`share/yk-engine/games/`), the documentation and the license notices
+An engine installation contains `yk_editor`, `yk_player`, `yk`, the documentation and the license notices
 (`share/doc/YKEngine/licenses`). It contains none of the private dependencies' headers or
 libraries; the `install` test checks that.
 
 ## Automatic releases and updates
 
-Each push to `main` starts the release workflow. It builds and tests both platform installers,
-then publishes a GitHub Release with the installers and `SHA256SUMS.txt`. The release version
+Each push to `main` starts the release workflow. It builds and tests three separate products on both platforms: YK Engine, Invisible Castle (Demo game), and Brothers Run (Demo game). It then publishes a GitHub Release with the installers and `SHA256SUMS.txt`. The release version
 is the base `YK_RELEASE_VERSION` in CMakeLists.txt with the workflow run number added to its patch
 component. This gives every release a unique, increasing version without editing a version file on
 each push. If pushes arrive while a release is running, GitHub Actions keeps the newest pending run
@@ -264,7 +262,7 @@ What the application is, so nothing is missing when it is copied to Applications
 
 - `Contents/MacOS/yk_editor` is the main executable (`CFBundleExecutable`); `yk_player` and `yk` sit
   next to it. The player is what the editor exports games with, and **Run in Player** starts it.
-- `Contents/Resources` holds `AppIcon.icns`, the startup updater, the optional `games/` projects (discovered on the welcome screen), the license notices and these documents. Nothing is read from the
+- `Contents/Resources` holds `AppIcon.icns`, the startup updater, the license notices and these documents. Nothing is read from the
   build tree or the working directory; the application does not need Python or CMake.
 - `Info.plist` declares the `.ykproj` document type, so double-clicking a project (or
   `open -a "YK Engine" project.ykproj`) opens it in the editor.
@@ -357,10 +355,28 @@ keep stable (ADR 0011). The repository builds and runs an example module in its 
 
 Game-specific checks live with each project under `games/*/tests/`. The engine libraries never
 compile sources from `games/`. `InventoryHud` and `PatrolWatch` expose configurable text;
-Blackthorn Keep supplies its story, instructions, routine labels and ending in its scene data.
+Invisible Castle supplies its story, instructions, routine labels and ending in its scene data.
 
 ```sh
 cmake -S . -B build/engine-only -G Ninja -DYK_BUILD_GAMES=OFF
 cmake --build build/engine-only
 ctest --test-dir build/engine-only --output-on-failure
 ```
+
+
+### Separate demo installers
+
+Engine install rules never copy `games/`, even when `YK_BUILD_GAMES=ON`. This option only enables
+the independent game checks. The development/release presets enable it; a plain configure defaults
+to OFF. The editor discovers manifests at runtime without hardcoded game names.
+
+After building, package demos independently with:
+
+```sh
+python3 scripts/package-demos.py --build-dir build/release --out build/macos-dist --version 0.3.1
+```
+
+On Windows use `python`, `--build-dir build`, and `--out build/windows-dist`. This exports each
+project with the generic player and creates its own NSIS installer. macOS produces an app, DMG and
+PKG per demo. Neither game package includes the editor or the other game. The release workflow
+validates a blank engine installation and launches both demo exports before publishing.

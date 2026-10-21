@@ -28,18 +28,18 @@ components supplement them rather than replacing their behavior.
 This pass intentionally uses 2D collision and SDL rendering. The demo maps are small and fully
 loaded; the engine already culls off-screen sprites. NPCs have paths rather than complex AI.
 
-## Play Blackthorn Keep
+## Play Invisible Castle
 
 ```sh
-./build/dev/yk validate games/blackthorn-keep
-./build/dev/yk_player games/blackthorn-keep
-./build/dev/yk_editor games/blackthorn-keep
+./build/dev/yk validate games/invisible-castle
+./build/dev/yk_player games/invisible-castle
+./build/dev/yk_editor games/invisible-castle
 ```
 
-Installed editors also offer **Open Blackthorn Keep** on the welcome screen.
+Installed editors also offer **Open Invisible Castle** on the welcome screen.
 
 Move with WASD or arrows; press E to interact. The project starts in The Inner Keep; see the
-[game guide](../games/blackthorn-keep/README.md) for both chapters and escape routes.
+[game guide](../games/invisible-castle/README.md) for both chapters and escape routes.
 
 ## Authoring a conversation
 

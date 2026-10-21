@@ -1,0 +1,14 @@
+#!/bin/bash
+# Older engine installers included projects inside the app. Preserve those projects outside the
+# engine before an in-place PKG update so the updated app contains only engine resources.
+set -euo pipefail
+volume="${3:-/}"
+legacy="$volume/Applications/YK Engine.app/Contents/Resources/games"
+if [[ -d "$legacy" ]]; then
+    shared="$volume/Users/Shared/YK Engine Demo Projects"
+    mkdir -p "$shared"
+    destination=$(mktemp -d "$shared/Legacy-XXXXXXXX")
+    chmod 755 "$shared" "$destination"
+    mv "$legacy" "$destination/games"
+    echo "Previous bundled projects preserved in $destination/games"
+fi

@@ -1,7 +1,7 @@
 # Project format
 
 Everything a game is made of is plain text (JSON) or an ordinary media file, so it can be read,
-diffed and merged with normal tools. This page describes each file; playable projects are in [`games/fireboy-watergirl/`](../games/fireboy-watergirl).
+diffed and merged with normal tools. This page describes each file; playable projects are in [`games/brothers-run/`](../games/brothers-run).
 
 Conventions that hold everywhere:
 
