@@ -1,0 +1,4 @@
+# Preserve installer bytes on every checkout.
+*.exe binary
+*.pkg binary
+*.dmg binary

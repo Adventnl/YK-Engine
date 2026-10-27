@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -25,10 +26,14 @@ def main():
     parser.add_argument('--brothers-run', type=Path, required=True)
     parser.add_argument('--installers', type=Path, required=True)
     parser.add_argument('--out', type=Path, default=Path('release'))
+    parser.add_argument('--installer-out', type=Path,
+                        help='Installer destination (default: installers/ beside --out)')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
     out = args.out.resolve()
+    installer_root = (args.installer_out.resolve() if args.installer_out else
+                      out.parent / 'installers')
     manifest_path = out / 'manifest.json'
     manifest = {'version': args.version, 'sourceCommit': commit, 'apps': []}
     if manifest_path.exists():
@@ -49,7 +54,7 @@ def main():
             if not installer.is_file():
                 parser.error(f'Missing installer: {installer}')
     apps = out / 'apps' / args.platform
-    installers = out / 'installers' / args.platform
+    installers = installer_root / args.platform
     downloads = out / 'downloads'
     for directory in (apps, installers, downloads):
         directory.mkdir(parents=True, exist_ok=True)
@@ -74,7 +79,10 @@ def main():
                         zipped.write(path, path.relative_to(app.parent))
         for extension in (('pkg', 'dmg') if macos else ('exe',)):
             filename = f'{stem}-{args.version}-{args.platform}.{extension}'
-            shutil.copy2(args.installers / filename, installers / filename)
+            source_installer = args.installers / filename
+            destination = installers / filename
+            if source_installer.resolve() != destination.resolve():
+                shutil.copy2(source_installer, destination)
         program = (app / 'Contents/MacOS' / executable if macos else
                    app / 'bin/yk_editor.exe' if name == 'YK Engine' else app / (executable + '.exe'))
         manifest['apps'].append({'name': name, 'platform': args.platform,
@@ -84,15 +92,20 @@ def main():
         print(f'Packaged {name}: {archive}', flush=True)
     manifest['apps'].sort(key=lambda entry: (entry['name'], entry['platform']))
     manifest_path.write_text(json.dumps(manifest, indent=2) + '\n')
-    files = sorted(path for directory in (out / 'downloads', out / 'installers')
+    files = sorted(path for directory in (out / 'downloads', installer_root)
                    for path in directory.rglob('*') if path.is_file())
-    with (out / 'SHA256SUMS.txt').open('w') as checksums:
+    files = [path for path in files if path.suffix in ('.zip', '.exe', '.dmg', '.pkg')]
+    with (out / 'SHA256SUMS.txt').open('w') as checksums, \
+            (installer_root / 'SHA256SUMS.txt').open('w') as installer_checksums:
         for path in files:
             with path.open('rb') as stream:
                 digest = hashlib.sha256()
                 for chunk in iter(lambda: stream.read(1024 * 1024), b''):
                     digest.update(chunk)
-            checksums.write(f'{digest.hexdigest()}  {path.relative_to(out).as_posix()}\n')
+            value = digest.hexdigest()
+            checksums.write(f'{value}  {Path(os.path.relpath(path, out)).as_posix()}\n')
+            if path.is_relative_to(installer_root):
+                installer_checksums.write(f'{value}  {path.relative_to(installer_root).as_posix()}\n')
 
 
 if __name__ == '__main__':

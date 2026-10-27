@@ -67,4 +67,4 @@ ctest --preset dev            # everything (~15 minutes; the editor scripts domi
 clang-format -i <changed files>
 ```
 Dependencies cannot be downloaded from GitHub archives on the build machine used so far: fetch them
-with `scripts/fetch-deps.sh <dir>` and configure with `-DYK_DEPS_DIR=<dir>`.
+as described in BUILDING.md and configure with `-DYK_DEPS_DIR=<dir>`.

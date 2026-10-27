@@ -39,8 +39,7 @@ clang-format) are not runtime dependencies.
 By default the first configure downloads and verifies the sources into `build/<preset>/_deps`
 (archives are hash-checked before use; the ImGui checkout is by full commit).
 
-On a network that cannot fetch release archives run `scripts/fetch-deps.sh`, which makes shallow git
-checkouts and refuses any whose commit differs from the ones recorded above, then set
-`YK_DEPS_DIR=<that folder>` (environment variable or CMake cache entry). CMake source overrides
-(`FETCHCONTENT_SOURCE_DIR_*`) bypass archive hashing, so callers who use them directly must verify
-those checkouts themselves; `YK_DEPS_DIR` goes through the script's verification instead.
+On a network that cannot fetch release archives, provide local checkouts at the pinned commits
+listed in [BUILDING.md](docs/BUILDING.md) and set `YK_DEPS_DIR=<that folder>` (environment
+variable or CMake cache entry). Local source overrides (`YK_DEPS_DIR` or
+`FETCHCONTENT_SOURCE_DIR_*`) bypass archive hashing; verify each checkout's commit yourself.

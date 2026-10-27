@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths-ignore:
       - 'release/**'
+      - 'installers/**'
   workflow_dispatch:
 
 concurrency:
@@ -95,15 +96,17 @@ jobs:
       - name: Build and verify separate demo game installers
         shell: pwsh
         run: |
-          python scripts/package-demos.py --build-dir build --out build/windows-dist --version "$env:RELEASE_VERSION"
+          python packaging/package-demos.py --build-dir build --out build/windows-dist --version "$env:RELEASE_VERSION"
           if ($LASTEXITCODE -ne 0) { throw 'Demo packaging failed' }
-          & scripts/verify-demo-installers.ps1 -Dist build/windows-dist
+          & packaging/verify-demo-installers.ps1 -Dist build/windows-dist
       - name: Package runnable Windows apps
         shell: pwsh
         run: |
           cmake --install build --config Release --prefix build/portable-engine
           if ($LASTEXITCODE -ne 0) { throw 'Portable engine installation failed' }
-          python scripts/package-apps.py --platform windows-x64 --version "$env:RELEASE_VERSION" `
+          # Collect this build into fresh output folders, without mixing checked-in releases.
+          Remove-Item release, installers -Recurse -Force
+          python packaging/package-apps.py --platform windows-x64 --version "$env:RELEASE_VERSION" `
             --engine build/portable-engine `
             --invisible-castle "build/windows-dist/work/invisible-castle/Invisible-Castle-windows" `
             --brothers-run "build/windows-dist/work/brothers-run/Brothers-Run-windows" `
@@ -114,7 +117,7 @@ jobs:
           name: windows-release
           path: |
             release/downloads/*.zip
-            release/installers/windows-x64/*.exe
+            installers/windows-x64/*.exe
           if-no-files-found: error
 
   macos:
@@ -135,14 +138,16 @@ jobs:
       - name: Test
         run: ctest --preset release
       - name: Build macOS installers
-        run: scripts/package-macos.sh --no-build
+        run: packaging/package-macos.sh --no-build
       - name: Build separate demo game installers
-        run: python3 scripts/package-demos.py --build-dir build/release --out build/macos-dist --version "$RELEASE_VERSION"
+        run: python3 packaging/package-demos.py --build-dir build/release --out build/macos-dist --version "$RELEASE_VERSION"
       - name: Verify the packaged application and installers
-        run: scripts/verify-macos-app.sh
+        run: packaging/verify-macos-app.sh
       - name: Package runnable macOS apps
         run: |
-          python3 scripts/package-apps.py --platform macos-arm64 --version "$RELEASE_VERSION" \
+          # Collect this build into fresh output folders, without mixing checked-in releases.
+          rm -rf release installers
+          python3 packaging/package-apps.py --platform macos-arm64 --version "$RELEASE_VERSION" \
             --engine "build/macos-dist/YK Engine.app" \
             --invisible-castle "build/macos-dist/work/invisible-castle/Invisible Castle.app" \
             --brothers-run "build/macos-dist/work/brothers-run/Brothers Run.app" \
@@ -152,8 +157,8 @@ jobs:
           name: macos-release
           path: |
             release/downloads/*.zip
-            release/installers/macos-arm64/*.dmg
-            release/installers/macos-arm64/*.pkg
+            installers/macos-arm64/*.dmg
+            installers/macos-arm64/*.pkg
           if-no-files-found: error
 
   publish:
@@ -181,7 +186,7 @@ jobs:
           test "$(find downloads -maxdepth 1 -name '*.pkg' | wc -l)" -eq 3
           test "$(find downloads -maxdepth 1 -name '*.zip' | wc -l)" -eq 6
           (cd downloads && sha256sum *.exe *.dmg *.pkg *.zip > SHA256SUMS.txt)
-          python3 scripts/release-notes.py "$RELEASE_VERSION" > downloads/RELEASE_NOTES.md
+          python3 packaging/release-notes.py "$RELEASE_VERSION" > downloads/RELEASE_NOTES.md
           tag="v$RELEASE_VERSION"
           if gh release view "$tag" >/dev/null 2>&1; then
             gh release upload "$tag" downloads/*.exe downloads/*.dmg downloads/*.pkg downloads/*.zip downloads/SHA256SUMS.txt --clobber
@@ -190,4 +195,4 @@ jobs:
               --notes-file downloads/RELEASE_NOTES.md --draft
           fi
           gh release edit "$tag" --notes-file downloads/RELEASE_NOTES.md --draft=false --latest
-          python3 scripts/label-release-assets.py "$tag"
+          python3 packaging/label-release-assets.py "$tag"

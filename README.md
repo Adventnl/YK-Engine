@@ -23,6 +23,13 @@ Requires CMake 3.25+, Ninja and a C++20 compiler. The first configure downloads 
 See [Building](docs/BUILDING.md) for Windows, macOS, dependency setup and packaging.
 
 ```sh
+./scripts/build-and-run-macos.sh
+```
+
+On Windows, run `scripts\build-and-run-windows.ps1` in PowerShell. These are the only two
+scripts in `scripts/`. To build and test manually:
+
+```sh
 cmake --preset dev
 cmake --build --preset dev
 ctest --preset dev --output-on-failure
@@ -58,9 +65,9 @@ The engine also supports projects anywhere outside this repository:
 
 The [release folder](release/README.md) contains the current compiled apps directly in this
 repository: three macOS Apple silicon `.app` bundles and three Windows x64 applications.
-Use `release/downloads/` for the six portable ZIP downloads, or `release/installers/` for
-setup wizards. Extract a ZIP completely before launching its app; Windows games need their
-adjacent `data` and `licenses` folders.
+Use `release/downloads/` for the six portable ZIP downloads, or the root
+[installers folder](installers/README.md) for setup wizards. Extract a ZIP completely before launching
+its app; Windows games need their adjacent `data` and `licenses` folders.
 
 [GitHub Releases](https://github.com/Adventnl/YK-Engine/releases) provides Windows x64 and macOS
 apps and installers with three separate products for each platform:
@@ -83,7 +90,9 @@ player/  tools/yk/        generic player and project command line
 games/                  independent game projects and their checks
 tests/                  engine tests and small synthetic fixtures
 packaging/  cmake/       distribution and build support
-docs/  scripts/          documentation, build and verification scripts
+docs/                   documentation
+scripts/                build-and-run entry points for macOS and Windows
+installers/             tracked macOS and Windows installers
 ```
 
 - [Architecture](docs/ARCHITECTURE.md)

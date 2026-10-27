@@ -107,13 +107,13 @@ never writes into a real home).
 `YK Engine.app` is assembled by one CMake script (`assemble-app.cmake`: plain file copying, so a test
 runs it on any system): `Contents/MacOS/{yk_editor,yk_player,yk}`, `Contents/Resources/{AppIcon.icns,
 games/brothers-run, licenses, docs}` and an `Info.plist` from the template (bundle id, version, a document
-type so a `.ykproj` opens in the editor). `scripts/package-macos.sh` signs it and writes the `.dmg`;
+type so a `.ykproj` opens in the editor). `packaging/package-macos.sh` signs it and writes the `.dmg`;
 an exported game is the same layout with the game's player as its only program and its project in
 `Contents/Resources/data`. `SDL_GetBasePath()` reports `Contents/Resources` inside a bundle, which is
 why the editor finds the demo and the exporter finds the player and the notices through
 `../Resources` candidates as well as the build tree's and an installation's layouts. The `macos_bundle`
 test builds a bundle in a foreign folder on any system and uses it (exports, runs the exported
-bundle); `scripts/verify-macos-app.sh` does the same for the signed result on a real Mac.
+bundle); `packaging/verify-macos-app.sh` does the same for the signed result on a real Mac.
 
 ## Units and conventions
 
@@ -505,8 +505,8 @@ behavior, lifecycle, invalid input and regressions; a failing test gets its caus
 assertion weakened. Gameplay changes need a headless simulation, rendering changes need real
 pixel or readback evidence, level content needs the bot playthrough, UI behavior needs a driver
 script. Gates before a change is handed off: configure, build and CTest for `dev`; `release`,
-`asan` and `headless` for shared code; format check; `git diff --check` (`scripts/verify.sh`);
-and `scripts/verify-windows.sh` when platform code moved. What is installed is tested (`install`).
+`asan` and `headless` for shared code; format check; `git diff --check`;
+and native Windows CI checks when platform code moved. What is installed is tested (`install`).
 
 ## Decisions
 

@@ -12,13 +12,16 @@
   no Python.
 
 The first configure downloads Box2D 3.1.1 and SDL 3.2.28 (SHA-256 checked) and Dear ImGui 1.92.9
-(by commit). On a network that cannot fetch them run `scripts/fetch-deps.sh` once and point the
-build at the result:
+(by commit). On a network that cannot fetch release archives, supply local checkouts under
+`/path/to/deps/box2d`, `/path/to/deps/SDL` and `/path/to/deps/imgui`, at these pinned commits:
 
-```sh
-scripts/fetch-deps.sh /path/to/deps          # verified shallow checkouts
-export YK_DEPS_DIR=/path/to/deps             # or -DYK_DEPS_DIR=... on the cmake command line
-```
+| Directory | Repository | Commit |
+| --- | --- | --- |
+| `box2d` | `https://github.com/erincatto/box2d` | `8c661469c9507d3ad6fbd2fea3f1aa71669c2fe3` |
+| `SDL` | `https://github.com/libsdl-org/SDL` | `7f3ae3d57459e59943a4ecfefc8f6277ec6bf540` |
+| `imgui` | `https://github.com/ocornut/imgui` | `9b4eb24cee2071e61dc1f9ef3e5228097cdde720` |
+
+Configure with `cmake --preset dev -DYK_DEPS_DIR=/path/to/deps`, or export `YK_DEPS_DIR`.
 
 ## Presets
 
@@ -33,7 +36,8 @@ scripts\build-and-run-windows.ps1
 ```
 
 Windows needs Visual Studio 2022 with the C++ workload and CMake. macOS needs Xcode command line
-tools, CMake and Ninja. The first run downloads the engine's pinned dependencies.
+tools, CMake and Ninja. The first run downloads the engine's pinned dependencies. These are the
+only two scripts in `scripts/`; release automation lives under `packaging/`.
 
 ```sh
 cmake --preset dev                            # Debug, tests on: build/dev
@@ -44,7 +48,7 @@ ctest --preset dev                            # engine and game checks
 | Preset | What it is |
 |---|---|
 | `dev` | Debug build with warnings as errors and tests. |
-| `release` | Optimized build, same tests. This is what `scripts/package.sh` packs. |
+| `release` | Optimized build, same tests. Used by the release workflow. |
 | `asan` | Address and undefined-behavior sanitizers on project code. |
 | `headless` | `YK_RUNTIME=OFF`: no SDL and no window. The engine, the gameplay library, the editor core, the command line and their tests still build and run. |
 | `clang` | Clang with libc++ (see [Tests](#tests)). |
@@ -123,12 +127,8 @@ Settings that are read at build or run time (all optional):
   work where they were put (the installed editor opens and plays the installed sample; the
   installed `yk` exports it).
 
-Two scripts run the whole matrix:
-
-```sh
-scripts/verify.sh                 # format check, git diff --check, then every preset's build + tests
-scripts/verify-windows.sh         # cross-compile for Windows, run all tests under Wine, export + run the demo
-```
+Run configure, build and CTest for each preset you need (`dev`, `release`, `asan`, `headless`).
+CI also builds and tests on native Windows and macOS runners.
 
 Formatting is enforced by clang-format (`cmake --build --preset dev --target format`, and
 `format-check` in CI-style runs). Warnings are errors with GCC and Clang (`-Wall -Wextra -Wpedantic
@@ -143,7 +143,7 @@ library than GCC's: it has caught missing includes and sign conversions before t
 
 ```sh
 cmake --install build/release --prefix /opt/yk-engine    # bin/, share/yk-engine/, share/doc/
-scripts/package.sh                                        # build/package/YKEngine-<version>-<system>.tar.gz (.zip on Windows)
+cpack --config build/release/CPackConfig.cmake -B installers # portable engine archive
 ```
 
 An engine installation contains `yk_editor`, `yk_player`, `yk`, the documentation and the license notices
@@ -158,14 +158,15 @@ component. This gives every release a unique, increasing version without editing
 each push. If pushes arrive while a release is running, GitHub Actions keeps the newest pending run
 and may skip intermediate commits. No Cloudflare Worker or separate update server is needed.
 
-`scripts/package-apps.py` collects already compiled products into `release/apps/<platform>/`,
+`packaging/package-apps.py` collects already compiled products into `release/apps/<platform>/`,
 puts portable ZIPs in `release/downloads/`, and keeps setup wizards in
-`release/installers/<platform>/`. Its manifest records the version, source commit and executable
-paths; `release/SHA256SUMS.txt` covers every download and installer. Run it once on each platform
+the root `installers/<platform>/` folder. Its manifest records the version, source commit and executable
+paths; `release/SHA256SUMS.txt` covers every download and installer, while
+`installers/SHA256SUMS.txt` covers the nine native installers. Run it once on each platform
 with the same version and source commit. For example, after packaging on macOS:
 
 ```sh
-python3 scripts/package-apps.py --platform macos-arm64 --version 0.3.30 \
+python3 packaging/package-apps.py --platform macos-arm64 --version 0.3.30 \
   --engine "build/macos-dist/YK Engine.app" \
   --invisible-castle "build/macos-dist/work/invisible-castle/Invisible Castle.app" \
   --brothers-run "build/macos-dist/work/brothers-run/Brothers Run.app" \
@@ -177,6 +178,9 @@ Pass that directory as `--engine`, the exported game directories under `build/wi
 as the two game arguments, and `--platform windows-x64 --installers build/windows-dist`.
 The workflow performs these steps automatically. To refresh a checked-in release, collect both
 platforms into a fresh directory so files from different source commits cannot be mixed.
+`--out <directory>/release` places apps and ZIPs there and installers in the sibling
+`<directory>/installers` folder; `--installer-out` can override that destination.
+The tracked installers belong in the repository root; `build/` holds intermediate packaging work.
 
 Installed editors check the newest published GitHub Release at startup. They download the matching
 installer and checksum file, verify SHA-256, and then launch the OS installer. Windows may ask for
@@ -244,15 +248,14 @@ under Wine.
 **From Linux (verified).** With `mingw-w64` (posix threads) and `wine64` installed:
 
 ```sh
-cmake --preset windows-cross && cmake --build --preset windows-cross
-scripts/verify-windows.sh
+cmake --preset windows-cross
+cmake --build --preset windows-cross
 ```
 
 The toolchain file is `cmake/toolchains/mingw-w64-x86_64.cmake`. The result has no runtime DLLs
-(the C++ runtime, the pthread shim and SDL are linked statically). The script runs every test
-executable under Wine, including the whole demo playthrough (it reaches the same simulated result
-as on Linux), exports the demo for Windows with the Windows `yk.exe` and starts the exported game
-for a few seconds, saving a frame. The editor's UI scripts are not run under Wine.
+(the C++ runtime, the pthread shim and SDL are linked statically). Individual test executables
+can be run under Wine with SDL's dummy video/audio drivers and software renderer.
+The editor UI and installer checks run on native Windows in CI.
 
 Not done on Windows: a version resource for the executables, an icon for exported games, and code signing.
 
@@ -268,9 +271,9 @@ The build is the same CMake project; use `release` on a Mac with Xcode's command
 Ninja. The engine is shipped as an application, disk image and Installer package:
 
 ```sh
-scripts/package-macos.sh                     # configure + build + assemble + .dmg + .pkg
-scripts/package-macos.sh --no-build          # reuse build/release
-scripts/verify-macos-app.sh                  # check the result the way a user meets it
+packaging/package-macos.sh                     # configure + build + assemble + .dmg + .pkg
+packaging/package-macos.sh --no-build          # reuse build/release
+packaging/verify-macos-app.sh                  # check the result the way a user meets it
 ```
 
 Output, in `build/macos-dist/`: **`YK Engine.app`**,
@@ -300,7 +303,7 @@ export YK_CODESIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)"   # i
 export YK_INSTALLER_IDENTITY="Developer ID Installer: Your Name (TEAMID)"  # for the .pkg
 xcrun notarytool store-credentials yk-notary --apple-id you@example.com --team-id TEAMID   # once
 export YK_NOTARY_PROFILE=yk-notary
-scripts/package-macos.sh
+packaging/package-macos.sh
 ```
 
 With an identity every program and then the bundle are signed with the hardened runtime, the
@@ -369,7 +372,7 @@ keep stable (ADR 0011). The repository builds and runs an example module in its 
   Run the program from a terminal to see stderr too.
 - *"YK Engine" is damaged or cannot be opened* (macOS, a build that is not notarized): Control-click
   the app, choose Open, confirm once. Or `xattr -dr com.apple.quarantine "YK Engine.app"`.
-- *Behind a proxy*: `scripts/fetch-deps.sh` and `YK_DEPS_DIR` (above).
+- *Behind a proxy*: provide pinned local checkouts and set `YK_DEPS_DIR` (above).
 
 ## Independent games
 
@@ -393,7 +396,7 @@ to OFF. The editor discovers manifests at runtime without hardcoded game names.
 After building, package demos independently with:
 
 ```sh
-python3 scripts/package-demos.py --build-dir build/release --out build/macos-dist --version 0.3.1
+python3 packaging/package-demos.py --build-dir build/release --out build/macos-dist --version 0.3.1
 ```
 
 On Windows use `python`, `--build-dir build`, and `--out build/windows-dist`. This exports each

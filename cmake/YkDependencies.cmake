@@ -2,11 +2,11 @@
 #   Box2D and SDL3  - release archives verified by SHA-256
 #   Dear ImGui      - editor only; full git commit
 #
-# Restricted networks: run scripts/fetch-deps.sh, then configure with -DYK_DEPS_DIR=<dir> (or export
-# YK_DEPS_DIR). The verified checkouts are used instead of downloads.
+# Restricted networks: provide pinned local checkouts (docs/BUILDING.md), then configure with
+# -DYK_DEPS_DIR=<dir> or export YK_DEPS_DIR to use them instead of downloads.
 include(FetchContent)
 
-set(YK_DEPS_DIR "" CACHE PATH "Directory holding box2d/, SDL/ and imgui/ checkouts (scripts/fetch-deps.sh)")
+set(YK_DEPS_DIR "" CACHE PATH "Directory holding box2d/, SDL/ and imgui/ checkouts")
 if(NOT YK_DEPS_DIR AND DEFINED ENV{YK_DEPS_DIR})
     set(YK_DEPS_DIR "$ENV{YK_DEPS_DIR}")
 endif()

@@ -27,13 +27,13 @@ welcome screen; the game apps each contain only their own project.
 
 ## Installers
 
-Setup wizards are kept separately under `installers/`:
+Setup wizards are kept in the repository root under [`installers/`](../installers/README.md):
 
 | Product | Windows installer | macOS installer | macOS disk image |
 | --- | --- | --- | --- |
-| YK Engine | [EXE](installers/windows-x64/YKEngine-0.3.31-windows-x64.exe) | [PKG](installers/macos-arm64/YKEngine-0.3.31-macos-arm64.pkg) | [DMG](installers/macos-arm64/YKEngine-0.3.31-macos-arm64.dmg) |
-| Invisible Castle | [EXE](installers/windows-x64/InvisibleCastle-Demo-0.3.31-windows-x64.exe) | [PKG](installers/macos-arm64/InvisibleCastle-Demo-0.3.31-macos-arm64.pkg) | [DMG](installers/macos-arm64/InvisibleCastle-Demo-0.3.31-macos-arm64.dmg) |
-| Brothers Run | [EXE](installers/windows-x64/BrothersRun-Demo-0.3.31-windows-x64.exe) | [PKG](installers/macos-arm64/BrothersRun-Demo-0.3.31-macos-arm64.pkg) | [DMG](installers/macos-arm64/BrothersRun-Demo-0.3.31-macos-arm64.dmg) |
+| YK Engine | [EXE](../installers/windows-x64/YKEngine-0.3.31-windows-x64.exe) | [PKG](../installers/macos-arm64/YKEngine-0.3.31-macos-arm64.pkg) | [DMG](../installers/macos-arm64/YKEngine-0.3.31-macos-arm64.dmg) |
+| Invisible Castle | [EXE](../installers/windows-x64/InvisibleCastle-Demo-0.3.31-windows-x64.exe) | [PKG](../installers/macos-arm64/InvisibleCastle-Demo-0.3.31-macos-arm64.pkg) | [DMG](../installers/macos-arm64/InvisibleCastle-Demo-0.3.31-macos-arm64.dmg) |
+| Brothers Run | [EXE](../installers/windows-x64/BrothersRun-Demo-0.3.31-windows-x64.exe) | [PKG](../installers/macos-arm64/BrothersRun-Demo-0.3.31-macos-arm64.pkg) | [DMG](../installers/macos-arm64/BrothersRun-Demo-0.3.31-macos-arm64.dmg) |
 
 The macOS apps are signed ad hoc, and the Windows apps are unsigned. macOS may require
 approval in Privacy & Security after downloading. These macOS builds target Apple silicon;

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Checks the packaged macOS application the way a user meets it: from the .dmg, copied somewhere
 # else, launched through Launch Services (what Finder does) and closed the way the system asks
-# programs to close. Run by CI after scripts/package-macos.sh; also usable on a Mac by hand.
+# programs to close. Run by CI after packaging/package-macos.sh; also usable on a Mac by hand.
 #
-#   scripts/verify-macos-app.sh [dmg]        default: the newest build/macos-dist/YKEngine-*.dmg
+#   packaging/verify-macos-app.sh [dmg]        default: the newest build/macos-dist/YKEngine-*.dmg
 #
 # Leaves screenshots and logs in build/macos-verify (CI uploads them).
 set -euo pipefail

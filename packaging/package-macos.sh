@@ -3,8 +3,8 @@
 # Installer wizard package. End users do not need CMake, SDL or a compiler.
 # Run it on a Mac with Xcode's command line tools, CMake 3.25+ and Ninja.
 #
-#   scripts/package-macos.sh                 build, assemble, sign ad hoc, write the .dmg and .pkg
-#   scripts/package-macos.sh --no-build      reuse build/release (only assemble, sign, package)
+#   packaging/package-macos.sh                 build, assemble, sign ad hoc, write the .dmg and .pkg
+#   packaging/package-macos.sh --no-build      reuse build/release (only assemble, sign, package)
 #
 # Output: build/macos-dist/YK Engine.app and YKEngine-<version>-macos-<arch>.{dmg,pkg}
 #
@@ -16,7 +16,7 @@
 #                          With it both installers are submitted to Apple and stapled.
 #   YK_INSTALLER_IDENTITY  a "Developer ID Installer: Name (TEAMID)" identity in the keychain.
 #                          Needed to sign and notarize the .pkg.
-# Other settings: YK_DEPS_DIR (pre-fetched dependencies, scripts/fetch-deps.sh).
+# Other settings: YK_DEPS_DIR (pre-fetched dependencies; see docs/BUILDING.md).
 set -euo pipefail
 
 root=$(cd "$(dirname "$0")/.." && pwd)

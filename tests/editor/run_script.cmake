@@ -52,7 +52,7 @@ if(PROJECT)
         file(COPY "${PROJECT}" DESTINATION "${WORK}/project")
     endif()
     list(APPEND arguments "${WORK}/project/${project_name}")
-    # Files to import from outside the project (scripts/demo_assets): a real picture, a real
+    # Files to import from outside the project: a real picture, a real
     # sound and something that cannot be imported.
     file(GLOB sample_png "${PROJECT}/assets/tiles/platform.png")
     file(GLOB sample_wav "${PROJECT}/assets/audio/lever.wav")

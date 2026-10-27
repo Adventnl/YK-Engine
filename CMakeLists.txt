@@ -292,7 +292,7 @@ if(YK_RUNTIME AND PROJECT_IS_TOP_LEVEL)
 endif()
 
 # macOS: `cmake --build --preset release --target yk_engine_app` assembles "YK Engine.app" in the
-# build folder; scripts/package-macos.sh signs it and makes the disk image (docs/BUILDING.md).
+# build folder; packaging/package-macos.sh signs it and makes the disk image (docs/BUILDING.md).
 if(APPLE AND YK_RUNTIME AND PROJECT_IS_TOP_LEVEL)
     add_custom_target(yk_engine_app ALL
         COMMAND ${CMAKE_COMMAND} "-DOUT=${CMAKE_BINARY_DIR}/YK Engine.app"

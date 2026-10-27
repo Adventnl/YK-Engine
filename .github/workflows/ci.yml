@@ -1,13 +1,13 @@
-# Builds and tests the engine on the systems a game ships to. The Linux job repeats what
-# scripts/verify.sh does locally; the Windows (MSVC) and macOS (Apple clang) jobs are the checks that
-# cannot be run where the engine is usually developed. The macOS job also packages "YK Engine.app"
-# and its disk image, and exercises them the way a user would (scripts/verify-macos-app.sh).
+# Builds and tests the engine on Linux, Windows (MSVC) and macOS (Apple clang).
+# The macOS job also packages "YK Engine.app" and its disk image, then exercises them
+# the way a user would (packaging/verify-macos-app.sh).
 name: CI
 
 on:
   push:
     paths-ignore:
       - 'release/**'
+      - 'installers/**'
   pull_request:
 
 permissions:
@@ -66,9 +66,9 @@ jobs:
         continue-on-error: true
         run: ctest --preset release
       - name: Package YK Engine.app and the disk image
-        run: scripts/package-macos.sh --no-build
+        run: packaging/package-macos.sh --no-build
       - name: Verify the packaged application
-        run: scripts/verify-macos-app.sh
+        run: packaging/verify-macos-app.sh
       - name: Keep the disk image, screenshots and logs
         if: always()
         uses: actions/upload-artifact@v4
