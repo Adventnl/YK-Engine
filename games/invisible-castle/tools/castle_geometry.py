@@ -50,9 +50,6 @@ def export_wall_materials():
                          ('wall-column-end', [4, 3, 4, 35])]:
         (directory / (name + '.png.ykmeta')).write_text(json.dumps(dict(
             format='yk.texture', version=1, pixelsPerUnit=PPU, filter='nearest', border=border), indent=2) + '\n')
-    runner = REFERENCE / ASSETS['corridor_runner']['file']
-    Path(str(runner) + '.ykmeta').write_text(json.dumps(dict(
-        format='yk.texture', version=1, pixelsPerUnit=PPU, filter='nearest', border=[4, 4, 4, 4]), indent=2) + '\n')
     export_masonry_materials()
 
 

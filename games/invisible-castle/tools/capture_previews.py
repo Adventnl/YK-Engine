@@ -104,6 +104,8 @@ def main():
     player = options.build.resolve() / ('yk_player.exe' if os.name == 'nt' else 'yk_player')
     if not player.is_file():
         parser.error('Build yk_player first: cmake --build --preset dev')
+    previews = options.build.resolve() / 'invisible-castle-previews'
+    previews.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='castle-preview-', dir=options.build) as work:
         work = Path(work).resolve()
         project = work / 'project'
@@ -177,7 +179,7 @@ def main():
                                     ('infirmary', 'level2-infirmary-preview.png'),
                                     ('wire-terminal', 'level2-wire-terminal-preview.png'),
                                     ('overview', 'level2-overview.png')]:
-            capture(scene, ROOT / destination)
+            capture(scene, previews / destination)
         if options.audit is not None:
             destination = options.audit.resolve()
             destination.mkdir(parents=True, exist_ok=True)

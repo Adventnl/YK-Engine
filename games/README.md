@@ -16,6 +16,6 @@ From the repository root:
 ```
 
 Open the same folders in `yk_editor` and press F5. A new game can be added as another project
-folder; the welcome page reads its name from its manifest. Authoring tools and original art stay
+folder; the welcome page reads its name from its manifest. Authoring tools and required source art stay
 inside the corresponding game. They are excluded from installed runtime projects and exports.
 Engine packages never contain either demo. `YK_BUILD_GAMES=ON` enables their independent checks.

@@ -1,139 +1,18 @@
 #!/usr/bin/env python3
 """Build chapter two with the supplied castle scenery and shared directional actors."""
 import json
-import sys
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageFont, PngImagePlugin
+from PIL import Image
 from castle_reference import style_level_two
-from art_import import generated_objects, silhouette
 
 from build_frontend import HUD_DEFAULTS, decorate_level
 
 ROOT = Path(__file__).resolve().parents[1]
 ART = ROOT / 'assets/level2'
-SOURCE = ART / 'source'
-NEAREST = Image.Resampling.NEAREST
 
 def save(path, value):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, indent=2) + '\n')
-
-def png(image, name, source):
-    metadata = PngImagePlugin.PngInfo()
-    metadata.add_text('Source', source)
-    prompts = SOURCE / 'prompts.json'
-    if prompts.exists():
-        metadata.add_text('Generation prompts', prompts.read_text())
-        master = next((j for j in json.loads(prompts.read_text()) if source.startswith('Generated ' + j['name'])), None)
-        extra_prompt = (SOURCE / 'dialogue_portraits.prompt.txt' if source.startswith('Generated dialogue_portraits')
-                        else SOURCE / 'residents_walk.prompt.txt' if 'residents_walk' in source else None)
-        if extra_prompt and extra_prompt.exists():
-            metadata.add_text('impeccable:prompt', extra_prompt.read_text())
-        elif master:
-            metadata.add_text('impeccable:prompt', master['prompt'])
-        else:
-            metadata.add_text('impeccable:prompt', 'Origin: ' + source + '; authored with Pillow bitmap text in tools/build_level2.py.')
-    image.save(ART / (name + '.png'), pnginfo=metadata)
-
-def cell(sheet, col, row, cols=4, rows=4):
-    return sheet.crop((round(col * sheet.width / cols), round(row * sheet.height / rows),
-                       round((col + 1) * sheet.width / cols), round((row + 1) * sheet.height / rows)))
-
-def fit(image, size):
-    image = silhouette(image)
-    scale = min((size[0] - 4) / image.width, (size[1] - 4) / image.height)
-    image = image.resize((max(1, round(image.width * scale)), max(1, round(image.height * scale))), NEAREST)
-    output = Image.new('RGBA', size)
-    output.alpha_composite(image, ((size[0] - image.width) // 2, size[1] - image.height - 2))
-    return output
-
-def export_art():
-    ART.mkdir(parents=True, exist_ok=True)
-    sets = {
-        'furniture': [('bed', (64, 48)), ('vertical_bed', (32, 64)), ('chair', (32, 40)), ('dining', (96, 64)),
-                      ('hearth', (64, 80)), ('kitchen_shelf', (64, 64)), ('prep', (96, 48)), ('cabinet', (32, 64)),
-                      ('basin', (40, 48)), ('linen_rail', (64, 64)), ('basket', (32, 40)), ('folding', (64, 48)),
-                      ('crates', (64, 64)), ('barrel', (32, 48)), ('chest', (48, 40)), ('plant', (32, 48))],
-        'equipment': [('computer', (96, 64)), ('tower', (32, 64)), ('terminal', (32, 48)), ('control_chair', (32, 48)),
-                      ('tool_rack', (64, 64)), ('workbench', (96, 48)), ('pipe', (32, 64)), ('generator', (96, 80)),
-                      ('hospital_bed', (48, 64)), ('medical_cart', (48, 48)), ('screen', (48, 64)), ('nightstand', (32, 40)),
-                      ('yard_bench', (64, 40)), ('planter', (48, 48)), ('weapon_rack', (64, 64)), ('gate', (64, 80))],
-        'details': [('banner', (32, 64)), ('runner', (64, 128)), ('torch', (32, 48)), ('threshold', (32, 32)),
-                    ('screwdriver', (32, 32)), ('rope', (32, 32)), ('hook', (32, 32)), ('grapple', (32, 32)),
-                    ('key', (32, 32)), ('cutters', (32, 32)), ('keycard', (32, 32)), ('fuse', (32, 32)),
-                    ('exit_switch', (32, 48)), ('linen', (32, 32)), ('toolbox', (48, 40)), ('food', (32, 32))]
-    }
-    for name, objects in sets.items():
-        sheet = Image.open(SOURCE / (name + '.png')).convert('RGBA')
-        frames = generated_objects(sheet, 4, 4)
-        # Export complete newly generated objects, never source/reference pixels.
-        for i, (object_name, size) in enumerate(objects):
-            png(fit(frames[i], size), object_name, 'Generated ' + name + ' atlas, cell ' + str(i))
-    tiles = Image.open(SOURCE / 'tiles.png').convert('RGBA')
-    for i, name in enumerate(['dorm_floor', 'common_floor', 'canteen_floor', 'laundry_floor',
-                               'control_floor', 'store_floor', 'corridor_floor', 'workshop_floor',
-                               'infirmary_floor', 'grass', 'sand', 'utility_floor',
-                               'wall', 'wall_vertical', 'wall_south', 'door_tile']):
-        tile = cell(tiles, i % 4, i // 4)
-        # Floor masters contain four slabs per side; keep each slab at one world unit.
-        # Masonry needs one coping stone per solid tile instead of four tiny stones.
-        if i in (12, 14):
-            tile = tile.crop((0, 0, round(tile.width / 4), tile.height))
-        elif i == 13:
-            tile = tile.crop((0, 0, round(tile.width / 2), round(tile.height / 4)))
-        size = (128, 128) if i < 12 or i == 15 else (32, 32)
-        png(tile.resize(size, NEAREST), name, 'Generated tiles atlas, cell ' + str(i))
-    png(fit(Image.open(SOURCE / 'safe_fuse.png').convert('RGBA'), (32, 32)), 'safe_fuse', 'Generated safe_fuse complete icon')
-    for role in ['hero', 'guard']:
-        source = Image.open(SOURCE / (role + '.png')).convert('RGBA')
-        frames = [silhouette(frame) for frame in generated_objects(source, 8, 4)]
-        scale = min(30 / max(f.width for f in frames), 38 / max(f.height for f in frames))
-        sheet = Image.new('RGBA', (256, 176))
-        for i, frame in enumerate(frames):
-            frame = frame.resize((max(1, round(frame.width * scale)), max(1, round(frame.height * scale))), NEAREST)
-            sheet.alpha_composite(frame, ((i % 8) * 32 + (32 - frame.width) // 2, (i // 8) * 44 + 42 - frame.height))
-        png(sheet, role, 'Generated ' + role + ' four-direction walk/search sheet')
-        clips = []
-        for r, direction in enumerate(['down', 'left', 'right', 'up']):
-            for verb, frames, fps in [('idle', [0], 4), ('walk', [0, 1, 2, 3], 9), ('search', [4, 5, 6, 7], 6)]:
-                clips.append(dict(name=verb + '_' + direction, frames=[r * 8 + f for f in frames], fps=fps))
-        save(ART / (role + '.ykanim'), dict(format='yk.animation', version=2, texture=texture(role), columns=8, rows=4, clips=clips))
-    residents = Image.open(SOURCE / 'residents.png').convert('RGBA')
-    frames = generated_objects(residents, 4, 6)
-    # Ignore the stride master's translucent ground shadows when finding its gutters.
-    strides = generated_objects(Image.open(SOURCE / 'residents_walk.png').convert('RGBA'), 8, 6, alpha_threshold=160)
-    for r, role in enumerate(['companion', 'cook', 'laundry_worker', 'craftsperson', 'nurse', 'yard_worker']):
-        sheet = Image.new('RGBA', (384, 44))
-        walk = [silhouette(f) for f in strides[r * 8:(r + 1) * 8]]
-        scale = min(28 / max(f.width for f in walk), 40 / max(f.height for f in walk))
-        for col in range(4):
-            sheet.alpha_composite(fit(frames[r * 4 + col], (32, 44)), (col * 96, 0))
-            for step in range(2):
-                frame = walk[col * 2 + step]
-                frame = frame.resize((max(1, round(frame.width * scale)), max(1, round(frame.height * scale))), NEAREST)
-                sheet.alpha_composite(frame, (col * 96 + (step + 1) * 32 + (32 - frame.width) // 2, 42 - frame.height))
-        png(sheet, role, 'Generated residents and residents_walk atlases, row ' + str(r))
-        clips = []
-        for i, direction in enumerate(['down', 'left', 'right', 'up']):
-            clips.append(dict(name='idle_' + direction, frames=[i * 3], fps=4))
-            clips.append(dict(name='walk_' + direction, frames=[i * 3 + 1, i * 3, i * 3 + 2, i * 3], fps=8))
-        save(ART / (role + '.ykanim'), dict(format='yk.animation', version=2, texture=texture(role), columns=12, rows=1, clips=clips))
-    # Detailed generated busts, independent of the small directional world sprites.
-    portraits = Image.open(SOURCE / 'dialogue_portraits.png').convert('RGBA')
-    for i, role in enumerate(['companion', 'cook', 'laundry_worker', 'craftsperson', 'nurse', 'yard_worker', 'guard']):
-        png(fit(cell(portraits, i % 4, i // 4, 4, 2), (240, 280)),
-            'portrait_' + role, 'Generated dialogue_portraits atlas, cell ' + str(i))
-    # Exact room text is deliberately native pixel UI, not generated lettering.
-    for name in ['NORTH CELLS', 'COMMON ROOM', 'SOUTH CELLS', 'CANTEEN', 'LAUNDRY', 'CONTROL', 'STORES', 'MAIN CORRIDOR',
-                 'WORKSHOP', 'INFIRMARY', 'EXERCISE YARD', 'UTILITY', 'EXIT']:
-        font = ImageFont.load_default()
-        width = font.getbbox(name)[2] + 12
-        im = Image.new('RGBA', (width, 18))
-        d = ImageDraw.Draw(im)
-        d.rectangle((0, 0, width - 1, 17), fill='#202b45')
-        d.rectangle((1, 1, width - 2, 16), outline='#e7b34d', width=1)
-        d.text((6, 3), name, font=font, fill='#f5deab')
-        png(im, 'sign_' + name.lower().replace(' ', '_'), 'Code-authored exact-text room plaque')
 
 def texture(name):
     return 'assets/level2/' + name + '.png'
@@ -351,14 +230,9 @@ def build_scene():
     project['startScene'] = 'scenes/menu.ykscene'
     project['textures']['pixelsPerUnit'] = 35
     project['window']['title'] = 'Invisible Castle'
-    project['build']['exclude'] = list(dict.fromkeys(project['build'].get('exclude', []) +
-        ['assets/level2/source', 'assets/keep/source', 'assets/castle/source', 'tools', '.impeccable',
-         'reference-style-preview.png', 'level2-dialogue-preview.png', 'level1-preview.png',
-         'level2-preview.png', 'level2-overview.png', 'level2-corridor-preview.png']))
+    project['build']['exclude'] = ['assets/level2/source', 'assets/castle/source', 'assets/castle/reference', 'assets/castle/props']
     save(ROOT / 'project.ykproj', project)
     print('Level 2:', len(scene['entities']), 'editable entities;', len(rooms), 'areas; shared castle scenery and actors.')
 
 if __name__ == '__main__':
-    if '--regenerate-art' in sys.argv:
-        export_art()
     build_scene()

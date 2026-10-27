@@ -56,8 +56,8 @@ hearth glows use `Light2D`. Banners and wall-mounted controls render over their 
 
 Ordinary room and corridor openings have no door artwork, interaction or blocking door
 colliders. Locked escape gates retain their requirements and animated leaves.
-The ImageGen masters in `assets/castle/source/door-simple.png` and `banner-clean.png`
-and their adjacent `.prompt.txt` files remain available for authoring.
+The current gate and banner masters and their prompts remain under
+`assets/castle/source/repairs/consistency/`.
 
 Walls share a joined footprint with chapter one: 35-pixel coping width in both directions,
 a shorter 28-pixel brick face, and reusable 35 x 35 blocks. Collision covers the complete
@@ -94,8 +94,7 @@ python3 games/invisible-castle/tools/build_level2.py
 ctest --preset dev -R invisible_castle_chapter2
 ```
 
-Normal rebuilds preserve existing generated character atlases; `--regenerate-art` opts into
-re-exporting them. The source door master and original prompts are excluded from game exports.
+Rebuilds use the retained current artwork. Source masters and prompts are excluded from game exports.
 
 Gameplay checks verify all eighteen ordinary passages have no doors and physically traverse
 them in both directions. They also cover NPC push resistance and motion, modal dismissal,
@@ -107,9 +106,3 @@ native sizes and filters, reject furniture overlaps, and sample every NPC route 
 scenery collision in both chapters.
 The renderer test checks actual contact-shadow pixels, optional raster cameras,
 one-pixel UI details, offset viewports and resizing within an outer render target.
-
-The overview below uses a temporary fixed camera for layout review. Shipping scenes follow
-the character at the close zoom shown in the player preview.
-
-![Player view](level2-preview.png)
-![Reference layout in the engine](level2-overview.png)

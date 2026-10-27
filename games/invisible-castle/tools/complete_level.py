@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 """Author Invisible Castle: exact-grid pixel art, scene, item data and animation clips.
-Generated source atlases are imported reproducibly, independent of reference scenery.
+Uses the retained current artwork and shared castle layout helpers.
 """
 import json
-import sys
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageFont
 from build_frontend import HUD_DEFAULTS, decorate_level
 from castle_masonry import ELEVATION
 from castle_pixel_art import PPU
@@ -18,28 +16,7 @@ def save(path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, indent=2)+'\n')
 
-def asset(name, size, paint):
-    im=Image.new('RGBA', size, (0,0,0,0)); paint(ImageDraw.Draw(im)); im.save(ART/(name+'.png'))
-    return 'assets/keep/'+name+'.png'
-
-# Retain the original atlas exporter as an explicit authoring operation.
-from import_reference_style import build_art
-if '--regenerate-art' in sys.argv:
-    build_art(ART)
-OUT='#202b45'; WOOD='#946035'; GOLD='#e7b34d'; LIGHT='#f5deab'
-for role in ['prisoner','mara','guard','old_prisoner']:
-    clips=[]
-    for row,face in enumerate(['down','left','right','up']):
-        for action,frames,fps in [('idle',[row*8],4),('walk',[row*8+i for i in range(4)],9),('search',[row*8+i for i in [4,5,6,7]],6)]:
-            clips.append(dict(name=action+'_'+face,frames=frames,fps=fps))
-    save(ART/(role+'.ykanim'),dict(format='yk.animation',version=2,texture='assets/keep/'+role+'.png',columns=8,rows=4,clips=clips))
 save(ART/'torch.ykanim',dict(format='yk.animation',version=2,texture='assets/keep/torch.png',columns=4,rows=1,clips=[dict(name='burn',frames=[0,1,0,2],fps=7)]))
-# Room plaques are the only code-authored art: labels must be exact and legible.
-if '--regenerate-art' in sys.argv:
-    for label in ['CELLS','LOCKED STORES','GUARD OFFICE','WORKSHOP','LAUNDRY','DRAINAGE']:
-        font=ImageFont.load_default(); box=font.getbbox(label); width=box[2]+12
-        asset('sign_'+label.lower().replace(' ','_'),(width,18),lambda d,t=label,w=width:(d.rectangle((0,0,w-1,17),fill=OUT),d.rectangle((1,1,w-2,16),fill='#80512f'),d.text((6,3),t,font=font,fill=LIGHT)))
-
 # Scene: a single readable keep, complete perimeter and two-tile doorways.
 def c(kind,**p):return dict(type=kind,properties=p)
 entities=[]

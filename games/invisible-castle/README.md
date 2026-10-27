@@ -46,68 +46,16 @@ See [LEVEL2.md](LEVEL2.md) for the second chapter's route and artwork details.
 
 ## Artwork and authoring
 
-`assets/castle/reference/` contains the supplied editable ZIP's PNGs and original manifest.
-Characters, furniture, gates, floors and masonry share a 35-pixels-per-world-unit grid.
-Both chapter cameras use that native raster with nearest sampling; larger windows scale
-the same pixels. Furniture uses a shared 64-color palette and a single orthographic RPG
-view, with visible tops and horizontal front edges. Beds and bedside furniture share that
-view. Repeated objects and all banners have fixed dimensions, independent of their placement.
-The blue corridor runner also has a clean cloth texture without embedded floor patches.
-Floors, walls and props remain separate editable entities.
+Both chapters use the current 35-pixels-per-world-unit sprites, shared furniture silhouettes,
+joined masonry and directional characters. Runtime artwork is under `assets/castle/pixel/`,
+`assets/castle/masonry/`, `assets/castle/doors/`, `assets/keep/` and `assets/level2/`.
+The chapter images in `assets/ui/` are used by the title and level selector.
 
-Ordinary passages are clear openings in the stone walls, with no door artwork or blocking
-components. Locked escape gates use animated `StateGate` leaves and synchronized collision.
-Chapter one's east gate fits entirely inside its small side opening, with a brass
-padlock facing the west approach. The south stone return joins the corridor wall;
-unlocking retracts the iron grille into the north jamb.
-`tools/castle_masonry.py` builds both chapters from one joined stone plan. Horizontal
-and vertical coping have the same 35-pixel width, with a shorter 28-pixel brick face.
-Collision follows every visible stone pixel, including the face. Doorway and gate cuts
-clear both the artwork and physics. Masonry and mounted fixtures
-render below characters so the player stays visible beside and behind walls. The union
-removes internal end caps at corners and T junctions; its surfaces are exported as
-reusable 35 x 35 blocks in two compact atlases under `assets/castle/masonry/`.
-Collision is partitioned from the visible wall mask. Block edges snap together at fractional
-zoom, and exposed south edges receive a face rather than an overlapping column end.
-`tools/castle_geometry.py` shares furniture dimensions, silhouettes and contact shadows.
-Banners share their supporting wall's depth. Clean column tiles and banner silhouettes remove
-the floor scraps baked into the earlier extracted art. Repeated beds, chairs, crates, barrels,
-plants and racks use shared silhouettes and dimensions. The utility machine fits inside its room
-and its collision covers the pipe assembly. Furniture colliders are a merged union of the
-exported opaque pixels, including real openings between legs and pipes. Transparent padding
-is never solid. `castle_layout.py` authors clear aisles and intentional furniture groups;
-the pixel regression test rejects overlapping furnishings in either chapter.
-Chapter two's compact floor plan reduces the overall footprint by about a quarter, with
-wall-mounted storage, grouped seating, adjacent bedside tables and clear passage approaches.
-The final exit frame is aligned to the base of the outer wall.
-Chapter one groups storage against back walls, keeps laundry basins in a work run, and
-clears the circulation strip and east gate. Player collision uses a single 16 x 8-pixel
-feet shape. The common-room table is removed so the starting cell has a direct exit.
-Runtime tests walk this route and approach walls from every direction. Carpets keep
-their full 45-pixel height so neither half of the pattern is cropped. Room floors continue
-through their doorways to the wall front; corridor patches stay beneath room surfaces.
-Side passages meet that same front edge without cutting notches into the wall face.
-The wire terminal and exit switch occupy the two service bays above the final anteroom,
-with room for their complete silhouettes and a clear central exit aisle.
+Only source images and repaired sprites required by the current builders are retained.
+Their prompts remain alongside the source artwork. Historical art variants, unused imports,
+review captures and duplicate previews have been removed.
 
-ImageGen masters and their exact prompts are preserved in `assets/castle/source/` and
-`assets/level2/source/hero_idle.*`. Runtime outputs are `assets/castle/doors/`,
-`assets/castle/pixel/`, `assets/castle/masonry/` and `assets/level2/hero-polished.*`.
-The older extracted and high-resolution masters are retained as source history.
-
-Generated with the built-in image_gen tool:
-
-- [Unified furniture, equipment and domestic sprite atlases and generation prompts](assets/castle/source/pixel-unified/prompts.json).
-- [Standing hero master](assets/level2/source/hero_idle.png) and [prompt](assets/level2/source/hero_idle.prompt.txt).
-- [Detailed gate master](assets/castle/source/repairs/consistency/gate.png) and [prompt](assets/castle/source/repairs/consistency/gate.prompt.txt).
-- [Compact locked side gate](assets/castle/source/repairs/consistency/gate-locked-side.png) and [prompt](assets/castle/source/repairs/consistency/gate-locked-side.prompt.txt).
-- [Clean banner master](assets/castle/source/banner-clean.png) and [prompt](assets/castle/source/banner-clean.prompt.txt).
-- [Furniture masters, exact prompts and export notes](assets/castle/source/repairs/README.md).
-- [Fourteen spear-rack style replacements and exact prompts](assets/castle/source/repairs/consistency/README.md).
-- [Earlier detailed masonry masters and exact prompts](assets/castle/source/masonry-hq/README.md).
-  Shipping blocks reuse the native stone materials through `tools/castle_masonry.py`.
-
-Rebuild both scenes and the door strip without regenerating existing character atlases:
+Rebuild scenes using the retained artwork (requires Pillow):
 
 ```sh
 python3 games/invisible-castle/tools/complete_level.py
@@ -116,19 +64,15 @@ python3 games/invisible-castle/tools/build_frontend.py
 ./build/dev/yk validate games/invisible-castle
 ctest --preset dev -R invisible_castle
 python3 games/invisible-castle/tests/pixel_art_tests.py
+```
+
+`tools/castle_layout.py` owns furniture placement; `tools/castle_masonry.py` builds shared
+wall blocks and collision. The builders preserve menus, pause controls and completion flow.
+The old atlas reimport mode has been removed; edit the current textures directly.
+
+Optional screenshots are written under the ignored build directory:
+
+```sh
 python3 games/invisible-castle/tools/capture_previews.py
 python3 games/invisible-castle/tools/capture_previews.py --audit
 ```
-
-The frontend builder writes ordinary editable scenes and packages its chapter previews under
-`assets/ui/`. Chapter builders preserve pause controls, completion flow and the title as the start scene.
-The optional visual audit captures every room in both chapters and both overviews at
-2560 × 1440 under `build/invisible_castle-visual-audit/`, with a framing manifest.
-
-Pillow is required for chapter authoring. `--regenerate-art` explicitly re-exports the earlier generated
-atlases; normal scene rebuilds preserve them. 
-
-![Chapter one player view](level1-preview.png)
-![Chapter two player view](level2-preview.png)
-
-![Open corridor passages and banners](level2-corridor-preview.png)

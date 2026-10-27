@@ -3,7 +3,6 @@
 import hashlib
 import json
 from pathlib import Path
-import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
 INK = '#101d2bff'
@@ -95,8 +94,6 @@ def decorate_level(scene, number):
 def build_frontend():
     ui = ROOT / 'assets/ui'
     ui.mkdir(parents=True, exist_ok=True)
-    for source, target in [('level1-preview.png', 'hall-preview.png'), ('level2-overview.png', 'keep-preview.png')]:
-        shutil.copyfile(ROOT / source, ui / target)
     title = Screen('Invisible Castle - Main Menu')
     title.text('Title', 'INVISIBLE\nCASTLE', -280, -177, 5.5, GOLD)
     title.text('Premise', 'SEARCH. CRAFT. OUTWIT THE GUARDS.', -280, -65, 1.5, MUTED)

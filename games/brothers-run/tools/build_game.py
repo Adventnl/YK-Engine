@@ -365,9 +365,7 @@ def build():
     level_two()
     menus()
     configure_project()
-    legacy = PROJECT / "scenes/reference_level.ykscene"
-    if legacy.exists():
-        legacy.unlink()
+
 
 
 if __name__ == "__main__":

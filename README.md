@@ -12,7 +12,7 @@ The repository contains two independent demo games:
 | **Brothers Run** | [games/brothers-run](games/brothers-run/README.md) | Two brothers, Ember and Tide, race through two platforming levels. |
 | **Invisible Castle** | [games/invisible-castle](games/invisible-castle/README.md) | Two castle escape chapters with NPCs, inventories, searches, crafting and patrols. Title screen, chapter selection, controls and pause menu. |
 
-All scenes, assets, dialogue, game text, original art imports, authoring scripts and game-specific
+All scenes, assets, dialogue, game text, current artwork, authoring scripts and game-specific
 checks belong under `games/`. Engine code in `src/` and `include/` supplies reusable systems;
 it has no dependency on either game. The editor discovers ordinary `project.ykproj` files under
 `games/` and lists their names on its welcome screen and Games menu.

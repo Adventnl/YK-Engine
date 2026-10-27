@@ -45,19 +45,21 @@ The floor buttons latch after a full press so either player can catch up. No
 mechanism requires a player to stay behind permanently. Shuttle endpoints pause
 to give riders time to board. Hold jump for full height on the taller ledges.
 
-To regenerate the scenes and extracted modular pieces from the imported art:
+To rebuild the current scenes and modular pieces:
 
 ```sh
 python games/brothers-run/tools/build_game.py
 ```
 
-`build_level.py` also reimports the original art and character poses, then rebuilds
-the whole game. `build_level2.py` rebuilds only Level 2. These scripts require
-Pillow; playing and exporting require no Python or source asset folders.
+`build_level2.py` rebuilds only Level 2. These scripts require Pillow; playing and
+exporting require no Python or source asset folders. The original bulk import script,
+unused art, old prefabs and development previews have been removed. Current character
+sheets, the room backdrop and the classroom artwork are retained.
 
-Classroom art uses the built-in ImageGen tool. The generation originals and exact
-four prompts are in `source/classroom-generated/`; `tools/classroom_art.py`
-exports the playable textures into `assets/classroom/generated/`. Cabinets are
+Classroom terrain art uses the built-in ImageGen tool. The terrain originals and
+their prompts are in `source/classroom-generated/`; the Level 2 backdrop is the
+supplied classroom image stored alongside them. `tools/classroom_art.py` exports
+the playable textures into `assets/classroom/generated/`. Cabinets are
 384x80, bookcases 96x80, book platforms 192x28, and the background 1672x941,
 matching Level 1's canvas. Exports crop transparent padding and resize with
 nearest-neighbour sampling; all texture metadata uses nearest filtering at
