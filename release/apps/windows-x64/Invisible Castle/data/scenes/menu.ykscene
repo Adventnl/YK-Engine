@@ -1,0 +1,600 @@
+{
+  "format": "yk.scene",
+  "version": 1,
+  "settings": {
+    "name": "Invisible Castle - Main Menu",
+    "gravity": [
+      0,
+      0
+    ],
+    "background": "#101d2bff"
+  },
+  "entities": [
+    {
+      "id": "438c895c44d273ba",
+      "name": "Pause policy",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "PauseMenu",
+          "properties": {
+            "allowPause": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "0628c000471fd226",
+      "name": "Castle backdrop",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/ui/keep-preview.png",
+            "fillScreen": true,
+            "color": "#8095aaff",
+            "layer": -10
+          }
+        }
+      ]
+    },
+    {
+      "id": "2ce8c1ef041ea8af",
+      "name": "Backdrop shade",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "fillScreen": true,
+            "color": "#07111de8",
+            "layer": -9
+          }
+        }
+      ]
+    },
+    {
+      "id": "ffb5ef7257ca3fdc",
+      "name": "Top rule",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              0,
+              -304
+            ],
+            "size": [
+              1080,
+              2
+            ],
+            "color": "#48617aff",
+            "layer": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "5770d8d2d965542c",
+      "name": "Bottom rule",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              0,
+              292
+            ],
+            "size": [
+              1080,
+              2
+            ],
+            "color": "#48617aff",
+            "layer": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "a4d35c1b2110d5ff",
+      "name": "Title",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "INVISIBLE\nCASTLE",
+            "anchor": "Center",
+            "offset": [
+              -280,
+              -177
+            ],
+            "scale": 5.5,
+            "color": "#f5cc7dff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "f1d1a52e5bcb7c71",
+      "name": "Premise",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "SEARCH. CRAFT. OUTWIT THE GUARDS.",
+            "anchor": "Center",
+            "offset": [
+              -280,
+              -65
+            ],
+            "scale": 1.5,
+            "color": "#adc4d8ff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "527bdbdd1ac97ad7",
+      "name": "Play Button",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -280,
+              25
+            ],
+            "size": [
+              430,
+              68
+            ],
+            "color": "#20364bff",
+            "layer": 1
+          }
+        },
+        {
+          "type": "UiButton",
+          "properties": {
+            "changeScene": "scenes/levels.ykscene",
+            "hoverColor": "#466077ff",
+            "pressedColor": "#5a748bff"
+          }
+        }
+      ]
+    },
+    {
+      "id": "75c31bc350ff405b",
+      "name": "Play Button label",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "PLAY  >",
+            "anchor": "Center",
+            "offset": [
+              -280,
+              25
+            ],
+            "scale": 2.5,
+            "color": "#f5cc7dff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "1228b0c883fc5822",
+      "name": "Controls Button",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -280,
+              105
+            ],
+            "size": [
+              430,
+              56
+            ],
+            "color": "#20364bff",
+            "layer": 1
+          }
+        },
+        {
+          "type": "UiButton",
+          "properties": {
+            "changeScene": "scenes/controls.ykscene",
+            "hoverColor": "#466077ff",
+            "pressedColor": "#5a748bff"
+          }
+        }
+      ]
+    },
+    {
+      "id": "630e0b45b0527eda",
+      "name": "Controls Button label",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "HOW TO PLAY",
+            "anchor": "Center",
+            "offset": [
+              -280,
+              105
+            ],
+            "scale": 2.5,
+            "color": "#f5cc7dff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "d8004788954517c2",
+      "name": "Play hint",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "CLICK PLAY / ENTER",
+            "anchor": "Center",
+            "offset": [
+              -280,
+              166
+            ],
+            "scale": 1.5,
+            "color": "#adc4d8ff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "fb375afbed8304b2",
+      "name": "Castle view",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/ui/keep-preview.png",
+            "anchor": "Center",
+            "offset": [
+              278,
+              -62
+            ],
+            "size": [
+              500,
+              281.25
+            ],
+            "layer": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "1690367f63182c70",
+      "name": "Chapter count",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "TWO CHAPTERS. ONE WAY TO FREEDOM.",
+            "anchor": "Center",
+            "offset": [
+              278,
+              112
+            ],
+            "scale": 1.5,
+            "color": "#f5cc7dff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "601490fdf987102c",
+      "name": "Chapter names",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "THE OUTER HALL / THE INNER KEEP",
+            "anchor": "Center",
+            "offset": [
+              278,
+              144
+            ],
+            "scale": 1.5,
+            "color": "#adc4d8ff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "302151e6c4547c6c",
+      "name": "Controls",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "WASD / ARROWS MOVE    E INTERACT    ESC / P PAUSE",
+            "anchor": "Center",
+            "offset": [
+              0,
+              248
+            ],
+            "scale": 1.5,
+            "color": "#adc4d8ff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "4ffec827f4994c01",
+      "name": "Footer",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "A CASTLE ESCAPE ADVENTURE",
+            "anchor": "Center",
+            "offset": [
+              0,
+              322
+            ],
+            "scale": 1.5,
+            "color": "#adc4d8ff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "4d4b08396d395410",
+      "name": "Shortcut Continue",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "EventAction",
+          "properties": {
+            "inputAction": "Continue",
+            "waitForRelease": true,
+            "once": true,
+            "changeScene": "scenes/levels.ykscene"
+          }
+        }
+      ]
+    },
+    {
+      "id": "4e7096d680f6528d",
+      "name": "Shortcut Help",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "EventAction",
+          "properties": {
+            "inputAction": "Help",
+            "waitForRelease": true,
+            "once": true,
+            "changeScene": "scenes/controls.ykscene"
+          }
+        }
+      ]
+    }
+  ]
+}

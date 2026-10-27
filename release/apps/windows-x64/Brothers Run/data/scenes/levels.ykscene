@@ -1,0 +1,2182 @@
+{
+  "format": "yk.scene",
+  "version": 1,
+  "settings": {
+    "name": "Level Select",
+    "gravity": [
+      0,
+      9.81
+    ],
+    "background": "#0c1926ff"
+  },
+  "entities": [
+    {
+      "id": "dfbe7971019dc6e6",
+      "name": "Backdrop",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/reference/room.png",
+            "fillScreen": true,
+            "color": "#4b6475ff",
+            "layer": -5
+          }
+        }
+      ]
+    },
+    {
+      "id": "c2c2f03028af8e37",
+      "name": "Scrim",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "fillScreen": true,
+            "color": "#07131de5",
+            "layer": -4
+          }
+        }
+      ]
+    },
+    {
+      "id": "cc94dfeb7e64ecc8",
+      "name": "Top Rule",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              0,
+              -303
+            ],
+            "size": [
+              1040,
+              2
+            ],
+            "color": "#456273ff",
+            "layer": -1
+          }
+        }
+      ]
+    },
+    {
+      "id": "14ec33e3c93a5731",
+      "name": "Series",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "EMBER AND TIDE  /  TWO BROTHERS. ONE RACE.",
+            "anchor": "Center",
+            "offset": [
+              0,
+              -278
+            ],
+            "scale": 1.5,
+            "color": "#a5bccbff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "0b5153202cfab7dd",
+      "name": "Heading",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "CHOOSE YOUR CHALLENGE",
+            "anchor": "Center",
+            "offset": [
+              0,
+              -218
+            ],
+            "scale": 3.5,
+            "color": "#fff0d4ff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "7a3df3d2949f5096",
+      "name": "Intro",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "TWO ROUTES. TWO PLAYERS. ONE WAY OUT TOGETHER.",
+            "anchor": "Center",
+            "offset": [
+              0,
+              -170
+            ],
+            "scale": 1.5,
+            "color": "#a5bccbff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "a2d8798e5ed50184",
+      "name": "Level 1 Card",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -246,
+              40
+            ],
+            "size": [
+              460,
+              358
+            ],
+            "color": "#172f40ff",
+            "layer": 2
+          }
+        },
+        {
+          "type": "UiButton",
+          "properties": {
+            "changeScene": "scenes/level01.ykscene",
+            "hoverColor": "#2c5268ff",
+            "pressedColor": "#36647aff"
+          }
+        }
+      ]
+    },
+    {
+      "id": "e4ac55901e3cfead",
+      "name": "Level 1 Card Accent",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -474.0,
+              40
+            ],
+            "size": [
+              4,
+              358
+            ],
+            "color": "#ffb16bff",
+            "layer": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "6c4f041f4fa9381a",
+      "name": "Level 1 Card Label",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "",
+            "anchor": "Center",
+            "offset": [
+              -246,
+              40
+            ],
+            "scale": 2.5,
+            "color": "#fff0d4ff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "d68902c289c15bfc",
+      "name": "Map 1 Room",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/reference/room.png",
+            "anchor": "Center",
+            "offset": [
+              -246,
+              -22
+            ],
+            "size": [
+              414,
+              218
+            ],
+            "layer": 4,
+            "color": "#ffffff88"
+          }
+        }
+      ]
+    },
+    {
+      "id": "9b454801d84a579d",
+      "name": "Map 1 Starting Floor",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -403.47846889952154,
+              75.43361244019138
+            ],
+            "size": [
+              83.19617224880382,
+              19.808612440191386
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "58b18d3c42611753",
+      "name": "Map 1 Red Pool Basin",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -332.1674641148325,
+              82.36662679425837
+            ],
+            "size": [
+              59.42583732057416,
+              9.904306220095693
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "cceb15ef6bae8fe3",
+      "name": "Map 1 Middle Floor",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -254.91387559808612,
+              75.43361244019138
+            ],
+            "size": [
+              95.08133971291866,
+              19.808612440191386
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "ad09af2e04a248d3",
+      "name": "Map 1 Blue Pool Basin",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -177.66028708133973,
+              82.36662679425837
+            ],
+            "size": [
+              59.42583732057416,
+              9.904306220095693
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "d47e1d0359e3a853",
+      "name": "Map 1 Right Floor",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -100.40669856459331,
+              75.43361244019138
+            ],
+            "size": [
+              95.08133971291866,
+              19.808612440191386
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "361e7a44f0f47dea",
+      "name": "Map 1 Bonus Ledge",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -427.2488038277512,
+              22.940789473684205
+            ],
+            "size": [
+              35.655502392344495,
+              9.904306220095693
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "34476b4d096a79d5",
+      "name": "Map 1 Right Low Step",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -112.29186602870814,
+              46.71112440191388
+            ],
+            "size": [
+              23.770334928229666,
+              9.904306220095693
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "7ed3c7dc6827a6e2",
+      "name": "Map 1 Right Step",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -88.52153110047848,
+              22.940789473684205
+            ],
+            "size": [
+              23.770334928229666,
+              9.904306220095693
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "0afea05619ba0347",
+      "name": "Map 1 Right High Step",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -64.75119617224883,
+              -0.8295454545454568
+            ],
+            "size": [
+              23.770334928229666,
+              9.904306220095693
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "fc2f966ccb6fb3d8",
+      "name": "Map 1 Upper Right Landing",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -153.88995215311007,
+              -16.676435406698566
+            ],
+            "size": [
+              59.42583732057416,
+              9.904306220095693
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "ba1c92bc7b5fb1c8",
+      "name": "Map 1 Green Pool Basin",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -219.25837320574163,
+              -4.791267942583733
+            ],
+            "size": [
+              71.31100478468899,
+              9.904306220095693
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "633ddf6d2a24141b",
+      "name": "Map 1 Upper Left Landing",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -278.6842105263158,
+              -16.676435406698566
+            ],
+            "size": [
+              47.54066985645933,
+              9.904306220095693
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "d111ef7bed3b396d",
+      "name": "Map 1 Exit Step",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -314.33971291866027,
+              -40.44677033492823
+            ],
+            "size": [
+              23.770334928229666,
+              9.904306220095693
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "77990a81295e2b43",
+      "name": "Map 1 Exit Deck",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -367.82296650717706,
+              -64.21710526315789
+            ],
+            "size": [
+              83.19617224880382,
+              9.904306220095693
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "2a2ef9c71503c0f9",
+      "name": "Map 1 Red Shuttle",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -340.0909090909091,
+              42.25418660287082
+            ],
+            "size": [
+              35.655502392344495,
+              6.933014354066986
+            ],
+            "color": "#e7b064ff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "49b2558d64975a31",
+      "name": "Map 1 Blue Shuttle",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -185.58373205741628,
+              42.25418660287082
+            ],
+            "size": [
+              35.655502392344495,
+              6.933014354066986
+            ],
+            "color": "#e7b064ff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "74d1075b3119edaa",
+      "name": "Map 1 Green Shuttle",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -233.12440191387557,
+              -37.97069377990432
+            ],
+            "size": [
+              35.655502392344495,
+              6.933014354066986
+            ],
+            "color": "#e7b064ff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "a388a778ddc10537",
+      "name": "Map 1 Left Corner",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -449.0382775119617,
+              80.38576555023923
+            ],
+            "size": [
+              7.923444976076555,
+              29.71291866028708
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "f52850b01aed7dd4",
+      "name": "Map 1 Right Corner",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -45.93301435406693,
+              80.38576555023923
+            ],
+            "size": [
+              13.866028708133973,
+              29.71291866028708
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "40121d5728935b24",
+      "name": "Map 1 Foundation",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -246.0,
+              90.29007177033492
+            ],
+            "size": [
+              414.0,
+              9.904306220095693
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "96d8c00ab3956ce8",
+      "name": "Chapter 1",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "01  THE CROSSINGS",
+            "anchor": "Center",
+            "offset": [
+              -246,
+              106
+            ],
+            "scale": 2.5,
+            "color": "#ffb16bff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "5a27a773e8b52110",
+      "name": "Detail 1",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "POOLS / SWITCHES / THE CLIMB",
+            "anchor": "Center",
+            "offset": [
+              -246,
+              140
+            ],
+            "scale": 1.5,
+            "color": "#a5bccbff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "bc0833e8f6ade3c3",
+      "name": "Launch 1",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "PLAY LEVEL 1  >",
+            "anchor": "Center",
+            "offset": [
+              -246,
+              202
+            ],
+            "scale": 2,
+            "color": "#ffb16bff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "d6c3b2cdecbc955c",
+      "name": "Key 1",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "EventAction",
+          "properties": {
+            "inputAction": "Level1",
+            "waitForRelease": true,
+            "once": true,
+            "changeScene": "scenes/level01.ykscene"
+          }
+        }
+      ]
+    },
+    {
+      "id": "e08f0862b330dc5a",
+      "name": "Level 2 Card",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              246,
+              40
+            ],
+            "size": [
+              460,
+              358
+            ],
+            "color": "#172f40ff",
+            "layer": 2
+          }
+        },
+        {
+          "type": "UiButton",
+          "properties": {
+            "changeScene": "scenes/level02.ykscene",
+            "hoverColor": "#2c5268ff",
+            "pressedColor": "#36647aff"
+          }
+        }
+      ]
+    },
+    {
+      "id": "7359bee8463f3590",
+      "name": "Level 2 Card Accent",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              18.0,
+              40
+            ],
+            "size": [
+              4,
+              358
+            ],
+            "color": "#70dcffff",
+            "layer": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "3d42fdf460f47052",
+      "name": "Level 2 Card Label",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "",
+            "anchor": "Center",
+            "offset": [
+              246,
+              40
+            ],
+            "scale": 2.5,
+            "color": "#fff0d4ff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "592d0066b860e988",
+      "name": "Map 2 Room",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/classroom/generated/background.png",
+            "anchor": "Center",
+            "offset": [
+              246,
+              -22
+            ],
+            "size": [
+              414,
+              218
+            ],
+            "layer": 4,
+            "color": "#ffffff88"
+          }
+        }
+      ]
+    },
+    {
+      "id": "1e363dc1aefb8645",
+      "name": "Map 2 Starting Floor",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              106.34928229665073,
+              75.43361244019138
+            ],
+            "size": [
+              118.85167464114832,
+              19.808612440191386
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "7820eb739a41707d",
+      "name": "Map 2 Long Green Pool Basin",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              243.0287081339713,
+              82.36662679425837
+            ],
+            "size": [
+              154.5071770334928,
+              9.904306220095693
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "0ebccb2fcd3d37fc",
+      "name": "Map 2 Lift Landing",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              349.9952153110048,
+              75.43361244019138
+            ],
+            "size": [
+              59.42583732057416,
+              19.808612440191386
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "c979a36d1c8d235d",
+      "name": "Map 2 Lift Far Bank",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              433.1913875598086,
+              75.43361244019138
+            ],
+            "size": [
+              11.885167464114833,
+              19.808612440191386
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "64db809cff3fc6e5",
+      "name": "Map 2 Long Shuttle",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              193.50717703349284,
+              37.302033492822964
+            ],
+            "size": [
+              47.54066985645933,
+              6.933014354066986
+            ],
+            "color": "#e7b064ff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "3e9501ce7ad761d9",
+      "name": "Map 2 Elevator",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              403.47846889952154,
+              68.99581339712921
+            ],
+            "size": [
+              47.54066985645933,
+              6.933014354066986
+            ],
+            "color": "#e7b064ff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "851df7c107db6d9a",
+      "name": "Map 2 Upper Right Landing",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              344.0526315789474,
+              -12.714712918660288
+            ],
+            "size": [
+              47.54066985645933,
+              9.904306220095693
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "3dbaf4bd0d392a65",
+      "name": "Map 2 Upper Blue Pool Basin",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              243.0287081339713,
+              -0.8295454545454568
+            ],
+            "size": [
+              154.5071770334928,
+              9.904306220095693
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "ead96213be87abb2",
+      "name": "Map 2 Upper Left Landing",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              130.1196172248804,
+              -12.714712918660288
+            ],
+            "size": [
+              71.31100478468899,
+              9.904306220095693
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "55a4cdf7cf46a4d8",
+      "name": "Map 2 Blue Shuttle",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              296.511961722488,
+              -24.104665071770334
+            ],
+            "size": [
+              47.54066985645933,
+              6.933014354066986
+            ],
+            "color": "#e7b064ff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "293f1347a1a63944",
+      "name": "Map 2 Landing Gate",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              324.24401913875596,
+              -31.037679425837318
+            ],
+            "size": [
+              5.942583732057416,
+              26.741626794258373
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "664ba59c619f9bf0",
+      "name": "Map 2 Return Elevator",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              70.69377990430624,
+              -14.200358851674656
+            ],
+            "size": [
+              47.54066985645933,
+              6.933014354066986
+            ],
+            "color": "#e7b064ff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "d2e66eec05e6f48d",
+      "name": "Map 2 Final Approach",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              136.0622009569378,
+              -72.14055023923444
+            ],
+            "size": [
+              59.42583732057416,
+              9.904306220095693
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "d704134b926b38d9",
+      "name": "Map 2 Upper Red Pool Basin",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              213.31578947368422,
+              -60.255382775119614
+            ],
+            "size": [
+              95.08133971291866,
+              9.904306220095693
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "0a4486df965b4c28",
+      "name": "Map 2 Exit Deck",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              320.2822966507177,
+              -72.14055023923444
+            ],
+            "size": [
+              118.85167464114832,
+              9.904306220095693
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "f59392ca28a19df3",
+      "name": "Map 2 Red Shuttle",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              187.56459330143542,
+              -79.56877990430621
+            ],
+            "size": [
+              35.655502392344495,
+              6.933014354066986
+            ],
+            "color": "#e7b064ff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "299ad0ed3d1d59a9",
+      "name": "Map 2 Left Corner",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              42.961722488038276,
+              80.38576555023923
+            ],
+            "size": [
+              7.923444976076555,
+              29.71291866028708
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "8564576d1aa578be",
+      "name": "Map 2 Right Corner",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              446.0669856459331,
+              80.38576555023923
+            ],
+            "size": [
+              13.866028708133973,
+              29.71291866028708
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "e388ebe960c7f931",
+      "name": "Map 2 Foundation",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              246.0,
+              90.29007177033492
+            ],
+            "size": [
+              414.0,
+              9.904306220095693
+            ],
+            "color": "#6f927fff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "73ebf4bc0d654816",
+      "name": "Chapter 2",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "02  THE CLASSROOM",
+            "anchor": "Center",
+            "offset": [
+              246,
+              106
+            ],
+            "scale": 2.5,
+            "color": "#70dcffff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "9accde1ede4f746d",
+      "name": "Detail 2",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "BOOKS / DESKS / LIFTS",
+            "anchor": "Center",
+            "offset": [
+              246,
+              140
+            ],
+            "scale": 1.5,
+            "color": "#a5bccbff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "34c3bd9ddf15712b",
+      "name": "Launch 2",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "PLAY LEVEL 2  >",
+            "anchor": "Center",
+            "offset": [
+              246,
+              202
+            ],
+            "scale": 2,
+            "color": "#70dcffff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "6b9ca52e19eb6e87",
+      "name": "Key 2",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "EventAction",
+          "properties": {
+            "inputAction": "Level2",
+            "waitForRelease": true,
+            "once": true,
+            "changeScene": "scenes/level02.ykscene"
+          }
+        }
+      ]
+    },
+    {
+      "id": "f4b8d5fbd26d9017",
+      "name": "Back Button",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              0,
+              259
+            ],
+            "size": [
+              196,
+              42
+            ],
+            "color": "#172f40ff",
+            "layer": 2
+          }
+        },
+        {
+          "type": "UiButton",
+          "properties": {
+            "changeScene": "scenes/menu.ykscene",
+            "hoverColor": "#2c5268ff",
+            "pressedColor": "#36647aff"
+          }
+        }
+      ]
+    },
+    {
+      "id": "158e6b4af3f45337",
+      "name": "Back Button Accent",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -96.0,
+              259
+            ],
+            "size": [
+              4,
+              42
+            ],
+            "color": "#70dcffff",
+            "layer": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "f1b382bcf946f663",
+      "name": "Back Button Label",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "<  BACK",
+            "anchor": "Center",
+            "offset": [
+              0,
+              259
+            ],
+            "scale": 2.5,
+            "color": "#fff0d4ff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "820b4a2f57a6a8f4",
+      "name": "Default",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "EventAction",
+          "properties": {
+            "inputAction": "Continue",
+            "waitForRelease": true,
+            "once": true,
+            "changeScene": "scenes/level01.ykscene"
+          }
+        }
+      ]
+    },
+    {
+      "id": "29ba4a1bb70309ac",
+      "name": "Back",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "EventAction",
+          "properties": {
+            "inputAction": "Menu",
+            "waitForRelease": true,
+            "once": true,
+            "changeScene": "scenes/menu.ykscene"
+          }
+        }
+      ]
+    },
+    {
+      "id": "f8b049f8aa362335",
+      "name": "Footer",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "ONE EXIT  /  FIRST BROTHER TO REACH IT WINS THE RACE",
+            "anchor": "Center",
+            "offset": [
+              0,
+              320
+            ],
+            "scale": 1.5,
+            "color": "#a5bccbff",
+            "layer": 8
+          }
+        }
+      ]
+    }
+  ]
+}

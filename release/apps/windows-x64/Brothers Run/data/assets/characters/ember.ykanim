@@ -1,0 +1,67 @@
+{
+  "format": "yk.animation",
+  "version": 2,
+  "texture": "assets/characters/ember.png",
+  "columns": 8,
+  "rows": 4,
+  "clips": [
+    {
+      "name": "idle",
+      "first": 0,
+      "count": 4,
+      "fps": 5
+    },
+    {
+      "name": "run",
+      "first": 4,
+      "count": 8,
+      "fps": 14,
+      "events": [
+        {
+          "frame": 0,
+          "name": "footstep",
+          "sound": "assets/audio/step.wav"
+        },
+        {
+          "frame": 4,
+          "name": "footstep",
+          "sound": "assets/audio/step.wav"
+        }
+      ]
+    },
+    {
+      "name": "jump",
+      "first": 12,
+      "count": 2,
+      "fps": 9,
+      "loop": false
+    },
+    {
+      "name": "fall",
+      "first": 14,
+      "count": 2,
+      "fps": 8
+    },
+    {
+      "name": "land",
+      "first": 16,
+      "count": 2,
+      "fps": 22,
+      "loop": false
+    },
+    {
+      "name": "interact",
+      "first": 18,
+      "count": 3,
+      "fps": 10,
+      "loop": false
+    },
+    {
+      "name": "death",
+      "first": 21,
+      "count": 6,
+      "fps": 12,
+      "loop": false
+    }
+  ]
+}

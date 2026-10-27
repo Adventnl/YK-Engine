@@ -1,0 +1,831 @@
+{
+  "format": "yk.scene",
+  "version": 1,
+  "settings": {
+    "name": "Invisible Castle - How to Play",
+    "gravity": [
+      0,
+      0
+    ],
+    "background": "#101d2bff"
+  },
+  "entities": [
+    {
+      "id": "87a39ae3dc8e93b5",
+      "name": "Pause policy",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "PauseMenu",
+          "properties": {
+            "allowPause": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "bf43a3b254904efe",
+      "name": "Castle backdrop",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/ui/keep-preview.png",
+            "fillScreen": true,
+            "color": "#8095aaff",
+            "layer": -10
+          }
+        }
+      ]
+    },
+    {
+      "id": "f963dadf9fb59d04",
+      "name": "Backdrop shade",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "fillScreen": true,
+            "color": "#07111de8",
+            "layer": -9
+          }
+        }
+      ]
+    },
+    {
+      "id": "688ab32fb2039ebe",
+      "name": "Top rule",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              0,
+              -304
+            ],
+            "size": [
+              1080,
+              2
+            ],
+            "color": "#48617aff",
+            "layer": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "22ef19252c75ad83",
+      "name": "Bottom rule",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              0,
+              292
+            ],
+            "size": [
+              1080,
+              2
+            ],
+            "color": "#48617aff",
+            "layer": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "5f3575e630bd972f",
+      "name": "Title",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "HOW TO ESCAPE",
+            "anchor": "Center",
+            "offset": [
+              0,
+              -252
+            ],
+            "scale": 4,
+            "color": "#f5cc7dff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "fd9abd8536c957ef",
+      "name": "Key 0",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "WASD / ARROWS",
+            "anchor": "Center",
+            "offset": [
+              -310,
+              -163
+            ],
+            "scale": 2,
+            "color": "#f5cc7dff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "a34bea429c4f9788",
+      "name": "Action 0",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "Move around the keep",
+            "anchor": "Center",
+            "offset": [
+              130,
+              -163
+            ],
+            "scale": 1.5,
+            "color": "#e7edf3ff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "1a2b9861a479d5f9",
+      "name": "Key 1",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "E / SPACE",
+            "anchor": "Center",
+            "offset": [
+              -310,
+              -120
+            ],
+            "scale": 2,
+            "color": "#f5cc7dff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "209d28393abc1e13",
+      "name": "Action 1",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "Talk, search, craft and use gates",
+            "anchor": "Center",
+            "offset": [
+              130,
+              -120
+            ],
+            "scale": 1.5,
+            "color": "#e7edf3ff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "cf75acd020950d19",
+      "name": "Key 2",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "ESC",
+            "anchor": "Center",
+            "offset": [
+              -310,
+              -77
+            ],
+            "scale": 2,
+            "color": "#f5cc7dff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "c3dadbf4679b36dc",
+      "name": "Action 2",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "Close a conversation or cancel a search",
+            "anchor": "Center",
+            "offset": [
+              130,
+              -77
+            ],
+            "scale": 1.5,
+            "color": "#e7edf3ff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "90607aa95db7eb60",
+      "name": "Key 3",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "ESC / P",
+            "anchor": "Center",
+            "offset": [
+              -310,
+              -34
+            ],
+            "scale": 2,
+            "color": "#f5cc7dff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "1d543a026e057427",
+      "name": "Action 3",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "Pause while exploring",
+            "anchor": "Center",
+            "offset": [
+              130,
+              -34
+            ],
+            "scale": 1.5,
+            "color": "#e7edf3ff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "7a45e40cf5a4a62d",
+      "name": "Key 4",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "R",
+            "anchor": "Center",
+            "offset": [
+              -310,
+              9
+            ],
+            "scale": 2,
+            "color": "#f5cc7dff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "8ca7711ea952e1eb",
+      "name": "Action 4",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "Restart the current chapter",
+            "anchor": "Center",
+            "offset": [
+              130,
+              9
+            ],
+            "scale": 1.5,
+            "color": "#e7edf3ff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "5d19679065c7b066",
+      "name": "Key 5",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "M / TAB",
+            "anchor": "Center",
+            "offset": [
+              -310,
+              52
+            ],
+            "scale": 2,
+            "color": "#f5cc7dff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "fa686819b27d4b40",
+      "name": "Action 5",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "Main menu / chapter select",
+            "anchor": "Center",
+            "offset": [
+              130,
+              52
+            ],
+            "scale": 1.5,
+            "color": "#e7edf3ff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "7df7f2431865fe5d",
+      "name": "Goal",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "FOLLOW YOUR OBJECTIVE. TALK TO MARA FOR THE ESCAPE ROUTE.",
+            "anchor": "Center",
+            "offset": [
+              0,
+              132
+            ],
+            "scale": 1.5,
+            "color": "#adc4d8ff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "b9c456fe219175c4",
+      "name": "Advice",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "AVOID THE GUARD. HIDDEN SUPPLIES STAY WITH YOU IF CAUGHT.",
+            "anchor": "Center",
+            "offset": [
+              0,
+              164
+            ],
+            "scale": 1.5,
+            "color": "#adc4d8ff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "07bfd57e5657a6de",
+      "name": "Controller",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "PAD: D-PAD MOVE / WEST USE / START PAUSE / EAST CLOSE",
+            "anchor": "Center",
+            "offset": [
+              0,
+              200
+            ],
+            "scale": 1.5,
+            "color": "#adc4d8ff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "6d9ec3dc3d85ec25",
+      "name": "Back Button",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              0,
+              255
+            ],
+            "size": [
+              260,
+              44
+            ],
+            "color": "#20364bff",
+            "layer": 1
+          }
+        },
+        {
+          "type": "UiButton",
+          "properties": {
+            "changeScene": "scenes/menu.ykscene",
+            "hoverColor": "#466077ff",
+            "pressedColor": "#5a748bff"
+          }
+        }
+      ]
+    },
+    {
+      "id": "0461b07f2e5bc382",
+      "name": "Back Button label",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "<  MAIN MENU",
+            "anchor": "Center",
+            "offset": [
+              0,
+              255
+            ],
+            "scale": 2.5,
+            "color": "#f5cc7dff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "9e84e27b392796c2",
+      "name": "Shortcut Continue",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "EventAction",
+          "properties": {
+            "inputAction": "Continue",
+            "waitForRelease": true,
+            "once": true,
+            "changeScene": "scenes/menu.ykscene"
+          }
+        }
+      ]
+    },
+    {
+      "id": "5de05f01d20e139f",
+      "name": "Shortcut Cancel",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "EventAction",
+          "properties": {
+            "inputAction": "Cancel",
+            "waitForRelease": true,
+            "once": true,
+            "changeScene": "scenes/menu.ykscene"
+          }
+        }
+      ]
+    },
+    {
+      "id": "8e505fe7afe21be7",
+      "name": "Shortcut Menu",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "EventAction",
+          "properties": {
+            "inputAction": "Menu",
+            "waitForRelease": true,
+            "once": true,
+            "changeScene": "scenes/menu.ykscene"
+          }
+        }
+      ]
+    },
+    {
+      "id": "abb1d9481422450f",
+      "name": "Footer",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "PAUSING STOPS GUARDS, SEARCHES AND THE WORLD UNTIL YOU RESUME.",
+            "anchor": "Center",
+            "offset": [
+              0,
+              322
+            ],
+            "scale": 1.5,
+            "color": "#adc4d8ff",
+            "layer": 8
+          }
+        }
+      ]
+    }
+  ]
+}

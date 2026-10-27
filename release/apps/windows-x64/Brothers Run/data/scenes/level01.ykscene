@@ -1,0 +1,6796 @@
+{
+  "format": "yk.scene",
+  "version": 1,
+  "settings": {
+    "name": "Level 1",
+    "gravity": [
+      0,
+      9.81
+    ],
+    "background": "#17283bff"
+  },
+  "entities": [
+    {
+      "id": "bae53703da8919a3",
+      "name": "Camera",
+      "transform": {
+        "position": [
+          16.72,
+          9.41
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Camera",
+          "properties": {
+            "mode": "Fixed",
+            "orthographicHeight": 18.82
+          }
+        }
+      ]
+    },
+    {
+      "id": "87bee5ff1045a952",
+      "name": "Room Background",
+      "transform": {
+        "position": [
+          16.72,
+          9.41
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/room.png",
+            "size": [
+              33.44,
+              18.82
+            ],
+            "layer": -100
+          }
+        }
+      ]
+    },
+    {
+      "id": "398ac257df85131a",
+      "name": "Background Shade",
+      "transform": {
+        "position": [
+          16.72,
+          9.41
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "size": [
+              33.44,
+              18.82
+            ],
+            "color": "#08131f55",
+            "layer": -90
+          }
+        }
+      ]
+    },
+    {
+      "id": "073dfc15d271f98c",
+      "name": "Terrain",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "eb65dcd54fea7799",
+      "name": "Hazards",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "5f42ed0f0862bf81",
+      "name": "Mechanisms",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "c2e6214bb51bcbf1",
+      "name": "Collectibles",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "c048814ab5ab43c7",
+      "name": "Characters",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "2613041d3349ade3",
+      "name": "Starting Floor",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          4.0,
+          17.28
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              6.72,
+              1.6
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "1c0597e23c21ba2a",
+      "name": "Starting Floor Block 0-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          1.12,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "3011a634a249f36b",
+      "name": "Starting Floor Block 0-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          2.08,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "54202e96201c5b9a",
+      "name": "Starting Floor Block 0-2",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          3.04,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "ae8b5cea5ff40e45",
+      "name": "Starting Floor Block 0-3",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          4.0,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "ad40b49fa3bb398c",
+      "name": "Starting Floor Block 0-4",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          4.96,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "0c1fbe0dcdb75152",
+      "name": "Starting Floor Block 0-5",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          5.92,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "818c2d7a3948b697",
+      "name": "Starting Floor Block 0-6",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          6.88,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "6c02443a67b823a9",
+      "name": "Starting Floor Block 1-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          1.12,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "c4ab3ca4749a139d",
+      "name": "Starting Floor Block 1-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          2.08,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "880dc323461a71c9",
+      "name": "Starting Floor Block 1-2",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          3.04,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "715208baf8ba2687",
+      "name": "Starting Floor Block 1-3",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          4.0,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "04f6dc9978ca5041",
+      "name": "Starting Floor Block 1-4",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          4.96,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "daee8f7cac9c4e9f",
+      "name": "Starting Floor Block 1-5",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          5.92,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "6a4de896e6b9eb19",
+      "name": "Starting Floor Block 1-6",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          6.88,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "6f98f29c9d673fd2",
+      "name": "Red Pool Basin",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          9.76,
+          17.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              4.8,
+              0.8
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "5bb4661c3cc305ca",
+      "name": "Red Pool Basin Block 0-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          7.84,
+          17.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "9a494617cac0cb99",
+      "name": "Red Pool Basin Block 0-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          8.8,
+          17.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "3048995440d33367",
+      "name": "Red Pool Basin Block 0-2",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          9.76,
+          17.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "99335c36a90d05fd",
+      "name": "Red Pool Basin Block 0-3",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          10.72,
+          17.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "0a92d587bbfadd44",
+      "name": "Red Pool Basin Block 0-4",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          11.68,
+          17.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "2af7b711687f95b7",
+      "name": "Red Pool",
+      "parent": "eb65dcd54fea7799",
+      "transform": {
+        "position": [
+          9.76,
+          16.96
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/red_liquid.png",
+            "size": [
+              4.8,
+              0.96
+            ],
+            "layer": 12,
+            "drawMode": "Tiled",
+            "tileSize": [
+              1.2,
+              0.96
+            ]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              4.68,
+              0.76
+            ],
+            "offset": [
+              0.0,
+              0.1
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Hazard",
+          "properties": {
+            "affectsTags": [
+              "Tide"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "a9f26c832085bf8c",
+      "name": "Middle Floor",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          16.0,
+          17.28
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              7.68,
+              1.6
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "4980e80e2d9e0a2f",
+      "name": "Middle Floor Block 0-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          12.64,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "745e63560558fff1",
+      "name": "Middle Floor Block 0-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          13.6,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "517da0f422cb8c95",
+      "name": "Middle Floor Block 0-2",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          14.56,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "9c505ef2fec85fb7",
+      "name": "Middle Floor Block 0-3",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          15.52,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "832e2cca9f50f6f1",
+      "name": "Middle Floor Block 0-4",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          16.48,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "5848413e946b9f7d",
+      "name": "Middle Floor Block 0-5",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          17.44,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "8b5b3e0726dbc422",
+      "name": "Middle Floor Block 0-6",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          18.4,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "fb41afd3e523f20a",
+      "name": "Middle Floor Block 0-7",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          19.36,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "3732426dbfaaa025",
+      "name": "Middle Floor Block 1-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          12.64,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "421c31540e6e00eb",
+      "name": "Middle Floor Block 1-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          13.6,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "3a67048f9978f73a",
+      "name": "Middle Floor Block 1-2",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          14.56,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "e9d0911c7a659e14",
+      "name": "Middle Floor Block 1-3",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          15.52,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "f7c8f17eaf51f990",
+      "name": "Middle Floor Block 1-4",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          16.48,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "c01416046b3a039e",
+      "name": "Middle Floor Block 1-5",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          17.44,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "c862d5d70b73de97",
+      "name": "Middle Floor Block 1-6",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          18.4,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "15b178ada60c19ea",
+      "name": "Middle Floor Block 1-7",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          19.36,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "ead868ccff182998",
+      "name": "Blue Pool Basin",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          22.24,
+          17.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              4.8,
+              0.8
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "adebb7e35644e72d",
+      "name": "Blue Pool Basin Block 0-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          20.32,
+          17.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "2041357fe690b936",
+      "name": "Blue Pool Basin Block 0-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          21.28,
+          17.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "4333bece5bc194c8",
+      "name": "Blue Pool Basin Block 0-2",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          22.24,
+          17.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "0a4ef1b36fb9033c",
+      "name": "Blue Pool Basin Block 0-3",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          23.2,
+          17.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "d43c1ecc20ae1b4d",
+      "name": "Blue Pool Basin Block 0-4",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          24.16,
+          17.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "baaada4e190b590c",
+      "name": "Blue Pool",
+      "parent": "eb65dcd54fea7799",
+      "transform": {
+        "position": [
+          22.24,
+          16.96
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/blue_liquid.png",
+            "size": [
+              4.8,
+              0.96
+            ],
+            "layer": 12,
+            "drawMode": "Tiled",
+            "tileSize": [
+              1.2,
+              0.96
+            ]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              4.68,
+              0.76
+            ],
+            "offset": [
+              0.0,
+              0.1
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Hazard",
+          "properties": {
+            "affectsTags": [
+              "Ember"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "0d7b6f1da4aabdb3",
+      "name": "Right Floor",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          28.48,
+          17.28
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              7.68,
+              1.6
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "226a8f2dc367c3ff",
+      "name": "Right Floor Block 0-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          25.12,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "b3da8643c8712a4f",
+      "name": "Right Floor Block 0-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          26.08,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "96c0e42efec34f3f",
+      "name": "Right Floor Block 0-2",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          27.04,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "b82783a864f3950b",
+      "name": "Right Floor Block 0-3",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          28.0,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "b9fb3210cf1ed6f5",
+      "name": "Right Floor Block 0-4",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          28.96,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "04cd1d87bceaa91e",
+      "name": "Right Floor Block 0-5",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          29.92,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "8bb09689b63bda3f",
+      "name": "Right Floor Block 0-6",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          30.88,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "9c93922da1cf5562",
+      "name": "Right Floor Block 0-7",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          31.84,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "422f2ccc2adb2257",
+      "name": "Right Floor Block 1-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          25.12,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "c2bca641c8f1e143",
+      "name": "Right Floor Block 1-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          26.08,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "edf550ffe0e5f757",
+      "name": "Right Floor Block 1-2",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          27.04,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "a4b1de50dbdd5972",
+      "name": "Right Floor Block 1-3",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          28.0,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "c312843975c738a0",
+      "name": "Right Floor Block 1-4",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          28.96,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "77635cfe7e6fc0fb",
+      "name": "Right Floor Block 1-5",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          29.92,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "8be9c80e8955bbf8",
+      "name": "Right Floor Block 1-6",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          30.88,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "0f062a3631369dbc",
+      "name": "Right Floor Block 1-7",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          31.84,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "3bf8728b701eb72d",
+      "name": "Bonus Ledge",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          2.08,
+          13.04
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              2.88,
+              0.8
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "c841a74a5b3c4106",
+      "name": "Bonus Ledge Block 0-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          1.12,
+          13.04
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "b8775d33815fd4da",
+      "name": "Bonus Ledge Block 0-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          2.08,
+          13.04
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "cbb27b9904f35567",
+      "name": "Bonus Ledge Block 0-2",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          3.04,
+          13.04
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "4000829c2b517036",
+      "name": "Right Low Step",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          27.52,
+          14.96
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              1.92,
+              0.8
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "daf344ee799b5607",
+      "name": "Right Low Step Block 0-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          27.04,
+          14.96
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "fc676a3172b0b7ee",
+      "name": "Right Low Step Block 0-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          28.0,
+          14.96
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "a8f3f238246ae8e3",
+      "name": "Right Step",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          29.44,
+          13.04
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              1.92,
+              0.8
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "38a795d6cb6539a0",
+      "name": "Right Step Block 0-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          28.96,
+          13.04
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "42df90060967f81a",
+      "name": "Right Step Block 0-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          29.92,
+          13.04
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "210109536a2ed351",
+      "name": "Right High Step",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          31.36,
+          11.12
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              1.92,
+              0.8
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "35f039916b54c237",
+      "name": "Right High Step Block 0-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          30.88,
+          11.12
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "5b915819292f984e",
+      "name": "Right High Step Block 0-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          31.84,
+          11.12
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "52eab2c0d6ebd9f2",
+      "name": "Upper Right Landing",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          24.16,
+          9.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              4.8,
+              0.8
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "694fac6b2d6d78c3",
+      "name": "Upper Right Landing Block 0-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          22.24,
+          9.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "53912d55d02132d9",
+      "name": "Upper Right Landing Block 0-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          23.2,
+          9.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "a476208208f34e2f",
+      "name": "Upper Right Landing Block 0-2",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          24.16,
+          9.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "89cff8065c5dc5e7",
+      "name": "Upper Right Landing Block 0-3",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          25.12,
+          9.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "4d8c66c1ddd0c1a8",
+      "name": "Upper Right Landing Block 0-4",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          26.08,
+          9.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "82f8f2a0444ba3f5",
+      "name": "Green Pool Basin",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          18.88,
+          10.8
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              5.76,
+              0.8
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "ec087e3e8e1cebc2",
+      "name": "Green Pool Basin Block 0-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          16.48,
+          10.8
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "ffd435242d287886",
+      "name": "Green Pool Basin Block 0-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          17.44,
+          10.8
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "625212f6af95b489",
+      "name": "Green Pool Basin Block 0-2",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          18.4,
+          10.8
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "62139c7f0a880de9",
+      "name": "Green Pool Basin Block 0-3",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          19.36,
+          10.8
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "624319353e1b0efa",
+      "name": "Green Pool Basin Block 0-4",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          20.32,
+          10.8
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "aff3a466e946e4e1",
+      "name": "Green Pool Basin Block 0-5",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          21.28,
+          10.8
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "c86854f0368c2b0d",
+      "name": "Green Pool",
+      "parent": "eb65dcd54fea7799",
+      "transform": {
+        "position": [
+          18.88,
+          9.92
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/green_liquid.png",
+            "size": [
+              5.76,
+              0.96
+            ],
+            "layer": 12,
+            "drawMode": "Tiled",
+            "tileSize": [
+              1.2,
+              0.96
+            ]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              5.64,
+              0.76
+            ],
+            "offset": [
+              0.0,
+              0.1
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Hazard",
+          "properties": {
+            "affectsTags": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "a1ea3875f7fa2195",
+      "name": "Upper Left Landing",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          14.08,
+          9.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              3.84,
+              0.8
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "dff8e83d0b9acdf8",
+      "name": "Upper Left Landing Block 0-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          12.64,
+          9.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "6e0bb826adbfb9ee",
+      "name": "Upper Left Landing Block 0-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          13.6,
+          9.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "7b6d2b7ad3a052f9",
+      "name": "Upper Left Landing Block 0-2",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          14.56,
+          9.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "4e74cca0effb6ed9",
+      "name": "Upper Left Landing Block 0-3",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          15.52,
+          9.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "814a95461f5723d9",
+      "name": "Exit Step",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          11.2,
+          7.92
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              1.92,
+              0.8
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "bed95b08e3b9418c",
+      "name": "Exit Step Block 0-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          10.72,
+          7.92
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "01ab96c6bd7e5631",
+      "name": "Exit Step Block 0-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          11.68,
+          7.92
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "203120e0af2cb53f",
+      "name": "Exit Deck",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          6.88,
+          6.0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              6.72,
+              0.8
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "b911f00e4954a286",
+      "name": "Exit Deck Block 0-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          4.0,
+          6.0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "b2936c9c4c7c1ae8",
+      "name": "Exit Deck Block 0-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          4.96,
+          6.0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "5a5e59fdd0ba9bea",
+      "name": "Exit Deck Block 0-2",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          5.92,
+          6.0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "0580534fbac6e02c",
+      "name": "Exit Deck Block 0-3",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          6.88,
+          6.0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "91d26d18eaed3d61",
+      "name": "Exit Deck Block 0-4",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          7.84,
+          6.0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "6bd11b1230b7b93b",
+      "name": "Exit Deck Block 0-5",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          8.8,
+          6.0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "fcc53d498de84b39",
+      "name": "Exit Deck Block 0-6",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          9.76,
+          6.0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "e921ae80922f94b7",
+      "name": "Red Shuttle",
+      "parent": "5f42ed0f0862bf81",
+      "transform": {
+        "position": [
+          9.12,
+          14.6
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/platform.png",
+            "size": [
+              2.88,
+              0.56
+            ],
+            "layer": 25
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Kinematic"
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              2.88,
+              0.56
+            ],
+            "layer": "Solid",
+            "friction": 1,
+            "oneWay": false
+          }
+        },
+        {
+          "type": "MovingPlatform",
+          "properties": {
+            "travel": [
+              1.28,
+              0.0
+            ],
+            "speed": 1.6,
+            "pause": 1.4,
+            "requireSignal": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "f713a9e081027be4",
+      "name": "Red Crossing Button",
+      "parent": "5f42ed0f0862bf81",
+      "transform": {
+        "position": [
+          5.44,
+          16.33
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/button_housing.png",
+            "size": [
+              1.18,
+              0.3
+            ],
+            "layer": 32
+          }
+        },
+        {
+          "type": "PressurePlate",
+          "properties": {
+            "pad": "1af09df67544c6b6",
+            "sensing": "Weight",
+            "targets": [
+              "e921ae80922f94b7"
+            ],
+            "latch": true,
+            "pressDepth": 0.16,
+            "pressSpeed": 0.8,
+            "acceleration": 5,
+            "pressedColor": "#ffffffff",
+            "pressSound": "assets/audio/plate_down.wav",
+            "releaseSound": "assets/audio/plate_up.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "1af09df67544c6b6",
+      "name": "Red Crossing Button Cap",
+      "parent": "f713a9e081027be4",
+      "transform": {
+        "position": [
+          0.0,
+          -0.15
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/button_cap.png",
+            "size": [
+              0.76,
+              0.3
+            ],
+            "layer": 31
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Kinematic"
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              1.4,
+              0.8
+            ],
+            "offset": [
+              0.0,
+              0.25
+            ],
+            "chamfer": [
+              0.35,
+              0.36
+            ],
+            "layer": "Solid",
+            "friction": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "5667b00693a926c2",
+      "name": "Blue Shuttle",
+      "parent": "5f42ed0f0862bf81",
+      "transform": {
+        "position": [
+          21.6,
+          14.6
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/platform.png",
+            "size": [
+              2.88,
+              0.56
+            ],
+            "layer": 25
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Kinematic"
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              2.88,
+              0.56
+            ],
+            "layer": "Solid",
+            "friction": 1,
+            "oneWay": false
+          }
+        },
+        {
+          "type": "MovingPlatform",
+          "properties": {
+            "travel": [
+              1.28,
+              0.0
+            ],
+            "speed": 1.6,
+            "pause": 1.4,
+            "requireSignal": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "b3a639629187b624",
+      "name": "Blue Crossing Button",
+      "parent": "5f42ed0f0862bf81",
+      "transform": {
+        "position": [
+          17.92,
+          16.33
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/button_housing.png",
+            "size": [
+              1.18,
+              0.3
+            ],
+            "layer": 32
+          }
+        },
+        {
+          "type": "PressurePlate",
+          "properties": {
+            "pad": "fac6b791e8440115",
+            "sensing": "Weight",
+            "targets": [
+              "5667b00693a926c2"
+            ],
+            "latch": true,
+            "pressDepth": 0.16,
+            "pressSpeed": 0.8,
+            "acceleration": 5,
+            "pressedColor": "#ffffffff",
+            "pressSound": "assets/audio/plate_down.wav",
+            "releaseSound": "assets/audio/plate_up.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "fac6b791e8440115",
+      "name": "Blue Crossing Button Cap",
+      "parent": "b3a639629187b624",
+      "transform": {
+        "position": [
+          0.0,
+          -0.15
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/button_cap.png",
+            "size": [
+              0.76,
+              0.3
+            ],
+            "layer": 31
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Kinematic"
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              1.4,
+              0.8
+            ],
+            "offset": [
+              0.0,
+              0.25
+            ],
+            "chamfer": [
+              0.35,
+              0.36
+            ],
+            "layer": "Solid",
+            "friction": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "0b1b191658414e20",
+      "name": "Green Shuttle",
+      "parent": "5f42ed0f0862bf81",
+      "transform": {
+        "position": [
+          17.76,
+          8.12
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/platform.png",
+            "size": [
+              2.88,
+              0.56
+            ],
+            "layer": 25
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Kinematic"
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              2.88,
+              0.56
+            ],
+            "layer": "Solid",
+            "friction": 1,
+            "oneWay": false
+          }
+        },
+        {
+          "type": "MovingPlatform",
+          "properties": {
+            "travel": [
+              2.24,
+              0.0
+            ],
+            "speed": 1.6,
+            "pause": 1.4,
+            "requireSignal": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "65247e7279069ff8",
+      "name": "Upper Crossing Lever",
+      "parent": "5f42ed0f0862bf81",
+      "transform": {
+        "position": [
+          24.64,
+          8.8
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/lever.png",
+            "size": [
+              1.28,
+              1.28
+            ],
+            "layer": 32
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              2.0,
+              2.0
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Lever",
+          "properties": {
+            "interactAction": "Interact",
+            "targets": [
+              "0b1b191658414e20"
+            ],
+            "sound": "assets/audio/lever.wav",
+            "onColor": "#ffffffff",
+            "flipSprite": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "19230bb816cc80f2",
+      "name": "Ember Gem 488 790",
+      "parent": "c2e6214bb51bcbf1",
+      "transform": {
+        "position": [
+          9.76,
+          15.8
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/png/collectibles/red_orb_left.png",
+            "size": [
+              0.76,
+              0.8
+            ],
+            "layer": 45
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [
+              0.64,
+              0.64
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": [
+              "Ember"
+            ],
+            "variable": "ember_gems",
+            "sound": "assets/audio/collect.wav",
+            "value": 1,
+            "collectEffect": "prefabs/fx/spark_red.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [
+              0,
+              0.06
+            ],
+            "frequency": 0.65
+          }
+        }
+      ]
+    },
+    {
+      "id": "d864120515841083",
+      "name": "Ember Gem 744 762",
+      "parent": "c2e6214bb51bcbf1",
+      "transform": {
+        "position": [
+          14.88,
+          15.24
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/png/collectibles/red_orb_left.png",
+            "size": [
+              0.76,
+              0.8
+            ],
+            "layer": 45
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [
+              0.64,
+              0.64
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": [
+              "Ember"
+            ],
+            "variable": "ember_gems",
+            "sound": "assets/audio/collect.wav",
+            "value": 1,
+            "collectEffect": "prefabs/fx/spark_red.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [
+              0,
+              0.06
+            ],
+            "frequency": 0.65
+          }
+        }
+      ]
+    },
+    {
+      "id": "d97cb6efaa662980",
+      "name": "Ember Gem 1568 474",
+      "parent": "c2e6214bb51bcbf1",
+      "transform": {
+        "position": [
+          31.36,
+          9.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/png/collectibles/red_orb_left.png",
+            "size": [
+              0.76,
+              0.8
+            ],
+            "layer": 45
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [
+              0.64,
+              0.64
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": [
+              "Ember"
+            ],
+            "variable": "ember_gems",
+            "sound": "assets/audio/collect.wav",
+            "value": 1,
+            "collectEffect": "prefabs/fx/spark_red.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [
+              0,
+              0.06
+            ],
+            "frequency": 0.65
+          }
+        }
+      ]
+    },
+    {
+      "id": "ac0c07695d05cd05",
+      "name": "Ember Gem 200 218",
+      "parent": "c2e6214bb51bcbf1",
+      "transform": {
+        "position": [
+          4.0,
+          4.36
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/png/collectibles/red_orb_left.png",
+            "size": [
+              0.76,
+              0.8
+            ],
+            "layer": 45
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [
+              0.64,
+              0.64
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": [
+              "Ember"
+            ],
+            "variable": "ember_gems",
+            "sound": "assets/audio/collect.wav",
+            "value": 1,
+            "collectEffect": "prefabs/fx/spark_red.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [
+              0,
+              0.06
+            ],
+            "frequency": 0.65
+          }
+        }
+      ]
+    },
+    {
+      "id": "3ec987e1bde36aa8",
+      "name": "Tide Gem 104 570",
+      "parent": "c2e6214bb51bcbf1",
+      "transform": {
+        "position": [
+          2.08,
+          11.4
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/png/collectibles/blue_orb_left.png",
+            "size": [
+              0.76,
+              0.8
+            ],
+            "layer": 45
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [
+              0.64,
+              0.64
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": [
+              "Tide"
+            ],
+            "variable": "tide_gems",
+            "sound": "assets/audio/collect.wav",
+            "value": 1,
+            "collectEffect": "prefabs/fx/spark_blue.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [
+              0,
+              0.06
+            ],
+            "frequency": 0.65
+          }
+        }
+      ]
+    },
+    {
+      "id": "6eb9705d1b6e5942",
+      "name": "Tide Gem 1112 790",
+      "parent": "c2e6214bb51bcbf1",
+      "transform": {
+        "position": [
+          22.24,
+          15.8
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/png/collectibles/blue_orb_left.png",
+            "size": [
+              0.76,
+              0.8
+            ],
+            "layer": 45
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [
+              0.64,
+              0.64
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": [
+              "Tide"
+            ],
+            "variable": "tide_gems",
+            "sound": "assets/audio/collect.wav",
+            "value": 1,
+            "collectEffect": "prefabs/fx/spark_blue.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [
+              0,
+              0.06
+            ],
+            "frequency": 0.65
+          }
+        }
+      ]
+    },
+    {
+      "id": "f388c237c88fbb59",
+      "name": "Tide Gem 1160 410",
+      "parent": "c2e6214bb51bcbf1",
+      "transform": {
+        "position": [
+          23.2,
+          8.2
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/png/collectibles/blue_orb_left.png",
+            "size": [
+              0.76,
+              0.8
+            ],
+            "layer": 45
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [
+              0.64,
+              0.64
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": [
+              "Tide"
+            ],
+            "variable": "tide_gems",
+            "sound": "assets/audio/collect.wav",
+            "value": 1,
+            "collectEffect": "prefabs/fx/spark_blue.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [
+              0,
+              0.06
+            ],
+            "frequency": 0.65
+          }
+        }
+      ]
+    },
+    {
+      "id": "58e7e1da0b040e3a",
+      "name": "Tide Gem 472 218",
+      "parent": "c2e6214bb51bcbf1",
+      "transform": {
+        "position": [
+          9.44,
+          4.36
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/png/collectibles/blue_orb_left.png",
+            "size": [
+              0.76,
+              0.8
+            ],
+            "layer": 45
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [
+              0.64,
+              0.64
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": [
+              "Tide"
+            ],
+            "variable": "tide_gems",
+            "sound": "assets/audio/collect.wav",
+            "value": 1,
+            "collectEffect": "prefabs/fx/spark_blue.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [
+              0,
+              0.06
+            ],
+            "frequency": 0.65
+          }
+        }
+      ]
+    },
+    {
+      "id": "308b82334b90c0f9",
+      "name": "Shared Exit",
+      "parent": "5f42ed0f0862bf81",
+      "transform": {
+        "position": [
+          6.88,
+          4.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/png/props/red_door.png",
+            "size": [
+              1.68,
+              2.24
+            ],
+            "layer": 30
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              0.96,
+              1.88
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Goal",
+          "properties": {
+            "requiredTag": "Player",
+            "sound": "assets/audio/exit.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "064b322b23756df0",
+      "name": "Ember",
+      "parent": "c048814ab5ab43c7",
+      "prefab": "prefabs/characters/ember.ykprefab",
+      "tags": [
+        "Ember",
+        "Player"
+      ],
+      "transform": {
+        "position": [
+          2.08,
+          15.52
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/orange_motion.png",
+            "shape": "Rectangle",
+            "size": [
+              1.6,
+              2.4
+            ],
+            "offset": [
+              0,
+              -0.23
+            ],
+            "color": "#ffffffff",
+            "layer": 40,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 8,
+            "rows": 4,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [
+              0,
+              0
+            ],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [
+              1,
+              1
+            ]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/reference/orange_motion.ykanim",
+            "controller": "assets/characters/character.ykctl",
+            "clip": "",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "facing",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Dynamic",
+            "gravityScale": 1,
+            "linearDamping": 0,
+            "angularDamping": 0.05,
+            "fixedRotation": true,
+            "bullet": false,
+            "allowSleep": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Capsule",
+            "size": [
+              1.12,
+              1.92
+            ],
+            "offset": [
+              0,
+              0
+            ],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Player",
+            "friction": 0,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "type": "PlayerInput",
+          "properties": {
+            "actionSet": "Player1"
+          }
+        },
+        {
+          "type": "PlatformerController",
+          "properties": {
+            "moveLeftAction": "MoveLeft",
+            "moveRightAction": "MoveRight",
+            "jumpAction": "Jump",
+            "moveSpeed": 5.8,
+            "groundAcceleration": 70,
+            "groundDeceleration": 80,
+            "airAcceleration": 40,
+            "airDeceleration": 6,
+            "jumpHeight": 4.2,
+            "fallGravityMultiplier": 1.35,
+            "jumpCutMultiplier": 0.45,
+            "coyoteTime": 0.1,
+            "jumpBufferTime": 0.12,
+            "maxFallSpeed": 20,
+            "maxSlopeDegrees": 55,
+            "gripFriction": 1.2,
+            "slideFriction": 0,
+            "groundSnap": 0.3,
+            "landingSpeed": 4,
+            "jumpSound": "assets/audio/jump.wav",
+            "landSound": "assets/audio/land.wav",
+            "jumpEffect": "prefabs/fx/dust.ykprefab",
+            "landEffect": "prefabs/fx/dust.ykprefab"
+          }
+        },
+        {
+          "type": "Killable",
+          "properties": {
+            "respawn": true,
+            "respawnDelay": 1.4,
+            "deathDuration": 0.9,
+            "spawnPoint": null,
+            "deathSound": "assets/audio/death.wav",
+            "respawnSound": "assets/audio/respawn.wav",
+            "deathEffect": "prefabs/fx/death_ember.ykprefab",
+            "respawnEffect": "prefabs/fx/respawn.ykprefab"
+          }
+        }
+      ]
+    },
+    {
+      "id": "20fc4bb2d0beddc0",
+      "name": "Aura",
+      "parent": "064b322b23756df0",
+      "transform": {
+        "position": [
+          0,
+          -0.1
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ff8c3cff",
+            "intensity": 0.35,
+            "radius": 2.2,
+            "offset": [
+              0,
+              0
+            ],
+            "flicker": 0.15,
+            "flickerSpeed": 4,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "4711543f59fa256d",
+      "name": "Trail",
+      "parent": "064b322b23756df0",
+      "transform": {
+        "position": [
+          0,
+          0.1
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 14,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [
+              0.4,
+              0.8
+            ],
+            "area": "Box",
+            "areaSize": [
+              0.4,
+              0.5
+            ],
+            "direction": 0,
+            "spread": 40,
+            "speed": [
+              0.4,
+              1
+            ],
+            "gravity": [
+              0,
+              -1.5
+            ],
+            "drag": 0,
+            "startSize": [
+              0.08,
+              0.18
+            ],
+            "endScale": 0.1,
+            "startRotation": [
+              0,
+              0
+            ],
+            "rotationSpeed": [
+              0,
+              0
+            ],
+            "startColor": "#ffaf46dc",
+            "endColor": "#ff3c1400",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "5f37920f657cfcee",
+      "name": "Ember Spawn",
+      "parent": "c048814ab5ab43c7",
+      "prefab": "prefabs/level/spawn_point.ykprefab",
+      "transform": {
+        "position": [
+          2.08,
+          15.52
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpawnPoint",
+          "properties": {
+            "character": "064b322b23756df0"
+          }
+        }
+      ]
+    },
+    {
+      "id": "58acf06d3149741d",
+      "name": "Tide",
+      "parent": "c048814ab5ab43c7",
+      "prefab": "prefabs/characters/tide.ykprefab",
+      "tags": [
+        "Tide",
+        "Player"
+      ],
+      "transform": {
+        "position": [
+          4.0,
+          15.52
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/blue_motion.png",
+            "shape": "Rectangle",
+            "size": [
+              1.6,
+              2.4
+            ],
+            "offset": [
+              0,
+              -0.23
+            ],
+            "color": "#ffffffff",
+            "layer": 40,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 8,
+            "rows": 4,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [
+              0,
+              0
+            ],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [
+              1,
+              1
+            ]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/reference/blue_motion.ykanim",
+            "controller": "assets/characters/character.ykctl",
+            "clip": "",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "facing",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Dynamic",
+            "gravityScale": 1,
+            "linearDamping": 0,
+            "angularDamping": 0.05,
+            "fixedRotation": true,
+            "bullet": false,
+            "allowSleep": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Capsule",
+            "size": [
+              1.12,
+              1.92
+            ],
+            "offset": [
+              0,
+              0
+            ],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Player",
+            "friction": 0,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "type": "PlayerInput",
+          "properties": {
+            "actionSet": "Player2"
+          }
+        },
+        {
+          "type": "PlatformerController",
+          "properties": {
+            "moveLeftAction": "MoveLeft",
+            "moveRightAction": "MoveRight",
+            "jumpAction": "Jump",
+            "moveSpeed": 5.8,
+            "groundAcceleration": 70,
+            "groundDeceleration": 80,
+            "airAcceleration": 40,
+            "airDeceleration": 6,
+            "jumpHeight": 4.2,
+            "fallGravityMultiplier": 1.35,
+            "jumpCutMultiplier": 0.45,
+            "coyoteTime": 0.1,
+            "jumpBufferTime": 0.12,
+            "maxFallSpeed": 20,
+            "maxSlopeDegrees": 55,
+            "gripFriction": 1.2,
+            "slideFriction": 0,
+            "groundSnap": 0.3,
+            "landingSpeed": 4,
+            "jumpSound": "assets/audio/jump.wav",
+            "landSound": "assets/audio/land.wav",
+            "jumpEffect": "prefabs/fx/dust.ykprefab",
+            "landEffect": "prefabs/fx/dust.ykprefab"
+          }
+        },
+        {
+          "type": "Killable",
+          "properties": {
+            "respawn": true,
+            "respawnDelay": 1.4,
+            "deathDuration": 0.9,
+            "spawnPoint": null,
+            "deathSound": "assets/audio/death.wav",
+            "respawnSound": "assets/audio/respawn.wav",
+            "deathEffect": "prefabs/fx/death_tide.ykprefab",
+            "respawnEffect": "prefabs/fx/respawn.ykprefab"
+          }
+        }
+      ]
+    },
+    {
+      "id": "341a6a0fcd25f7bf",
+      "name": "Aura",
+      "parent": "58acf06d3149741d",
+      "transform": {
+        "position": [
+          0,
+          -0.1
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#5ab4ffff",
+            "intensity": 0.35,
+            "radius": 2.2,
+            "offset": [
+              0,
+              0
+            ],
+            "flicker": 0.15,
+            "flickerSpeed": 4,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "ae92405ecaecd8fb",
+      "name": "Trail",
+      "parent": "58acf06d3149741d",
+      "transform": {
+        "position": [
+          0,
+          0.1
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 10,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [
+              0.5,
+              0.9
+            ],
+            "area": "Box",
+            "areaSize": [
+              0.4,
+              0.5
+            ],
+            "direction": 0,
+            "spread": 60,
+            "speed": [
+              0.2,
+              0.7
+            ],
+            "gravity": [
+              0,
+              3
+            ],
+            "drag": 0,
+            "startSize": [
+              0.06,
+              0.12
+            ],
+            "endScale": 0.2,
+            "startRotation": [
+              0,
+              0
+            ],
+            "rotationSpeed": [
+              0,
+              0
+            ],
+            "startColor": "#a0e1ffd2",
+            "endColor": "#50a0ff00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "048eba58237d65f6",
+      "name": "Tide Spawn",
+      "parent": "c048814ab5ab43c7",
+      "prefab": "prefabs/level/spawn_point.ykprefab",
+      "transform": {
+        "position": [
+          4.0,
+          15.52
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpawnPoint",
+          "properties": {
+            "character": "58acf06d3149741d"
+          }
+        }
+      ]
+    },
+    {
+      "id": "7352c716e8e6b08f",
+      "name": "Left Corner",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          0.32,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              0.64,
+              2.4
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "907a32e17373888c",
+      "name": "Left Corner Block 0-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          0.32,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.64,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "ccd29e83cc9841f2",
+      "name": "Left Corner Block 1-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          0.32,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.64,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "c5975e6d93bf0cf2",
+      "name": "Left Corner Block 2-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          0.32,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.64,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "08500e1ecefca49a",
+      "name": "Right Corner",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          32.88,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              1.12,
+              2.4
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "948198597189ddf8",
+      "name": "Right Corner Block 0-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          32.8,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "37b38e81178150eb",
+      "name": "Right Corner Block 0-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          33.36,
+          16.88
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.16,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "bfe0057cbb062a7f",
+      "name": "Right Corner Block 1-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          32.8,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "041f8c6d85a3eefb",
+      "name": "Right Corner Block 1-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          33.36,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.16,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "0a0653778e19fe5c",
+      "name": "Right Corner Block 2-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          32.8,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "cad0f6940fc8ad27",
+      "name": "Right Corner Block 2-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          33.36,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.16,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "ea166aff70dd8160",
+      "name": "Foundation",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          16.72,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              33.44,
+              0.8
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "865354959de33f78",
+      "name": "Foundation Block 0-0",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          0.48,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "1f119897e82bd362",
+      "name": "Foundation Block 0-1",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          1.44,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "fd2f6f199b61f8a1",
+      "name": "Foundation Block 0-2",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          2.4,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "e18ff2c09403cf37",
+      "name": "Foundation Block 0-3",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          3.36,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "5b96ffd7909ba9a4",
+      "name": "Foundation Block 0-4",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          4.32,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "f78e377d59ddfa28",
+      "name": "Foundation Block 0-5",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          5.28,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "0b2e182875ffc64c",
+      "name": "Foundation Block 0-6",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          6.24,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "f28f86611e3d6bd6",
+      "name": "Foundation Block 0-7",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          7.2,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "692e7f741d899a52",
+      "name": "Foundation Block 0-8",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          8.16,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "42e6d2aceaddc092",
+      "name": "Foundation Block 0-9",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          9.12,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "33ae180619c0294a",
+      "name": "Foundation Block 0-10",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          10.08,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "5f7f4333c36f61d6",
+      "name": "Foundation Block 0-11",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          11.04,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "b44752b1ab87c10e",
+      "name": "Foundation Block 0-12",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          12.0,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "a3ab8d66fb9fd821",
+      "name": "Foundation Block 0-13",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          12.96,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "1b5d019e8971843d",
+      "name": "Foundation Block 0-14",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          13.92,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "0eddaa7f798cddc9",
+      "name": "Foundation Block 0-15",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          14.88,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "d21db9fa44eb8e3f",
+      "name": "Foundation Block 0-16",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          15.84,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "3037f658003a7e64",
+      "name": "Foundation Block 0-17",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          16.8,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "2a61abfc3412cca1",
+      "name": "Foundation Block 0-18",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          17.76,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "65dd69cfb2d8d1e4",
+      "name": "Foundation Block 0-19",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          18.72,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "05670a8efeb11447",
+      "name": "Foundation Block 0-20",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          19.68,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "7f8af7639db0e24c",
+      "name": "Foundation Block 0-21",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          20.64,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "a03a42e52fea6659",
+      "name": "Foundation Block 0-22",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          21.6,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "1fa3b56150f5f551",
+      "name": "Foundation Block 0-23",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          22.56,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "c14bf095d4c199d5",
+      "name": "Foundation Block 0-24",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          23.52,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "5810cae53f34d99a",
+      "name": "Foundation Block 0-25",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          24.48,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "ad3f75de2548101a",
+      "name": "Foundation Block 0-26",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          25.44,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "815038138828d47f",
+      "name": "Foundation Block 0-27",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          26.4,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "a8dd46c56c1ea8b4",
+      "name": "Foundation Block 0-28",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          27.36,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "44333aff6f508240",
+      "name": "Foundation Block 0-29",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          28.32,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "1fe8fd5fb54663b2",
+      "name": "Foundation Block 0-30",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          29.28,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_0.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "7f7d3bffea207414",
+      "name": "Foundation Block 0-31",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          30.24,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_1.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "f28c4be180cb0510",
+      "name": "Foundation Block 0-32",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          31.2,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_2.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "b3387c809f95dffd",
+      "name": "Foundation Block 0-33",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          32.16,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_3.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "e9b2386b17906e8a",
+      "name": "Foundation Block 0-34",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          33.04,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/block_4.png",
+            "size": [
+              0.8,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "f400710dd1b184ba",
+      "name": "Left Wall",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          -0.32,
+          9.41
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              0.64,
+              18.82
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "8ea4b74e26e57a7e",
+      "name": "Right Wall",
+      "parent": "073dfc15d271f98c",
+      "transform": {
+        "position": [
+          33.76,
+          9.41
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              0.64,
+              18.82
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "04f55aaf75b1494c",
+      "name": "Level Flow",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "LevelFlow",
+          "properties": {
+            "goals": [
+              "308b82334b90c0f9"
+            ],
+            "completeDelay": 3,
+            "nextScene": "scenes/level02.ykscene",
+            "completeMessage": "LEVEL 1 COMPLETE",
+            "continueAction": "Continue",
+            "completeSound": "assets/audio/complete.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "675e1640e0ac6e66",
+      "name": "HUD",
+      "prefab": "prefabs/level/hud.ykprefab",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "74c965517b94c473",
+      "name": "Vignette",
+      "parent": "675e1640e0ac6e66",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/backgrounds/vignette.png",
+            "anchor": "TopLeft",
+            "size": [
+              48,
+              48
+            ],
+            "offset": [
+              16,
+              16
+            ],
+            "color": "#ffffffff",
+            "layer": -5,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "fillScreen": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "372c77933774a6ac",
+      "name": "Ember Score",
+      "parent": "675e1640e0ac6e66",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "TopLeft",
+            "size": [
+              290,
+              52
+            ],
+            "offset": [
+              16,
+              16
+            ],
+            "color": "#060e12aa",
+            "layer": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "2f52dd366bffee82",
+      "name": "Ember Gem Icon",
+      "parent": "675e1640e0ac6e66",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/items/gem_red.png",
+            "anchor": "TopLeft",
+            "size": [
+              40,
+              40
+            ],
+            "offset": [
+              24,
+              22
+            ],
+            "color": "#ffffffff",
+            "layer": 2,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "fillScreen": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "82975d38822fa2c5",
+      "name": "Ember Gems",
+      "parent": "675e1640e0ac6e66",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "EMBER {ember_gems:0}/{ember_gems_total:0}",
+            "anchor": "TopLeft",
+            "offset": [
+              74,
+              32
+            ],
+            "scale": 2,
+            "color": "#ffb06eff",
+            "shadow": true,
+            "layer": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "a2436dfdba45f333",
+      "name": "Tide Score",
+      "parent": "675e1640e0ac6e66",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "TopRight",
+            "size": [
+              290,
+              52
+            ],
+            "offset": [
+              16,
+              16
+            ],
+            "color": "#060e12aa",
+            "layer": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "bd01363b91d560f7",
+      "name": "Tide Gem Icon",
+      "parent": "675e1640e0ac6e66",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/items/gem_blue.png",
+            "anchor": "TopRight",
+            "size": [
+              40,
+              40
+            ],
+            "offset": [
+              24,
+              22
+            ],
+            "color": "#ffffffff",
+            "layer": 2,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "fillScreen": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "c6f9f42a966f728f",
+      "name": "Tide Gems",
+      "parent": "675e1640e0ac6e66",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "TIDE {tide_gems:0}/{tide_gems_total:0}",
+            "anchor": "TopRight",
+            "offset": [
+              74,
+              32
+            ],
+            "scale": 2,
+            "color": "#8ccdffff",
+            "shadow": true,
+            "layer": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "3a0113759939cb66",
+      "name": "Timer",
+      "parent": "675e1640e0ac6e66",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "TIME {level_time}",
+            "anchor": "Top",
+            "offset": [
+              0,
+              30
+            ],
+            "scale": 2,
+            "color": "#ebf0ebff",
+            "shadow": true,
+            "layer": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "4ba9caf170315a31",
+      "name": "Message",
+      "parent": "675e1640e0ac6e66",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "{level_message}",
+            "anchor": "Center",
+            "offset": [
+              0,
+              0
+            ],
+            "scale": 6,
+            "color": "#fff0aaff",
+            "shadow": true,
+            "layer": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "2563510a02901ab1",
+      "name": "Controls",
+      "parent": "675e1640e0ac6e66",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "A/D/W + ARROWS  |  S/DOWN USE  |  R RETRY  P PAUSE  M MENU",
+            "anchor": "Bottom",
+            "offset": [
+              0,
+              16
+            ],
+            "scale": 1.5,
+            "color": "#becdcdc8",
+            "shadow": true,
+            "layer": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "e9b85a2fe987f7fd",
+      "name": "Level Number",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "LEVEL 1  /  2",
+            "anchor": "Top",
+            "offset": [
+              0,
+              76
+            ],
+            "scale": 2,
+            "color": "#d6e4edff",
+            "layer": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "30a254a9800dfafc",
+      "name": "Return to Menu",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "EventAction",
+          "properties": {
+            "inputAction": "Menu",
+            "waitForRelease": true,
+            "once": true,
+            "changeScene": "scenes/menu.ykscene"
+          }
+        }
+      ]
+    },
+    {
+      "id": "09afb6d7a8572741",
+      "name": "Music",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "AudioSource",
+          "properties": {
+            "sound": "assets/audio/music.wav",
+            "volume": 0.22,
+            "loop": true,
+            "playOnStart": true
+          }
+        }
+      ]
+    }
+  ]
+}

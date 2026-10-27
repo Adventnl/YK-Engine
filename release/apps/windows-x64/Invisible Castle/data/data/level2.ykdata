@@ -1,0 +1,72 @@
+{
+  "format": "yk.data",
+  "version": 1,
+  "items": [
+    {
+      "id": "l2_screwdriver",
+      "displayName": "Screwdriver",
+      "icon": "assets/level2/screwdriver.png",
+      "tags": [
+        "escape"
+      ]
+    },
+    {
+      "id": "l2_cutters",
+      "displayName": "Cutters",
+      "icon": "assets/level2/cutters.png",
+      "tags": [
+        "escape"
+      ]
+    },
+    {
+      "id": "l2_linen",
+      "displayName": "Linen",
+      "icon": "assets/level2/linen.png",
+      "tags": [
+        "escape"
+      ]
+    },
+    {
+      "id": "l2_fuse",
+      "displayName": "Spare fuse",
+      "icon": "assets/level2/fuse.png",
+      "tags": [
+        "escape"
+      ]
+    },
+    {
+      "id": "l2_keycard",
+      "displayName": "Keycard",
+      "icon": "assets/level2/keycard.png",
+      "tags": [
+        "escape"
+      ]
+    },
+    {
+      "id": "l2_insulated_fuse",
+      "displayName": "Safe fuse",
+      "icon": "assets/level2/safe_fuse.png",
+      "tags": [
+        "escape"
+      ]
+    }
+  ],
+  "recipes": [
+    {
+      "id": "l2_insulated_fuse",
+      "displayName": "Insulated fuse",
+      "station": "workbench",
+      "ingredients": [
+        {
+          "item": "l2_fuse"
+        },
+        {
+          "item": "l2_linen"
+        }
+      ],
+      "output": {
+        "item": "l2_insulated_fuse"
+      }
+    }
+  ]
+}

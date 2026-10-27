@@ -1,0 +1,4643 @@
+{
+  "format": "yk.scene",
+  "version": 1,
+  "settings": {
+    "name": "Level 2",
+    "gravity": [
+      0,
+      9.81
+    ],
+    "background": "#17283bff"
+  },
+  "entities": [
+    {
+      "id": "ff9ce72d895a4b0d",
+      "name": "Camera",
+      "transform": {
+        "position": [
+          16.72,
+          9.41
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Camera",
+          "properties": {
+            "mode": "Fixed",
+            "orthographicHeight": 18.82
+          }
+        }
+      ]
+    },
+    {
+      "id": "8f670a1adb5dc2be",
+      "name": "Room Background",
+      "transform": {
+        "position": [
+          16.72,
+          9.41
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/background.png",
+            "size": [
+              33.44,
+              18.82
+            ],
+            "layer": -100
+          }
+        }
+      ]
+    },
+    {
+      "id": "1ca4a816befd40a3",
+      "name": "Background Shade",
+      "transform": {
+        "position": [
+          16.72,
+          9.41
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "size": [
+              33.44,
+              18.82
+            ],
+            "color": "#08131f55",
+            "layer": -90
+          }
+        }
+      ]
+    },
+    {
+      "id": "8e971db2241c840d",
+      "name": "Terrain",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "b9adb61f27d71eee",
+      "name": "Hazards",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "c13bfa673a10162c",
+      "name": "Mechanisms",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "44b524e470f10b72",
+      "name": "Collectibles",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "c41b6498a74aa448",
+      "name": "Characters",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "0be1af4e9505ae8b",
+      "name": "Starting Floor",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          5.44,
+          17.28
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              9.6,
+              1.6
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "852f7df5a31bbf01",
+      "name": "Starting Floor Classroom 0",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          4.48,
+          17.28
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/desk.png",
+            "size": [
+              7.68,
+              1.6
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "a1819edce0c6061f",
+      "name": "Starting Floor Classroom 1",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          9.28,
+          17.28
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/bookcase.png",
+            "size": [
+              1.92,
+              1.6
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "fdf74155b4e76e8b",
+      "name": "Long Green Pool Basin",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          16.48,
+          17.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              12.48,
+              0.8
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "5e40645ae55f4d01",
+      "name": "Long Green Pool Basin Classroom 0",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          12.16,
+          17.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              3.84,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "67b581b8e1083b57",
+      "name": "Long Green Pool Basin Classroom 1",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          16.0,
+          17.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              3.84,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "96e6d1a559013e83",
+      "name": "Long Green Pool Basin Classroom 2",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          19.84,
+          17.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              3.84,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "3680ed293b74f833",
+      "name": "Long Green Pool Basin Classroom 3",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          22.24,
+          17.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "f8f249caf29dea5b",
+      "name": "Long Green Pool",
+      "parent": "b9adb61f27d71eee",
+      "transform": {
+        "position": [
+          16.48,
+          16.96
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/green_liquid.png",
+            "size": [
+              12.48,
+              0.96
+            ],
+            "layer": 12,
+            "drawMode": "Tiled",
+            "tileSize": [
+              1.2,
+              0.96
+            ]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              12.36,
+              0.76
+            ],
+            "offset": [
+              0.0,
+              0.1
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Hazard",
+          "properties": {
+            "affectsTags": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "442b366520144631",
+      "name": "Lift Landing",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          25.12,
+          17.28
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              4.8,
+              1.6
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "d96ff367faae1654",
+      "name": "Lift Landing Classroom 0",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          25.12,
+          17.28
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/desk.png",
+            "size": [
+              4.8,
+              1.6
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "1ba64ab2a3adebce",
+      "name": "Lift Far Bank",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          31.84,
+          17.28
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              0.96,
+              1.6
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "2606c61057e4b13b",
+      "name": "Lift Far Bank Classroom 0",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          31.84,
+          17.28
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/desk.png",
+            "size": [
+              0.96,
+              1.6
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "81f4bc0d82a858c7",
+      "name": "Long Shuttle",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          12.48,
+          14.2
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              3.84,
+              0.56
+            ],
+            "layer": 25
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Kinematic"
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              3.84,
+              0.56
+            ],
+            "layer": "Solid",
+            "friction": 1,
+            "oneWay": false
+          }
+        },
+        {
+          "type": "MovingPlatform",
+          "properties": {
+            "travel": [
+              8.0,
+              0.0
+            ],
+            "speed": 2.6,
+            "pause": 1.4,
+            "requireSignal": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "15d639d5e8d6e226",
+      "name": "Shuttle Button",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          8.0,
+          16.33
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/button_housing.png",
+            "size": [
+              1.18,
+              0.3
+            ],
+            "layer": 32
+          }
+        },
+        {
+          "type": "PressurePlate",
+          "properties": {
+            "pad": "3d38939b8229b59c",
+            "sensing": "Weight",
+            "targets": [
+              "81f4bc0d82a858c7"
+            ],
+            "latch": true,
+            "pressDepth": 0.16,
+            "pressSpeed": 0.8,
+            "acceleration": 5,
+            "pressedColor": "#91ffc5ff",
+            "pressSound": "assets/audio/plate_down.wav",
+            "releaseSound": "assets/audio/plate_up.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "3d38939b8229b59c",
+      "name": "Shuttle Button Cap",
+      "parent": "15d639d5e8d6e226",
+      "transform": {
+        "position": [
+          0.0,
+          -0.15
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/button_cap.png",
+            "size": [
+              0.76,
+              0.3
+            ],
+            "layer": 31
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Kinematic"
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              1.4,
+              0.8
+            ],
+            "offset": [
+              0.0,
+              0.25
+            ],
+            "chamfer": [
+              0.35,
+              0.36
+            ],
+            "layer": "Solid",
+            "friction": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "598c86521c5a6a5c",
+      "name": "Elevator Rail 1388",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          27.76,
+          13.4
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "size": [
+              0.16,
+              8.24
+            ],
+            "color": "#60788aff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "ac24e7987b5045e3",
+      "name": "Elevator Stop 1388 488",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          27.76,
+          9.76
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "size": [
+              0.4,
+              0.16
+            ],
+            "color": "#73d9eaff",
+            "layer": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "a8d47f4cefa71d18",
+      "name": "Elevator Stop 1388 824",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          27.76,
+          16.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "size": [
+              0.4,
+              0.16
+            ],
+            "color": "#73d9eaff",
+            "layer": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "a585f7fc66de2871",
+      "name": "Elevator Rail 1552",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          31.04,
+          13.4
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "size": [
+              0.16,
+              8.24
+            ],
+            "color": "#60788aff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "6dd9394883a0a974",
+      "name": "Elevator Stop 1552 488",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          31.04,
+          9.76
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "size": [
+              0.4,
+              0.16
+            ],
+            "color": "#73d9eaff",
+            "layer": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "f45a617bba65a45f",
+      "name": "Elevator Stop 1552 824",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          31.04,
+          16.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "size": [
+              0.4,
+              0.16
+            ],
+            "color": "#73d9eaff",
+            "layer": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "9c899464fb97a6b4",
+      "name": "Elevator",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          29.44,
+          16.76
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              3.84,
+              0.56
+            ],
+            "layer": 25
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Kinematic"
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              3.84,
+              0.56
+            ],
+            "layer": "Solid",
+            "friction": 1,
+            "oneWay": false
+          }
+        },
+        {
+          "type": "MovingPlatform",
+          "properties": {
+            "travel": [
+              0.0,
+              -6.72
+            ],
+            "speed": 1.8,
+            "pause": 1.4,
+            "requireSignal": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "96bdc6c8ab5f529b",
+      "name": "Elevator Lever",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          24.64,
+          15.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/lever.png",
+            "size": [
+              1.28,
+              1.28
+            ],
+            "layer": 32
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              2.0,
+              2.0
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Lever",
+          "properties": {
+            "interactAction": "Interact",
+            "targets": [
+              "9c899464fb97a6b4"
+            ],
+            "sound": "assets/audio/lever.wav",
+            "onColor": "#ffffffff",
+            "flipSprite": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "c9ff5afe2afe3231",
+      "name": "Upper Right Landing",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          24.64,
+          10.16
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              3.84,
+              0.8
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "1034bf40ff6e34b8",
+      "name": "Upper Right Landing Classroom 0",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          24.64,
+          10.16
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/desk.png",
+            "size": [
+              3.84,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "b364141e5cfc99cd",
+      "name": "Upper Blue Pool Basin",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          16.48,
+          11.12
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              12.48,
+              0.8
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "3247f71a6fcb8f83",
+      "name": "Upper Blue Pool Basin Classroom 0",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          12.16,
+          11.12
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              3.84,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "16246237f2e07df3",
+      "name": "Upper Blue Pool Basin Classroom 1",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          16.0,
+          11.12
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              3.84,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "29fe1967df6d247a",
+      "name": "Upper Blue Pool Basin Classroom 2",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          19.84,
+          11.12
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              3.84,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "89d58f90abefcce0",
+      "name": "Upper Blue Pool Basin Classroom 3",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          22.24,
+          11.12
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "3b4e7db8d84a0480",
+      "name": "Upper Blue Pool",
+      "parent": "b9adb61f27d71eee",
+      "transform": {
+        "position": [
+          16.48,
+          10.24
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/blue_liquid.png",
+            "size": [
+              12.48,
+              0.96
+            ],
+            "layer": 12,
+            "drawMode": "Tiled",
+            "tileSize": [
+              1.2,
+              0.96
+            ]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              12.36,
+              0.76
+            ],
+            "offset": [
+              0.0,
+              0.1
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Hazard",
+          "properties": {
+            "affectsTags": [
+              "Ember"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "528b1297d21c7d89",
+      "name": "Upper Left Landing",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          7.36,
+          10.16
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              5.76,
+              0.8
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "703c902c7a9f3099",
+      "name": "Upper Left Landing Classroom 0",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          6.4,
+          10.16
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/desk.png",
+            "size": [
+              3.84,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "8805b95ceb8dc1bd",
+      "name": "Upper Left Landing Classroom 1",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          9.28,
+          10.16
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/desk.png",
+            "size": [
+              1.92,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "e917d4488e300e35",
+      "name": "Blue Shuttle",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          20.8,
+          9.24
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              3.84,
+              0.56
+            ],
+            "layer": 25
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Kinematic"
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              3.84,
+              0.56
+            ],
+            "layer": "Solid",
+            "friction": 1,
+            "oneWay": false
+          }
+        },
+        {
+          "type": "MovingPlatform",
+          "properties": {
+            "travel": [
+              -8.32,
+              0.0
+            ],
+            "speed": 2.6,
+            "pause": 1.4,
+            "requireSignal": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "97d7fc53270b80d2",
+      "name": "Landing Gate",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          23.04,
+          8.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "size": [
+              0.48,
+              2.16
+            ],
+            "color": "#8ea5b5ff",
+            "layer": 24
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Kinematic"
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              0.48,
+              2.16
+            ],
+            "layer": "Solid"
+          }
+        },
+        {
+          "type": "Door",
+          "properties": {
+            "openOffset": [
+              0.0,
+              2.8
+            ],
+            "speed": 2.4
+          }
+        }
+      ]
+    },
+    {
+      "id": "47668b2ed21845b9",
+      "name": "Landing Gate Stripe -40",
+      "parent": "97d7fc53270b80d2",
+      "transform": {
+        "position": [
+          0.0,
+          -0.8
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "size": [
+              0.48,
+              0.12
+            ],
+            "color": "#ffd16fff",
+            "layer": 25
+          }
+        }
+      ]
+    },
+    {
+      "id": "c2e0e934b99f685a",
+      "name": "Landing Gate Stripe -20",
+      "parent": "97d7fc53270b80d2",
+      "transform": {
+        "position": [
+          0.0,
+          -0.4
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "size": [
+              0.48,
+              0.12
+            ],
+            "color": "#ffd16fff",
+            "layer": 25
+          }
+        }
+      ]
+    },
+    {
+      "id": "1bd8c44f2a7eabeb",
+      "name": "Landing Gate Stripe 0",
+      "parent": "97d7fc53270b80d2",
+      "transform": {
+        "position": [
+          0.0,
+          0.0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "size": [
+              0.48,
+              0.12
+            ],
+            "color": "#ffd16fff",
+            "layer": 25
+          }
+        }
+      ]
+    },
+    {
+      "id": "82d726407cea164c",
+      "name": "Landing Gate Stripe 20",
+      "parent": "97d7fc53270b80d2",
+      "transform": {
+        "position": [
+          0.0,
+          0.4
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "size": [
+              0.48,
+              0.12
+            ],
+            "color": "#ffd16fff",
+            "layer": 25
+          }
+        }
+      ]
+    },
+    {
+      "id": "aecd96d314084b59",
+      "name": "Landing Gate Stripe 40",
+      "parent": "97d7fc53270b80d2",
+      "transform": {
+        "position": [
+          0.0,
+          0.8
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "size": [
+              0.48,
+              0.12
+            ],
+            "color": "#ffd16fff",
+            "layer": 25
+          }
+        }
+      ]
+    },
+    {
+      "id": "cf64438b222202b9",
+      "name": "Blue Crossing Button",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          24.8,
+          9.61
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/button_housing.png",
+            "size": [
+              1.18,
+              0.3
+            ],
+            "layer": 32
+          }
+        },
+        {
+          "type": "PressurePlate",
+          "properties": {
+            "pad": "a930dfb523d86569",
+            "sensing": "Weight",
+            "targets": [
+              "e917d4488e300e35",
+              "97d7fc53270b80d2"
+            ],
+            "latch": true,
+            "pressDepth": 0.16,
+            "pressSpeed": 0.8,
+            "acceleration": 5,
+            "pressedColor": "#91ffc5ff",
+            "pressSound": "assets/audio/plate_down.wav",
+            "releaseSound": "assets/audio/plate_up.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "a930dfb523d86569",
+      "name": "Blue Crossing Button Cap",
+      "parent": "cf64438b222202b9",
+      "transform": {
+        "position": [
+          0.0,
+          -0.15
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/button_cap.png",
+            "size": [
+              0.76,
+              0.3
+            ],
+            "layer": 31
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Kinematic"
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              1.4,
+              0.8
+            ],
+            "offset": [
+              0.0,
+              0.25
+            ],
+            "chamfer": [
+              0.35,
+              0.36
+            ],
+            "layer": "Solid",
+            "friction": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "69a6844da1bd29ad",
+      "name": "Return Elevator Rail 44",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          0.88,
+          7.64
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "size": [
+              0.16,
+              6.32
+            ],
+            "color": "#60788aff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "9dec647f6ad24fae",
+      "name": "Return Elevator Stop 44 248",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          0.88,
+          4.96
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "size": [
+              0.4,
+              0.16
+            ],
+            "color": "#73d9eaff",
+            "layer": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "4eab7987c76ee246",
+      "name": "Return Elevator Stop 44 488",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          0.88,
+          9.76
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "size": [
+              0.4,
+              0.16
+            ],
+            "color": "#73d9eaff",
+            "layer": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "569b57e0a7c6cfed",
+      "name": "Return Elevator Rail 208",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          4.16,
+          7.64
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "size": [
+              0.16,
+              6.32
+            ],
+            "color": "#60788aff",
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "070635fcd2eb58ad",
+      "name": "Return Elevator Stop 208 248",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          4.16,
+          4.96
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "size": [
+              0.4,
+              0.16
+            ],
+            "color": "#73d9eaff",
+            "layer": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "748d434cab049bb7",
+      "name": "Return Elevator Stop 208 488",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          4.16,
+          9.76
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "size": [
+              0.4,
+              0.16
+            ],
+            "color": "#73d9eaff",
+            "layer": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "726db233b1f1e91f",
+      "name": "Return Elevator",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          2.56,
+          10.04
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              3.84,
+              0.56
+            ],
+            "layer": 25
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Kinematic"
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              3.84,
+              0.56
+            ],
+            "layer": "Solid",
+            "friction": 1,
+            "oneWay": false
+          }
+        },
+        {
+          "type": "MovingPlatform",
+          "properties": {
+            "travel": [
+              0.0,
+              -4.8
+            ],
+            "speed": 1.8,
+            "pause": 1.4,
+            "requireSignal": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "7afc6dc16692e014",
+      "name": "Return Lift Button",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          6.08,
+          9.61
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/button_housing.png",
+            "size": [
+              1.18,
+              0.3
+            ],
+            "layer": 32
+          }
+        },
+        {
+          "type": "PressurePlate",
+          "properties": {
+            "pad": "2b78dca620e14cc4",
+            "sensing": "Weight",
+            "targets": [
+              "726db233b1f1e91f"
+            ],
+            "latch": true,
+            "pressDepth": 0.16,
+            "pressSpeed": 0.8,
+            "acceleration": 5,
+            "pressedColor": "#91ffc5ff",
+            "pressSound": "assets/audio/plate_down.wav",
+            "releaseSound": "assets/audio/plate_up.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "2b78dca620e14cc4",
+      "name": "Return Lift Button Cap",
+      "parent": "7afc6dc16692e014",
+      "transform": {
+        "position": [
+          0.0,
+          -0.15
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/button_cap.png",
+            "size": [
+              0.76,
+              0.3
+            ],
+            "layer": 31
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Kinematic"
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              1.4,
+              0.8
+            ],
+            "offset": [
+              0.0,
+              0.25
+            ],
+            "chamfer": [
+              0.35,
+              0.36
+            ],
+            "layer": "Solid",
+            "friction": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "042463b2275723a3",
+      "name": "Final Approach",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          7.84,
+          5.36
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              4.8,
+              0.8
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "9b2dfdfe002be7d5",
+      "name": "Final Approach Classroom 0",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          7.36,
+          5.36
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              3.84,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "062192ae11f43257",
+      "name": "Final Approach Classroom 1",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          9.76,
+          5.36
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              0.96,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "c3e261b2c4ede2be",
+      "name": "Upper Red Pool Basin",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          14.08,
+          6.32
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              7.68,
+              0.8
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "537d9b890e4973f5",
+      "name": "Upper Red Pool Basin Classroom 0",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          12.16,
+          6.32
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              3.84,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "1f40be79117de26d",
+      "name": "Upper Red Pool Basin Classroom 1",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          16.0,
+          6.32
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              3.84,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "fcc786d193131082",
+      "name": "Upper Red Pool",
+      "parent": "b9adb61f27d71eee",
+      "transform": {
+        "position": [
+          14.08,
+          5.44
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/red_liquid.png",
+            "size": [
+              7.68,
+              0.96
+            ],
+            "layer": 12,
+            "drawMode": "Tiled",
+            "tileSize": [
+              1.2,
+              0.96
+            ]
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              7.56,
+              0.76
+            ],
+            "offset": [
+              0.0,
+              0.1
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Hazard",
+          "properties": {
+            "affectsTags": [
+              "Tide"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "2e185ad406f6881a",
+      "name": "Exit Deck",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          22.72,
+          5.36
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              9.6,
+              0.8
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "b648eff07f75985a",
+      "name": "Exit Deck Classroom 0",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          19.84,
+          5.36
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/desk.png",
+            "size": [
+              3.84,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "46243d5437ea4071",
+      "name": "Exit Deck Classroom 1",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          23.68,
+          5.36
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/desk.png",
+            "size": [
+              3.84,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "f9005e816a3b7bb6",
+      "name": "Exit Deck Classroom 2",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          26.56,
+          5.36
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/desk.png",
+            "size": [
+              1.92,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "9cc2998a98171db7",
+      "name": "Red Shuttle",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          12.0,
+          4.76
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              2.88,
+              0.56
+            ],
+            "layer": 25
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Kinematic"
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              2.88,
+              0.56
+            ],
+            "layer": "Solid",
+            "friction": 1,
+            "oneWay": false
+          }
+        },
+        {
+          "type": "MovingPlatform",
+          "properties": {
+            "travel": [
+              4.16,
+              0.0
+            ],
+            "speed": 1.8,
+            "pause": 1.4,
+            "requireSignal": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "323aa41a4290c704",
+      "name": "Red Crossing Button",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          8.64,
+          4.81
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/button_housing.png",
+            "size": [
+              1.18,
+              0.3
+            ],
+            "layer": 32
+          }
+        },
+        {
+          "type": "PressurePlate",
+          "properties": {
+            "pad": "5885681bd7ba7920",
+            "sensing": "Weight",
+            "targets": [
+              "9cc2998a98171db7"
+            ],
+            "latch": true,
+            "pressDepth": 0.16,
+            "pressSpeed": 0.8,
+            "acceleration": 5,
+            "pressedColor": "#91ffc5ff",
+            "pressSound": "assets/audio/plate_down.wav",
+            "releaseSound": "assets/audio/plate_up.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "5885681bd7ba7920",
+      "name": "Red Crossing Button Cap",
+      "parent": "323aa41a4290c704",
+      "transform": {
+        "position": [
+          0.0,
+          -0.15
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/kit/button_cap.png",
+            "size": [
+              0.76,
+              0.3
+            ],
+            "layer": 31
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Kinematic"
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              1.4,
+              0.8
+            ],
+            "offset": [
+              0.0,
+              0.25
+            ],
+            "chamfer": [
+              0.35,
+              0.36
+            ],
+            "layer": "Solid",
+            "friction": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "60ced8fb3b83cbc7",
+      "name": "Ember Gem 304 762",
+      "parent": "44b524e470f10b72",
+      "transform": {
+        "position": [
+          6.08,
+          15.24
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/png/collectibles/red_orb_left.png",
+            "size": [
+              0.76,
+              0.8
+            ],
+            "layer": 45
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [
+              0.64,
+              0.64
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": [
+              "Ember"
+            ],
+            "variable": "ember_gems",
+            "sound": "assets/audio/collect.wav",
+            "value": 1,
+            "collectEffect": "prefabs/fx/spark_red.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [
+              0,
+              0.06
+            ],
+            "frequency": 0.65
+          }
+        }
+      ]
+    },
+    {
+      "id": "7aa9ba74070009ea",
+      "name": "Ember Gem 792 634",
+      "parent": "44b524e470f10b72",
+      "transform": {
+        "position": [
+          15.84,
+          12.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/png/collectibles/red_orb_left.png",
+            "size": [
+              0.76,
+              0.8
+            ],
+            "layer": 45
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [
+              0.64,
+              0.64
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": [
+              "Ember"
+            ],
+            "variable": "ember_gems",
+            "sound": "assets/audio/collect.wav",
+            "value": 1,
+            "collectEffect": "prefabs/fx/spark_red.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [
+              0,
+              0.06
+            ],
+            "frequency": 0.65
+          }
+        }
+      ]
+    },
+    {
+      "id": "490556b1026a6299",
+      "name": "Ember Gem 1200 426",
+      "parent": "44b524e470f10b72",
+      "transform": {
+        "position": [
+          24.0,
+          8.52
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/png/collectibles/red_orb_left.png",
+            "size": [
+              0.76,
+              0.8
+            ],
+            "layer": 45
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [
+              0.64,
+              0.64
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": [
+              "Ember"
+            ],
+            "variable": "ember_gems",
+            "sound": "assets/audio/collect.wav",
+            "value": 1,
+            "collectEffect": "prefabs/fx/spark_red.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [
+              0,
+              0.06
+            ],
+            "frequency": 0.65
+          }
+        }
+      ]
+    },
+    {
+      "id": "6293aa7447c85e2a",
+      "name": "Ember Gem 704 214",
+      "parent": "44b524e470f10b72",
+      "transform": {
+        "position": [
+          14.08,
+          4.28
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/png/collectibles/red_orb_left.png",
+            "size": [
+              0.76,
+              0.8
+            ],
+            "layer": 45
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [
+              0.64,
+              0.64
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": [
+              "Ember"
+            ],
+            "variable": "ember_gems",
+            "sound": "assets/audio/collect.wav",
+            "value": 1,
+            "collectEffect": "prefabs/fx/spark_red.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [
+              0,
+              0.06
+            ],
+            "frequency": 0.65
+          }
+        }
+      ]
+    },
+    {
+      "id": "62066bb3204eff7a",
+      "name": "Tide Gem 640 634",
+      "parent": "44b524e470f10b72",
+      "transform": {
+        "position": [
+          12.8,
+          12.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/png/collectibles/blue_orb_left.png",
+            "size": [
+              0.76,
+              0.8
+            ],
+            "layer": 45
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [
+              0.64,
+              0.64
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": [
+              "Tide"
+            ],
+            "variable": "tide_gems",
+            "sound": "assets/audio/collect.wav",
+            "value": 1,
+            "collectEffect": "prefabs/fx/spark_blue.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [
+              0,
+              0.06
+            ],
+            "frequency": 0.65
+          }
+        }
+      ]
+    },
+    {
+      "id": "65bf94b47e1c6533",
+      "name": "Tide Gem 1056 634",
+      "parent": "44b524e470f10b72",
+      "transform": {
+        "position": [
+          21.12,
+          12.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/png/collectibles/blue_orb_left.png",
+            "size": [
+              0.76,
+              0.8
+            ],
+            "layer": 45
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [
+              0.64,
+              0.64
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": [
+              "Tide"
+            ],
+            "variable": "tide_gems",
+            "sound": "assets/audio/collect.wav",
+            "value": 1,
+            "collectEffect": "prefabs/fx/spark_blue.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [
+              0,
+              0.06
+            ],
+            "frequency": 0.65
+          }
+        }
+      ]
+    },
+    {
+      "id": "d23bc35e23cd79e2",
+      "name": "Tide Gem 824 454",
+      "parent": "44b524e470f10b72",
+      "transform": {
+        "position": [
+          16.48,
+          9.08
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/png/collectibles/blue_orb_left.png",
+            "size": [
+              0.76,
+              0.8
+            ],
+            "layer": 45
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [
+              0.64,
+              0.64
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": [
+              "Tide"
+            ],
+            "variable": "tide_gems",
+            "sound": "assets/audio/collect.wav",
+            "value": 1,
+            "collectEffect": "prefabs/fx/spark_blue.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [
+              0,
+              0.06
+            ],
+            "frequency": 0.65
+          }
+        }
+      ]
+    },
+    {
+      "id": "0be7b9be99765c79",
+      "name": "Tide Gem 128 266",
+      "parent": "44b524e470f10b72",
+      "transform": {
+        "position": [
+          2.56,
+          5.32
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/png/collectibles/blue_orb_left.png",
+            "size": [
+              0.76,
+              0.8
+            ],
+            "layer": 45
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Circle",
+            "size": [
+              0.64,
+              0.64
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Collectible",
+          "properties": {
+            "collectorTags": [
+              "Tide"
+            ],
+            "variable": "tide_gems",
+            "sound": "assets/audio/collect.wav",
+            "value": 1,
+            "collectEffect": "prefabs/fx/spark_blue.ykprefab"
+          }
+        },
+        {
+          "type": "Oscillator",
+          "properties": {
+            "position": [
+              0,
+              0.06
+            ],
+            "frequency": 0.65
+          }
+        }
+      ]
+    },
+    {
+      "id": "978404ccbf8c4bd6",
+      "name": "Shared Exit",
+      "parent": "c13bfa673a10162c",
+      "transform": {
+        "position": [
+          22.72,
+          3.84
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/png/props/red_door.png",
+            "size": [
+              1.68,
+              2.24
+            ],
+            "layer": 30
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              0.96,
+              1.88
+            ],
+            "isTrigger": true,
+            "layer": "Sensor"
+          }
+        },
+        {
+          "type": "Goal",
+          "properties": {
+            "requiredTag": "Player",
+            "sound": "assets/audio/exit.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03385583afb3805a",
+      "name": "Ember",
+      "parent": "c41b6498a74aa448",
+      "prefab": "prefabs/characters/ember.ykprefab",
+      "tags": [
+        "Ember",
+        "Player"
+      ],
+      "transform": {
+        "position": [
+          2.08,
+          15.52
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/orange_motion.png",
+            "shape": "Rectangle",
+            "size": [
+              1.6,
+              2.4
+            ],
+            "offset": [
+              0,
+              -0.23
+            ],
+            "color": "#ffffffff",
+            "layer": 40,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 8,
+            "rows": 4,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [
+              0,
+              0
+            ],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [
+              1,
+              1
+            ]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/reference/orange_motion.ykanim",
+            "controller": "assets/characters/character.ykctl",
+            "clip": "",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "facing",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Dynamic",
+            "gravityScale": 1,
+            "linearDamping": 0,
+            "angularDamping": 0.05,
+            "fixedRotation": true,
+            "bullet": false,
+            "allowSleep": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Capsule",
+            "size": [
+              1.12,
+              1.92
+            ],
+            "offset": [
+              0,
+              0
+            ],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Player",
+            "friction": 0,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "type": "PlayerInput",
+          "properties": {
+            "actionSet": "Player1"
+          }
+        },
+        {
+          "type": "PlatformerController",
+          "properties": {
+            "moveLeftAction": "MoveLeft",
+            "moveRightAction": "MoveRight",
+            "jumpAction": "Jump",
+            "moveSpeed": 5.8,
+            "groundAcceleration": 70,
+            "groundDeceleration": 80,
+            "airAcceleration": 40,
+            "airDeceleration": 6,
+            "jumpHeight": 4.2,
+            "fallGravityMultiplier": 1.35,
+            "jumpCutMultiplier": 0.45,
+            "coyoteTime": 0.1,
+            "jumpBufferTime": 0.12,
+            "maxFallSpeed": 20,
+            "maxSlopeDegrees": 55,
+            "gripFriction": 1.2,
+            "slideFriction": 0,
+            "groundSnap": 0.3,
+            "landingSpeed": 4,
+            "jumpSound": "assets/audio/jump.wav",
+            "landSound": "assets/audio/land.wav",
+            "jumpEffect": "prefabs/fx/dust.ykprefab",
+            "landEffect": "prefabs/fx/dust.ykprefab"
+          }
+        },
+        {
+          "type": "Killable",
+          "properties": {
+            "respawn": true,
+            "respawnDelay": 1.4,
+            "deathDuration": 0.9,
+            "spawnPoint": null,
+            "deathSound": "assets/audio/death.wav",
+            "respawnSound": "assets/audio/respawn.wav",
+            "deathEffect": "prefabs/fx/death_ember.ykprefab",
+            "respawnEffect": "prefabs/fx/respawn.ykprefab"
+          }
+        }
+      ]
+    },
+    {
+      "id": "cd7f5ab54940360c",
+      "name": "Aura",
+      "parent": "03385583afb3805a",
+      "transform": {
+        "position": [
+          0,
+          -0.1
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#ff8c3cff",
+            "intensity": 0.35,
+            "radius": 2.2,
+            "offset": [
+              0,
+              0
+            ],
+            "flicker": 0.15,
+            "flickerSpeed": 4,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "64963ea087121111",
+      "name": "Trail",
+      "parent": "03385583afb3805a",
+      "transform": {
+        "position": [
+          0,
+          0.1
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 14,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [
+              0.4,
+              0.8
+            ],
+            "area": "Box",
+            "areaSize": [
+              0.4,
+              0.5
+            ],
+            "direction": 0,
+            "spread": 40,
+            "speed": [
+              0.4,
+              1
+            ],
+            "gravity": [
+              0,
+              -1.5
+            ],
+            "drag": 0,
+            "startSize": [
+              0.08,
+              0.18
+            ],
+            "endScale": 0.1,
+            "startRotation": [
+              0,
+              0
+            ],
+            "rotationSpeed": [
+              0,
+              0
+            ],
+            "startColor": "#ffaf46dc",
+            "endColor": "#ff3c1400",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "e32919e7f9689b4c",
+      "name": "Ember Spawn",
+      "parent": "c41b6498a74aa448",
+      "prefab": "prefabs/level/spawn_point.ykprefab",
+      "transform": {
+        "position": [
+          2.08,
+          15.52
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpawnPoint",
+          "properties": {
+            "character": "03385583afb3805a"
+          }
+        }
+      ]
+    },
+    {
+      "id": "4dcec574771f831e",
+      "name": "Tide",
+      "parent": "c41b6498a74aa448",
+      "prefab": "prefabs/characters/tide.ykprefab",
+      "tags": [
+        "Tide",
+        "Player"
+      ],
+      "transform": {
+        "position": [
+          4.0,
+          15.52
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/reference/blue_motion.png",
+            "shape": "Rectangle",
+            "size": [
+              1.6,
+              2.4
+            ],
+            "offset": [
+              0,
+              -0.23
+            ],
+            "color": "#ffffffff",
+            "layer": 40,
+            "order": 0,
+            "flipX": false,
+            "visible": true,
+            "columns": 8,
+            "rows": 4,
+            "frame": 0,
+            "drawMode": "Simple",
+            "tileSize": [
+              0,
+              0
+            ],
+            "sliceFill": "Tile",
+            "blend": "Alpha",
+            "parallax": [
+              1,
+              1
+            ]
+          }
+        },
+        {
+          "type": "AnimatedSprite",
+          "properties": {
+            "animation": "assets/reference/blue_motion.ykanim",
+            "controller": "assets/characters/character.ykctl",
+            "clip": "",
+            "speed": 1,
+            "playOnStart": true,
+            "flipParameter": "facing",
+            "artFacesLeft": false
+          }
+        },
+        {
+          "type": "RigidBody",
+          "properties": {
+            "type": "Dynamic",
+            "gravityScale": 1,
+            "linearDamping": 0,
+            "angularDamping": 0.05,
+            "fixedRotation": true,
+            "bullet": false,
+            "allowSleep": false
+          }
+        },
+        {
+          "type": "Collider",
+          "properties": {
+            "shape": "Capsule",
+            "size": [
+              1.12,
+              1.92
+            ],
+            "offset": [
+              0,
+              0
+            ],
+            "oneWay": false,
+            "isTrigger": false,
+            "detectTriggers": false,
+            "layer": "Player",
+            "friction": 0,
+            "restitution": 0,
+            "density": 1,
+            "cornerRadius": 0,
+            "chamfer": [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "type": "PlayerInput",
+          "properties": {
+            "actionSet": "Player2"
+          }
+        },
+        {
+          "type": "PlatformerController",
+          "properties": {
+            "moveLeftAction": "MoveLeft",
+            "moveRightAction": "MoveRight",
+            "jumpAction": "Jump",
+            "moveSpeed": 5.8,
+            "groundAcceleration": 70,
+            "groundDeceleration": 80,
+            "airAcceleration": 40,
+            "airDeceleration": 6,
+            "jumpHeight": 4.2,
+            "fallGravityMultiplier": 1.35,
+            "jumpCutMultiplier": 0.45,
+            "coyoteTime": 0.1,
+            "jumpBufferTime": 0.12,
+            "maxFallSpeed": 20,
+            "maxSlopeDegrees": 55,
+            "gripFriction": 1.2,
+            "slideFriction": 0,
+            "groundSnap": 0.3,
+            "landingSpeed": 4,
+            "jumpSound": "assets/audio/jump.wav",
+            "landSound": "assets/audio/land.wav",
+            "jumpEffect": "prefabs/fx/dust.ykprefab",
+            "landEffect": "prefabs/fx/dust.ykprefab"
+          }
+        },
+        {
+          "type": "Killable",
+          "properties": {
+            "respawn": true,
+            "respawnDelay": 1.4,
+            "deathDuration": 0.9,
+            "spawnPoint": null,
+            "deathSound": "assets/audio/death.wav",
+            "respawnSound": "assets/audio/respawn.wav",
+            "deathEffect": "prefabs/fx/death_tide.ykprefab",
+            "respawnEffect": "prefabs/fx/respawn.ykprefab"
+          }
+        }
+      ]
+    },
+    {
+      "id": "b3d5b7144c5156a7",
+      "name": "Aura",
+      "parent": "4dcec574771f831e",
+      "transform": {
+        "position": [
+          0,
+          -0.1
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Light2D",
+          "properties": {
+            "color": "#5ab4ffff",
+            "intensity": 0.35,
+            "radius": 2.2,
+            "offset": [
+              0,
+              0
+            ],
+            "flicker": 0.15,
+            "flickerSpeed": 4,
+            "layer": 70,
+            "order": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "2c98c84d0bbda187",
+      "name": "Trail",
+      "parent": "4dcec574771f831e",
+      "transform": {
+        "position": [
+          0,
+          0.1
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "ParticleEmitter",
+          "properties": {
+            "texture": "",
+            "particleShape": "Soft",
+            "playOnStart": true,
+            "loop": true,
+            "duration": 1,
+            "rate": 10,
+            "burst": 0,
+            "maxParticles": 100,
+            "lifetime": [
+              0.5,
+              0.9
+            ],
+            "area": "Box",
+            "areaSize": [
+              0.4,
+              0.5
+            ],
+            "direction": 0,
+            "spread": 60,
+            "speed": [
+              0.2,
+              0.7
+            ],
+            "gravity": [
+              0,
+              3
+            ],
+            "drag": 0,
+            "startSize": [
+              0.06,
+              0.12
+            ],
+            "endScale": 0.2,
+            "startRotation": [
+              0,
+              0
+            ],
+            "rotationSpeed": [
+              0,
+              0
+            ],
+            "startColor": "#a0e1ffd2",
+            "endColor": "#50a0ff00",
+            "blend": "Additive",
+            "layer": 60,
+            "order": 0,
+            "localSpace": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "b0cb9c2f5abc6d6a",
+      "name": "Tide Spawn",
+      "parent": "c41b6498a74aa448",
+      "prefab": "prefabs/level/spawn_point.ykprefab",
+      "transform": {
+        "position": [
+          4.0,
+          15.52
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpawnPoint",
+          "properties": {
+            "character": "4dcec574771f831e"
+          }
+        }
+      ]
+    },
+    {
+      "id": "7775cd816d83dcf0",
+      "name": "Left Corner",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          0.32,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              0.64,
+              2.4
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "b838c505df97bfb9",
+      "name": "Left Corner Classroom 0",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          0.32,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/desk.png",
+            "size": [
+              0.64,
+              2.4
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "cfb2cf5bfa3d1787",
+      "name": "Right Corner",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          32.88,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              1.12,
+              2.4
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "40b3129860108aaf",
+      "name": "Right Corner Classroom 0",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          32.88,
+          17.68
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/desk.png",
+            "size": [
+              1.12,
+              2.4
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "a68dde0e9cc6ff0f",
+      "name": "Foundation",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          16.72,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              33.44,
+              0.8
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "f203bc5a7c0c9c14",
+      "name": "Foundation Classroom 0",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          1.92,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              3.84,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "bdabea376de427d4",
+      "name": "Foundation Classroom 1",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          5.76,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              3.84,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "e8a617e73fa468a7",
+      "name": "Foundation Classroom 2",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          9.6,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              3.84,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "61e84d4c0367c37e",
+      "name": "Foundation Classroom 3",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          13.44,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              3.84,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "8ad7c5ead5f15085",
+      "name": "Foundation Classroom 4",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          17.28,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              3.84,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "1dc2feb409b02364",
+      "name": "Foundation Classroom 5",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          21.12,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              3.84,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "fae86beb42e4283e",
+      "name": "Foundation Classroom 6",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          24.96,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              3.84,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "f2e41cb8f2513cf2",
+      "name": "Foundation Classroom 7",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          28.8,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              3.84,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "a8d7698ec89f1810",
+      "name": "Foundation Classroom 8",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          32.08,
+          18.48
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "SpriteRenderer",
+          "properties": {
+            "texture": "assets/classroom/generated/books.png",
+            "size": [
+              2.72,
+              0.8
+            ],
+            "layer": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "9e022d85be3acc27",
+      "name": "Left Wall",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          -0.32,
+          9.41
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              0.64,
+              18.82
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "8b59ca8b6c944069",
+      "name": "Right Wall",
+      "parent": "8e971db2241c840d",
+      "transform": {
+        "position": [
+          33.76,
+          9.41
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "Collider",
+          "properties": {
+            "size": [
+              0.64,
+              18.82
+            ],
+            "layer": "Solid",
+            "friction": 0.8,
+            "oneWay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "39d022c0bca218ff",
+      "name": "Level Flow",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "LevelFlow",
+          "properties": {
+            "goals": [
+              "978404ccbf8c4bd6"
+            ],
+            "completeDelay": 3,
+            "nextScene": "scenes/menu.ykscene",
+            "completeMessage": "BOTH LEVELS COMPLETE!",
+            "continueAction": "Continue",
+            "completeSound": "assets/audio/complete.wav"
+          }
+        }
+      ]
+    },
+    {
+      "id": "f409af72bec24a5b",
+      "name": "HUD",
+      "prefab": "prefabs/level/hud.ykprefab",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": []
+    },
+    {
+      "id": "195b950330603fe3",
+      "name": "Vignette",
+      "parent": "f409af72bec24a5b",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/backgrounds/vignette.png",
+            "anchor": "TopLeft",
+            "size": [
+              48,
+              48
+            ],
+            "offset": [
+              16,
+              16
+            ],
+            "color": "#ffffffff",
+            "layer": -5,
+            "columns": 1,
+            "rows": 1,
+            "frame": 0,
+            "fillScreen": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "dc748209b15d9ad4",
+      "name": "Ember Score",
+      "parent": "f409af72bec24a5b",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "TopLeft",
+            "size": [
+              290,
+              52
+            ],
+            "offset": [
+              16,
+              16
+            ],
+            "color": "#060e12aa",
+            "layer": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "bd4ec7141d9805e2",
+      "name": "Ember Gem Icon",
+      "parent": "f409af72bec24a5b",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/items/gem_red.png",
+            "anchor": "TopLeft",
+            "size": [
+              40,
+              40
+            ],
+            "offset": [
+              24,
+              22
+            ],
+            "color": "#ffffffff",
+            "layer": 2,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "fillScreen": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "9380a54eac7cd9f3",
+      "name": "Ember Gems",
+      "parent": "f409af72bec24a5b",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "EMBER {ember_gems:0}/{ember_gems_total:0}",
+            "anchor": "TopLeft",
+            "offset": [
+              74,
+              32
+            ],
+            "scale": 2,
+            "color": "#ffb06eff",
+            "shadow": true,
+            "layer": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "bbc2fcde24d0a77e",
+      "name": "Tide Score",
+      "parent": "f409af72bec24a5b",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "TopRight",
+            "size": [
+              290,
+              52
+            ],
+            "offset": [
+              16,
+              16
+            ],
+            "color": "#060e12aa",
+            "layer": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "7d0a8e79560e76ec",
+      "name": "Tide Gem Icon",
+      "parent": "f409af72bec24a5b",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/items/gem_blue.png",
+            "anchor": "TopRight",
+            "size": [
+              40,
+              40
+            ],
+            "offset": [
+              24,
+              22
+            ],
+            "color": "#ffffffff",
+            "layer": 2,
+            "columns": 4,
+            "rows": 1,
+            "frame": 0,
+            "fillScreen": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "9099a5d7d3fafb83",
+      "name": "Tide Gems",
+      "parent": "f409af72bec24a5b",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "TIDE {tide_gems:0}/{tide_gems_total:0}",
+            "anchor": "TopRight",
+            "offset": [
+              74,
+              32
+            ],
+            "scale": 2,
+            "color": "#8ccdffff",
+            "shadow": true,
+            "layer": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "b8db19786d87bde0",
+      "name": "Timer",
+      "parent": "f409af72bec24a5b",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "TIME {level_time}",
+            "anchor": "Top",
+            "offset": [
+              0,
+              30
+            ],
+            "scale": 2,
+            "color": "#ebf0ebff",
+            "shadow": true,
+            "layer": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "58c52c4e79fa40f8",
+      "name": "Message",
+      "parent": "f409af72bec24a5b",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "{level_message}",
+            "anchor": "Center",
+            "offset": [
+              0,
+              0
+            ],
+            "scale": 6,
+            "color": "#fff0aaff",
+            "shadow": true,
+            "layer": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "072c93adb4476415",
+      "name": "Controls",
+      "parent": "f409af72bec24a5b",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "A/D/W + ARROWS  |  S/DOWN USE  |  R RETRY  P PAUSE  M MENU",
+            "anchor": "Bottom",
+            "offset": [
+              0,
+              16
+            ],
+            "scale": 1.5,
+            "color": "#becdcdc8",
+            "shadow": true,
+            "layer": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "3e32afdf81472806",
+      "name": "Level Number",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "LEVEL 2  /  2  -  BUTTONS STAY ON",
+            "anchor": "Top",
+            "offset": [
+              0,
+              76
+            ],
+            "scale": 2,
+            "color": "#d6e4edff",
+            "layer": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "b3e6276eb027f232",
+      "name": "Return to Menu",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "EventAction",
+          "properties": {
+            "inputAction": "Menu",
+            "waitForRelease": true,
+            "once": true,
+            "changeScene": "scenes/menu.ykscene"
+          }
+        }
+      ]
+    },
+    {
+      "id": "7f759995697491ba",
+      "name": "Music",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "AudioSource",
+          "properties": {
+            "sound": "assets/audio/music.wav",
+            "volume": 0.22,
+            "loop": true,
+            "playOnStart": true
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "tool": "yk-engine",
+  "version": "0.3.31",
+  "target": "windows",
+  "product": "Invisible Castle",
+  "executable": "InvisibleCastle.exe",
+  "files": 192
+}

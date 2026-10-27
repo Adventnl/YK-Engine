@@ -1,0 +1,8 @@
+{
+  "tool": "yk-engine",
+  "version": "0.3.31",
+  "target": "macos",
+  "product": "Brothers Run",
+  "executable": "BrothersRun",
+  "files": 82
+}

@@ -1,0 +1,803 @@
+{
+  "format": "yk.scene",
+  "version": 1,
+  "settings": {
+    "name": "Main Menu",
+    "gravity": [
+      0,
+      9.81
+    ],
+    "background": "#0c1926ff"
+  },
+  "entities": [
+    {
+      "id": "854b0686258515bf",
+      "name": "Backdrop",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/reference/room.png",
+            "fillScreen": true,
+            "color": "#4b6475ff",
+            "layer": -5
+          }
+        }
+      ]
+    },
+    {
+      "id": "8832af5bcb698c81",
+      "name": "Scrim",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "fillScreen": true,
+            "color": "#07131de5",
+            "layer": -4
+          }
+        }
+      ]
+    },
+    {
+      "id": "025d60ec2a8e467e",
+      "name": "Top Rule",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              0,
+              -303
+            ],
+            "size": [
+              1040,
+              2
+            ],
+            "color": "#456273ff",
+            "layer": -1
+          }
+        }
+      ]
+    },
+    {
+      "id": "2e70a776c57dc453",
+      "name": "Series",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "EMBER AND TIDE  /  TWO BROTHERS. ONE RACE.",
+            "anchor": "Center",
+            "offset": [
+              0,
+              -278
+            ],
+            "scale": 1.5,
+            "color": "#a5bccbff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "8427637bf8d9918e",
+      "name": "Fire Title",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "BROTHERS",
+            "anchor": "Center",
+            "offset": [
+              -238,
+              -180
+            ],
+            "scale": 5.5,
+            "color": "#ffb16bff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "bb726b252d8187ed",
+      "name": "Water Title",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "RUN",
+            "anchor": "Center",
+            "offset": [
+              -238,
+              -119
+            ],
+            "scale": 4.5,
+            "color": "#70dcffff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "3e06d884697d229f",
+      "name": "Tagline",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "TWO BROTHERS. TWO ROOMS. ONE RACE.",
+            "anchor": "Center",
+            "offset": [
+              -238,
+              -50
+            ],
+            "scale": 1.5,
+            "color": "#a5bccbff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "fa5b9f8541560855",
+      "name": "Tagline Two",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "DODGE THE POOLS. BE FIRST TO THE EXIT.",
+            "anchor": "Center",
+            "offset": [
+              -238,
+              -24
+            ],
+            "scale": 1.5,
+            "color": "#a5bccbff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "cf0dfed5fe02dcf4",
+      "name": "Play Button",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -238,
+              66
+            ],
+            "size": [
+              430,
+              78
+            ],
+            "color": "#172f40ff",
+            "layer": 2
+          }
+        },
+        {
+          "type": "UiButton",
+          "properties": {
+            "changeScene": "scenes/levels.ykscene",
+            "hoverColor": "#2c5268ff",
+            "pressedColor": "#36647aff"
+          }
+        }
+      ]
+    },
+    {
+      "id": "4f3be25d852d5aea",
+      "name": "Play Button Accent",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              -451.0,
+              66
+            ],
+            "size": [
+              4,
+              78
+            ],
+            "color": "#ffb16bff",
+            "layer": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "74d73744e9235b99",
+      "name": "Play Button Label",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "START THE RACE  >",
+            "anchor": "Center",
+            "offset": [
+              -238,
+              66
+            ],
+            "scale": 2.5,
+            "color": "#fff0d4ff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "3b2dbbfab4a1e3f0",
+      "name": "Keyboard Hint",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "CLICK TO BEGIN  /  ENTER",
+            "anchor": "Center",
+            "offset": [
+              -238,
+              132
+            ],
+            "scale": 1.5,
+            "color": "#a5bccbff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "18914413aadb9708",
+      "name": "Hero Stage",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              267,
+              83
+            ],
+            "size": [
+              382,
+              18
+            ],
+            "color": "#456273ff",
+            "layer": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "9916e2818ede0027",
+      "name": "orange Hero",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/reference/orange_motion.png",
+            "anchor": "Center",
+            "offset": [
+              166,
+              -35
+            ],
+            "size": [
+              144,
+              216
+            ],
+            "layer": 5,
+            "columns": 8,
+            "rows": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "bb5cc473d7b5e18f",
+      "name": "blue Hero",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/reference/blue_motion.png",
+            "anchor": "Center",
+            "offset": [
+              356,
+              -35
+            ],
+            "size": [
+              144,
+              216
+            ],
+            "layer": 5,
+            "columns": 8,
+            "rows": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "3915bc6a0ed70292",
+      "name": "Fire Gem",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/reference/png/collectibles/red_orb_left.png",
+            "anchor": "Center",
+            "offset": [
+              167,
+              -200
+            ],
+            "size": [
+              30,
+              32
+            ],
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "09db3d49eb3cc571",
+      "name": "Water Gem",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiImage",
+          "properties": {
+            "texture": "assets/reference/png/collectibles/blue_orb_left.png",
+            "anchor": "Center",
+            "offset": [
+              357,
+              -176
+            ],
+            "size": [
+              30,
+              32
+            ],
+            "layer": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "8cc08e2df0fbfd9f",
+      "name": "Chapter Count",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "2 CHAPTERS  /  LOCAL CO-OP",
+            "anchor": "Center",
+            "offset": [
+              267,
+              132
+            ],
+            "scale": 1.5,
+            "color": "#a5bccbff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "29cb9bd289c32d83",
+      "name": "Play",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "EventAction",
+          "properties": {
+            "inputAction": "Continue",
+            "waitForRelease": true,
+            "once": true,
+            "changeScene": "scenes/levels.ykscene"
+          }
+        }
+      ]
+    },
+    {
+      "id": "61130f895918274b",
+      "name": "Control Divider",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiPanel",
+          "properties": {
+            "anchor": "Center",
+            "offset": [
+              0,
+              200
+            ],
+            "size": [
+              1040,
+              2
+            ],
+            "color": "#456273ff",
+            "layer": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "10fe76df1a45f504",
+      "name": "Fire Controls",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "EMBER",
+            "anchor": "Center",
+            "offset": [
+              -260,
+              238
+            ],
+            "scale": 2,
+            "color": "#ffb16bff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "e443e4c0d57e0e22",
+      "name": "Fire Keys",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "A D MOVE   W JUMP   S USE",
+            "anchor": "Center",
+            "offset": [
+              -260,
+              270
+            ],
+            "scale": 1.5,
+            "color": "#a5bccbff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "57d4c66518b6b4fe",
+      "name": "Water Controls",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "TIDE",
+            "anchor": "Center",
+            "offset": [
+              260,
+              238
+            ],
+            "scale": 2,
+            "color": "#70dcffff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "11209c10454756fc",
+      "name": "Water Keys",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "ARROWS MOVE   UP JUMP   DOWN USE",
+            "anchor": "Center",
+            "offset": [
+              260,
+              270
+            ],
+            "scale": 1.5,
+            "color": "#a5bccbff",
+            "layer": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "e2c9bef31d646756",
+      "name": "Footer",
+      "transform": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "components": [
+        {
+          "type": "UiText",
+          "properties": {
+            "text": "ONE EXIT  /  FIRST BROTHER TO REACH IT WINS THE RACE",
+            "anchor": "Center",
+            "offset": [
+              0,
+              320
+            ],
+            "scale": 1.5,
+            "color": "#a5bccbff",
+            "layer": 8
+          }
+        }
+      ]
+    }
+  ]
+}

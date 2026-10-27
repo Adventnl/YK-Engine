@@ -1,0 +1,4 @@
+# Preserve packaged bytes, including signed macOS resources, on every checkout.
+apps/** binary
+downloads/** binary
+installers/** binary

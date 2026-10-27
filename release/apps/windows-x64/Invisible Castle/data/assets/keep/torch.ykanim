@@ -1,0 +1,19 @@
+{
+  "format": "yk.animation",
+  "version": 2,
+  "texture": "assets/keep/torch.png",
+  "columns": 4,
+  "rows": 1,
+  "clips": [
+    {
+      "name": "burn",
+      "frames": [
+        0,
+        1,
+        0,
+        2
+      ],
+      "fps": 7
+    }
+  ]
+}

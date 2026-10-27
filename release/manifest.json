@@ -1,0 +1,48 @@
+{
+  "version": "0.3.31",
+  "sourceCommit": "4bfd1314c70c9648ee4261fb01fa21c47846dc75",
+  "apps": [
+    {
+      "name": "Brothers Run",
+      "platform": "macos-arm64",
+      "app": "apps/macos-arm64/Brothers Run.app",
+      "executable": "apps/macos-arm64/Brothers Run.app/Contents/MacOS/BrothersRun",
+      "download": "downloads/BrothersRun-Demo-0.3.31-macos-arm64.zip"
+    },
+    {
+      "name": "Brothers Run",
+      "platform": "windows-x64",
+      "app": "apps/windows-x64/Brothers Run",
+      "executable": "apps/windows-x64/Brothers Run/BrothersRun.exe",
+      "download": "downloads/BrothersRun-Demo-0.3.31-windows-x64.zip"
+    },
+    {
+      "name": "Invisible Castle",
+      "platform": "macos-arm64",
+      "app": "apps/macos-arm64/Invisible Castle.app",
+      "executable": "apps/macos-arm64/Invisible Castle.app/Contents/MacOS/InvisibleCastle",
+      "download": "downloads/InvisibleCastle-Demo-0.3.31-macos-arm64.zip"
+    },
+    {
+      "name": "Invisible Castle",
+      "platform": "windows-x64",
+      "app": "apps/windows-x64/Invisible Castle",
+      "executable": "apps/windows-x64/Invisible Castle/InvisibleCastle.exe",
+      "download": "downloads/InvisibleCastle-Demo-0.3.31-windows-x64.zip"
+    },
+    {
+      "name": "YK Engine",
+      "platform": "macos-arm64",
+      "app": "apps/macos-arm64/YK Engine.app",
+      "executable": "apps/macos-arm64/YK Engine.app/Contents/MacOS/yk_editor",
+      "download": "downloads/YKEngine-0.3.31-macos-arm64.zip"
+    },
+    {
+      "name": "YK Engine",
+      "platform": "windows-x64",
+      "app": "apps/windows-x64/YK Engine",
+      "executable": "apps/windows-x64/YK Engine/bin/yk_editor.exe",
+      "download": "downloads/YKEngine-0.3.31-windows-x64.zip"
+    }
+  ]
+}
