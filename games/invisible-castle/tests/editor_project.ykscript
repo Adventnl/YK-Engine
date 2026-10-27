@@ -13,9 +13,9 @@ expect entity Mara
 expect entity "Green exit gate"
 click "hierarchy/Mara"
 expect selected Mara
-expect widget prop/sequence/browse
-click prop/sequence/browse
-expect widget pick/assets/dialogue/keeper.ykdialogue
+expect widget prop/animation/browse
+click prop/animation/browse
+expect widget pick/assets/level2/companion.ykanim
 key escape
 click "hierarchy/Green exit gate"
 expect selected "Green exit gate"

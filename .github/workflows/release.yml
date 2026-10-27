@@ -1,8 +1,10 @@
-name: Release installers
+name: Release apps and installers
 
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'release/**'
   workflow_dispatch:
 
 concurrency:
@@ -96,10 +98,23 @@ jobs:
           python scripts/package-demos.py --build-dir build --out build/windows-dist --version "$env:RELEASE_VERSION"
           if ($LASTEXITCODE -ne 0) { throw 'Demo packaging failed' }
           & scripts/verify-demo-installers.ps1 -Dist build/windows-dist
+      - name: Package runnable Windows apps
+        shell: pwsh
+        run: |
+          cmake --install build --config Release --prefix build/portable-engine
+          if ($LASTEXITCODE -ne 0) { throw 'Portable engine installation failed' }
+          python scripts/package-apps.py --platform windows-x64 --version "$env:RELEASE_VERSION" `
+            --engine build/portable-engine `
+            --invisible-castle "build/windows-dist/work/invisible-castle/Invisible-Castle-windows" `
+            --brothers-run "build/windows-dist/work/brothers-run/Brothers-Run-windows" `
+            --installers build/windows-dist
+          if ($LASTEXITCODE -ne 0) { throw 'Portable app packaging failed' }
       - uses: actions/upload-artifact@v4
         with:
-          name: windows-installer
-          path: build/windows-dist/*-windows-x64.exe
+          name: windows-release
+          path: |
+            release/downloads/*.zip
+            release/installers/windows-x64/*.exe
           if-no-files-found: error
 
   macos:
@@ -125,12 +140,20 @@ jobs:
         run: python3 scripts/package-demos.py --build-dir build/release --out build/macos-dist --version "$RELEASE_VERSION"
       - name: Verify the packaged application and installers
         run: scripts/verify-macos-app.sh
+      - name: Package runnable macOS apps
+        run: |
+          python3 scripts/package-apps.py --platform macos-arm64 --version "$RELEASE_VERSION" \
+            --engine "build/macos-dist/YK Engine.app" \
+            --invisible-castle "build/macos-dist/work/invisible-castle/Invisible Castle.app" \
+            --brothers-run "build/macos-dist/work/brothers-run/Brothers Run.app" \
+            --installers build/macos-dist
       - uses: actions/upload-artifact@v4
         with:
-          name: macos-installers
+          name: macos-release
           path: |
-            build/macos-dist/*.dmg
-            build/macos-dist/*.pkg
+            release/downloads/*.zip
+            release/installers/macos-arm64/*.dmg
+            release/installers/macos-arm64/*.pkg
           if-no-files-found: error
 
   publish:
@@ -142,8 +165,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          pattern: '*-installer*'
-          path: installers
+          pattern: '*-release'
+          path: release-assets
           merge-multiple: true
       - name: Publish only after both platform checks pass
         env:
@@ -151,17 +174,20 @@ jobs:
           RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
         run: |
           set -euo pipefail
-          test "$(find installers -maxdepth 1 -name '*.exe' | wc -l)" -eq 3
-          test "$(find installers -maxdepth 1 -name '*.dmg' | wc -l)" -eq 3
-          test "$(find installers -maxdepth 1 -name '*.pkg' | wc -l)" -eq 3
-          (cd installers && sha256sum *.exe *.dmg *.pkg > SHA256SUMS.txt)
-          python3 scripts/release-notes.py "$RELEASE_VERSION" > installers/RELEASE_NOTES.md
+          mkdir downloads
+          find release-assets -type f \( -name '*.exe' -o -name '*.dmg' -o -name '*.pkg' -o -name '*.zip' \) -exec cp {} downloads/ \;
+          test "$(find downloads -maxdepth 1 -name '*.exe' | wc -l)" -eq 3
+          test "$(find downloads -maxdepth 1 -name '*.dmg' | wc -l)" -eq 3
+          test "$(find downloads -maxdepth 1 -name '*.pkg' | wc -l)" -eq 3
+          test "$(find downloads -maxdepth 1 -name '*.zip' | wc -l)" -eq 6
+          (cd downloads && sha256sum *.exe *.dmg *.pkg *.zip > SHA256SUMS.txt)
+          python3 scripts/release-notes.py "$RELEASE_VERSION" > downloads/RELEASE_NOTES.md
           tag="v$RELEASE_VERSION"
           if gh release view "$tag" >/dev/null 2>&1; then
-            gh release upload "$tag" installers/*.exe installers/*.dmg installers/*.pkg installers/SHA256SUMS.txt --clobber
+            gh release upload "$tag" downloads/*.exe downloads/*.dmg downloads/*.pkg downloads/*.zip downloads/SHA256SUMS.txt --clobber
           else
-            gh release create "$tag" installers/*.exe installers/*.dmg installers/*.pkg installers/SHA256SUMS.txt --target "$GITHUB_SHA" --title "YK Engine $RELEASE_VERSION" \
-              --notes-file installers/RELEASE_NOTES.md --draft
+            gh release create "$tag" downloads/*.exe downloads/*.dmg downloads/*.pkg downloads/*.zip downloads/SHA256SUMS.txt --target "$GITHUB_SHA" --title "YK Engine $RELEASE_VERSION" \
+              --notes-file downloads/RELEASE_NOTES.md --draft
           fi
-          gh release edit "$tag" --notes-file installers/RELEASE_NOTES.md --draft=false --latest
+          gh release edit "$tag" --notes-file downloads/RELEASE_NOTES.md --draft=false --latest
           python3 scripts/label-release-assets.py "$tag"

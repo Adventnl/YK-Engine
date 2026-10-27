@@ -152,11 +152,31 @@ libraries; the `install` test checks that.
 
 ## Automatic releases and updates
 
-Each push to `main` starts the release workflow. It builds and tests three separate products on both platforms: YK Engine, Invisible Castle (Demo game), and Brothers Run (Demo game). It then publishes a GitHub Release with the installers and `SHA256SUMS.txt`. The release version
+Each push to `main` starts the release workflow. It builds and tests three separate products on both platforms: YK Engine, Invisible Castle (Demo game), and Brothers Run (Demo game). It then publishes a GitHub Release with six portable app ZIPs, the installers and `SHA256SUMS.txt`. The release version
 is the base `YK_RELEASE_VERSION` in CMakeLists.txt with the workflow run number added to its patch
 component. This gives every release a unique, increasing version without editing a version file on
 each push. If pushes arrive while a release is running, GitHub Actions keeps the newest pending run
 and may skip intermediate commits. No Cloudflare Worker or separate update server is needed.
+
+`scripts/package-apps.py` collects already compiled products into `release/apps/<platform>/`,
+puts portable ZIPs in `release/downloads/`, and keeps setup wizards in
+`release/installers/<platform>/`. Its manifest records the version, source commit and executable
+paths; `release/SHA256SUMS.txt` covers every download and installer. Run it once on each platform
+with the same version and source commit. For example, after packaging on macOS:
+
+```sh
+python3 scripts/package-apps.py --platform macos-arm64 --version 0.3.30 \
+  --engine "build/macos-dist/YK Engine.app" \
+  --invisible-castle "build/macos-dist/work/invisible-castle/Invisible Castle.app" \
+  --brothers-run "build/macos-dist/work/brothers-run/Brothers Run.app" \
+  --installers build/macos-dist
+```
+
+For Windows, first use `cmake --install build --config Release --prefix build/portable-engine`.
+Pass that directory as `--engine`, the exported game directories under `build/windows-dist/work/`
+as the two game arguments, and `--platform windows-x64 --installers build/windows-dist`.
+The workflow performs these steps automatically. To refresh a checked-in release, collect both
+platforms into a fresh directory so files from different source commits cannot be mixed.
 
 Installed editors check the newest published GitHub Release at startup. They download the matching
 installer and checksum file, verify SHA-256, and then launch the OS installer. Windows may ask for
@@ -211,7 +231,7 @@ Or use **Build > Export Game** in the editor. Either way:
 **For users.** Download the `windows-x64.exe` installer from
 [GitHub Releases](https://github.com/Adventnl/YK-Engine/releases) and follow the setup wizard.
 The editor appears in the Start menu, and Apps & features can uninstall it. The installer
-contains the engine and samples; SDL, CMake, Ninja and Visual Studio are build-time tools
+contains the engine tools; SDL, CMake, Ninja and Visual Studio are build-time tools
 and are not needed to run it. The release workflow builds with the MSVC runtime linked
 statically and verifies the installed sample on a Windows runner.
 
@@ -241,7 +261,7 @@ Not done on Windows: a version resource for the executables, an icon for exporte
 **For users.** Download the `.pkg` from
 [GitHub Releases](https://github.com/Adventnl/YK-Engine/releases) and follow the macOS
 Installer wizard, or download the `.dmg` and drag the app into Applications. Both
-contain the app and samples; no build tools or extra libraries are required. The
+contain the selected app; no build tools or extra libraries are required. The
 published macOS builds currently target Apple silicon.
 
 The build is the same CMake project; use `release` on a Mac with Xcode's command line tools and

@@ -10,3 +10,6 @@
 *.icns binary
 *.zip binary
 *.dmg binary
+*.pkg binary
+*.exe binary
+*.dll binary

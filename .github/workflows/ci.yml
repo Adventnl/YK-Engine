@@ -6,6 +6,8 @@ name: CI
 
 on:
   push:
+    paths-ignore:
+      - 'release/**'
   pull_request:
 
 permissions:

@@ -17,7 +17,8 @@ for asset in release['assets']:
     else:
         continue
     system = 'Windows x64' if 'windows-x64' in name else 'macOS Apple silicon'
-    kind = 'disk image' if name.endswith('.dmg') else 'installer'
+    kind = ('portable app' if name.endswith('.zip') else
+            'disk image' if name.endswith('.dmg') else 'installer')
     subprocess.run(['gh', 'api', '--method', 'PATCH',
                     f"repos/Adventnl/YK-Engine/releases/assets/{asset['id']}",
                     '-f', f'label={product} · {system} {kind}'], check=True, stdout=subprocess.DEVNULL)

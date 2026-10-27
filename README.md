@@ -56,8 +56,14 @@ The engine also supports projects anywhere outside this repository:
 
 ## Download and install
 
+The [release folder](release/README.md) contains the current compiled apps directly in this
+repository: three macOS Apple silicon `.app` bundles and three Windows x64 applications.
+Use `release/downloads/` for the six portable ZIP downloads, or `release/installers/` for
+setup wizards. Extract a ZIP completely before launching its app; Windows games need their
+adjacent `data` and `licenses` folders.
+
 [GitHub Releases](https://github.com/Adventnl/YK-Engine/releases) provides Windows x64 and macOS
-installers with three separate downloads for each platform:
+apps and installers with three separate products for each platform:
 
 - **YK Engine**: editor, player and command line. Starts with a blank welcome page and no game loaded.
 - **Invisible Castle — Demo game**: standalone castle escape game.
